@@ -12,9 +12,8 @@ import { Loader2, Camera } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -99,7 +98,7 @@ export function AddPlayerForm() {
         }
         
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Compress JPEG
         setPhotoDataUrl(dataUrl);
       }
     }
@@ -109,17 +108,20 @@ export function AddPlayerForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
 
+    if (!photoDataUrl) {
+        toast({
+            variant: "destructive",
+            title: "Photo manquante",
+            description: "Veuillez prendre une photo avant d'ajouter le joueur.",
+        });
+        setLoading(false);
+        return;
+    }
+
     try {
-      let photoUrl = "";
-      if (photoDataUrl) {
-        const storageRef = ref(storage, `players/${Date.now()}_${values.name.replace(/\s+/g, '_')}.jpg`);
-        const uploadResult = await uploadString(storageRef, photoDataUrl, 'data_url');
-        photoUrl = await getDownloadURL(uploadResult.ref);
-      }
-      
       await addDoc(collection(db, "players"), {
         ...values,
-        photoUrl: photoUrl,
+        photoUrl: photoDataUrl,
         createdAt: new Date(),
       });
 
@@ -134,7 +136,7 @@ export function AddPlayerForm() {
       toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Une erreur est survenue lors de l'ajout du joueur.",
+          description: "Une erreur est survenue lors de l'ajout du joueur. La photo est peut-être trop volumineuse.",
       });
       console.error(e);
     } finally {
