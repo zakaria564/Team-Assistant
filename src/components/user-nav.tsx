@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Avatar,
   AvatarFallback,
@@ -15,23 +17,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+
 
 export function UserNav() {
+  const [user, loading, error] = useAuthState(auth);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    signOut(auth);
+    router.push("/");
+  };
+
+  if (loading) {
+    return (
+       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback></AvatarFallback>
+          </Avatar>
+        </Button>
+    )
+  }
+
+  const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>A</AvatarFallback>
+            <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Admin</p>
+            <p className="text-sm font-medium leading-none">{user?.displayName || "Utilisateur"}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              admin@example.com
+              {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -43,12 +70,10 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <Link href="/">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Se déconnecter</span>
           </DropdownMenuItem>
-        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );
