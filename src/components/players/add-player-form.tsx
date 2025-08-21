@@ -8,26 +8,29 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Camera, Upload } from "lucide-react";
+import { Loader2, Camera } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { db, storage } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   category: z.string().min(2, "La catégorie est requise."),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
-  photo: z.string().optional(),
 });
 
 export function AddPlayerForm() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,7 +99,7 @@ export function AddPlayerForm() {
         }
         
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL('image/png');
+        const dataUrl = canvas.toDataURL('image/jpeg');
         setPhotoDataUrl(dataUrl);
       }
     }
@@ -105,19 +108,34 @@ export function AddPlayerForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    setError(null);
+
     try {
-      // Here you would typically save the player data and photo to your backend/database.
-      // For this example, we'll just log it.
-      console.log({ ...values, photo: photoDataUrl });
+      let photoUrl = "";
+      if (photoDataUrl) {
+        const storageRef = ref(storage, `players/${Date.now()}_${values.name.replace(/\s+/g, '_')}.jpg`);
+        const uploadResult = await uploadString(storageRef, photoDataUrl, 'data_url');
+        photoUrl = await getDownloadURL(uploadResult.ref);
+      }
+      
+      await addDoc(collection(db, "players"), {
+        ...values,
+        photoUrl: photoUrl,
+        createdAt: new Date(),
+      });
+
       toast({
         title: "Joueur ajouté !",
         description: `${values.name} a été ajouté au club.`,
       });
-      form.reset();
-      setPhotoDataUrl(null);
-    } catch (e) {
-      setError("Une erreur est survenue lors de l'ajout du joueur.");
+      
+      router.push("/dashboard/players");
+
+    } catch (e: any) {
+      toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'ajout du joueur.",
+      });
       console.error(e);
     } finally {
       setLoading(false);
@@ -192,7 +210,6 @@ export function AddPlayerForm() {
                 </div>
                 <canvas ref={canvasRef} className="hidden" />
 
-                {error && <p className="text-destructive">{error}</p>}
                 {hasCameraPermission === false && (
                     <Alert variant="destructive">
                     <AlertTitle>Accès à la caméra requis</AlertTitle>
