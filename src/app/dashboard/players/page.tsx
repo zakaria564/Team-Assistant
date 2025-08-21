@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PlayersPage() {
   const players = [
@@ -21,9 +22,11 @@ export default function PlayersPage() {
             <h1 className="text-3xl font-bold tracking-tight">Joueurs</h1>
             <p className="text-muted-foreground">Gérez les joueurs de votre club.</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter un joueur
+        <Button asChild>
+          <Link href="/dashboard/players/add">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ajouter un joueur
+          </Link>
         </Button>
       </div>
       <Card>
