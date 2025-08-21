@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Shapes, FileText, Sparkles } from "lucide-react";
+import { LayoutDashboard, Users, Shapes, FileText, Sparkles, Calendar } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/players", label: "Joueurs", icon: Users },
   { href: "/dashboard/categories", label: "Catégories", icon: Shapes },
+  { href: "/dashboard/matches", label: "Matchs", icon: Calendar },
   { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
 ];
