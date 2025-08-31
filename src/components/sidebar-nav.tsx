@@ -26,8 +26,8 @@ export function SidebarNav() {
           key={href}
           href={href}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-            pathname.startsWith(href) && (href !== "/dashboard" || pathname === "/dashboard") ? "bg-muted text-primary" : ""
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            pathname.startsWith(href) && (href !== "/dashboard" || pathname === "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
           )}
         >
           <Icon className="h-4 w-4" />
