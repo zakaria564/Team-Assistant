@@ -9,18 +9,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, storage } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   email: z.string().email("Veuillez entrer une adresse email valide."),
-  photo: z.any().optional(),
+  photoURL: z.string().url("Veuillez entrer une URL d'image valide.").or(z.literal('')).optional(),
 });
 
 export function ProfileSettingsForm() {
@@ -35,7 +34,7 @@ export function ProfileSettingsForm() {
     defaultValues: {
         name: "",
         email: "",
-        photo: null,
+        photoURL: "",
     },
   });
 
@@ -44,22 +43,11 @@ export function ProfileSettingsForm() {
       form.reset({
         name: user.displayName || "",
         email: user.email || "",
+        photoURL: user.photoURL || "",
       });
       setPhotoPreview(user.photoURL);
     }
   }, [user, form]);
-
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -71,24 +59,9 @@ export function ProfileSettingsForm() {
     }
 
     try {
-        let photoURL = user.photoURL;
-        const photoFile = values.photo?.[0];
-
-        if (photoFile) {
-            const storageRef = ref(storage, `profile-pictures/${user.uid}/${photoFile.name}`);
-            const snapshot = await uploadBytes(storageRef, photoFile);
-            photoURL = await getDownloadURL(snapshot.ref);
-        }
-        
         await updateProfile(user, { 
             displayName: values.name,
-            photoURL: photoURL
-        });
-        
-        form.reset({
-            name: values.name,
-            email: values.email,
-            photo: null, // Reset file input
+            photoURL: values.photoURL || null,
         });
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
@@ -101,6 +74,7 @@ export function ProfileSettingsForm() {
   };
   
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
+  const photoUrlValue = form.watch("photoURL");
 
   return (
     <Card>
@@ -113,24 +87,21 @@ export function ProfileSettingsForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                        <AvatarImage src={photoPreview || undefined} alt={user?.displayName || ""} />
+                        <AvatarImage src={photoUrlValue || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
                     </Avatar>
-                    <FormField
+                     <FormField
                         control={form.control}
-                        name="photo"
+                        name="photoURL"
                         render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Photo de profil</FormLabel>
+                            <FormItem className="flex-1">
+                            <FormLabel>URL de la photo de profil</FormLabel>
                             <FormControl>
                                 <Input 
-                                    type="file" 
-                                    accept="image/*"
-                                    className="file:text-foreground"
-                                    onChange={(e) => {
-                                        field.onChange(e.target.files);
-                                        handlePhotoChange(e);
-                                    }}
+                                    type="text"
+                                    placeholder="https://exemple.com/photo.jpg"
+                                    {...field}
+                                    value={field.value || ""}
                                 />
                             </FormControl>
                             <FormMessage />
