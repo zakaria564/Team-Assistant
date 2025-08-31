@@ -27,7 +27,7 @@ export function ProfileSettingsForm() {
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photoURL || null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -107,7 +107,7 @@ export function ProfileSettingsForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                        <AvatarImage src={photoPreview || undefined} alt={user?.displayName || ""} />
+                        <AvatarImage src={photoPreview || user?.photoURL || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
                     </Avatar>
                     <FormField
@@ -158,9 +158,13 @@ export function ProfileSettingsForm() {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" disabled={loading || loadingUser}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Enregistrer les modifications
+                <Button type="submit" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement en cours...
+                      </>
+                    ) : "Enregistrer les modifications" }
                 </Button>
             </form>
         </Form>
