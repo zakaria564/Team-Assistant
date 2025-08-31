@@ -26,7 +26,7 @@ const formSchema = z.object({
 export function ProfileSettingsForm() {
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
 
@@ -35,6 +35,7 @@ export function ProfileSettingsForm() {
     defaultValues: {
         name: "",
         email: "",
+        photo: null,
     },
   });
 
@@ -44,9 +45,7 @@ export function ProfileSettingsForm() {
         name: user.displayName || "",
         email: user.email || "",
       });
-      if (user.photoURL) {
-        setPhotoPreview(user.photoURL);
-      }
+      setPhotoPreview(user.photoURL);
     }
   }, [user, form]);
 
@@ -64,10 +63,10 @@ export function ProfileSettingsForm() {
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
+    setLoadingSubmit(true);
     if (!user) {
         toast({ variant: "destructive", title: "Erreur", description: "Vous n'êtes pas connecté." });
-        setLoading(false);
+        setLoadingSubmit(false);
         return;
     }
 
@@ -80,21 +79,24 @@ export function ProfileSettingsForm() {
             const snapshot = await uploadBytes(storageRef, photoFile);
             photoURL = await getDownloadURL(snapshot.ref);
         }
-
+        
         await updateProfile(user, { 
             displayName: values.name,
             photoURL: photoURL
         });
         
-        if (photoURL) {
-          setPhotoPreview(photoURL);
-        }
+        form.reset({
+            name: values.name,
+            email: values.email,
+            photo: null, // Reset file input
+        });
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
+
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: error.message });
     } finally {
-        setLoading(false);
+        setLoadingSubmit(false);
     }
   };
   
@@ -111,7 +113,7 @@ export function ProfileSettingsForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                        <AvatarImage src={photoPreview || user?.photoURL || undefined} alt={user?.displayName || ""} />
+                        <AvatarImage src={photoPreview || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
                     </Avatar>
                     <FormField
@@ -162,8 +164,8 @@ export function ProfileSettingsForm() {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" disabled={loading}>
-                    {loading ? (
+                <Button type="submit" disabled={loadingSubmit || loadingUser}>
+                    {loadingSubmit ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Enregistrement en cours...
