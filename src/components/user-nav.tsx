@@ -49,6 +49,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
+            {user?.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User profile picture'} />}
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

@@ -8,21 +8,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/lib/firebase";
+import { auth, storage } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   email: z.string().email("Veuillez entrer une adresse email valide."),
+  photo: z.any().optional(),
 });
 
 export function ProfileSettingsForm() {
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photoURL || null);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,6 +36,18 @@ export function ProfileSettingsForm() {
         email: user?.email || "",
     },
   });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -41,14 +58,29 @@ export function ProfileSettingsForm() {
     }
 
     try {
-        await updateProfile(user, { displayName: values.name });
-        toast({ title: "Profil mis à jour", description: "Votre nom a été mis à jour avec succès." });
+        let photoURL = user.photoURL;
+        const photoFile = values.photo?.[0];
+
+        if (photoFile) {
+            const storageRef = ref(storage, `profile-pictures/${user.uid}/${photoFile.name}`);
+            const snapshot = await uploadBytes(storageRef, photoFile);
+            photoURL = await getDownloadURL(snapshot.ref);
+        }
+
+        await updateProfile(user, { 
+            displayName: values.name,
+            photoURL: photoURL
+        });
+
+        toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: error.message });
     } finally {
         setLoading(false);
     }
   };
+  
+  const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
 
   return (
     <Card>
@@ -58,8 +90,34 @@ export function ProfileSettingsForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="flex items-center gap-6">
+                    <Avatar className="h-20 w-20">
+                        <AvatarImage src={photoPreview || user?.photoURL || undefined} alt={user?.displayName || ""} />
+                        <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
+                    </Avatar>
+                    <FormField
+                        control={form.control}
+                        name="photo"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Photo de profil</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        field.onChange(e.target.files);
+                                        handlePhotoChange(e);
+                                    }}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                 <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
