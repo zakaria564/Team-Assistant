@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle } from "lucide-react";
 
-export default function MatchesPage() {
+export default function CalendarPage() {
   const matches = [
     { team: "Seniors A", opponent: "FC Rive Droite", date: "25/05/2024 - 15:00", location: "Extérieur" },
     { team: "U17", opponent: "AS Monts d'Or", date: "25/05/2024 - 10:30", location: "Domicile" },
@@ -18,7 +18,7 @@ export default function MatchesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Matchs</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Calendrier des Matchs</h1>
             <p className="text-muted-foreground">Planifiez et consultez les matchs de votre club.</p>
         </div>
         <Button>
