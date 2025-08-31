@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function CalendarPage() {
   const matches = [
@@ -25,9 +26,11 @@ export default function CalendarPage() {
             <h1 className="text-3xl font-bold tracking-tight">Calendrier & Événements</h1>
             <p className="text-muted-foreground">Planifiez et consultez les matchs et événements de votre club.</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter
+        <Button asChild>
+          <Link href="/dashboard/calendar/add">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ajouter
+          </Link>
         </Button>
       </div>
       
