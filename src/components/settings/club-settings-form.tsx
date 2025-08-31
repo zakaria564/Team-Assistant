@@ -15,6 +15,7 @@ import { Textarea } from "../ui/textarea";
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
   contactEmail: z.string().email("Veuillez entrer une adresse email valide."),
+  clubPhone: z.string().optional(),
   address: z.string().optional(),
 });
 
@@ -28,6 +29,7 @@ export function ClubSettingsForm() {
     defaultValues: {
         clubName: "",
         contactEmail: "",
+        clubPhone: "",
         address: ""
     }
   });
@@ -67,19 +69,34 @@ export function ClubSettingsForm() {
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="contactEmail"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Email de contact</FormLabel>
-                        <FormControl>
-                            <Input type="email" placeholder="contact@club.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <div className="grid md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="contactEmail"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Email de contact</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="contact@club.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="clubPhone"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Téléphone du club</FormLabel>
+                            <FormControl>
+                                <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <FormField
                     control={form.control}
                     name="address"
