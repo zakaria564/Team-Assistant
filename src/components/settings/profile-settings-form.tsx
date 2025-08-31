@@ -85,6 +85,10 @@ export function ProfileSettingsForm() {
             displayName: values.name,
             photoURL: photoURL
         });
+        
+        if (photoURL) {
+          setPhotoPreview(photoURL);
+        }
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
     } catch (error: any) {
