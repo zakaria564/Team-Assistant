@@ -2,13 +2,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Shapes, FileText, Sparkles, Calendar, PartyPopper, Settings, ClipboardList, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Sparkles, Calendar, PartyPopper, Settings, ClipboardList, CreditCard } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/players", label: "Joueurs", icon: Users },
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
-  { href: "/dashboard/categories", label: "Catégories", icon: Shapes },
   { href: "/dashboard/calendar", label: "Calendrier", icon: Calendar },
   { href: "/dashboard/events", label: "Événements", icon: PartyPopper },
   { href: "/dashboard/payments", label: "Paiements", icon: CreditCard },
