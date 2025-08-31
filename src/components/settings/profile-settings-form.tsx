@@ -23,12 +23,10 @@ const formSchema = z.object({
 });
 
 export function ProfileSettingsForm() {
-  const [user, loadingUser] = useAuthState(auth);
+  const [user, loadingUser, errorUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,7 +43,6 @@ export function ProfileSettingsForm() {
         email: user.email || "",
         photoURL: user.photoURL || "",
       });
-      setPhotoPreview(user.photoURL);
     }
   }, [user, form]);
 
@@ -65,6 +62,12 @@ export function ProfileSettingsForm() {
         });
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
+        
+        form.reset({
+            name: user.displayName || "",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+        });
 
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: error.message });
@@ -87,7 +90,7 @@ export function ProfileSettingsForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                        <AvatarImage src={photoUrlValue || undefined} alt={user?.displayName || ""} />
+                        <AvatarImage key={photoUrlValue} src={photoUrlValue || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
                     </Avatar>
                      <FormField
