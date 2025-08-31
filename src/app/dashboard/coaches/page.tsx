@@ -1,27 +1,59 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+interface Coach {
+  id: string;
+  name: string;
+  category: string;
+  phone?: string;
+  email: string;
+  photoUrl?: string;
+}
 
 export default function CoachesPage() {
-  const coaches = [
-    { name: "Jean Dupont", category: "Seniors", phone: "06 12 34 56 78", email: "jean.dupont@email.com" },
-    { name: "Marie Curie", category: "U17", phone: "06 23 45 67 89", email: "marie.curie@email.com" },
-    { name: "Paul Martin", category: "U15", phone: "06 34 56 78 90", email: "paul.martin@email.com" },
-    { name: "Sophie Bernard", category: "U12", phone: "06 45 67 89 01", email: "sophie.bernard@email.com" },
-  ];
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, "coaches"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
+        setCoaches(coachesData);
+      } catch (error) {
+        console.error("Error fetching coaches: ", error);
+        // Vous pouvez ajouter un toast ici pour notifier l'utilisateur de l'erreur
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoaches();
+  }, []);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Entraîneurs</h1>
-            <p className="text-muted-foreground">Gérez les entraîneurs de votre club.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Entraîneurs</h1>
+          <p className="text-muted-foreground">Gérez les entraîneurs de votre club.</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter un entraîneur
+        <Button asChild>
+          <Link href="/dashboard/coaches/add">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ajouter un entraîneur
+          </Link>
         </Button>
       </div>
       <Card>
@@ -30,33 +62,47 @@ export default function CoachesPage() {
           <CardDescription>Retrouvez ici tous les entraîneurs du club.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Photo</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Email</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {coaches.map((coach) => (
-                <TableRow key={coach.name}>
-                   <TableCell>
+           {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">Photo</TableHead>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Catégorie</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {coaches.length > 0 ? (
+                  coaches.map((coach) => (
+                    <TableRow key={coach.id}>
+                      <TableCell>
                         <Avatar>
-                          <AvatarImage src={`https://i.pravatar.cc/150?u=${coach.email}`} alt={coach.name} data-ai-hint="coach portrait" />
-                          <AvatarFallback>{coach.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
+                          <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                       </TableCell>
-                  <TableCell className="font-medium">{coach.name}</TableCell>
-                  <TableCell>{coach.category}</TableCell>
-                  <TableCell>{coach.phone}</TableCell>
-                  <TableCell>{coach.email}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      <TableCell className="font-medium">{coach.name}</TableCell>
+                      <TableCell>{coach.category}</TableCell>
+                      <TableCell>{coach.phone}</TableCell>
+                      <TableCell>{coach.email}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      Aucun entraîneur trouvé. Commencez par en ajouter un !
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
