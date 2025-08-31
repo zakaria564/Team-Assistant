@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -12,7 +13,7 @@ import { auth, storage } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -31,11 +32,24 @@ export function ProfileSettingsForm() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    values: {
-        name: user?.displayName || "",
-        email: user?.email || "",
+    defaultValues: {
+        name: "",
+        email: "",
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.displayName || "",
+        email: user.email || "",
+      });
+      if (user.photoURL) {
+        setPhotoPreview(user.photoURL);
+      }
+    }
+  }, [user, form]);
+
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,7 +107,7 @@ export function ProfileSettingsForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                        <AvatarImage src={photoPreview || user?.photoURL || undefined} alt={user?.displayName || ""} />
+                        <AvatarImage src={photoPreview || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
                     </Avatar>
                     <FormField
@@ -106,6 +120,7 @@ export function ProfileSettingsForm() {
                                 <Input 
                                     type="file" 
                                     accept="image/*"
+                                    className="file:text-foreground"
                                     onChange={(e) => {
                                         field.onChange(e.target.files);
                                         handlePhotoChange(e);
