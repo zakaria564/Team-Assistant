@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,7 +28,7 @@ export default function PlayersPage() {
     const fetchPlayers = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, "players"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "players"));
         const querySnapshot = await getDocs(q);
         const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
         setPlayers(playersData);
