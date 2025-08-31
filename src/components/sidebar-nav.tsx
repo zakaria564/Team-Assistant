@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Shapes, FileText, Sparkles, Calendar, PartyPopper } from "lucide-react";
+import { LayoutDashboard, Users, Shapes, FileText, Sparkles, Calendar, PartyPopper, Settings } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: PartyPopper },
   { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
+  { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
 export function SidebarNav() {
