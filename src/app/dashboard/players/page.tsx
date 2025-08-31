@@ -7,8 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Player {
   id: string;
@@ -21,24 +22,30 @@ interface Player {
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPlayers = async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(collection(db, "players"));
+        const q = query(collection(db, "players"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
         const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
         setPlayers(playersData);
       } catch (error) {
         console.error("Error fetching players: ", error);
-        // Optionally, show a toast notification for the error
+        toast({
+          variant: "destructive",
+          title: "Erreur de permissions",
+          description: "Impossible de charger les joueurs. Veuillez vérifier vos règles de sécurité Firestore.",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchPlayers();
-  }, []);
+  }, [toast]);
 
   return (
     <div>

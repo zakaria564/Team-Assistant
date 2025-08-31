@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Coach {
   id: string;
@@ -22,6 +23,7 @@ interface Coach {
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCoaches = async () => {
@@ -31,16 +33,20 @@ export default function CoachesPage() {
         const querySnapshot = await getDocs(q);
         const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
         setCoaches(coachesData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching coaches: ", error);
-        // Vous pouvez ajouter un toast ici pour notifier l'utilisateur de l'erreur
+        toast({
+          variant: "destructive",
+          title: "Erreur de permissions",
+          description: "Impossible de charger les entraîneurs. Veuillez vérifier vos règles de sécurité Firestore.",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchCoaches();
-  }, []);
+  }, [toast]);
 
   return (
     <div>
