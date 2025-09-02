@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PlusCircle, Clock, MapPin, Users, Calendar as CalendarIcon } from "lucide-react";
@@ -33,12 +33,16 @@ const formatTime = (dateStr: string) => {
 };
 
 export default function CalendarPage() {
-    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [date, setDate] = useState<Date | undefined>(undefined);
+
+    useEffect(() => {
+        setDate(new Date());
+    }, []);
 
     const selectedDateStr = date ? format(date, "dd/MM/yyyy") : "";
 
-    const filteredMatches = matches.filter(match => match.date.startsWith(selectedDateStr));
-    const filteredEvents = events.filter(event => event.date.startsWith(selectedDateStr));
+    const filteredMatches = date ? matches.filter(match => match.date.startsWith(selectedDateStr)) : [];
+    const filteredEvents = date ? events.filter(event => event.date.startsWith(selectedDateStr)) : [];
 
   return (
     <div className="space-y-6">
@@ -82,13 +86,14 @@ export default function CalendarPage() {
                     Agenda du {date ? format(date, "d MMMM yyyy", { locale: fr }) : 'jour'}
                 </CardTitle>
                  <CardDescription>
-                    {filteredMatches.length + filteredEvents.length > 0
+                    {!date ? "Sélectionnez une date pour voir les événements." :
+                     filteredMatches.length + filteredEvents.length > 0
                         ? `Vous avez ${filteredMatches.length + filteredEvents.length} événement(s) aujourd'hui.`
                         : "Aucun événement prévu pour cette date."}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {filteredMatches.length === 0 && filteredEvents.length === 0 ? (
+                {!date || (filteredMatches.length === 0 && filteredEvents.length === 0) ? (
                     <div className="text-center text-muted-foreground py-10">
                         <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
                         <p className="mt-4">Sélectionnez un jour pour voir les événements.</p>
