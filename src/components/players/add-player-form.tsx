@@ -59,6 +59,14 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     defaultValues: isEditMode ? {
       ...player,
       birthDate: player.birthDate ? player.birthDate.split('T')[0] : '', // Format date for input
+      address: player.address || "",
+      nationality: player.nationality || "",
+      phone: player.phone || "",
+      email: player.email || "",
+      position: player.position || "",
+      tutorName: player.tutorName || "",
+      tutorPhone: player.tutorPhone || "",
+      tutorEmail: player.tutorEmail || "",
     } : {
       name: "",
       category: "",
