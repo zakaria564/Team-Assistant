@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -21,7 +22,7 @@ export default function AddEventPage() {
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Ajouter un événement ou un match</h1>
             <p className="text-muted-foreground">
-            Remplissez les informations ci-dessous pour ajouter un nouvel élément au calendrier.
+            Remplissez les informations ci-dessous pour ajouter un nouvel élément.
             </p>
         </div>
       </div>

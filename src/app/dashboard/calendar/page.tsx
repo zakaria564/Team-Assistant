@@ -32,7 +32,7 @@ const formatTime = (dateStr: string) => {
     return dateStr.split(' - ')[1];
 };
 
-export default function CalendarPage() {
+export default function EventsPage() {
     const [date, setDate] = useState<Date | undefined>(undefined);
 
     useEffect(() => {
@@ -48,11 +48,11 @@ export default function CalendarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Calendrier & Événements</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Événements</h1>
             <p className="text-muted-foreground">Planifiez et consultez les matchs et événements de votre club.</p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/calendar/add">
+          <Link href="/dashboard/events/add">
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter un événement
           </Link>
