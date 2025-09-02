@@ -8,8 +8,8 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil } from "lucide-react";
+import Link from "next/link";
 
 interface Player {
   id: string;
@@ -91,17 +91,25 @@ export default function PlayerDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-6 w-6" />
-          <span className="sr-only">Retour</span>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Détails du Joueur</h1>
-          <p className="text-muted-foreground">
-            Fiche complète de {player.name}.
-          </p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-6 w-6" />
+            <span className="sr-only">Retour</span>
+            </Button>
+            <div>
+            <h1 className="text-3xl font-bold tracking-tight">Détails du Joueur</h1>
+            <p className="text-muted-foreground">
+                Fiche complète de {player.name}.
+            </p>
+            </div>
         </div>
+        <Button asChild>
+          <Link href={`/dashboard/players/${playerId}/edit`}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Modifier
+          </Link>
+        </Button>
       </div>
       
       <div className="grid md:grid-cols-3 gap-6">
