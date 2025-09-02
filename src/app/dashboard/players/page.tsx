@@ -165,7 +165,9 @@ export default function PlayersPage() {
                               <Link href={`/dashboard/players/${player.id}`}>
                                 <DropdownMenuItem>Voir les détails</DropdownMenuItem>
                               </Link>
-                              <DropdownMenuItem>Modifier</DropdownMenuItem>
+                              <Link href={`/dashboard/players/${player.id}/edit`}>
+                                <DropdownMenuItem>Modifier</DropdownMenuItem>
+                              </Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 className="text-destructive focus:text-destructive focus:bg-destructive/10"

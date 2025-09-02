@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -13,7 +14,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
@@ -33,18 +34,32 @@ const formSchema = z.object({
   tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
 });
 
-export function AddPlayerForm() {
+interface PlayerData extends z.infer<typeof formSchema> {
+    id: string;
+    photoUrl?: string;
+}
+
+interface AddPlayerFormProps {
+    player?: PlayerData;
+}
+
+
+export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(player?.photoUrl || null);
   const { toast } = useToast();
   const router = useRouter();
+  const isEditMode = !!player;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? {
+      ...player,
+      birthDate: player.birthDate ? player.birthDate.split('T')[0] : '', // Format date for input
+    } : {
       name: "",
       category: "",
       number: 10,
@@ -132,23 +147,35 @@ export function AddPlayerForm() {
         toast({
             variant: "destructive",
             title: "Photo manquante",
-            description: "Veuillez prendre une photo avant d'ajouter le joueur.",
+            description: "Veuillez prendre une photo avant de continuer.",
         });
         setLoading(false);
         return;
     }
 
     try {
-      await addDoc(collection(db, "players"), {
-        ...values,
-        photoUrl: photoDataUrl,
-        createdAt: new Date(),
-      });
+        const dataToSave = {
+            ...values,
+            photoUrl: photoDataUrl
+        };
 
-      toast({
-        title: "Joueur ajouté !",
-        description: `${values.name} a été ajouté au club.`,
-      });
+        if (isEditMode) {
+            const playerDocRef = doc(db, "players", player.id);
+            await updateDoc(playerDocRef, dataToSave);
+            toast({
+                title: "Joueur modifié !",
+                description: `Les informations de ${values.name} ont été mises à jour.`,
+            });
+        } else {
+             await addDoc(collection(db, "players"), {
+                ...dataToSave,
+                createdAt: new Date(),
+            });
+            toast({
+                title: "Joueur ajouté !",
+                description: `${values.name} a été ajouté au club.`,
+            });
+        }
       
       router.push("/dashboard/players");
 
@@ -156,7 +183,7 @@ export function AddPlayerForm() {
       toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Une erreur est survenue lors de l'ajout du joueur. La photo est peut-être trop volumineuse.",
+          description: isEditMode ? "Impossible de modifier le joueur." : "Une erreur est survenue lors de l'ajout du joueur.",
       });
       console.error(e);
     } finally {
@@ -347,9 +374,9 @@ export function AddPlayerForm() {
                 {loading ? (
                     <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Ajout en cours...
+                    Enregistrement...
                     </>
-                ) : "Ajouter le joueur"}
+                ) : isEditMode ? "Enregistrer les modifications" : "Ajouter le joueur"}
                 </Button>
             </div>
 
@@ -376,7 +403,7 @@ export function AddPlayerForm() {
                 <div className="flex gap-4">
                     <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full">
                         <Camera className="mr-2"/>
-                        Prendre une photo
+                        {photoDataUrl ? "Reprendre la photo" : "Prendre une photo" }
                     </Button>
                 </div>
             </div>
