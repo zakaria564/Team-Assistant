@@ -61,24 +61,11 @@ const footballPositions = [
 ];
 
 const playerCategories = [
-    "Seniors",
-    "U19",
-    "U18",
-    "U17",
-    "U16",
-    "U15",
-    "U14",
-    "U13",
-    "U12",
-    "U11",
-    "U10",
-    "U9",
-    "U8",
-    "U7",
-    "U6",
-    "U5",
-    "Vétérans",
-    "École de foot"
+    "Seniors", "U19", "U18", "U17", "U16", "U15", "U14", "U13", "U12", "U11", "U10", "U9", "U8", "U7", "U6", "U5", "Vétérans", "École de foot"
+];
+
+const nationalities = [
+    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Autre"
 ];
 
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
@@ -275,9 +262,18 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Nationalité</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Française" {...field} />
-                          </FormControl>
+                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionner une nationalité" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  {nationalities.map(nat => (
+                                      <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -480,3 +476,4 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     
 
     
+
