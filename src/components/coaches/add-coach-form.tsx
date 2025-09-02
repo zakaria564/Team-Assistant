@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -15,13 +16,33 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
-  category: z.string().min(2, "La catégorie est requise."),
+  category: z.string({ required_error: "La catégorie est requise."}),
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide."),
 });
+
+const coachCategories = [
+    "Seniors",
+    "U19",
+    "U18",
+    "U17",
+    "U16",
+    "U15",
+    "U14",
+    "U13",
+    "U12",
+    "U11",
+    "U10",
+    "U9",
+    "U8",
+    "U7",
+    "Vétérans",
+    "École de foot"
+];
 
 export function AddCoachForm() {
   const [loading, setLoading] = useState(false);
@@ -169,13 +190,22 @@ export function AddCoachForm() {
                     control={form.control}
                     name="category"
                     render={({ field }) => (
-                        <FormItem>
+                      <FormItem>
                         <FormLabel>Catégorie</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: U17" {...field} />
-                        </FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner une catégorie" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {coachCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <FormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
                 />
                  <FormField
