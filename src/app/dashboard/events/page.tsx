@@ -30,6 +30,8 @@ export default function EventsPage() {
     if (date) {
       const filteredEvents = events.filter((event) => isSameDay(event.date, date)).sort((a, b) => a.date.getTime() - b.date.getTime());
       setSelectedEvents(filteredEvents);
+    } else {
+      setSelectedEvents([]);
     }
   }, [date]);
 
@@ -59,6 +61,8 @@ export default function EventsPage() {
               onSelect={setDate}
               className="w-full"
               locale={fr}
+              disabled={(d) => d < new Date("1900-01-01")}
+              initialFocus
             />
           </CardContent>
         </Card>
@@ -71,7 +75,7 @@ export default function EventsPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {selectedEvents.length > 0 ? (
+                    {date && selectedEvents.length > 0 ? (
                         selectedEvents.map(event => (
                              <Card key={event.id} className="bg-muted/30">
                                 <CardHeader>
