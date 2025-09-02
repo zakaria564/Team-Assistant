@@ -162,7 +162,9 @@ export default function PlayersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Voir les détails</DropdownMenuItem>
+                              <Link href={`/dashboard/players/${player.id}`}>
+                                <DropdownMenuItem>Voir les détails</DropdownMenuItem>
+                              </Link>
                               <DropdownMenuItem>Modifier</DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
