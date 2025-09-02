@@ -1,16 +1,29 @@
+"use client";
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 
 export default function AddEventPage() {
+  const router = useRouter();
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Ajouter un événement ou un match</h1>
-        <p className="text-muted-foreground">
-          Remplissez les informations ci-dessous pour ajouter un nouvel élément au calendrier.
-        </p>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-6 w-6" />
+          <span className="sr-only">Retour</span>
+        </Button>
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight">Ajouter un événement ou un match</h1>
+            <p className="text-muted-foreground">
+            Remplissez les informations ci-dessous pour ajouter un nouvel élément au calendrier.
+            </p>
+        </div>
       </div>
       <Card>
         <CardHeader>
