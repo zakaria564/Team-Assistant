@@ -18,6 +18,7 @@ import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -43,6 +44,21 @@ interface AddPlayerFormProps {
     player?: PlayerData;
 }
 
+const footballPositions = [
+    "Gardien de but",
+    "Défenseur central",
+    "Latéral droit",
+    "Latéral gauche",
+    "Piston droit",
+    "Piston gauche",
+    "Milieu défensif",
+    "Milieu central",
+    "Milieu offensif",
+    "Ailier droit",
+    "Ailier gauche",
+    "Avant-centre",
+    "Buteur"
+];
 
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const [loading, setLoading] = useState(false);
@@ -316,18 +332,27 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     )}
                     />
                      <FormField
-                      control={form.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Poste</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Attaquant" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        control={form.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Poste</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un poste" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {footballPositions.map(pos => (
+                                        <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                 </div>
 
                 <Separator className="my-6" />
@@ -421,3 +446,5 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
+
+    
