@@ -17,6 +17,9 @@ interface Player {
   category: string;
   number: number;
   photoUrl?: string;
+  position?: string;
+  phone?: string;
+  email?: string;
 }
 
 export default function PlayersPage() {
@@ -78,7 +81,10 @@ export default function PlayersPage() {
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Catégorie</TableHead>
+                  <TableHead>Poste</TableHead>
                   <TableHead>Numéro</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Email</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,12 +99,15 @@ export default function PlayersPage() {
                       </TableCell>
                       <TableCell className="font-medium">{player.name}</TableCell>
                       <TableCell>{player.category}</TableCell>
+                      <TableCell>{player.position}</TableCell>
                       <TableCell>{player.number}</TableCell>
+                      <TableCell>{player.phone}</TableCell>
+                      <TableCell>{player.email}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
                       Aucun joueur trouvé. Commencez par en ajouter un !
                     </TableCell>
                   </TableRow>

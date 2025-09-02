@@ -15,11 +15,18 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   category: z.string().min(2, "La catégorie est requise."),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
+  birthDate: z.string().optional(),
+  address: z.string().optional(),
+  nationality: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Veuillez entrer une adresse email valide.").optional(),
+  position: z.string().optional(),
 });
 
 export function AddPlayerForm() {
@@ -37,6 +44,12 @@ export function AddPlayerForm() {
       name: "",
       category: "",
       number: 10,
+      birthDate: "",
+      address: "",
+      nationality: "",
+      phone: "",
+      email: "",
+      position: "",
     }
   });
 
@@ -149,7 +162,7 @@ export function AddPlayerForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-8">
+            <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -163,7 +176,77 @@ export function AddPlayerForm() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-8">
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="birthDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date de naissance</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nationalité</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Française" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                 <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Adresse</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="123 Rue du Stade..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Téléphone</FormLabel>
+                          <FormControl>
+                            <Input type="tel" placeholder="0612345678" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="contact@email.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                <div className="grid grid-cols-3 gap-4">
                     <FormField
                     control={form.control}
                     name="category"
@@ -190,8 +273,21 @@ export function AddPlayerForm() {
                         </FormItem>
                     )}
                     />
+                     <FormField
+                      control={form.control}
+                      name="position"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Poste</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Attaquant" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full !mt-8">
                 {loading ? (
                     <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
