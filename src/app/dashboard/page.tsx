@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, DollarSign, CalendarClock, Activity, ArrowUpRight } from "lucide-react";
 import Link from 'next/link';
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
   return (
@@ -39,9 +40,9 @@ export default function Dashboard() {
         <Card className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
-              <CardTitle>Matchs à venir</CardTitle>
+              <CardTitle>Événements à venir</CardTitle>
               <CardDescription>
-                Liste des prochains matchs de vos équipes.
+                Liste des prochains matchs et entraînements de vos équipes.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -56,9 +57,9 @@ export default function Dashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Équipe</TableHead>
-                  <TableHead>Adversaire</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Adversaire/Lieu</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Lieu</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -66,25 +67,41 @@ export default function Dashboard() {
                   <TableCell>
                     <div className="font-medium">Seniors A</div>
                   </TableCell>
+                  <TableCell>
+                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
+                  </TableCell>
                   <TableCell>FC Rive Droite</TableCell>
                   <TableCell>25/05/2024 - 15:00</TableCell>
-                  <TableCell>Extérieur</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
                     <div className="font-medium">U17</div>
                   </TableCell>
+                   <TableCell>
+                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
+                  </TableCell>
                   <TableCell>AS Monts d'Or</TableCell>
                   <TableCell>25/05/2024 - 10:30</TableCell>
-                  <TableCell>Domicile</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
                     <div className="font-medium">U15</div>
                   </TableCell>
+                   <TableCell>
+                     <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">Entraînement</Badge>
+                  </TableCell>
+                  <TableCell>Stade Principal</TableCell>
+                  <TableCell>27/05/2024 - 18:00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <div className="font-medium">U15</div>
+                  </TableCell>
+                   <TableCell>
+                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
+                  </TableCell>
                   <TableCell>Olympique Ouest</TableCell>
                   <TableCell>26/05/2024 - 11:00</TableCell>
-                  <TableCell>Domicile</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
