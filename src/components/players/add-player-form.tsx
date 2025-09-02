@@ -16,6 +16,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
+import { Separator } from "../ui/separator";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -25,8 +26,11 @@ const formSchema = z.object({
   address: z.string().optional(),
   nationality: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email("Veuillez entrer une adresse email valide.").optional(),
+  email: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   position: z.string().optional(),
+  tutorName: z.string().optional(),
+  tutorPhone: z.string().optional(),
+  tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
 });
 
 export function AddPlayerForm() {
@@ -50,6 +54,9 @@ export function AddPlayerForm() {
       phone: "",
       email: "",
       position: "",
+      tutorName: "",
+      tutorPhone: "",
+      tutorEmail: "",
     }
   });
 
@@ -287,6 +294,55 @@ export function AddPlayerForm() {
                       )}
                     />
                 </div>
+
+                <Separator className="my-6" />
+
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Informations du Tuteur (Optionnel)</h3>
+                     <FormField
+                      control={form.control}
+                      name="tutorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom complet du tuteur</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Marie Dupont" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="tutorPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone du tuteur</FormLabel>
+                              <FormControl>
+                                <Input type="tel" placeholder="0612345678" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="tutorEmail"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email du tuteur</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="tuteur@email.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
+                </div>
+
+
                 <Button type="submit" disabled={loading} className="w-full !mt-8">
                 {loading ? (
                     <>

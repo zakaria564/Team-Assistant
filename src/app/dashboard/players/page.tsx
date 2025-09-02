@@ -20,6 +20,9 @@ interface Player {
   position?: string;
   phone?: string;
   email?: string;
+  tutorName?: string;
+  tutorPhone?: string;
+  tutorEmail?: string;
 }
 
 export default function PlayersPage() {
@@ -85,6 +88,7 @@ export default function PlayersPage() {
                   <TableHead>Numéro</TableHead>
                   <TableHead>Téléphone</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Nom du tuteur</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -103,11 +107,12 @@ export default function PlayersPage() {
                       <TableCell>{player.number}</TableCell>
                       <TableCell>{player.phone}</TableCell>
                       <TableCell>{player.email}</TableCell>
+                      <TableCell>{player.tutorName}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       Aucun joueur trouvé. Commencez par en ajouter un !
                     </TableCell>
                   </TableRow>
