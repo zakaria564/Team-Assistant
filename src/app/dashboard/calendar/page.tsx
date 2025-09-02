@@ -1,23 +1,44 @@
+
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parse } from "date-fns";
+import { fr } from "date-fns/locale";
 
-export default function CalendarPage() {
-  const matches = [
+const matches = [
     { team: "Seniors A", opponent: "FC Rive Droite", date: "25/05/2024 - 15:00", location: "Extérieur" },
     { team: "U17", opponent: "AS Monts d'Or", date: "25/05/2024 - 10:30", location: "Domicile" },
     { team: "U15", opponent: "Olympique Ouest", date: "26/05/2024 - 11:00", location: "Domicile" },
     { team: "U12", opponent: "Stade Nord", date: "26/05/2024 - 14:00", location: "Extérieur" },
     { team: "Seniors B", opponent: "FC Sud", date: "01/06/2024 - 15:00", location: "Domicile" },
-  ];
+];
 
-  const events = [
+const events = [
     { name: "Réunion des coachs", date: "05/06/2024 - 19:00", location: "Club House" },
     { name: "Fête de fin de saison", date: "22/06/2024 - 18:00", location: "Stade Principal" },
     { name: "Tournoi U12/U13", date: "29/06/2024 - 09:00", location: "Complexe Sportif" },
-  ];
+];
+
+const parseDate = (dateStr: string) => {
+    return parse(dateStr.split(' - ')[0], "dd/MM/yyyy", new Date());
+};
+
+const formatTime = (dateStr: string) => {
+    return dateStr.split(' - ')[1];
+};
+
+export default function CalendarPage() {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+
+    const selectedDateStr = date ? format(date, "dd/MM/yyyy") : "";
+
+    const filteredMatches = matches.filter(match => match.date.startsWith(selectedDateStr));
+    const filteredEvents = events.filter(event => event.date.startsWith(selectedDateStr));
 
   return (
     <div className="space-y-6">
@@ -29,66 +50,94 @@ export default function CalendarPage() {
         <Button asChild>
           <Link href="/dashboard/calendar/add">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Ajouter
+            Ajouter un événement
           </Link>
         </Button>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des matchs</CardTitle>
-          <CardDescription>Retrouvez ici tous les matchs à venir et passés.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Équipe</TableHead>
-                <TableHead>Adversaire</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Lieu</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {matches.map((match, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{match.team}</TableCell>
-                  <TableCell>{match.opponent}</TableCell>
-                  <TableCell>{match.date}</TableCell>
-                  <TableCell>{match.location}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des événements</CardTitle>
-          <CardDescription>Retrouvez ici tous les événements à venir du club.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom de l'événement</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Lieu</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((event, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell>{event.date}</TableCell>
-                  <TableCell>{event.location}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
+             <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="p-3"
+                locale={fr}
+                modifiers={{ 
+                    hasEvent: [...matches, ...events].map(e => parseDate(e.date))
+                }}
+                modifiersStyles={{
+                    hasEvent: { 
+                        position: 'relative',
+                        fontWeight: 'bold',
+                        color: 'hsl(var(--primary))'
+                    }
+                }}
+            />
+        </Card>
+
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>
+                    Agenda du {date ? format(date, "d MMMM yyyy", { locale: fr }) : 'jour'}
+                </CardTitle>
+                 <CardDescription>
+                    {filteredMatches.length + filteredEvents.length > 0
+                        ? `Vous avez ${filteredMatches.length + filteredEvents.length} événement(s) aujourd'hui.`
+                        : "Aucun événement prévu pour cette date."}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {filteredMatches.length === 0 && filteredEvents.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-10">
+                        <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-4">Sélectionnez un jour pour voir les événements.</p>
+                    </div>
+                ) : (
+                    <>
+                        {filteredMatches.map((match, index) => (
+                            <Card key={`match-${index}`} className="bg-muted/30">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">{match.opponent}</CardTitle>
+                                    <CardDescription>{match.team}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex items-center gap-6 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                        <span>{formatTime(match.date)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                        <span>{match.location}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                         {filteredEvents.map((event, index) => (
+                            <Card key={`event-${index}`} className="border-l-4 border-primary">
+                                 <CardHeader>
+                                    <CardTitle className="text-lg">{event.name}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex items-center gap-6 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                        <span>{formatTime(event.date)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                        <span>{event.location}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </>
+                )}
+            </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }
+
+    
