@@ -55,7 +55,7 @@ export default function CalendarPage() {
         </Button>
       </div>
       
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="lg:col-span-1">
              <Calendar
                 mode="single"
@@ -76,7 +76,7 @@ export default function CalendarPage() {
             />
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-3">
             <CardHeader>
                 <CardTitle>
                     Agenda du {date ? format(date, "d MMMM yyyy", { locale: fr }) : 'jour'}
@@ -139,5 +139,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
