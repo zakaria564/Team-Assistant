@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star } from "lucide-react";
 import Link from "next/link";
 
 interface Player {
@@ -123,7 +123,6 @@ export default function PlayerDetailPage() {
                         </Avatar>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold">{player.name}</h2>
-                            <p className="text-muted-foreground">{player.position || "Poste non défini"}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -134,6 +133,7 @@ export default function PlayerDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
+                    <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
                 </CardContent>
             </Card>
