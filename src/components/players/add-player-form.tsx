@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
-  category: z.string().min(2, "La catégorie est requise."),
+  category: z.string().min(1, "La catégorie est requise."),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
   birthDate: z.string().optional(),
   address: z.string().optional(),
@@ -58,6 +58,27 @@ const footballPositions = [
     "Ailier gauche",
     "Avant-centre",
     "Buteur"
+];
+
+const playerCategories = [
+    "Seniors",
+    "U19",
+    "U18",
+    "U17",
+    "U16",
+    "U15",
+    "U14",
+    "U13",
+    "U12",
+    "U11",
+    "U10",
+    "U9",
+    "U8",
+    "U7",
+    "U6",
+    "U5",
+    "Vétérans",
+    "École de foot"
 ];
 
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
@@ -306,17 +327,26 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
                 <div className="grid grid-cols-3 gap-4">
                     <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: U17" {...field} />
-                        </FormControl>
-                        <FormMessage />
+                          <FormLabel>Catégorie</FormLabel>
+                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionner une catégorie" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  {playerCategories.map(cat => (
+                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
                         </FormItem>
-                    )}
+                      )}
                     />
                     <FormField
                     control={form.control}
