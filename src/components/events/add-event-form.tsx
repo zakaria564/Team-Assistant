@@ -55,6 +55,7 @@ export function AddEventForm() {
             team: "",
             time: "15:00",
             location: "",
+            opponent: "",
         }
     });
 
