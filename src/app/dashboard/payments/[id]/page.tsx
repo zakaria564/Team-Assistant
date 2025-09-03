@@ -11,6 +11,7 @@ import { Loader2, ArrowLeft, Pencil, FileText, User, Calendar, Hash, DollarSign,
 import Link from "next/link";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface Payment {
   id: string;
