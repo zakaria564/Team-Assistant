@@ -14,10 +14,9 @@ interface Payment {
   id: string;
   playerId: string;
   totalAmount: number;
-  amountPaid: number;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   description: string;
-  method: string;
+  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
+  transactions: { amount: number; date: any; method: string; }[];
 }
 
 export default function EditPaymentPage() {
@@ -74,14 +73,14 @@ export default function EditPaymentPage() {
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Modifier le paiement</h1>
             <p className="text-muted-foreground">
-              Mettez à jour le paiement pour {loading ? "..." : playerName}.
+              Mettez à jour la cotisation pour {loading ? "..." : playerName}.
             </p>
         </div>
       </div>
       <Card>
         <CardHeader>
-            <CardTitle>Détails du Paiement</CardTitle>
-            <CardDescription>Modifiez les champs ci-dessous et enregistrez.</CardDescription>
+            <CardTitle>Détails de la Cotisation</CardTitle>
+            <CardDescription>Ajoutez un nouveau versement ou modifiez les informations.</CardDescription>
         </CardHeader>
         <CardContent>
             {loading ? (

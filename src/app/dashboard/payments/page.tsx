@@ -12,6 +12,7 @@ import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/fi
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -41,12 +42,12 @@ interface Payment {
   playerId: string;
   playerName?: string;
   totalAmount: number;
-  amountPaid: number;
-  amountRemaining: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
   description: string;
-  method: string;
+  transactions: { amount: number; date: any; method: string; }[];
+  amountPaid: number;
+  amountRemaining: number;
 }
 
 
@@ -71,23 +72,26 @@ export default function PaymentsPage() {
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
             const data = doc.data() as any;
-            const amountPaid = data.amountPaid ?? data.amount ?? 0;
-            const totalAmount = data.totalAmount ?? amountPaid;
-            const amountRemaining = data.amountRemaining ?? (totalAmount - amountPaid);
+            
+            const transactions = data.transactions || [];
+            const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+            const totalAmount = data.totalAmount || 0;
+            const amountRemaining = totalAmount - amountPaid;
             
             return { 
                 id: doc.id, 
                 ...data,
-                totalAmount: totalAmount,
-                amountPaid: amountPaid,
-                amountRemaining: amountRemaining,
                 playerName: playersMap.get(data.playerId) || "Joueur inconnu",
+                amountPaid,
+                amountRemaining,
+                totalAmount,
+                transactions
             } as Payment;
         });
 
         setPayments(paymentsData);
 
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching payments: ", error);
         toast({
           variant: "destructive",
@@ -183,7 +187,7 @@ export default function PaymentsPage() {
                     <TableHead className="text-right">Montant Payé</TableHead>
                     <TableHead className="text-right">Montant Restant</TableHead>
                     <TableHead className="text-right">Montant Total</TableHead>
-                    <TableHead>Date et Heure</TableHead>
+                    <TableHead>Date de création</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -197,7 +201,7 @@ export default function PaymentsPage() {
                         <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid.toFixed(2)} MAD</TableCell>
                         <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining.toFixed(2)} MAD</TableCell>
                         <TableCell className="text-right">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
+                        <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy", { locale: fr })}</TableCell>
                         <TableCell>
                           <Badge 
                               variant={getBadgeVariant(payment.status)}

@@ -10,20 +10,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, ArrowLeft, Pencil, FileText, User, Calendar, Hash, DollarSign, BadgeHelp, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 
 interface Payment {
   id: string;
   playerId: string;
   playerName?: string; // Will be fetched separately
   totalAmount: number;
-  amountPaid: number;
-  amountRemaining: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
   description: string;
-  method: string;
+  transactions: { amount: number; date: { seconds: number, nanoseconds: number }; method: string; }[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number, children?: React.ReactNode }) => (
@@ -105,17 +107,20 @@ export default function PaymentDetailPage() {
       </div>
     );
   }
+  
+  const amountPaid = payment.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
+  const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-6 w-6" />
               <span className="sr-only">Retour</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Détails du Paiement</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Détails de la Cotisation</h1>
               <p className="text-muted-foreground">
                   Transaction pour {payment.playerName}.
               </p>
@@ -124,37 +129,78 @@ export default function PaymentDetailPage() {
         <Button asChild>
           <Link href={`/dashboard/payments/${paymentId}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
-            Modifier
+            Ajouter un versement
           </Link>
         </Button>
       </div>
       
-      <Card>
-          <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                  <FileText />
-                  <span>{payment.description}</span>
-              </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-2">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailItem icon={User} label="Joueur" value={payment.playerName} />
-                <DetailItem icon={Calendar} label="Date et heure" value={format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm")} />
-                 <DetailItem icon={ClipboardList} label="Méthode de Paiement" value={payment.method} />
-            </div>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                    <FileText />
+                    <span>{payment.description}</span>
+                </CardTitle>
+                <CardDescription>
+                    Créé le {format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date du versement</TableHead>
+                    <TableHead>Méthode</TableHead>
+                    <TableHead className="text-right">Montant</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payment.transactions?.length > 0 ? (
+                    payment.transactions.map((transaction, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{format(new Date(transaction.date.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
+                        <TableCell>{transaction.method}</TableCell>
+                        <TableCell className="text-right font-medium">{transaction.amount.toFixed(2)} MAD</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                        Aucun versement enregistré pour cette cotisation.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+        </Card>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <DetailItem icon={DollarSign} label="Montant total" value={`${payment.totalAmount.toFixed(2)} MAD`} />
-                <DetailItem icon={DollarSign} label="Montant payé" value={`${payment.amountPaid.toFixed(2)} MAD`} />
-                <DetailItem icon={DollarSign} label="Montant restant" value={`${payment.amountRemaining.toFixed(2)} MAD`} />
-                <DetailItem icon={BadgeHelp} label="Statut">
-                    <Badge className={cn("text-base", getBadgeClass(payment.status))}>
-                        {payment.status}
-                    </Badge>
-                </DetailItem>
-            </div>
-          </CardContent>
-      </Card>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                  <CardTitle>Résumé Financier</CardTitle>
+                </CardHeader>
+                 <CardContent className="space-y-4">
+                    <DetailItem icon={DollarSign} label="Montant total dû" value={`${payment.totalAmount.toFixed(2)} MAD`} />
+                    <DetailItem icon={DollarSign} label="Montant total payé" value={`${amountPaid.toFixed(2)} MAD`} />
+                    <DetailItem icon={DollarSign} label="Montant restant" value={`${amountRemaining.toFixed(2)} MAD`} />
+                    <DetailItem icon={BadgeHelp} label="Statut">
+                        <Badge className={cn("text-base", getBadgeClass(payment.status))}>
+                            {payment.status}
+                        </Badge>
+                    </DetailItem>
+                </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Joueur</CardTitle>
+              </CardHeader>
+              <CardContent>
+                 <DetailItem icon={User} label="Nom du Joueur" value={payment.playerName} />
+              </CardContent>
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }

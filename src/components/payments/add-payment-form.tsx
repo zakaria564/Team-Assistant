@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, query, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
 
@@ -21,21 +21,33 @@ interface Player {
   name: string;
 }
 
+const transactionSchema = z.object({
+  amount: z.coerce.number().min(0, "Le montant ne peut pas être négatif."),
+  date: z.date(),
+  method: z.string().min(1, "La méthode est requise."),
+});
+
 const formSchema = z.object({
   playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
   totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
-  amountPaid: z.coerce.number({invalid_type_error: "Le montant payé est requis."}).min(0),
-  status: z.enum(["Payé", "Partiel", "En attente", "En retard"], { required_error: "Le statut est requis." }),
-  method: z.string({ required_error: "La méthode est requise." }).min(1, "La méthode est requise."),
   description: z.string().min(3, "La description est requise."),
-  newPayment: z.coerce.number().optional(), // Nouveau champ pour le versement
-}).refine(data => data.amountPaid <= data.totalAmount, {
-    message: "Le montant payé ne peut pas dépasser le montant total.",
-    path: ["amountPaid"],
+  
+  // Pour une nouvelle transaction
+  newTransactionAmount: z.coerce.number().min(0, "Le montant du versement doit être positif."),
+  newTransactionMethod: z.string().min(1, "La méthode du versement est requise."),
+
+  // Ce champ n'est plus directement dans le formulaire mais sera calculé
+  status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
 });
 
-interface PaymentData extends z.infer<typeof formSchema> {
+
+interface PaymentData {
     id: string;
+    playerId: string;
+    totalAmount: number;
+    description: string;
+    status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
+    transactions: { amount: number; date: any; method: string; }[];
 }
 
 interface AddPaymentFormProps {
@@ -53,6 +65,48 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const [loadingPlayers, setLoadingPlayers] = useState(true);
     const router = useRouter();
     const isEditMode = !!payment;
+    
+    const amountAlreadyPaid = isEditMode 
+      ? payment.transactions.reduce((acc, t) => acc + t.amount, 0)
+      : 0;
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: isEditMode ? {
+            playerId: payment.playerId,
+            totalAmount: payment.totalAmount,
+            description: payment.description,
+            status: payment.status,
+            newTransactionAmount: 0,
+            newTransactionMethod: paymentMethods[0],
+        } : {
+            description: "Cotisation annuelle",
+            playerId: "",
+            totalAmount: 1500,
+            status: "En attente",
+            newTransactionAmount: 0,
+            newTransactionMethod: paymentMethods[0],
+        }
+    });
+
+    const watchTotalAmount = form.watch("totalAmount");
+    const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
+    const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
+    const amountRemaining = watchTotalAmount - newTotalPaid;
+
+    useEffect(() => {
+        // Met à jour automatiquement le statut en fonction des montants
+        if (watchTotalAmount > 0) {
+            if (amountRemaining <= 0) {
+                form.setValue("status", "Payé");
+            } else if (newTotalPaid > 0 && amountRemaining > 0) {
+                form.setValue("status", "Partiel");
+            } else if (newTotalPaid === 0) {
+                 form.setValue("status", "En attente");
+            }
+        }
+    }, [amountRemaining, newTotalPaid, watchTotalAmount, form]);
+
 
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -76,76 +130,57 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         fetchPlayers();
     }, [toast]);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: isEditMode ? { ...payment, newPayment: 0 } : {
-            description: "Cotisation annuelle",
-            playerId: "",
-            totalAmount: 1500,
-            amountPaid: 0,
-            status: "En attente",
-            method: "",
-            newPayment: 0,
-        }
-    });
-
-    const watchTotalAmount = form.watch("totalAmount");
-    const watchAmountPaid = form.watch("amountPaid");
-    const watchNewPayment = form.watch("newPayment") || 0;
-
-    // Calculs pour l'affichage et la logique
-    const initialAmountPaid = payment?.amountPaid || 0;
-    const newTotalPaid = initialAmountPaid + watchNewPayment;
-    const amountRemaining = watchTotalAmount - newTotalPaid;
-
-    useEffect(() => {
-      // Met à jour la valeur du champ de formulaire `amountPaid`
-      // Cela est surtout pour la validation Zod, la valeur affichée est séparée
-      form.setValue("amountPaid", newTotalPaid);
-    }, [newTotalPaid, form]);
-
-
-    useEffect(() => {
-        // Met à jour automatiquement le statut en fonction des montants
-        if (watchTotalAmount > 0) {
-            if (amountRemaining <= 0) {
-                form.setValue("status", "Payé");
-            } else if (newTotalPaid > 0 && amountRemaining > 0) {
-                form.setValue("status", "Partiel");
-            } else if (newTotalPaid === 0) {
-                form.setValue("status", "En attente");
-            }
-        }
-    }, [amountRemaining, newTotalPaid, watchTotalAmount, form]);
-
-
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
-        
-        // Utilise les valeurs calculées pour la sauvegarde en mode édition
-        const finalAmountPaid = isEditMode ? newTotalPaid : values.amountPaid;
-        const finalAmountRemaining = isEditMode ? amountRemaining : values.totalAmount - values.amountPaid;
 
-        const dataToSave = {
-            ...values,
-            amountPaid: finalAmountPaid,
-            amountRemaining: finalAmountRemaining,
+        const newTransaction = {
+          amount: values.newTransactionAmount,
+          date: new Date(),
+          method: values.newTransactionMethod,
         };
-        
-        delete (dataToSave as any).newPayment; // On ne sauvegarde pas le champ temporaire
 
         try {
             if (isEditMode) {
-                const paymentDocRef = doc(db, "payments", payment.id);
-                await updateDoc(paymentDocRef, dataToSave);
-                toast({
-                    title: "Paiement modifié !",
-                    description: `Les informations du paiement ont été mises à jour.`,
-                });
-            } else {
+                // On ajoute seulement une nouvelle transaction si un montant a été saisi
+                if(newTransaction.amount > 0) {
+                  const paymentDocRef = doc(db, "payments", payment.id);
+                  await updateDoc(paymentDocRef, {
+                      totalAmount: values.totalAmount,
+                      status: values.status,
+                      description: values.description,
+                      transactions: arrayUnion(newTransaction)
+                  });
+                   toast({
+                      title: "Paiement mis à jour !",
+                      description: `Un versement de ${newTransaction.amount.toFixed(2)} MAD a été ajouté.`,
+                  });
+                } else {
+                  // Mettre à jour les autres infos sans ajouter de transaction
+                   const paymentDocRef = doc(db, "payments", payment.id);
+                    await updateDoc(paymentDocRef, {
+                        totalAmount: values.totalAmount,
+                        status: values.status,
+                        description: values.description,
+                    });
+                    toast({
+                      title: "Paiement modifié !",
+                      description: `Les informations du paiement ont été mises à jour.`,
+                  });
+                }
+            } else { // Mode Création
+                 if (values.newTransactionAmount > values.totalAmount) {
+                    form.setError("newTransactionAmount", { message: "L'avance ne peut pas dépasser le montant total."});
+                    setLoading(false);
+                    return;
+                 }
+                 const initialTransaction = values.newTransactionAmount > 0 ? [newTransaction] : [];
                  await addDoc(collection(db, "payments"), {
-                    ...dataToSave,
+                    playerId: values.playerId,
+                    totalAmount: values.totalAmount,
+                    description: values.description,
+                    status: values.status,
                     createdAt: new Date(),
+                    transactions: initialTransaction,
                 });
                 toast({
                     title: "Paiement ajouté !",
@@ -209,142 +244,125 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     )}
                 />
 
-                {isEditMode ? (
-                     <div className="space-y-4 rounded-md border p-4">
-                        <h4 className="font-medium">Gestion du Paiement</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="totalAmount"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Montant total (MAD)</FormLabel>
-                                    <FormControl>
-                                    <Input type="number" step="0.01" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormItem>
-                                <FormLabel>Montant déjà payé</FormLabel>
-                                <FormControl>
-                                    <Input type="number" value={initialAmountPaid.toFixed(2)} readOnly className="bg-muted"/>
-                                </FormControl>
-                            </FormItem>
-                             <FormField
-                                control={form.control}
-                                name="newPayment"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Ajouter un versement (MAD)</FormLabel>
-                                    <FormControl>
-                                    <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
-                        <Separator />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormItem>
-                                <FormLabel>Nouveau total payé</FormLabel>
-                                <FormControl>
-                                    <Input type="number" value={newTotalPaid.toFixed(2)} readOnly className="bg-muted font-semibold text-green-600"/>
-                                </FormControl>
-                            </FormItem>
-                            <FormItem>
-                                <FormLabel>Montant restant</FormLabel>
-                                <FormControl>
-                                    <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted font-semibold text-red-600"/>
-                                </FormControl>
-                            </FormItem>
-                        </div>
-                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                        <FormField
-                            control={form.control}
-                            name="totalAmount"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Montant total (MAD)</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.01" placeholder="1500" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="amountPaid"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Avance payée (MAD)</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.01" placeholder="500" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormItem>
-                            <FormLabel>Montant restant (MAD)</FormLabel>
-                            <FormControl>
-                                <Input type="number" value={(form.watch('totalAmount') - form.watch('amountPaid')).toFixed(2)} readOnly className="bg-muted"/>
-                            </FormControl>
-                        </FormItem>
-                    </div>
+                <FormField
+                  control={form.control}
+                  name="totalAmount"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Montant total (MAD)</FormLabel>
+                      <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+
+                {isEditMode && (
+                  <Card className="bg-muted/30">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Historique des transactions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                      {payment.transactions.length > 0 ? (
+                        <ul className="space-y-2">
+                           {payment.transactions.map((t, i) => (
+                              <li key={i} className="flex justify-between items-center">
+                                <span>{t.amount.toFixed(2)} MAD ({t.method})</span>
+                                <span className="text-muted-foreground">{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy HH:mm")}</span>
+                              </li>
+                           ))}
+                           <Separator />
+                            <li className="flex justify-between items-center font-bold">
+                                <span>Total Payé</span>
+                                <span>{amountAlreadyPaid.toFixed(2)} MAD</span>
+                            </li>
+                        </ul>
+                      ) : (
+                        <p className="text-muted-foreground">Aucune transaction pour le moment.</p>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
                
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="method"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Méthode du dernier versement</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner une méthode" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {paymentMethods.map(method => (
-                                        <SelectItem key={method} value={method}>{method}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Statut</FormLabel>
-                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un statut" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {paymentStatuses.map(status => (
-                                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                <div className="space-y-4 rounded-md border p-4">
+                  <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (avance)'}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                          control={form.control}
+                          name="newTransactionAmount"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Montant du versement (MAD)</FormLabel>
+                              <FormControl>
+                                <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="newTransactionMethod"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Méthode du versement</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner une méthode" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {paymentMethods.map(method => (
+                                          <SelectItem key={method} value={method}>{method}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                    </div>
+                     <Separator />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <FormItem>
+                              <FormLabel>Nouveau total payé</FormLabel>
+                              <FormControl>
+                                  <Input type="text" value={`${newTotalPaid.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-green-600"/>
+                              </FormControl>
+                          </FormItem>
+                          <FormItem>
+                              <FormLabel>Montant restant</FormLabel>
+                              <FormControl>
+                                  <Input type="text" value={`${amountRemaining.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
+                              </FormControl>
+                          </FormItem>
+                      </div>
                 </div>
+
+                 <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Statut final</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger className="bg-muted">
+                                <SelectValue placeholder="Sélectionner un statut" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {paymentStatuses.map(status => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
 
                 <Button type="submit" disabled={loading || loadingPlayers} className="w-full !mt-8">
