@@ -1,6 +1,7 @@
 
 "use client";
 
+import { AddPaymentForm } from "@/components/payments/add-payment-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +30,7 @@ export default function AddPaymentPage() {
             <CardDescription>Remplissez les informations ci-dessous.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Le formulaire d'ajout de paiement sera implémenté ici.</p>
+            <AddPaymentForm />
         </CardContent>
       </Card>
     </div>
