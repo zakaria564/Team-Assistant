@@ -5,21 +5,29 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
-const events = [
-    { id: 1, type: "Match", team: "Seniors A", opponent: "FC Rive Droite", date: new Date("2024-05-25T15:00:00"), location: "Extérieur" },
-    { id: 2, type: "Match", team: "U17", opponent: "AS Monts d'Or", date: new Date("2024-05-25T10:30:00"), location: "Domicile" },
-    { id: 3, type: "Entraînement", team: "U15", date: new Date("2024-05-27T18:00:00"), location: "Stade Principal" },
-    { id: 4, type: "Match", team: "U15", opponent: "Olympique Ouest", date: new Date("2024-05-26T11:00:00"), location: "Domicile" },
-];
+interface Event {
+    id: string;
+    type: "Match" | "Entraînement";
+    team: string;
+    opponent?: string;
+    date: any; // Firestore timestamp
+    location: string;
+}
 
 export default function EventsPage() {
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [selectedEvents, setSelectedEvents] = useState<typeof events>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set initial date to today on client-side to avoid hydration errors
@@ -27,13 +35,41 @@ export default function EventsPage() {
   }, []);
 
   useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, "events"), orderBy("date", "asc"));
+        const querySnapshot = await getDocs(q);
+        const eventsData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            date: doc.data().date.toDate() // Convert Firestore Timestamp to JS Date
+        } as Event));
+        setAllEvents(eventsData);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur de chargement",
+          description: "Impossible de charger les événements depuis la base de données.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [toast]);
+
+  useEffect(() => {
     if (date) {
-      const filteredEvents = events.filter((event) => isSameDay(event.date, date)).sort((a, b) => a.date.getTime() - b.date.getTime());
+      const filteredEvents = allEvents
+        .filter((event) => isSameDay(event.date, date))
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
       setSelectedEvents(filteredEvents);
     } else {
       setSelectedEvents([]);
     }
-  }, [date]);
+  }, [date, allEvents]);
 
   return (
     <div className="space-y-6">
@@ -74,7 +110,11 @@ export default function EventsPage() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {date && selectedEvents.length > 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center py-10">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => (
                          <Card key={event.id} className="bg-muted/30">
                             <CardHeader>

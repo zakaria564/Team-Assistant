@@ -19,6 +19,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const formSchema = z.object({
   type: z.enum(["Match", "Entraînement"], { required_error: "Le type d'événement est requis." }),
@@ -58,18 +60,36 @@ export function AddEventForm() {
 
     const eventType = form.watch("type");
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
-        console.log("Formulaire soumis", values);
-        // TODO: Implémenter la logique de sauvegarde (ex: vers Firebase)
-        toast({
-            title: "Événement ajouté (simulation)",
-            description: `L'événement ${values.type} pour l'équipe ${values.team} a été planifié.`
-        });
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            const [hours, minutes] = values.time.split(':').map(Number);
+            const combinedDate = new Date(values.date);
+            combinedDate.setHours(hours, minutes);
+
+            await addDoc(collection(db, "events"), {
+                type: values.type,
+                team: values.team,
+                date: combinedDate,
+                location: values.location,
+                opponent: values.opponent || null,
+            });
+
+            toast({
+                title: "Événement ajouté !",
+                description: `L'événement a été planifié avec succès.`
+            });
             router.push("/dashboard/events");
-        }, 1000);
+        } catch (error) {
+            console.error("Error adding event:", error);
+             toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible d'ajouter l'événement."
+            });
+        } finally {
+            setLoading(false);
+        }
     }
     
     return (
@@ -83,7 +103,12 @@ export function AddEventForm() {
                             <FormLabel>Type d'événement</FormLabel>
                             <FormControl>
                                 <RadioGroup
-                                onValueChange={field.onChange}
+                                onValueChange={(value) => {
+                                    field.onChange(value);
+                                    if (value === "Entraînement") {
+                                        form.setValue("opponent", "");
+                                    }
+                                }}
                                 defaultValue={field.value}
                                 className="flex space-x-4"
                                 >
