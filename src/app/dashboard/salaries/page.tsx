@@ -32,15 +32,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-interface Player {
+interface Salary {
   id: string;
-  name: string;
-}
-
-interface Payment {
-  id: string;
-  playerId: string;
-  playerName?: string;
+  coachId: string;
+  coachName?: string;
   totalAmount: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
@@ -51,26 +46,26 @@ interface Payment {
 }
 
 
-export default function PaymentsPage() {
-  const [payments, setPayments] = useState<Payment[]>([]);
+export default function SalariesPage() {
+  const [salaries, setSalaries] = useState<Salary[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
 
   useEffect(() => {
-    const fetchPayments = async () => {
+    const fetchSalaries = async () => {
       setLoading(true);
       try {
-        const playersQuery = query(collection(db, "players"));
-        const playersSnapshot = await getDocs(playersQuery);
-        const playersMap = new Map<string, string>();
-        playersSnapshot.forEach(doc => {
-            playersMap.set(doc.id, doc.data().name);
+        const coachesQuery = query(collection(db, "coaches"));
+        const coachesSnapshot = await getDocs(coachesQuery);
+        const coachesMap = new Map<string, string>();
+        coachesSnapshot.forEach(doc => {
+            coachesMap.set(doc.id, doc.data().name);
         });
 
-        const paymentsQuery = query(collection(db, "payments"), orderBy("createdAt", "desc"));
-        const paymentsSnapshot = await getDocs(paymentsQuery);
-        const paymentsData = paymentsSnapshot.docs.map(doc => {
+        const salariesQuery = query(collection(db, "salaries"), orderBy("createdAt", "desc"));
+        const salariesSnapshot = await getDocs(salariesQuery);
+        const salariesData = salariesSnapshot.docs.map(doc => {
             const data = doc.data() as any;
             
             const transactions = data.transactions || [];
@@ -81,54 +76,54 @@ export default function PaymentsPage() {
             return { 
                 id: doc.id, 
                 ...data,
-                playerName: playersMap.get(data.playerId) || "Joueur inconnu",
+                coachName: coachesMap.get(data.coachId) || "Entraîneur inconnu",
                 amountPaid,
                 amountRemaining,
                 totalAmount,
                 transactions
-            } as Payment;
+            } as Salary;
         });
 
-        setPayments(paymentsData);
+        setSalaries(salariesData);
 
       } catch (error: any) {
-        console.error("Error fetching payments: ", error);
+        console.error("Error fetching salaries: ", error);
         toast({
           variant: "destructive",
           title: "Erreur de chargement",
-          description: "Impossible de charger les paiements. Vérifiez vos règles de sécurité Firestore.",
+          description: "Impossible de charger les salaires. Vérifiez vos règles de sécurité Firestore.",
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPayments();
+    fetchSalaries();
   }, [toast]);
 
-  const handleDeletePayment = async () => {
-    if (!paymentToDelete) return;
+  const handleDeleteSalary = async () => {
+    if (!salaryToDelete) return;
 
     try {
-      await deleteDoc(doc(db, "payments", paymentToDelete.id));
-      setPayments(payments.filter(p => p.id !== paymentToDelete.id));
+      await deleteDoc(doc(db, "salaries", salaryToDelete.id));
+      setSalaries(salaries.filter(p => p.id !== salaryToDelete.id));
       toast({
-        title: "Paiement supprimé",
-        description: `Le paiement a été supprimé avec succès.`,
+        title: "Salaire supprimé",
+        description: `Le salaire a été supprimé avec succès.`,
       });
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de supprimer le paiement.",
+        description: "Impossible de supprimer le salaire.",
       });
-      console.error("Error deleting payment: ", error);
+      console.error("Error deleting salary: ", error);
     } finally {
-      setPaymentToDelete(null);
+      setSalaryToDelete(null);
     }
   };
 
-  const getBadgeVariant = (status: Payment['status']) => {
+  const getBadgeVariant = (status: Salary['status']) => {
     switch (status) {
         case 'Payé': return 'default';
         case 'Partiel': return 'secondary';
@@ -137,7 +132,7 @@ export default function PaymentsPage() {
     }
   }
 
-  const getBadgeClass = (status: Payment['status']) => {
+  const getBadgeClass = (status: Salary['status']) => {
      switch (status) {
         case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
         case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
@@ -152,8 +147,8 @@ export default function PaymentsPage() {
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-              <h1 className="text-3xl font-bold tracking-tight">Paiements des Joueurs</h1>
-              <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
+              <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
+              <p className="text-muted-foreground">Suivez et gérez les salaires des entraîneurs.</p>
           </div>
           <div className="flex gap-2">
               <Button variant="outline">
@@ -161,16 +156,16 @@ export default function PaymentsPage() {
                   Exporter
               </Button>
               <Button asChild>
-                <Link href="/dashboard/payments/add">
+                <Link href="/dashboard/salaries/add">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter un paiement
+                  Ajouter un salaire
                 </Link>
               </Button>
           </div>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Suivi des paiements</CardTitle>
+            <CardTitle>Suivi des salaires</CardTitle>
             <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -182,7 +177,7 @@ export default function PaymentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Joueur</TableHead>
+                    <TableHead>Entraîneur</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead className="text-right">Montant Payé</TableHead>
                     <TableHead className="text-right">Montant Restant</TableHead>
@@ -193,21 +188,21 @@ export default function PaymentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.length > 0 ? (
-                      payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.playerName}</TableCell>
-                        <TableCell className="text-muted-foreground">{payment.description}</TableCell>
-                        <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
+                  {salaries.length > 0 ? (
+                      salaries.map((salary) => (
+                      <TableRow key={salary.id}>
+                        <TableCell className="font-medium">{salary.coachName}</TableCell>
+                        <TableCell className="text-muted-foreground">{salary.description}</TableCell>
+                        <TableCell className="text-right font-semibold text-green-600">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-muted-foreground">{format(new Date(salary.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
                         <TableCell>
                           <Badge 
-                              variant={getBadgeVariant(payment.status)}
-                              className={getBadgeClass(payment.status)}
+                              variant={getBadgeVariant(salary.status)}
+                              className={getBadgeClass(salary.status)}
                           >
-                              {payment.status}
+                              {salary.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -220,13 +215,13 @@ export default function PaymentsPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/payments/${payment.id}`}>
+                                <Link href={`/dashboard/salaries/${salary.id}`}>
                                   <DropdownMenuItem className="cursor-pointer">
                                       <FileText className="mr-2 h-4 w-4" />
                                       Voir les détails
                                   </DropdownMenuItem>
                                 </Link>
-                                <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                <Link href={`/dashboard/salaries/${salary.id}/edit`}>
                                   <DropdownMenuItem className="cursor-pointer">
                                       <Pencil className="mr-2 h-4 w-4" />
                                       Modifier
@@ -235,7 +230,7 @@ export default function PaymentsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
                                   className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                  onClick={() => setPaymentToDelete(payment)}
+                                  onClick={() => setSalaryToDelete(salary)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Supprimer
@@ -248,7 +243,7 @@ export default function PaymentsPage() {
                   ) : (
                     <TableRow>
                         <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
-                          Aucun paiement trouvé.
+                          Aucun salaire trouvé.
                         </TableCell>
                       </TableRow>
                   )}
@@ -259,18 +254,18 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
-       <AlertDialog open={!!paymentToDelete} onOpenChange={(open) => !open && setPaymentToDelete(null)}>
+       <AlertDialog open={!!salaryToDelete} onOpenChange={(open) => !open && setSalaryToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le paiement pour "{paymentToDelete?.description}" sera définitivement supprimé.
+              Cette action est irréversible. Le salaire pour "{salaryToDelete?.description}" sera définitivement supprimé.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setSalaryToDelete(null)}>Annuler</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleDeletePayment}
+              onClick={handleDeleteSalary}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               Supprimer
