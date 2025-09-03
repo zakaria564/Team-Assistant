@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { format } from "date-fns";
 
 interface Player {
   id: string;
@@ -32,11 +34,9 @@ const formSchema = z.object({
   totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
   description: z.string().min(3, "La description est requise."),
   
-  // Pour une nouvelle transaction
-  newTransactionAmount: z.coerce.number().min(0, "Le montant du versement doit être positif."),
-  newTransactionMethod: z.string().min(1, "La méthode du versement est requise."),
+  newTransactionAmount: z.coerce.number().optional(),
+  newTransactionMethod: z.string().optional(),
 
-  // Ce champ n'est plus directement dans le formulaire mais sera calculé
   status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
 });
 
@@ -67,7 +67,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const isEditMode = !!payment;
     
     const amountAlreadyPaid = isEditMode 
-      ? payment.transactions.reduce((acc, t) => acc + t.amount, 0)
+      ? (payment.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -95,7 +95,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const amountRemaining = watchTotalAmount - newTotalPaid;
 
     useEffect(() => {
-        // Met à jour automatiquement le statut en fonction des montants
         if (watchTotalAmount > 0) {
             if (amountRemaining <= 0) {
                 form.setValue("status", "Payé");
@@ -133,54 +132,49 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
 
-        const newTransaction = {
-          amount: values.newTransactionAmount,
-          date: new Date(),
-          method: values.newTransactionMethod,
-        };
+        const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
+            ? {
+                amount: values.newTransactionAmount,
+                date: new Date(),
+                method: values.newTransactionMethod,
+              }
+            : null;
 
         try {
             if (isEditMode) {
-                // On ajoute seulement une nouvelle transaction si un montant a été saisi
-                if(newTransaction.amount > 0) {
-                  const paymentDocRef = doc(db, "payments", payment.id);
-                  await updateDoc(paymentDocRef, {
-                      totalAmount: values.totalAmount,
-                      status: values.status,
-                      description: values.description,
-                      transactions: arrayUnion(newTransaction)
-                  });
-                   toast({
-                      title: "Paiement mis à jour !",
-                      description: `Un versement de ${newTransaction.amount.toFixed(2)} MAD a été ajouté.`,
-                  });
-                } else {
-                  // Mettre à jour les autres infos sans ajouter de transaction
-                   const paymentDocRef = doc(db, "payments", payment.id);
-                    await updateDoc(paymentDocRef, {
-                        totalAmount: values.totalAmount,
-                        status: values.status,
-                        description: values.description,
-                    });
-                    toast({
-                      title: "Paiement modifié !",
-                      description: `Les informations du paiement ont été mises à jour.`,
-                  });
+                const paymentDocRef = doc(db, "payments", payment.id);
+                const updateData: any = {
+                    totalAmount: values.totalAmount,
+                    status: values.status,
+                    description: values.description,
+                };
+                if(newTransactionData){
+                    updateData.transactions = arrayUnion(newTransactionData);
                 }
+                
+                await updateDoc(paymentDocRef, updateData);
+
+                toast({
+                    title: "Paiement mis à jour !",
+                    description: newTransactionData 
+                      ? `Un versement de ${newTransactionData.amount.toFixed(2)} MAD a été ajouté.`
+                      : 'Les informations du paiement ont été mises à jour.',
+                });
+
             } else { // Mode Création
-                 if (values.newTransactionAmount > values.totalAmount) {
+                 if (values.newTransactionAmount && values.newTransactionAmount > values.totalAmount) {
                     form.setError("newTransactionAmount", { message: "L'avance ne peut pas dépasser le montant total."});
                     setLoading(false);
                     return;
                  }
-                 const initialTransaction = values.newTransactionAmount > 0 ? [newTransaction] : [];
+                 const initialTransactions = newTransactionData ? [newTransactionData] : [];
                  await addDoc(collection(db, "payments"), {
                     playerId: values.playerId,
                     totalAmount: values.totalAmount,
                     description: values.description,
                     status: values.status,
                     createdAt: new Date(),
-                    transactions: initialTransaction,
+                    transactions: initialTransactions,
                 });
                 toast({
                     title: "Paiement ajouté !",
@@ -264,7 +258,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <CardTitle className="text-lg">Historique des transactions</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
-                      {payment.transactions.length > 0 ? (
+                      {(payment.transactions || []).length > 0 ? (
                         <ul className="space-y-2">
                            {payment.transactions.map((t, i) => (
                               <li key={i} className="flex justify-between items-center">
@@ -286,7 +280,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 )}
                
                 <div className="space-y-4 rounded-md border p-4">
-                  <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (avance)'}</h4>
+                  <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                           control={form.control}
