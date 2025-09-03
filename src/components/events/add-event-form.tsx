@@ -1,0 +1,232 @@
+
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const formSchema = z.object({
+  type: z.enum(["Match", "Entraînement"], { required_error: "Le type d'événement est requis." }),
+  team: z.string({ required_error: "L'équipe est requise." }),
+  date: z.date({ required_error: "La date est requise."}),
+  time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
+  location: z.string().min(2, "Le lieu est requis."),
+  opponent: z.string().optional(),
+}).refine(data => {
+    if (data.type === "Match") {
+        return !!data.opponent && data.opponent.length > 1;
+    }
+    return true;
+}, {
+    message: "L'adversaire est requis pour un match.",
+    path: ["opponent"],
+});
+
+const playerCategories = [
+    "Seniors", "U19", "U18", "U17", "U16", "U15", "U14", "U13", "U12", "U11", "U10", "U9", "U8", "U7", "U6", "U5", "Vétérans", "École de foot"
+];
+
+export function AddEventForm() {
+    const { toast } = useToast();
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            type: "Match",
+            team: "",
+            time: "15:00",
+            location: "",
+        }
+    });
+
+    const eventType = form.watch("type");
+
+    const onSubmit = (values: z.infer<typeof formSchema>) => {
+        setLoading(true);
+        console.log("Formulaire soumis", values);
+        // TODO: Implémenter la logique de sauvegarde (ex: vers Firebase)
+        toast({
+            title: "Événement ajouté (simulation)",
+            description: `L'événement ${values.type} pour l'équipe ${values.team} a été planifié.`
+        });
+        setTimeout(() => {
+            setLoading(false);
+            router.push("/dashboard/events");
+        }, 1000);
+    }
+    
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+                <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                        <FormItem className="space-y-3">
+                            <FormLabel>Type d'événement</FormLabel>
+                            <FormControl>
+                                <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="flex space-x-4"
+                                >
+                                <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                    <RadioGroupItem value="Match" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">Match</FormLabel>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                    <RadioGroupItem value="Entraînement" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">Entraînement</FormLabel>
+                                </FormItem>
+                                </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="team"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Équipe</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner une équipe/catégorie" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {playerCategories.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                {eventType === "Match" && (
+                     <FormField
+                        control={form.control}
+                        name="opponent"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Adversaire</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Nom de l'équipe adverse" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                     <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                            <FormLabel>Date</FormLabel>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                    >
+                                    {field.value ? (
+                                        format(field.value, "PPP", { locale: fr })
+                                    ) : (
+                                        <span>Choisir une date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) =>
+                                        date < new Date(new Date().setHours(0,0,0,0))
+                                    }
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="time"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Heure</FormLabel>
+                            <FormControl>
+                                <Input type="time" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                 <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Lieu</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ex: Domicile, Stade Municipal, Extérieur..." {...field} />
+                        </FormControl>
+                         <FormDescription>
+                            Indiquez si le match est à domicile, à l'extérieur ou le nom du stade.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Ajout en cours...
+                        </>
+                    ) : "Ajouter l'événement"}
+                </Button>
+            </form>
+        </Form>
+    );
+}

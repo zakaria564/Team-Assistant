@@ -1,6 +1,7 @@
 
 "use client";
 
+import { AddEventForm } from "@/components/events/add-event-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +30,7 @@ export default function AddEventPage() {
             <CardDescription>Remplissez les informations ci-dessous.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Le formulaire d'ajout d'événement sera implémenté ici.</p>
+          <AddEventForm />
         </CardContent>
       </Card>
     </div>
