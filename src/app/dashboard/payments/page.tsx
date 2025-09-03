@@ -113,7 +113,7 @@ export default function PaymentsPage() {
                   <TableHead>Joueur</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Montant</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Date et Heure</TableHead>
                   <TableHead>Méthode</TableHead>
                   <TableHead>Statut</TableHead>
                 </TableRow>
@@ -125,7 +125,7 @@ export default function PaymentsPage() {
                       <TableCell className="font-medium">{payment.playerName}</TableCell>
                       <TableCell>{payment.description}</TableCell>
                       <TableCell>{payment.amount.toFixed(2)} MAD</TableCell>
-                      <TableCell>{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
                       <TableCell>{payment.method}</TableCell>
                       <TableCell>
                         <Badge 
