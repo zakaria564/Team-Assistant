@@ -141,9 +141,9 @@ export function AddPaymentForm() {
                         name="amount"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Montant (€)</FormLabel>
+                            <FormLabel>Montant (MAD)</FormLabel>
                             <FormControl>
-                                <Input type="number" step="0.01" placeholder="150" {...field} />
+                                <Input type="number" step="0.01" placeholder="1500" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

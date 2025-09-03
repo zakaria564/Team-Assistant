@@ -19,7 +19,7 @@ export default function Dashboard() {
         />
         <KpiCard 
           title="Revenus du Mois"
-          value="2,540€"
+          value="25,400 MAD"
           icon={DollarSign}
           description="+20.1% vs mois dernier"
         />

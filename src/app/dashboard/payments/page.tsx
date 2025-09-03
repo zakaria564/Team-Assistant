@@ -10,11 +10,11 @@ import Link from "next/link";
 
 export default function PaymentsPage() {
   const payments = [
-    { id: "PAY-001", player: "Léo Martin", category: "U12", amount: "150.00€", status: "Payé", date: "15/05/2024" },
-    { id: "PAY-002", player: "Emma Petit", category: "U15", amount: "150.00€", status: "En attente", date: "12/05/2024" },
-    { id: "PAY-003", player: "Gabriel Roy", category: "Seniors", amount: "200.00€", status: "Payé", date: "10/05/2024" },
-    { id: "PAY-004", player: "Chloé Girard", category: "U17", amount: "180.00€", status: "En retard", date: "01/05/2024" },
-    { id: "PAY-005", player: "Lucas Dubois", category: "U12", amount: "150.00€", status: "Payé", date: "28/04/2024" },
+    { id: "PAY-001", player: "Léo Martin", category: "U12", amount: "1500.00 MAD", status: "Payé", date: "15/05/2024" },
+    { id: "PAY-002", player: "Emma Petit", category: "U15", amount: "1500.00 MAD", status: "En attente", date: "12/05/2024" },
+    { id: "PAY-003", player: "Gabriel Roy", category: "Seniors", amount: "2000.00 MAD", status: "Payé", date: "10/05/2024" },
+    { id: "PAY-004", player: "Chloé Girard", category: "U17", amount: "1800.00 MAD", status: "En retard", date: "01/05/2024" },
+    { id: "PAY-005", player: "Lucas Dubois", category: "U12", amount: "1500.00 MAD", status: "Payé", date: "28/04/2024" },
   ];
 
   return (
