@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -22,14 +22,19 @@ interface Player {
 
 const formSchema = z.object({
   playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-  amount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant doit être supérieur à 0."),
-  status: z.enum(["Payé", "En attente", "En retard"], { required_error: "Le statut est requis." }),
+  totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
+  amountPaid: z.coerce.number({invalid_type_error: "Le montant payé est requis."}).min(0),
+  status: z.enum(["Payé", "Partiel", "En attente", "En retard"], { required_error: "Le statut est requis." }),
   method: z.string({ required_error: "La méthode est requise." }).min(1, "La méthode est requise."),
   description: z.string().min(3, "La description est requise."),
+}).refine(data => data.amountPaid <= data.totalAmount, {
+    message: "Le montant payé ne peut pas dépasser le montant total.",
+    path: ["amountPaid"],
 });
 
+
 const paymentMethods = ["Carte Bancaire", "Espèces", "Virement", "Chèque"];
-const paymentStatuses = ["Payé", "En attente", "En retard"];
+const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
 export function AddPaymentForm() {
     const { toast } = useToast();
@@ -65,17 +70,31 @@ export function AddPaymentForm() {
         defaultValues: {
             description: "Cotisation annuelle",
             playerId: "",
-            amount: 0,
-            status: undefined,
+            totalAmount: 1500,
+            amountPaid: 0,
+            status: "En attente",
             method: "",
         }
     });
+
+    const totalAmount = form.watch("totalAmount");
+    const amountPaid = form.watch("amountPaid");
+    const amountRemaining = totalAmount - amountPaid;
+
+    useEffect(() => {
+        if (amountRemaining <= 0 && totalAmount > 0) {
+            form.setValue("status", "Payé");
+        } else if (amountPaid > 0 && amountRemaining > 0) {
+            form.setValue("status", "Partiel");
+        }
+    }, [amountRemaining, amountPaid, totalAmount, form]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
         try {
              await addDoc(collection(db, "payments"), {
                 ...values,
+                amountRemaining: values.totalAmount - values.amountPaid,
                 createdAt: new Date(),
             });
 
@@ -98,7 +117,7 @@ export function AddPaymentForm() {
     
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                  <FormField
                     control={form.control}
                     name="playerId"
@@ -140,13 +159,13 @@ export function AddPaymentForm() {
                     )}
                 />
                
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <FormField
                         control={form.control}
-                        name="amount"
+                        name="totalAmount"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Montant (MAD)</FormLabel>
+                            <FormLabel>Montant total (MAD)</FormLabel>
                             <FormControl>
                                 <Input type="number" step="0.01" placeholder="1500" {...field} />
                             </FormControl>
@@ -154,6 +173,28 @@ export function AddPaymentForm() {
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="amountPaid"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Avance payée (MAD)</FormLabel>
+                            <FormControl>
+                                <Input type="number" step="0.01" placeholder="500" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormItem>
+                        <FormLabel>Montant restant (MAD)</FormLabel>
+                        <FormControl>
+                            <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted"/>
+                        </FormControl>
+                    </FormItem>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="method"
@@ -176,30 +217,29 @@ export function AddPaymentForm() {
                             </FormItem>
                         )}
                     />
+                     <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Statut</FormLabel>
+                             <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un statut" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {paymentStatuses.map(status => (
+                                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </div>
-
-                 <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Statut</FormLabel>
-                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner un statut" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {paymentStatuses.map(status => (
-                                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
 
 
                 <Button type="submit" disabled={loading || loadingPlayers} className="w-full !mt-8">

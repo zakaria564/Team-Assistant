@@ -21,9 +21,11 @@ interface Player {
 interface Payment {
   id: string;
   playerId: string;
-  playerName?: string; // Add playerName
-  amount: number;
-  status: 'Payé' | 'En attente' | 'En retard';
+  playerName?: string;
+  totalAmount: number;
+  amountPaid: number;
+  amountRemaining: number;
+  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
   description: string;
   method: string;
@@ -39,7 +41,6 @@ export default function PaymentsPage() {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        // Fetch all players to map their IDs to names
         const playersQuery = query(collection(db, "players"));
         const playersSnapshot = await getDocs(playersQuery);
         const playersMap = new Map<string, string>();
@@ -47,14 +48,18 @@ export default function PaymentsPage() {
             playersMap.set(doc.id, doc.data().name);
         });
 
-        // Fetch all payments
         const paymentsQuery = query(collection(db, "payments"), orderBy("createdAt", "desc"));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
             const data = doc.data() as Payment;
+            // Fallback for old data structure
+            const totalAmount = data.totalAmount ?? data.amountPaid; 
             return { 
                 id: doc.id, 
                 ...data,
+                totalAmount: totalAmount,
+                amountPaid: data.amountPaid ?? totalAmount,
+                amountRemaining: data.amountRemaining ?? 0,
                 playerName: playersMap.get(data.playerId) || "Joueur inconnu",
             } as Payment;
         });
@@ -75,6 +80,25 @@ export default function PaymentsPage() {
 
     fetchPayments();
   }, [toast]);
+
+  const getBadgeVariant = (status: Payment['status']) => {
+    switch (status) {
+        case 'Payé': return 'success';
+        case 'Partiel': return 'secondary';
+        case 'En retard': return 'destructive';
+        default: return 'outline';
+    }
+  }
+
+  const getBadgeClass = (status: Payment['status']) => {
+     switch (status) {
+        case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
+        default: return '';
+    }
+  }
 
   return (
     <div>
@@ -112,9 +136,10 @@ export default function PaymentsPage() {
                 <TableRow>
                   <TableHead>Joueur</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead>Montant</TableHead>
+                  <TableHead className="text-right">Montant Payé</TableHead>
+                  <TableHead className="text-right">Montant Restant</TableHead>
+                  <TableHead className="text-right">Montant Total</TableHead>
                   <TableHead>Date et Heure</TableHead>
-                  <TableHead>Méthode</TableHead>
                   <TableHead>Statut</TableHead>
                 </TableRow>
               </TableHeader>
@@ -123,19 +148,15 @@ export default function PaymentsPage() {
                     payments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">{payment.playerName}</TableCell>
-                      <TableCell>{payment.description}</TableCell>
-                      <TableCell>{payment.amount.toFixed(2)} MAD</TableCell>
-                      <TableCell>{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
-                      <TableCell>{payment.method}</TableCell>
+                      <TableCell className="text-muted-foreground">{payment.description}</TableCell>
+                      <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid.toFixed(2)} MAD</TableCell>
+                      <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining.toFixed(2)} MAD</TableCell>
+                      <TableCell className="text-right">{payment.totalAmount.toFixed(2)} MAD</TableCell>
+                      <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
                       <TableCell>
                         <Badge 
-                            variant={
-                                payment.status === 'Payé' ? 'default' : 
-                                payment.status === 'En retard' ? 'destructive' : 'secondary'
-                            }
-                            className={
-                                payment.status === 'Payé' ? 'bg-green-500/80 hover:bg-green-500 text-white' : ''
-                            }
+                            variant={getBadgeVariant(payment.status)}
+                            className={getBadgeClass(payment.status)}
                         >
                             {payment.status}
                         </Badge>
@@ -144,7 +165,7 @@ export default function PaymentsPage() {
                   ))
                 ) : (
                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         Aucun paiement trouvé.
                       </TableCell>
                     </TableRow>
