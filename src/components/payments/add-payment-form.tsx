@@ -89,39 +89,47 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         }
     });
 
-    const totalAmount = form.watch("totalAmount");
-    const amountPaid = form.watch("amountPaid");
-    const newPayment = form.watch("newPayment") || 0;
-    
-    // Calculs pour l'affichage et la logique
-    const currentAmountPaid = isEditMode ? (payment?.amountPaid || 0) : amountPaid;
-    const newTotalPaid = currentAmountPaid + newPayment;
-    const amountRemaining = totalAmount - newTotalPaid;
+    const watchTotalAmount = form.watch("totalAmount");
+    const watchAmountPaid = form.watch("amountPaid");
+    const watchNewPayment = form.watch("newPayment") || 0;
 
-     useEffect(() => {
-        if (isEditMode) {
-            form.setValue("amountPaid", newTotalPaid);
-        }
-    }, [newTotalPaid, form, isEditMode]);
+    // Calculs pour l'affichage et la logique
+    const initialAmountPaid = payment?.amountPaid || 0;
+    const newTotalPaid = initialAmountPaid + watchNewPayment;
+    const amountRemaining = watchTotalAmount - newTotalPaid;
 
     useEffect(() => {
-        if (totalAmount > 0) {
+      // Met à jour la valeur du champ de formulaire `amountPaid`
+      // Cela est surtout pour la validation Zod, la valeur affichée est séparée
+      form.setValue("amountPaid", newTotalPaid);
+    }, [newTotalPaid, form]);
+
+
+    useEffect(() => {
+        // Met à jour automatiquement le statut en fonction des montants
+        if (watchTotalAmount > 0) {
             if (amountRemaining <= 0) {
                 form.setValue("status", "Payé");
             } else if (newTotalPaid > 0 && amountRemaining > 0) {
                 form.setValue("status", "Partiel");
             } else if (newTotalPaid === 0) {
-                 form.setValue("status", "En attente");
+                form.setValue("status", "En attente");
             }
         }
-    }, [amountRemaining, newTotalPaid, totalAmount, form]);
+    }, [amountRemaining, newTotalPaid, watchTotalAmount, form]);
+
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
+        
+        // Utilise les valeurs calculées pour la sauvegarde en mode édition
+        const finalAmountPaid = isEditMode ? newTotalPaid : values.amountPaid;
+        const finalAmountRemaining = isEditMode ? amountRemaining : values.totalAmount - values.amountPaid;
+
         const dataToSave = {
             ...values,
-            amountPaid: isEditMode ? newTotalPaid : values.amountPaid, // On utilise le nouveau total calculé en mode édition
-            amountRemaining: isEditMode ? amountRemaining : values.totalAmount - values.amountPaid,
+            amountPaid: finalAmountPaid,
+            amountRemaining: finalAmountRemaining,
         };
         
         delete (dataToSave as any).newPayment; // On ne sauvegarde pas le champ temporaire
@@ -221,7 +229,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                              <FormItem>
                                 <FormLabel>Montant déjà payé</FormLabel>
                                 <FormControl>
-                                    <Input type="number" value={currentAmountPaid.toFixed(2)} readOnly className="bg-muted"/>
+                                    <Input type="number" value={initialAmountPaid.toFixed(2)} readOnly className="bg-muted"/>
                                 </FormControl>
                             </FormItem>
                              <FormField
@@ -351,4 +359,3 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
