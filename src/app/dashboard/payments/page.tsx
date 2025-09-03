@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -17,8 +17,19 @@ import {
   DropdownMenuTrigger, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel
+  DropdownMenuLabel,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Player {
   id: string;
@@ -43,6 +54,7 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -58,7 +70,7 @@ export default function PaymentsPage() {
         const paymentsQuery = query(collection(db, "payments"), orderBy("createdAt", "desc"));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
-            const data = doc.data() as any; // Use any to handle old data structure
+            const data = doc.data() as any;
             const amountPaid = data.amountPaid ?? data.amount ?? 0;
             const totalAmount = data.totalAmount ?? amountPaid;
             const amountRemaining = data.amountRemaining ?? (totalAmount - amountPaid);
@@ -90,6 +102,28 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [toast]);
 
+  const handleDeletePayment = async () => {
+    if (!paymentToDelete) return;
+
+    try {
+      await deleteDoc(doc(db, "payments", paymentToDelete.id));
+      setPayments(payments.filter(p => p.id !== paymentToDelete.id));
+      toast({
+        title: "Paiement supprimé",
+        description: `Le paiement a été supprimé avec succès.`,
+      });
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le paiement.",
+      });
+      console.error("Error deleting payment: ", error);
+    } finally {
+      setPaymentToDelete(null);
+    }
+  };
+
   const getBadgeVariant = (status: Payment['status']) => {
     switch (status) {
         case 'Payé': return 'default';
@@ -110,100 +144,136 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-            <h1 className="text-3xl font-bold tracking-tight">Paiements</h1>
-            <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
+    <>
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+              <h1 className="text-3xl font-bold tracking-tight">Paiements</h1>
+              <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
+          </div>
+          <div className="flex gap-2">
+              <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Exporter
+              </Button>
+              <Button asChild>
+                <Link href="/dashboard/payments/add">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter un paiement
+                </Link>
+              </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-            <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Exporter
-            </Button>
-            <Button asChild>
-              <Link href="/dashboard/payments/add">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Ajouter un paiement
-              </Link>
-            </Button>
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Suivi des paiements</CardTitle>
-          <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-             <div className="flex justify-center items-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Joueur</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Montant Payé</TableHead>
-                  <TableHead className="text-right">Montant Restant</TableHead>
-                  <TableHead className="text-right">Montant Total</TableHead>
-                  <TableHead>Date et Heure</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payments.length > 0 ? (
-                    payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-medium">{payment.playerName}</TableCell>
-                      <TableCell className="text-muted-foreground">{payment.description}</TableCell>
-                      <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid.toFixed(2)} MAD</TableCell>
-                      <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining.toFixed(2)} MAD</TableCell>
-                      <TableCell className="text-right">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                      <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
-                      <TableCell>
-                        <Badge 
-                            variant={getBadgeVariant(payment.status)}
-                            className={getBadgeClass(payment.status)}
-                        >
-                            {payment.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Ouvrir le menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                <DropdownMenuItem>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Modifier
+        <Card>
+          <CardHeader>
+            <CardTitle>Suivi des paiements</CardTitle>
+            <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Joueur</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Montant Payé</TableHead>
+                    <TableHead className="text-right">Montant Restant</TableHead>
+                    <TableHead className="text-right">Montant Total</TableHead>
+                    <TableHead>Date et Heure</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.length > 0 ? (
+                      payments.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="font-medium">{payment.playerName}</TableCell>
+                        <TableCell className="text-muted-foreground">{payment.description}</TableCell>
+                        <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right">{payment.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy HH:mm")}</TableCell>
+                        <TableCell>
+                          <Badge 
+                              variant={getBadgeVariant(payment.status)}
+                              className={getBadgeClass(payment.status)}
+                          >
+                              {payment.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Ouvrir le menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <Link href={`/dashboard/payments/${payment.id}`}>
+                                  <DropdownMenuItem className="cursor-pointer">
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      Voir les détails
+                                  </DropdownMenuItem>
+                                </Link>
+                                <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                  <DropdownMenuItem className="cursor-pointer">
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Modifier
+                                  </DropdownMenuItem>
+                                </Link>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                  onClick={() => setPaymentToDelete(payment)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Supprimer
                                 </DropdownMenuItem>
-                              </Link>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                   <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
-                        Aucun paiement trouvé.
-                      </TableCell>
-                    </TableRow>
-                )}
-              </TableBody>
-            </Table>
-           )}
-        </CardContent>
-      </Card>
-    </div>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
+                          Aucun paiement trouvé.
+                        </TableCell>
+                      </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+       <AlertDialog open={!!paymentToDelete} onOpenChange={(open) => !open && setPaymentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le paiement pour "{paymentToDelete?.description}" sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeletePayment}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
