@@ -21,10 +21,10 @@ interface Player {
 }
 
 const formSchema = z.object({
-  playerId: z.string({ required_error: "Le joueur est requis." }),
+  playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
   amount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant doit être supérieur à 0."),
   status: z.enum(["Payé", "En attente", "En retard"], { required_error: "Le statut est requis." }),
-  method: z.string({ required_error: "La méthode est requise." }),
+  method: z.string({ required_error: "La méthode est requise." }).min(1, "La méthode est requise."),
   description: z.string().min(3, "La description est requise."),
 });
 
@@ -63,6 +63,10 @@ export function AddPaymentForm() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             description: "Cotisation annuelle",
+            playerId: "",
+            amount: 0,
+            status: undefined,
+            method: "",
         }
     });
 
