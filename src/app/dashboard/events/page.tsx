@@ -9,7 +9,7 @@ import { PlusCircle, Clock, MapPin, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +18,7 @@ interface Event {
     type: "Match" | "Entraînement";
     team: string;
     opponent?: string;
-    date: any; // Firestore timestamp
+    date: Date;
     location: string;
 }
 
@@ -28,36 +28,39 @@ export default function EventsPage() {
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [calendarKey, setCalendarKey] = useState(0);
 
   useEffect(() => {
     // Set initial date to today on client-side to avoid hydration errors
-    setDate(new Date());
-  }, []);
+    if(!date) {
+        setDate(new Date());
+    }
+  }, [date]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const q = query(collection(db, "events"), orderBy("date", "asc"));
-        const querySnapshot = await getDocs(q);
-        const eventsData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            date: doc.data().date.toDate() // Convert Firestore Timestamp to JS Date
-        } as Event));
-        setAllEvents(eventsData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de chargement",
-          description: "Impossible de charger les événements depuis la base de données.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
+    setLoading(true);
+    const q = query(collection(db, "events"), orderBy("date", "asc"));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const eventsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date.toDate()
+      } as Event));
+      setAllEvents(eventsData);
+      setCalendarKey(prevKey => prevKey + 1); // Force re-render of calendar
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching events:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Impossible de charger les événements depuis la base de données.",
+      });
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [toast]);
 
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function EventsPage() {
         <Card>
           <CardContent className="p-2">
             <Calendar
+              key={calendarKey}
               mode="single"
               selected={date}
               onSelect={setDate}
