@@ -51,15 +51,17 @@ export default function PaymentsPage() {
         const paymentsQuery = query(collection(db, "payments"), orderBy("createdAt", "desc"));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
-            const data = doc.data() as Payment;
-            // Fallback for old data structure
-            const totalAmount = data.totalAmount ?? data.amountPaid; 
+            const data = doc.data() as any; // Use any to handle old data structure
+            const amountPaid = data.amountPaid ?? data.amount ?? 0;
+            const totalAmount = data.totalAmount ?? amountPaid;
+            const amountRemaining = data.amountRemaining ?? (totalAmount - amountPaid);
+            
             return { 
                 id: doc.id, 
                 ...data,
                 totalAmount: totalAmount,
-                amountPaid: data.amountPaid ?? totalAmount,
-                amountRemaining: data.amountRemaining ?? 0,
+                amountPaid: amountPaid,
+                amountRemaining: amountRemaining,
                 playerName: playersMap.get(data.playerId) || "Joueur inconnu",
             } as Payment;
         });
@@ -83,7 +85,7 @@ export default function PaymentsPage() {
 
   const getBadgeVariant = (status: Payment['status']) => {
     switch (status) {
-        case 'Payé': return 'success';
+        case 'Payé': return 'default';
         case 'Partiel': return 'secondary';
         case 'En retard': return 'destructive';
         default: return 'outline';
