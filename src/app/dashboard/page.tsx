@@ -3,7 +3,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, DollarSign, CalendarClock, Activity, ArrowUpRight } from "lucide-react";
+import { Users, DollarSign, Activity, ArrowUpRight } from "lucide-react";
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 
@@ -22,12 +22,6 @@ export default function Dashboard() {
           value="2,540€"
           icon={DollarSign}
           description="+20.1% vs mois dernier"
-        />
-        <KpiCard 
-          title="Prochain Entraînement"
-          value="Demain, 18:00"
-          icon={CalendarClock}
-          description="Catégorie U15"
         />
         <KpiCard 
           title="Taux de Présence"
