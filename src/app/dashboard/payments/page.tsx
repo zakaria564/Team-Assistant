@@ -1,8 +1,12 @@
+
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function PaymentsPage() {
   const payments = [
@@ -25,9 +29,11 @@ export default function PaymentsPage() {
                 <Download className="mr-2 h-4 w-4" />
                 Exporter
             </Button>
-            <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Ajouter un paiement
+            <Button asChild>
+              <Link href="/dashboard/payments/add">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Ajouter un paiement
+              </Link>
             </Button>
         </div>
       </div>
