@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 export default function Dashboard() {
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
         <KpiCard 
           title="Total Joueurs"
           value="125"
@@ -22,12 +22,6 @@ export default function Dashboard() {
           value="2,540€"
           icon={DollarSign}
           description="+20.1% vs mois dernier"
-        />
-        <KpiCard 
-          title="Taux de Présence"
-          value="92.5%"
-          icon={Activity}
-          description="Moyenne sur tous les entraînements"
         />
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
