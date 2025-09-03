@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, query, addDoc } from "firebase/firestore";
+import { collection, getDocs, query, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface Player {
@@ -32,16 +32,25 @@ const formSchema = z.object({
     path: ["amountPaid"],
 });
 
+interface PaymentData extends z.infer<typeof formSchema> {
+    id: string;
+}
+
+interface AddPaymentFormProps {
+    payment?: PaymentData;
+}
+
 
 const paymentMethods = ["Carte Bancaire", "Espèces", "Virement", "Chèque"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
-export function AddPaymentForm() {
+export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
     const [loadingPlayers, setLoadingPlayers] = useState(true);
     const router = useRouter();
+    const isEditMode = !!payment;
 
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -67,7 +76,7 @@ export function AddPaymentForm() {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
+        defaultValues: isEditMode ? payment : {
             description: "Cotisation annuelle",
             playerId: "",
             totalAmount: 1500,
@@ -82,32 +91,48 @@ export function AddPaymentForm() {
     const amountRemaining = totalAmount - amountPaid;
 
     useEffect(() => {
-        if (amountRemaining <= 0 && totalAmount > 0) {
-            form.setValue("status", "Payé");
-        } else if (amountPaid > 0 && amountRemaining > 0) {
-            form.setValue("status", "Partiel");
+        if (totalAmount > 0) {
+            if (amountRemaining <= 0) {
+                form.setValue("status", "Payé");
+            } else if (amountPaid > 0 && amountRemaining > 0) {
+                form.setValue("status", "Partiel");
+            } else if (amountPaid === 0) {
+                 form.setValue("status", "En attente");
+            }
         }
     }, [amountRemaining, amountPaid, totalAmount, form]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
-        try {
-             await addDoc(collection(db, "payments"), {
-                ...values,
-                amountRemaining: values.totalAmount - values.amountPaid,
-                createdAt: new Date(),
-            });
+        const dataToSave = {
+            ...values,
+            amountRemaining: values.totalAmount - values.amountPaid,
+        };
 
-            toast({
-                title: "Paiement ajouté !",
-                description: `Le paiement a été enregistré avec succès.`
-            });
+        try {
+            if (isEditMode) {
+                const paymentDocRef = doc(db, "payments", payment.id);
+                await updateDoc(paymentDocRef, dataToSave);
+                toast({
+                    title: "Paiement modifié !",
+                    description: `Les informations du paiement ont été mises à jour.`,
+                });
+            } else {
+                 await addDoc(collection(db, "payments"), {
+                    ...dataToSave,
+                    createdAt: new Date(),
+                });
+                toast({
+                    title: "Paiement ajouté !",
+                    description: `Le paiement a été enregistré avec succès.`
+                });
+            }
             router.push("/dashboard/payments");
         } catch (e) {
              toast({
                 variant: "destructive",
                 title: "Erreur",
-                description: "Une erreur est survenue lors de l'ajout du paiement.",
+                description: "Une erreur est survenue lors de l'enregistrement du paiement.",
             });
             console.error(e);
         } finally {
@@ -124,7 +149,7 @@ export function AddPaymentForm() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Joueur</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingPlayers}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder={loadingPlayers ? "Chargement des joueurs..." : "Sélectionner un joueur"} />
@@ -246,9 +271,9 @@ export function AddPaymentForm() {
                     {loading ? (
                         <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Ajout en cours...
+                        Enregistrement...
                         </>
-                    ) : "Ajouter le paiement"}
+                    ) : isEditMode ? "Enregistrer les modifications" : "Ajouter le paiement"}
                 </Button>
             </form>
         </Form>
