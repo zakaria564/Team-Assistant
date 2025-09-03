@@ -78,13 +78,14 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: isEditMode ? payment : {
+        defaultValues: isEditMode ? { ...payment, newPayment: 0 } : {
             description: "Cotisation annuelle",
             playerId: "",
             totalAmount: 1500,
             amountPaid: 0,
             status: "En attente",
             method: "",
+            newPayment: 0,
         }
     });
 
@@ -284,7 +285,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                          <FormItem>
                             <FormLabel>Montant restant (MAD)</FormLabel>
                             <FormControl>
-                                <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted"/>
+                                <Input type="number" value={(form.watch('totalAmount') - form.watch('amountPaid')).toFixed(2)} readOnly className="bg-muted"/>
                             </FormControl>
                         </FormItem>
                     </div>
@@ -350,3 +351,4 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
