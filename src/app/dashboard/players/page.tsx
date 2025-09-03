@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc } from "firebase/firestore";
@@ -28,7 +28,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 interface Player {
   id: string;
@@ -49,6 +52,8 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchCategory, setSearchCategory] = useState("name");
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -72,6 +77,16 @@ export default function PlayersPage() {
 
     fetchPlayers();
   }, [toast]);
+  
+  const filteredPlayers = useMemo(() => {
+    if (!searchTerm) return players;
+
+    return players.filter(player => {
+        const valueToSearch = player[searchCategory as keyof Player]?.toString().toLowerCase() || '';
+        return valueToSearch.includes(searchTerm.toLowerCase());
+    });
+  }, [players, searchTerm, searchCategory]);
+
 
   const handleDeletePlayer = async () => {
     if (!playerToDelete) return;
@@ -110,6 +125,28 @@ export default function PlayersPage() {
             </Link>
           </Button>
         </div>
+
+        <div className="mb-4 flex items-center gap-4">
+            <div className="relative w-full max-w-sm">
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder="Rechercher..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <Select value={searchCategory} onValueChange={setSearchCategory}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Critère" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="name">Nom</SelectItem>
+                    <SelectItem value="category">Catégorie</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Liste des joueurs</CardTitle>
@@ -136,8 +173,8 @@ export default function PlayersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.length > 0 ? (
-                    players.map((player) => (
+                  {filteredPlayers.length > 0 ? (
+                    filteredPlayers.map((player) => (
                       <TableRow key={player.id}>
                         <TableCell>
                           <Avatar>
@@ -183,8 +220,8 @@ export default function PlayersPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-muted-foreground">
-                        Aucun joueur trouvé. Commencez par en ajouter un !
+                      <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
+                        {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
                       </TableCell>
                     </TableRow>
                   )}
