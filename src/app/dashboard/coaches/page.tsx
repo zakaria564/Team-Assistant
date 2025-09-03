@@ -56,10 +56,16 @@ export default function CoachesPage() {
   
   const filteredCoaches = useMemo(() => {
     if (!searchTerm) return coaches;
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return coaches.filter(coach => {
-        const valueToSearch = coach[searchCategory as keyof Coach]?.toString().toLowerCase() || '';
-        return valueToSearch.includes(searchTerm.toLowerCase());
+        let valueToSearch = '';
+        if (searchCategory === 'name') {
+            valueToSearch = coach.name;
+        } else if (searchCategory === 'category') {
+            valueToSearch = coach.category;
+        }
+        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [coaches, searchTerm, searchCategory]);
 

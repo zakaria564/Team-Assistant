@@ -108,10 +108,16 @@ export default function SalariesPage() {
 
   const filteredSalaries = useMemo(() => {
     if (!searchTerm) return salaries;
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return salaries.filter(salary => {
-        const valueToSearch = salary[searchCategory as keyof Salary]?.toString().toLowerCase() || '';
-        return valueToSearch.includes(searchTerm.toLowerCase());
+        let valueToSearch = '';
+        if (searchCategory === 'coachName') {
+            valueToSearch = salary.coachName || '';
+        } else if (searchCategory === 'status') {
+            valueToSearch = salary.status;
+        }
+        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [salaries, searchTerm, searchCategory]);
 

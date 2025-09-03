@@ -80,10 +80,16 @@ export default function PlayersPage() {
   
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return players.filter(player => {
-        const valueToSearch = player[searchCategory as keyof Player]?.toString().toLowerCase() || '';
-        return valueToSearch.includes(searchTerm.toLowerCase());
+      let valueToSearch = '';
+      if (searchCategory === 'name') {
+        valueToSearch = player.name;
+      } else if (searchCategory === 'category') {
+        valueToSearch = player.category;
+      }
+      return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [players, searchTerm, searchCategory]);
 

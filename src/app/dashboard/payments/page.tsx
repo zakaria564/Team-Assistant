@@ -112,10 +112,16 @@ export default function PaymentsPage() {
 
   const filteredPayments = useMemo(() => {
     if (!searchTerm) return payments;
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return payments.filter(payment => {
-        const valueToSearch = payment[searchCategory as keyof Payment]?.toString().toLowerCase() || '';
-        return valueToSearch.includes(searchTerm.toLowerCase());
+        let valueToSearch = '';
+        if (searchCategory === 'playerName') {
+            valueToSearch = payment.playerName || '';
+        } else if (searchCategory === 'status') {
+            valueToSearch = payment.status;
+        }
+        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [payments, searchTerm, searchCategory]);
 
