@@ -24,8 +24,8 @@ export default function Dashboard() {
           description="+20.1% vs mois dernier"
         />
       </div>
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
+        <Card>
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
               <CardTitle>Événements à venir</CardTitle>
@@ -93,34 +93,6 @@ export default function Dashboard() {
                 </TableRow>
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Activité Récente</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="flex items-center gap-4">
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Nouveau joueur ajouté</p>
-                <p className="text-sm text-muted-foreground">Léo Martin a rejoint les U12.</p>
-              </div>
-              <div className="ml-auto text-sm text-muted-foreground">Il y a 2h</div>
-            </div>
-             <div className="flex items-center gap-4">
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Paiement reçu</p>
-                <p className="text-sm text-muted-foreground">Famille Dupont - Inscription annuelle.</p>
-              </div>
-              <div className="ml-auto text-sm text-muted-foreground">Hier</div>
-            </div>
-             <div className="flex items-center gap-4">
-              <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Résultat de match</p>
-                <p className="text-sm text-muted-foreground">Victoire des Seniors A (3-1).</p>
-              </div>
-              <div className="ml-auto text-sm text-muted-foreground">Il y a 2 jours</div>
-            </div>
           </CardContent>
         </Card>
       </div>
