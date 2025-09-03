@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Separator } from "../ui/separator";
 
 interface Player {
   id: string;
@@ -27,6 +28,7 @@ const formSchema = z.object({
   status: z.enum(["Payé", "Partiel", "En attente", "En retard"], { required_error: "Le statut est requis." }),
   method: z.string({ required_error: "La méthode est requise." }).min(1, "La méthode est requise."),
   description: z.string().min(3, "La description est requise."),
+  newPayment: z.coerce.number().optional(), // Nouveau champ pour le versement
 }).refine(data => data.amountPaid <= data.totalAmount, {
     message: "Le montant payé ne peut pas dépasser le montant total.",
     path: ["amountPaid"],
@@ -88,26 +90,40 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const totalAmount = form.watch("totalAmount");
     const amountPaid = form.watch("amountPaid");
-    const amountRemaining = totalAmount - amountPaid;
+    const newPayment = form.watch("newPayment") || 0;
+    
+    // Calculs pour l'affichage et la logique
+    const currentAmountPaid = isEditMode ? (payment?.amountPaid || 0) : amountPaid;
+    const newTotalPaid = currentAmountPaid + newPayment;
+    const amountRemaining = totalAmount - newTotalPaid;
+
+     useEffect(() => {
+        if (isEditMode) {
+            form.setValue("amountPaid", newTotalPaid);
+        }
+    }, [newTotalPaid, form, isEditMode]);
 
     useEffect(() => {
         if (totalAmount > 0) {
             if (amountRemaining <= 0) {
                 form.setValue("status", "Payé");
-            } else if (amountPaid > 0 && amountRemaining > 0) {
+            } else if (newTotalPaid > 0 && amountRemaining > 0) {
                 form.setValue("status", "Partiel");
-            } else if (amountPaid === 0) {
+            } else if (newTotalPaid === 0) {
                  form.setValue("status", "En attente");
             }
         }
-    }, [amountRemaining, amountPaid, totalAmount, form]);
+    }, [amountRemaining, newTotalPaid, totalAmount, form]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
         const dataToSave = {
             ...values,
-            amountRemaining: values.totalAmount - values.amountPaid,
+            amountPaid: isEditMode ? newTotalPaid : values.amountPaid, // On utilise le nouveau total calculé en mode édition
+            amountRemaining: isEditMode ? amountRemaining : values.totalAmount - values.amountPaid,
         };
+        
+        delete (dataToSave as any).newPayment; // On ne sauvegarde pas le champ temporaire
 
         try {
             if (isEditMode) {
@@ -183,49 +199,104 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         </FormItem>
                     )}
                 />
-               
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <FormField
-                        control={form.control}
-                        name="totalAmount"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Montant total (MAD)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.01" placeholder="1500" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="amountPaid"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Avance payée (MAD)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.01" placeholder="500" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormItem>
-                        <FormLabel>Montant restant (MAD)</FormLabel>
-                        <FormControl>
-                            <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted"/>
-                        </FormControl>
-                    </FormItem>
-                </div>
 
+                {isEditMode ? (
+                     <div className="space-y-4 rounded-md border p-4">
+                        <h4 className="font-medium">Gestion du Paiement</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="totalAmount"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Montant total (MAD)</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" step="0.01" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormItem>
+                                <FormLabel>Montant déjà payé</FormLabel>
+                                <FormControl>
+                                    <Input type="number" value={currentAmountPaid.toFixed(2)} readOnly className="bg-muted"/>
+                                </FormControl>
+                            </FormItem>
+                             <FormField
+                                control={form.control}
+                                name="newPayment"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Ajouter un versement (MAD)</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormItem>
+                                <FormLabel>Nouveau total payé</FormLabel>
+                                <FormControl>
+                                    <Input type="number" value={newTotalPaid.toFixed(2)} readOnly className="bg-muted font-semibold text-green-600"/>
+                                </FormControl>
+                            </FormItem>
+                            <FormItem>
+                                <FormLabel>Montant restant</FormLabel>
+                                <FormControl>
+                                    <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted font-semibold text-red-600"/>
+                                </FormControl>
+                            </FormItem>
+                        </div>
+                     </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <FormField
+                            control={form.control}
+                            name="totalAmount"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Montant total (MAD)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" step="0.01" placeholder="1500" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="amountPaid"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Avance payée (MAD)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" step="0.01" placeholder="500" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormItem>
+                            <FormLabel>Montant restant (MAD)</FormLabel>
+                            <FormControl>
+                                <Input type="number" value={amountRemaining.toFixed(2)} readOnly className="bg-muted"/>
+                            </FormControl>
+                        </FormItem>
+                    </div>
+                )}
+               
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="method"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Méthode</FormLabel>
+                            <FormLabel>Méthode du dernier versement</FormLabel>
                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
