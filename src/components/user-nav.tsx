@@ -22,18 +22,26 @@ import { auth } from "@/lib/firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 
 export function UserNav() {
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
+  const [clientLoaded, setClientLoaded] = useState(false);
+
+  useEffect(() => {
+    // This hook ensures that the component has mounted on the client
+    // before we try to render any user-specific information.
+    setClientLoaded(true);
+  }, []);
 
   const handleLogout = () => {
     signOut(auth);
     router.push("/");
   };
 
-  if (loading) {
+  if (loading || !clientLoaded) {
     return (
        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
