@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
@@ -186,6 +186,31 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     }
 
     try {
+        const playersRef = collection(db, "players");
+        const q = query(playersRef, where("name", "==", values.name));
+        const querySnapshot = await getDocs(q);
+        
+        let isDuplicate = false;
+        if (!querySnapshot.empty) {
+            if (isEditMode) {
+                // In edit mode, it's a duplicate if another player has the same name
+                isDuplicate = querySnapshot.docs.some(doc => doc.id !== player.id);
+            } else {
+                // In add mode, any result is a duplicate
+                isDuplicate = true;
+            }
+        }
+
+        if (isDuplicate) {
+            toast({
+                variant: "destructive",
+                title: "Nom de joueur déjà existant",
+                description: "Un autre joueur porte déjà ce nom. Veuillez en choisir un autre.",
+            });
+            setLoading(false);
+            return;
+        }
+
         const dataToSave = {
             ...values,
             photoUrl: photoDataUrl
@@ -472,8 +497,3 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
-
-    
-
-    
-
