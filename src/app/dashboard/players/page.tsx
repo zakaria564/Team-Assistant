@@ -83,12 +83,7 @@ export default function PlayersPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return players.filter(player => {
-      let valueToSearch = '';
-      if (searchCategory === 'name') {
-        valueToSearch = player.name;
-      } else if (searchCategory === 'category') {
-        valueToSearch = player.category;
-      }
+      const valueToSearch = (searchCategory === 'name' ? player.name : player.category) || '';
       return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [players, searchTerm, searchCategory]);

@@ -59,12 +59,7 @@ export default function CoachesPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return coaches.filter(coach => {
-        let valueToSearch = '';
-        if (searchCategory === 'name') {
-            valueToSearch = coach.name;
-        } else if (searchCategory === 'category') {
-            valueToSearch = coach.category;
-        }
+        const valueToSearch = (searchCategory === 'name' ? coach.name : coach.category) || '';
         return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [coaches, searchTerm, searchCategory]);

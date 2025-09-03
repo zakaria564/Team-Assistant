@@ -115,12 +115,7 @@ export default function PaymentsPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return payments.filter(payment => {
-        let valueToSearch = '';
-        if (searchCategory === 'playerName') {
-            valueToSearch = payment.playerName || '';
-        } else if (searchCategory === 'status') {
-            valueToSearch = payment.status;
-        }
+        const valueToSearch = (searchCategory === 'playerName' ? payment.playerName : payment.status) || '';
         return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [payments, searchTerm, searchCategory]);
@@ -240,10 +235,10 @@ export default function PaymentsPage() {
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{payment.playerName}</TableCell>
                         <TableCell className="text-muted-foreground">{payment.description}</TableCell>
-                        <TableCell className="text-right font-semibold text-green-600">{payment.amountPaid?.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600">{payment.amountRemaining?.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right">{payment.totalAmount?.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground">{format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
+                        <TableCell className="text-right font-semibold text-green-600">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-muted-foreground">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
                         <TableCell>
                           <Badge 
                               variant={getBadgeVariant(payment.status)}

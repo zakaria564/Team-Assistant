@@ -111,12 +111,7 @@ export default function SalariesPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return salaries.filter(salary => {
-        let valueToSearch = '';
-        if (searchCategory === 'coachName') {
-            valueToSearch = salary.coachName || '';
-        } else if (searchCategory === 'status') {
-            valueToSearch = salary.status;
-        }
+        const valueToSearch = (searchCategory === 'coachName' ? salary.coachName : salary.status) || '';
         return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [salaries, searchTerm, searchCategory]);
