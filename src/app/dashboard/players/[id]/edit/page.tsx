@@ -48,7 +48,6 @@ export default function EditPlayerPage() {
           setPlayer({ id: docSnap.id, ...docSnap.data() } as Player);
         } else {
           console.log("No such document!");
-          // Optionally, redirect or show a not found message
           router.push("/dashboard/players");
         }
       } catch (error) {
