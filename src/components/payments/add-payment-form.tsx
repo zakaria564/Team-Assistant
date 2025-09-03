@@ -47,10 +47,11 @@ export function AddPaymentForm() {
                 const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
                 setPlayers(playersData);
             } catch (error) {
+                console.error("Error fetching players: ", error);
                 toast({
                     variant: "destructive",
-                    title: "Erreur",
-                    description: "Impossible de charger la liste des joueurs.",
+                    title: "Erreur de permissions",
+                    description: "Impossible de charger les joueurs. Veuillez vérifier vos règles de sécurité Firestore.",
                 });
             } finally {
                 setLoadingPlayers(false);
@@ -107,13 +108,17 @@ export function AddPaymentForm() {
                         <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingPlayers}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Sélectionner un joueur"} />
+                                <SelectValue placeholder={loadingPlayers ? "Chargement des joueurs..." : "Sélectionner un joueur"} />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                            {players.map(player => (
-                                <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
-                            ))}
+                            {players.length === 0 && !loadingPlayers ? (
+                                <SelectItem value="no-player" disabled>Aucun joueur trouvé</SelectItem>
+                            ) : (
+                                players.map(player => (
+                                    <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
+                                ))
+                            )}
                             </SelectContent>
                         </Select>
                         <FormMessage />
