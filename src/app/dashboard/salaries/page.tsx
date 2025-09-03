@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
@@ -30,7 +30,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 interface Salary {
   id: string;
@@ -51,6 +54,8 @@ export default function SalariesPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchCategory, setSearchCategory] = useState("coachName");
 
   useEffect(() => {
     const fetchSalaries = async () => {
@@ -100,6 +105,16 @@ export default function SalariesPage() {
 
     fetchSalaries();
   }, [toast]);
+
+  const filteredSalaries = useMemo(() => {
+    if (!searchTerm) return salaries;
+
+    return salaries.filter(salary => {
+        const valueToSearch = salary[searchCategory as keyof Salary]?.toString().toLowerCase() || '';
+        return valueToSearch.includes(searchTerm.toLowerCase());
+    });
+  }, [salaries, searchTerm, searchCategory]);
+
 
   const handleDeleteSalary = async () => {
     if (!salaryToDelete) return;
@@ -163,6 +178,29 @@ export default function SalariesPage() {
               </Button>
           </div>
         </div>
+
+        <div className="mb-4 flex items-center gap-4">
+            <div className="relative w-full max-w-sm">
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder="Rechercher..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <Select value={searchCategory} onValueChange={setSearchCategory}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Critère" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="coachName">Nom de l'entraîneur</SelectItem>
+                    <SelectItem value="status">Statut</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
+
         <Card>
           <CardHeader>
             <CardTitle>Suivi des salaires</CardTitle>
@@ -188,8 +226,8 @@ export default function SalariesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {salaries.length > 0 ? (
-                      salaries.map((salary) => (
+                  {filteredSalaries.length > 0 ? (
+                      filteredSalaries.map((salary) => (
                       <TableRow key={salary.id}>
                         <TableCell className="font-medium">{salary.coachName}</TableCell>
                         <TableCell className="text-muted-foreground">{salary.description}</TableCell>
@@ -243,7 +281,7 @@ export default function SalariesPage() {
                   ) : (
                     <TableRow>
                         <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
-                          Aucun salaire trouvé.
+                           {searchTerm ? "Aucun salaire ne correspond à votre recherche." : "Aucun salaire trouvé."}
                         </TableCell>
                       </TableRow>
                   )}
