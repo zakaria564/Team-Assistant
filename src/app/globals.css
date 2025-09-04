@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,7 +24,6 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 199 75% 53%;
-    --radius: 0.5rem;
     
     /* Custom Sidebar Colors */
     --sidebar-background: 215 28% 17%;

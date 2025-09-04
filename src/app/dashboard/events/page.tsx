@@ -9,7 +9,7 @@ import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft } from "lucide-rea
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, getDocs, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -93,7 +93,7 @@ export default function EventsPage() {
 
   const getEventBadgeClass = (type: string) => {
     if (type.includes("Match")) return 'bg-primary/20 text-primary-foreground';
-    if (type === "Entraînement") return 'bg-accent/20 text-accent-foreground';
+    if (type === "Entraînement") return 'bg-accent text-accent-foreground';
     if (type === "Tournoi") return 'bg-purple-100 text-purple-800';
     if (type === "Stage") return 'bg-blue-100 text-blue-800';
     if (type === "Réunion") return 'bg-yellow-100 text-yellow-800';
