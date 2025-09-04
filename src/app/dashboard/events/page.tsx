@@ -5,16 +5,34 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Event {
     id: string;
@@ -33,6 +51,7 @@ export default function EventsPage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -101,8 +120,31 @@ export default function EventsPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
+  const handleDeleteEvent = async () => {
+    if (!eventToDelete) return;
+
+    try {
+      await deleteDoc(doc(db, "events", eventToDelete.id));
+      // No need to manually filter `allEvents` as `onSnapshot` will trigger an update
+      toast({
+        title: "Événement supprimé",
+        description: `L'événement a été retiré du calendrier.`,
+      });
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer l'événement.",
+      });
+      console.error("Error deleting event: ", error);
+    } finally {
+      setEventToDelete(null);
+    }
+  };
+
 
   return (
+    <>
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -130,7 +172,7 @@ export default function EventsPage() {
           <CardContent className="p-2">
             {isClient ? (
                 <Calendar
-                    key={allEvents.length}
+                    key={allEvents.length} // Force re-render when events change for modifiers
                     mode="single"
                     selected={date}
                     onSelect={setDate}
@@ -173,10 +215,7 @@ export default function EventsPage() {
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => (
-                         <Card key={event.id} className="bg-muted/30 hover:bg-muted/50 transition-colors group relative">
-                             <Link href={`/dashboard/events/${event.id}/edit`} className="absolute inset-0 z-10">
-                                <span className="sr-only">Modifier l'événement</span>
-                             </Link>
+                         <Card key={event.id} className="bg-muted/30 group relative">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center justify-between">
                                     <span>{getEventTitle(event)}</span>
@@ -199,9 +238,33 @@ export default function EventsPage() {
                                     <span>{event.team}</span>
                                 </div>
                             </CardContent>
-                            <Button size="icon" variant="ghost" className="absolute top-2 right-2 z-20 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Pencil className="h-4 w-4"/>
-                            </Button>
+                             <div className="absolute top-4 right-4">
+                                <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Ouvrir le menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <Link href={`/dashboard/events/${event.id}/edit`}>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
+                                    </Link>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                    onClick={() => setEventToDelete(event)}
+                                    >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </Card>
                     ))
                 ) : (
@@ -213,5 +276,25 @@ export default function EventsPage() {
         </Card>
       </div>
     </div>
+     <AlertDialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. L'événement sera définitivement supprimé de la base de données.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEventToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteEvent}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
