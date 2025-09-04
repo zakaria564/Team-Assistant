@@ -26,6 +26,7 @@ const formSchema = z.object({
   status: z.enum(coachStatuses),
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide."),
+  specialty: z.string().optional(),
 });
 
 interface CoachData extends z.infer<typeof formSchema> {
@@ -75,6 +76,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
       status: "Actif",
       phone: "",
       email: "",
+      specialty: "",
     }
   });
 
@@ -213,6 +215,19 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+                <FormField
+                    control={form.control}
+                    name="specialty"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Spécialité</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ex: Entraîneur des gardiens" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
                 <div className="grid grid-cols-2 gap-4">
                     <FormField

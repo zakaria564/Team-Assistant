@@ -45,6 +45,7 @@ interface Coach {
   phone?: string;
   email: string;
   photoUrl?: string;
+  specialty?: string;
 }
 
 const getStatusBadgeClass = (status?: CoachStatus) => {
@@ -102,6 +103,9 @@ export default function CoachesPage() {
                 break;
             case 'status':
                 valueToSearch = coach.status;
+                break;
+            case 'specialty':
+                valueToSearch = coach.specialty;
                 break;
             default:
                 valueToSearch = coach.name;
@@ -165,6 +169,7 @@ export default function CoachesPage() {
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="name">Nom</SelectItem>
+                      <SelectItem value="specialty">Spécialité</SelectItem>
                       <SelectItem value="category">Catégorie</SelectItem>
                       <SelectItem value="status">Statut</SelectItem>
                   </SelectContent>
@@ -188,10 +193,10 @@ export default function CoachesPage() {
                   <TableRow>
                     <TableHead className="w-[80px]">Photo</TableHead>
                     <TableHead>Nom</TableHead>
+                    <TableHead>Spécialité</TableHead>
                     <TableHead>Catégorie</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Téléphone</TableHead>
-                    <TableHead>Email</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -206,6 +211,7 @@ export default function CoachesPage() {
                           </Avatar>
                         </TableCell>
                         <TableCell className="font-medium">{coach.name}</TableCell>
+                        <TableCell>{coach.specialty}</TableCell>
                         <TableCell>{coach.category}</TableCell>
                         <TableCell>
                           <Badge className={cn("text-xs", getStatusBadgeClass(coach.status))}>
@@ -213,7 +219,6 @@ export default function CoachesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>{coach.phone}</TableCell>
-                        <TableCell>{coach.email}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>

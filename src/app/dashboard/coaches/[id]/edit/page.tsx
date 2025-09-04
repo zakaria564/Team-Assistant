@@ -18,6 +18,7 @@ interface Coach {
   phone?: string;
   email: string;
   photoUrl?: string;
+  specialty?: string;
 }
 
 export default function EditCoachPage() {

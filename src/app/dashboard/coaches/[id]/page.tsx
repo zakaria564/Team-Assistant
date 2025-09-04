@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ interface Coach {
   photoUrl?: string;
   phone?: string;
   email?: string;
+  specialty?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
@@ -130,6 +131,7 @@ export default function CoachDetailPage() {
                         </Avatar>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold">{coach.name}</h2>
+                            <p className="text-base text-muted-foreground">{coach.specialty}</p>
                             <Badge className={cn("text-base mt-2", getStatusBadgeClass(coach.status))}>
                                 {coach.status}
                             </Badge>
@@ -142,6 +144,7 @@ export default function CoachDetailPage() {
                     <CardTitle>Informations Sportives</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    <DetailItem icon={Star} label="Spécialité" value={coach.specialty} />
                     <DetailItem icon={Shield} label="Catégorie Entraînée" value={coach.category} />
                 </CardContent>
             </Card>
