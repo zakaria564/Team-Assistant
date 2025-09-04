@@ -13,6 +13,7 @@ import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "fi
 import { db } from "@/lib/firebase";
 import { format, subDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
 
 interface Event {
   id: string;
@@ -23,11 +24,22 @@ interface Event {
   location: string;
 }
 
+interface Player {
+    id: string;
+    category: string;
+}
+
+interface ChartData {
+    category: string;
+    total: number;
+}
+
 export default function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [playersByCategory, setPlayersByCategory] = useState<ChartData[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -50,9 +62,22 @@ export default function Dashboard() {
         } as Event));
         setUpcomingEvents(eventsData);
 
-        // Fetch player count
+        // Fetch players data for stats
         const playersSnapshot = await getDocs(collection(db, "players"));
         setPlayerCount(playersSnapshot.size);
+        
+        const playersData = playersSnapshot.docs.map(doc => doc.data() as Player);
+        const categoryCounts = playersData.reduce((acc, player) => {
+            acc[player.category] = (acc[player.category] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const chartData = Object.entries(categoryCounts).map(([category, total]) => ({
+            category,
+            total,
+        }));
+        setPlayersByCategory(chartData);
+
 
       } catch (error) {
         console.error("Error fetching dashboard data: ", error);
@@ -68,7 +93,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         <KpiCard 
           title="Total Joueurs"
           value={loadingStats ? "..." : playerCount.toString()}
@@ -76,7 +101,21 @@ export default function Dashboard() {
           description="Nombre total de joueurs inscrits"
           loading={loadingStats}
         />
-        {/* The revenue card was here */}
+         <Card className="md:col-span-1 lg:col-span-2">
+           <CardHeader>
+            <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
+            <CardDescription>Visualisez la distribution des joueurs dans les différentes catégories.</CardDescription>
+           </CardHeader>
+           <CardContent>
+            {loadingStats ? (
+                <div className="flex items-center justify-center h-[250px]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : (
+                <PlayersByCategoryChart data={playersByCategory} />
+            )}
+           </CardContent>
+         </Card>
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
         <Card>
@@ -119,11 +158,11 @@ export default function Dashboard() {
                           <div className="font-medium">{event.team}</div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className={event.type === 'Match' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}>
+                          <Badge variant="secondary" className={event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}>
                             {event.type}
                           </Badge>
                         </TableCell>
-                        <TableCell>{event.type === 'Match' ? event.opponent : "N/A"}</TableCell>
+                        <TableCell>{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
                         <TableCell>{event.location}</TableCell>
                         <TableCell>{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
                         <TableCell>{format(event.date, "HH:mm", { locale: fr })}</TableCell>
