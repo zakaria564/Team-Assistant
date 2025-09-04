@@ -90,19 +90,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: isEditMode ? {
-      ...player,
-      birthDate: player.birthDate ? player.birthDate.split('T')[0] : '', // Format date for input
-      address: player.address || "",
-      nationality: player.nationality || "",
-      phone: player.phone || "",
-      email: player.email || "",
-      position: player.position || "",
-      tutorName: player.tutorName || "",
-      tutorPhone: player.tutorPhone || "",
-      tutorEmail: player.tutorEmail || "",
-      coachId: player.coachId || "",
-    } : {
+    defaultValues: {
       name: "",
       category: "",
       status: "Actif",
@@ -119,6 +107,25 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       coachId: "",
     }
   });
+
+  useEffect(() => {
+    if (player) {
+      form.reset({
+        ...player,
+        coachId: player.coachId || "",
+        birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
+        address: player.address || "",
+        nationality: player.nationality || "",
+        phone: player.phone || "",
+        email: player.email || "",
+        position: player.position || "",
+        tutorName: player.tutorName || "",
+        tutorPhone: player.tutorPhone || "",
+        tutorEmail: player.tutorEmail || "",
+      });
+    }
+  }, [player, form]);
+
 
   useEffect(() => {
     const fetchCoaches = async () => {
@@ -430,7 +437,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Entraîneur</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Assigner un entraîneur" />
