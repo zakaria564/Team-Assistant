@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -22,15 +21,28 @@ import { fr } from "date-fns/locale";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+
+const eventTypes = [
+    "Match de Championnat",
+    "Match Amical",
+    "Match de Coupe",
+    "Tournoi",
+    "Entraînement",
+    "Stage",
+    "Détection",
+    "Réunion",
+    "Événement Spécial"
+] as const;
+
 const formSchema = z.object({
-  type: z.enum(["Match", "Entraînement"], { required_error: "Le type d'événement est requis." }),
+  type: z.enum(eventTypes, { required_error: "Le type d'événement est requis." }),
   team: z.string({ required_error: "L'équipe est requise." }),
   date: z.date({ required_error: "La date est requise."}),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
   location: z.string().min(2, "Le lieu est requis."),
   opponent: z.string().optional(),
 }).refine(data => {
-    if (data.type === "Match") {
+    if (data.type.includes("Match")) {
         return !!data.opponent && data.opponent.length > 1;
     }
     return true;
@@ -51,7 +63,7 @@ export function AddEventForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            type: "Match",
+            type: "Match de Championnat",
             team: "",
             time: "15:00",
             location: "",
@@ -60,6 +72,7 @@ export function AddEventForm() {
     });
 
     const eventType = form.watch("type");
+    const eventTypeIsMatch = eventType?.includes("Match");
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
@@ -103,9 +116,9 @@ export function AddEventForm() {
                         <FormItem>
                         <FormLabel>Type d'événement</FormLabel>
                         <Select 
-                            onValueChange={(value) => {
+                            onValueChange={(value: typeof eventTypes[number]) => {
                                 field.onChange(value);
-                                if (value === "Entraînement") {
+                                if (!value.includes("Match")) {
                                     form.setValue("opponent", "");
                                 }
                             }} 
@@ -117,8 +130,9 @@ export function AddEventForm() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="Match">Match</SelectItem>
-                                <SelectItem value="Entraînement">Entraînement</SelectItem>
+                                {eventTypes.map(type => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -131,7 +145,7 @@ export function AddEventForm() {
                     name="team"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Équipe</FormLabel>
+                        <FormLabel>Équipe / Catégorie</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                             <SelectTrigger>
@@ -149,7 +163,7 @@ export function AddEventForm() {
                     )}
                 />
 
-                {eventType === "Match" && (
+                {eventTypeIsMatch && (
                      <FormField
                         control={form.control}
                         name="opponent"

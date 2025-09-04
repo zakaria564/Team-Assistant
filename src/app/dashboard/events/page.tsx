@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Event {
     id: string;
-    type: "Match" | "Entraînement";
+    type: string;
     team: string;
     opponent?: string;
     date: Date;
@@ -84,6 +84,22 @@ export default function EventsPage() {
     hasEvent: 'has-event',
   };
 
+  const getEventTitle = (event: Event) => {
+    if (event.type.includes("Match")) {
+      return `${event.team} vs ${event.opponent}`;
+    }
+    return `${event.type} ${event.team}`;
+  };
+
+  const getEventBadgeClass = (type: string) => {
+    if (type.includes("Match")) return 'bg-primary/20 text-primary';
+    if (type === "Entraînement") return 'bg-accent/20 text-accent-foreground';
+    if (type === "Tournoi") return 'bg-purple-100 text-purple-800';
+    if (type === "Stage") return 'bg-blue-100 text-blue-800';
+    if (type === "Réunion") return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
 
   return (
     <div className="space-y-6">
@@ -136,8 +152,8 @@ export default function EventsPage() {
                          <Card key={event.id} className="bg-muted/30">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center justify-between">
-                                    <span>{event.type === 'Match' ? `${event.team} vs ${event.opponent}` : `Entraînement ${event.team}`}</span>
-                                    <span className={`text-sm font-medium px-2 py-1 rounded-md ${event.type === 'Match' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}`}>
+                                    <span>{getEventTitle(event)}</span>
+                                    <span className={`text-sm font-medium px-2 py-1 rounded-md ${getEventBadgeClass(event.type)}`}>
                                         {event.type}
                                     </span>
                                 </CardTitle>
