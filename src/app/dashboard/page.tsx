@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { format, subDays } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface Event {
@@ -36,9 +36,10 @@ export default function Dashboard() {
       setLoadingStats(true);
       try {
         // Fetch upcoming events
+        const startDate = startOfDay(new Date());
         const eventsQuery = query(
           collection(db, "events"),
-          where("date", ">=", new Date()),
+          where("date", ">=", startDate),
           orderBy("date", "asc"),
           limit(5)
         );
