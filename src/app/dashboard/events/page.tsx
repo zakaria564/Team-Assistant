@@ -73,6 +73,17 @@ export default function EventsPage() {
       setSelectedEvents([]);
     }
   }, [date, allEvents]);
+  
+  const eventDays = allEvents.map(event => event.date);
+  
+  const modifiers = {
+    hasEvent: eventDays,
+  };
+
+  const modifiersClassNames = {
+    hasEvent: 'has-event',
+  };
+
 
   return (
     <div className="space-y-6">
@@ -103,6 +114,8 @@ export default function EventsPage() {
               locale={fr}
               disabled={(d) => d < new Date("1900-01-01")}
               initialFocus
+              modifiers={modifiers}
+              modifiersClassNames={modifiersClassNames}
             />
           </CardContent>
         </Card>

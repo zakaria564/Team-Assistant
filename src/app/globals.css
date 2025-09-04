@@ -76,3 +76,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .has-event {
+    @apply relative;
+  }
+  .has-event:not(.day-selected):not(.day-today)::after {
+    content: '';
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-primary;
+  }
+  .dark .has-event:not(.day-selected):not(.day-today)::after {
+    @apply bg-primary;
+  }
+  .has-event.day-today::after {
+    content: '';
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-accent-foreground;
+  }
+   .has-event.day-selected::after {
+    content: '';
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-primary-foreground;
+  }
+}
