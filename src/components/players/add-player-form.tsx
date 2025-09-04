@@ -20,9 +20,12 @@ import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
+
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   category: z.string().min(1, "La catégorie est requise."),
+  status: z.enum(playerStatuses),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
   birthDate: z.string().optional(),
   address: z.string().optional(),
@@ -94,6 +97,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     } : {
       name: "",
       category: "",
+      status: "Actif",
       number: 10,
       birthDate: "",
       address: "",
@@ -346,7 +350,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     />
                   </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="category"
@@ -370,19 +374,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       )}
                     />
                     <FormField
-                    control={form.control}
-                    name="number"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Numéro</FormLabel>
-                        <FormControl>
-                            <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                     <FormField
                         control={form.control}
                         name="position"
                         render={({ field }) => (
@@ -397,6 +388,43 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                                 <SelectContent>
                                     {footballPositions.map(pos => (
                                         <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="number"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Numéro</FormLabel>
+                        <FormControl>
+                            <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Statut</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un statut" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerStatuses.map(status => (
+                                        <SelectItem key={status} value={status}>{status}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -497,3 +525,5 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
+
+    

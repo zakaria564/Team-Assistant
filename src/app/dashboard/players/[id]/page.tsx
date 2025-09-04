@@ -8,14 +8,19 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
 interface Player {
   id: string;
   name: string;
   category: string;
   number: number;
+  status: PlayerStatus;
   photoUrl?: string;
   position?: string;
   birthDate?: string;
@@ -28,15 +33,26 @@ interface Player {
   tutorEmail?: string;
 }
 
-const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string }) => (
+const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3">
     <Icon className="h-5 w-5 text-muted-foreground mt-1" />
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-base font-medium">{value || "Non spécifié"}</p>
+      <div className="text-base font-medium">{value || children || "Non spécifié"}</div>
     </div>
   </div>
 );
+
+const getStatusBadgeClass = (status?: PlayerStatus) => {
+    switch (status) {
+        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300';
+        default: return '';
+    }
+}
+
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -123,6 +139,9 @@ export default function PlayerDetailPage() {
                         </Avatar>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold">{player.name}</h2>
+                            <Badge className={cn("text-base mt-2", getStatusBadgeClass(player.status))}>
+                                {player.status}
+                            </Badge>
                         </div>
                     </div>
                 </CardContent>
@@ -167,3 +186,5 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
+
+    

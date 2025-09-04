@@ -18,9 +18,12 @@ import { collection, addDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const coachStatuses = ["Actif", "Inactif"] as const;
+
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   category: z.string({ required_error: "La catégorie est requise."}),
+  status: z.enum(coachStatuses),
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide."),
 });
@@ -58,6 +61,7 @@ export function AddCoachForm() {
     defaultValues: {
       name: "",
       category: "",
+      status: "Actif",
       phone: "",
       email: "",
     }
@@ -186,28 +190,52 @@ export function AddCoachForm() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner une catégorie" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {coachCategories.map(cat => (
-                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Catégorie</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner une catégorie" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {coachCategories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Statut</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un statut" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {coachStatuses.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                    />
+                </div>
                  <FormField
                     control={form.control}
                     name="email"
@@ -277,3 +305,5 @@ export function AddCoachForm() {
     </>
   );
 }
+
+    

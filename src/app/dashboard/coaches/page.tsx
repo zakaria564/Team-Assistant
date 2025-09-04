@@ -13,15 +13,28 @@ import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
+
+type CoachStatus = "Actif" | "Inactif";
 
 interface Coach {
   id: string;
   name: string;
   category: string;
+  status: CoachStatus;
   phone?: string;
   email: string;
   photoUrl?: string;
+}
+
+const getStatusBadgeClass = (status?: CoachStatus) => {
+    switch (status) {
+        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
+        default: return '';
+    }
 }
 
 export default function CoachesPage() {
@@ -59,8 +72,21 @@ export default function CoachesPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return coaches.filter(coach => {
-        const valueToSearch = (searchCategory === 'name' ? coach.name : coach.category) || '';
-        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
+        let valueToSearch: string | undefined;
+        switch(searchCategory) {
+            case 'name':
+                valueToSearch = coach.name;
+                break;
+            case 'category':
+                valueToSearch = coach.category;
+                break;
+            case 'status':
+                valueToSearch = coach.status;
+                break;
+            default:
+                valueToSearch = coach.name;
+        }
+        return (valueToSearch || '').toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [coaches, searchTerm, searchCategory]);
 
@@ -97,6 +123,7 @@ export default function CoachesPage() {
                 <SelectContent>
                     <SelectItem value="name">Nom</SelectItem>
                     <SelectItem value="category">Catégorie</SelectItem>
+                    <SelectItem value="status">Statut</SelectItem>
                 </SelectContent>
             </Select>
         </div>
@@ -119,6 +146,7 @@ export default function CoachesPage() {
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Catégorie</TableHead>
+                  <TableHead>Statut</TableHead>
                   <TableHead>Téléphone</TableHead>
                   <TableHead>Email</TableHead>
                 </TableRow>
@@ -135,13 +163,18 @@ export default function CoachesPage() {
                       </TableCell>
                       <TableCell className="font-medium">{coach.name}</TableCell>
                       <TableCell>{coach.category}</TableCell>
+                      <TableCell>
+                        <Badge className={cn("text-xs", getStatusBadgeClass(coach.status))}>
+                            {coach.status || "N/A"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{coach.phone}</TableCell>
                       <TableCell>{coach.email}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                    <TableRow>
-                      <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                      <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                         {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun entraîneur trouvé. Commencez par en ajouter un !"}
                       </TableCell>
                     </TableRow>
@@ -154,3 +187,5 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    

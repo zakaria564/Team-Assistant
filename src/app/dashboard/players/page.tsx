@@ -31,12 +31,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
+
+type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
 interface Player {
   id: string;
   name: string;
   category: string;
+  status: PlayerStatus;
   number: number;
   photoUrl?: string;
   position?: string;
@@ -46,6 +51,17 @@ interface Player {
   tutorPhone?: string;
   tutorEmail?: string;
 }
+
+const getStatusBadgeClass = (status?: PlayerStatus) => {
+    switch (status) {
+        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300';
+        default: return '';
+    }
+}
+
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -83,8 +99,21 @@ export default function PlayersPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return players.filter(player => {
-      const valueToSearch = (searchCategory === 'name' ? player.name : player.category) || '';
-      return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
+      let valueToSearch: string | undefined;
+      switch (searchCategory) {
+        case 'name':
+          valueToSearch = player.name;
+          break;
+        case 'category':
+          valueToSearch = player.category;
+          break;
+        case 'status':
+            valueToSearch = player.status;
+            break;
+        default:
+          valueToSearch = player.name;
+      }
+      return (valueToSearch || '').toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [players, searchTerm, searchCategory]);
 
@@ -144,6 +173,7 @@ export default function PlayersPage() {
                 <SelectContent>
                     <SelectItem value="name">Nom</SelectItem>
                     <SelectItem value="category">Catégorie</SelectItem>
+                    <SelectItem value="status">Statut</SelectItem>
                 </SelectContent>
             </Select>
         </div>
@@ -166,7 +196,7 @@ export default function PlayersPage() {
                     <TableHead>Nom</TableHead>
                     <TableHead>Catégorie</TableHead>
                     <TableHead>Poste</TableHead>
-                    <TableHead>Numéro</TableHead>
+                    <TableHead>Statut</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Nom du tuteur</TableHead>
@@ -186,7 +216,11 @@ export default function PlayersPage() {
                         <TableCell className="font-medium">{player.name}</TableCell>
                         <TableCell>{player.category}</TableCell>
                         <TableCell>{player.position}</TableCell>
-                        <TableCell>{player.number}</TableCell>
+                         <TableCell>
+                            <Badge className={cn("text-xs", getStatusBadgeClass(player.status))}>
+                                {player.status || "N/A"}
+                            </Badge>
+                         </TableCell>
                         <TableCell>{player.phone}</TableCell>
                         <TableCell>{player.email}</TableCell>
                         <TableCell>{player.tutorName}</TableCell>
@@ -255,3 +289,5 @@ export default function PlayersPage() {
     </>
   );
 }
+
+    
