@@ -5,13 +5,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users, Loader2 } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, getDocs, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface Event {
     id: string;
@@ -29,6 +30,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [calendarKey, setCalendarKey] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     // Set initial date to today on client-side to avoid hydration errors
@@ -103,12 +105,18 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Événements</h1>
-          <p className="text-muted-foreground">
-            Planifiez et visualisez les matchs et entraînements.
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-6 w-6" />
+            <span className="sr-only">Retour</span>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Événements</h1>
+            <p className="text-muted-foreground">
+              Planifiez et visualisez les matchs et entraînements.
+            </p>
+          </div>
         </div>
         <Button asChild>
           <Link href="/dashboard/events/add">
