@@ -76,10 +76,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: isEditMode ? {
-            ...event,
-            time: format(event.date, "HH:mm")
-        } : {
+        defaultValues: {
             type: "Match de Championnat",
             team: "",
             time: "15:00",
@@ -115,7 +112,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 opponent: values.opponent || null,
             };
 
-            if(isEditMode) {
+            if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
                 await updateDoc(eventDocRef, dataToSave);
                 toast({
@@ -131,6 +128,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
             }
            
             router.push("/dashboard/events");
+            router.refresh();
 
         } catch (error) {
             console.error("Error saving event:", error);
@@ -209,7 +207,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

@@ -38,10 +38,12 @@ export default function EditEventPage() {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
+          // Ensure Firestore Timestamp is converted to JS Date
+          const date = data.date?.toDate ? data.date.toDate() : new Date();
           setEvent({ 
               id: docSnap.id, 
               ...data,
-              date: data.date.toDate()
+              date: date
             } as Event);
         } else {
           console.log("No such document!");
