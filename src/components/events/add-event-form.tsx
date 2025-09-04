@@ -100,34 +100,28 @@ export function AddEventForm() {
                     control={form.control}
                     name="type"
                     render={({ field }) => (
-                        <FormItem className="space-y-3">
-                            <FormLabel>Type d'événement</FormLabel>
+                        <FormItem>
+                        <FormLabel>Type d'événement</FormLabel>
+                        <Select 
+                            onValueChange={(value) => {
+                                field.onChange(value);
+                                if (value === "Entraînement") {
+                                    form.setValue("opponent", "");
+                                }
+                            }} 
+                            defaultValue={field.value}
+                        >
                             <FormControl>
-                                <RadioGroup
-                                onValueChange={(value) => {
-                                    field.onChange(value);
-                                    if (value === "Entraînement") {
-                                        form.setValue("opponent", "");
-                                    }
-                                }}
-                                defaultValue={field.value}
-                                className="flex space-x-4"
-                                >
-                                <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                    <RadioGroupItem value="Match" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">Match</FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                    <RadioGroupItem value="Entraînement" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">Entraînement</FormLabel>
-                                </FormItem>
-                                </RadioGroup>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner un type d'événement" />
+                            </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
+                            <SelectContent>
+                                <SelectItem value="Match">Match</SelectItem>
+                                <SelectItem value="Entraînement">Entraînement</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
                         </FormItem>
                     )}
                 />
