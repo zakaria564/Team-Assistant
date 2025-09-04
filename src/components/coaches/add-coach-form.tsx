@@ -58,6 +58,18 @@ const coachCategories = [
     "École de foot"
 ];
 
+const coachSpecialties = [
+    "Entraîneur Principal",
+    "Entraîneur Adjoint",
+    "Entraîneur des Gardiens",
+    "Préparateur Physique",
+    "Analyste Vidéo",
+    "Directeur Technique",
+    "Coordinateur des Jeunes",
+    "Responsable École de Foot",
+    "Autre"
+];
+
 export function AddCoachForm({ coach }: AddCoachFormProps) {
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -222,9 +234,18 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Spécialité</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: Entraîneur des gardiens" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner une spécialité" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {coachSpecialties.map(spec => (
+                                    <SelectItem key={spec} value={spec}>{spec}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <FormMessage />
                         </FormItem>
                     )}
