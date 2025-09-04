@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -14,6 +14,7 @@ import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface Event {
     id: string;
@@ -34,7 +35,6 @@ export default function EventsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // This ensures the component has mounted on the client, avoiding hydration errors.
     setIsClient(true);
     setDate(new Date());
   }, []);
@@ -130,7 +130,7 @@ export default function EventsPage() {
           <CardContent className="p-2">
             {isClient ? (
                 <Calendar
-                    key={allEvents.length} // Force re-render when events change
+                    key={allEvents.length}
                     mode="single"
                     selected={date}
                     onSelect={setDate}
@@ -173,11 +173,14 @@ export default function EventsPage() {
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => (
-                         <Card key={event.id} className="bg-muted/30">
+                         <Card key={event.id} className="bg-muted/30 hover:bg-muted/50 transition-colors group relative">
+                             <Link href={`/dashboard/events/${event.id}/edit`} className="absolute inset-0 z-10">
+                                <span className="sr-only">Modifier l'événement</span>
+                             </Link>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center justify-between">
                                     <span>{getEventTitle(event)}</span>
-                                    <span className={`text-sm font-medium px-2 py-1 rounded-md ${getEventBadgeClass(event.type)}`}>
+                                    <span className={cn(`text-sm font-medium px-2 py-1 rounded-md`, getEventBadgeClass(event.type))}>
                                         {event.type}
                                     </span>
                                 </CardTitle>
@@ -196,6 +199,9 @@ export default function EventsPage() {
                                     <span>{event.team}</span>
                                 </div>
                             </CardContent>
+                            <Button size="icon" variant="ghost" className="absolute top-2 right-2 z-20 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Pencil className="h-4 w-4"/>
+                            </Button>
                         </Card>
                     ))
                 ) : (
@@ -209,4 +215,3 @@ export default function EventsPage() {
     </div>
   );
 }
-

@@ -9,7 +9,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -18,7 +18,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 
@@ -55,14 +55,31 @@ const playerCategories = [
     "Seniors", "U19", "U18", "U17", "U16", "U15", "U14", "U13", "U12", "U11", "U10", "U9", "U8", "U7", "U6", "U5", "Vétérans", "École de foot"
 ];
 
-export function AddEventForm() {
+interface EventData {
+  id: string;
+  type: typeof eventTypes[number];
+  team: string;
+  opponent?: string;
+  date: Date;
+  location: string;
+}
+
+interface AddEventFormProps {
+    event?: EventData;
+}
+
+export function AddEventForm({ event }: AddEventFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const isEditMode = !!event;
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
+        defaultValues: isEditMode ? {
+            ...event,
+            time: format(event.date, "HH:mm")
+        } : {
             type: "Match de Championnat",
             team: "",
             time: "15:00",
@@ -70,6 +87,15 @@ export function AddEventForm() {
             opponent: "",
         }
     });
+    
+    useEffect(() => {
+        if(isEditMode && event) {
+            form.reset({
+                ...event,
+                time: format(event.date, "HH:mm")
+            });
+        }
+    }, [event, isEditMode, form]);
 
     const eventType = form.watch("type");
     const eventTypeIsMatch = eventType?.includes("Match");
@@ -81,25 +107,37 @@ export function AddEventForm() {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
 
-            await addDoc(collection(db, "events"), {
+            const dataToSave = {
                 type: values.type,
                 team: values.team,
                 date: combinedDate,
                 location: values.location,
                 opponent: values.opponent || null,
-            });
+            };
 
-            toast({
-                title: "Événement ajouté !",
-                description: `L'événement a été planifié avec succès.`
-            });
+            if(isEditMode) {
+                const eventDocRef = doc(db, "events", event.id);
+                await updateDoc(eventDocRef, dataToSave);
+                toast({
+                    title: "Événement modifié !",
+                    description: `L'événement a été mis à jour avec succès.`
+                });
+            } else {
+                 await addDoc(collection(db, "events"), dataToSave);
+                toast({
+                    title: "Événement ajouté !",
+                    description: `L'événement a été planifié avec succès.`
+                });
+            }
+           
             router.push("/dashboard/events");
+
         } catch (error) {
-            console.error("Error adding event:", error);
+            console.error("Error saving event:", error);
              toast({
                 variant: "destructive",
                 title: "Erreur",
-                description: "Impossible d'ajouter l'événement."
+                description: "Impossible d'enregistrer l'événement."
             });
         } finally {
             setLoading(false);
@@ -122,7 +160,7 @@ export function AddEventForm() {
                                     form.setValue("opponent", "");
                                 }
                             }} 
-                            defaultValue={field.value}
+                            value={field.value}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -146,7 +184,7 @@ export function AddEventForm() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
@@ -211,7 +249,7 @@ export function AddEventForm() {
                                     selected={field.value}
                                     onSelect={field.onChange}
                                     disabled={(date) =>
-                                        date < new Date(new Date().setHours(0,0,0,0))
+                                        date < new Date(new Date().setHours(0,0,0,0)) && !isEditMode
                                     }
                                     initialFocus
                                 />
@@ -256,9 +294,9 @@ export function AddEventForm() {
                     {loading ? (
                         <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Ajout en cours...
+                        Enregistrement...
                         </>
-                    ) : "Ajouter l'événement"}
+                    ) : isEditMode ? "Modifier l'événement" : "Ajouter l'événement"}
                 </Button>
             </form>
         </Form>
