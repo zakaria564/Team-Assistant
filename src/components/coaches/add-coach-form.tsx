@@ -180,7 +180,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     try {
         const dataToSave = {
             ...values,
-            photoUrl: photoDataUrl
+            photoUrl: photoDataUrl,
+            specialty: values.specialty || '',
         };
 
         if (isEditMode) {
@@ -345,7 +346,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         ref={videoRef} 
                         className={cn(
                             "w-full h-full object-cover",
-                            photoDataUrl && "opacity-0"
+                            photoDataUrl && "hidden"
                         )} 
                         autoPlay 
                         muted 
