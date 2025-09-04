@@ -27,7 +27,6 @@ export default function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -55,25 +54,6 @@ export default function Dashboard() {
         const playersSnapshot = await getDocs(collection(db, "players"));
         setPlayerCount(playersSnapshot.size);
 
-        // Fetch monthly revenue from payments
-        const oneMonthAgo = subDays(new Date(), 30);
-        const paymentsQuery = query(collection(db, "payments"));
-        const paymentsSnapshot = await getDocs(paymentsQuery);
-        let totalRevenue = 0;
-        
-        paymentsSnapshot.forEach(doc => {
-            const payment = doc.data();
-            if (payment.transactions && Array.isArray(payment.transactions)) {
-                payment.transactions.forEach((transaction: { date: Timestamp, amount: number }) => {
-                    const transactionDate = transaction.date.toDate();
-                    if (transactionDate >= oneMonthAgo) {
-                        totalRevenue += transaction.amount;
-                    }
-                });
-            }
-        });
-        setMonthlyRevenue(totalRevenue);
-
       } catch (error) {
         console.error("Error fetching dashboard data: ", error);
         // Optionally show a toast message here
@@ -96,13 +76,7 @@ export default function Dashboard() {
           description="Nombre total de joueurs inscrits"
           loading={loadingStats}
         />
-        <KpiCard 
-          title="Revenus des 30 derniers jours"
-          value={loadingStats ? "..." : `${monthlyRevenue.toFixed(2)} MAD`}
-          icon={DollarSign}
-          description="Basé sur les paiements des joueurs"
-          loading={loadingStats}
-        />
+        {/* The revenue card was here */}
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
         <Card>
