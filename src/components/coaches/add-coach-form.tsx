@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Camera } from "lucide-react";
+import { Loader2, Camera, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
@@ -340,10 +341,18 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
             <div className="space-y-4">
                 <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-                    {photoDataUrl ? (
+                    <video 
+                        ref={videoRef} 
+                        className={cn(
+                            "w-full h-full object-cover",
+                            photoDataUrl && "opacity-0"
+                        )} 
+                        autoPlay 
+                        muted 
+                        playsInline 
+                    />
+                    {photoDataUrl && (
                          <Image src={photoDataUrl} alt="Photo de l'entraîneur" layout="fill" objectFit="cover" />
-                    ): (
-                         <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                     )}
                     { hasCameraPermission === false && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
                 </div>
@@ -361,8 +370,14 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                 <div className="flex gap-4">
                     <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full">
                         <Camera className="mr-2"/>
-                        {photoDataUrl ? "Reprendre la photo" : "Prendre une photo"}
+                        Prendre une photo
                     </Button>
+                     {photoDataUrl && (
+                        <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full">
+                            <RefreshCcw className="mr-2" />
+                            Reprendre
+                        </Button>
+                     )}
                 </div>
             </div>
           </form>
