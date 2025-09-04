@@ -1,13 +1,60 @@
 
+"use client";
+
 import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, DollarSign, Activity, ArrowUpRight } from "lucide-react";
+import { Users, DollarSign, Activity, ArrowUpRight, Loader2 } from "lucide-react";
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+interface Event {
+  id: string;
+  type: "Match" | "Entraînement";
+  team: string;
+  opponent?: string;
+  date: Date;
+  location: string;
+}
 
 export default function Dashboard() {
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      setLoading(true);
+      try {
+        const q = query(
+          collection(db, "events"),
+          where("date", ">=", new Date()),
+          orderBy("date", "asc"),
+          limit(5)
+        );
+        const querySnapshot = await getDocs(q);
+        const eventsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().date.toDate(),
+        } as Event));
+        setUpcomingEvents(eventsData);
+      } catch (error) {
+        console.error("Error fetching upcoming events: ", error);
+        // Optionally show a toast message here
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUpcomingEvents();
+  }, []);
+
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
@@ -30,7 +77,7 @@ export default function Dashboard() {
             <div className="grid gap-2">
               <CardTitle>Événements à venir</CardTitle>
               <CardDescription>
-                Liste des prochains matchs et entraînements de vos équipes.
+                Les 5 prochains matchs et entraînements de vos équipes.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -41,58 +88,46 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Équipe</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Adversaire/Lieu</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Seniors A</div>
-                  </TableCell>
-                  <TableCell>
-                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
-                  </TableCell>
-                  <TableCell>FC Rive Droite</TableCell>
-                  <TableCell>25/05/2024 - 15:00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">U17</div>
-                  </TableCell>
-                   <TableCell>
-                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
-                  </TableCell>
-                  <TableCell>AS Monts d'Or</TableCell>
-                  <TableCell>25/05/2024 - 10:30</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">U15</div>
-                  </TableCell>
-                   <TableCell>
-                     <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">Entraînement</Badge>
-                  </TableCell>
-                  <TableCell>Stade Principal</TableCell>
-                  <TableCell>27/05/2024 - 18:00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">U15</div>
-                  </TableCell>
-                   <TableCell>
-                     <Badge variant="secondary" className="bg-primary/20 text-primary">Match</Badge>
-                  </TableCell>
-                  <TableCell>Olympique Ouest</TableCell>
-                  <TableCell>26/05/2024 - 11:00</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            {loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Équipe</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Adversaire/Lieu</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {upcomingEvents.length > 0 ? (
+                    upcomingEvents.map(event => (
+                      <TableRow key={event.id}>
+                        <TableCell>
+                          <div className="font-medium">{event.team}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={event.type === 'Match' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}>
+                            {event.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{event.type === 'Match' ? event.opponent : event.location}</TableCell>
+                        <TableCell>{format(event.date, "dd/MM/yyyy - HH:mm", { locale: fr })}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                        Aucun événement à venir.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
