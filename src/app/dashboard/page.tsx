@@ -9,9 +9,9 @@ import { Users, DollarSign, Activity, ArrowUpRight, Loader2 } from "lucide-react
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface Event {
@@ -25,34 +25,64 @@ interface Event {
 
 export default function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [playerCount, setPlayerCount] = useState(0);
+  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    const fetchUpcomingEvents = async () => {
-      setLoading(true);
+    const fetchDashboardData = async () => {
+      setLoadingEvents(true);
+      setLoadingStats(true);
       try {
-        const q = query(
+        // Fetch upcoming events
+        const eventsQuery = query(
           collection(db, "events"),
           where("date", ">=", new Date()),
           orderBy("date", "asc"),
           limit(5)
         );
-        const querySnapshot = await getDocs(q);
-        const eventsData = querySnapshot.docs.map(doc => ({
+        const eventsSnapshot = await getDocs(eventsQuery);
+        const eventsData = eventsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           date: doc.data().date.toDate(),
         } as Event));
         setUpcomingEvents(eventsData);
+
+        // Fetch player count
+        const playersSnapshot = await getDocs(collection(db, "players"));
+        setPlayerCount(playersSnapshot.size);
+
+        // Fetch monthly revenue from payments
+        const oneMonthAgo = subDays(new Date(), 30);
+        const paymentsQuery = query(collection(db, "payments"));
+        const paymentsSnapshot = await getDocs(paymentsQuery);
+        let totalRevenue = 0;
+        
+        paymentsSnapshot.forEach(doc => {
+            const payment = doc.data();
+            if (payment.transactions && Array.isArray(payment.transactions)) {
+                payment.transactions.forEach((transaction: { date: Timestamp, amount: number }) => {
+                    const transactionDate = transaction.date.toDate();
+                    if (transactionDate >= oneMonthAgo) {
+                        totalRevenue += transaction.amount;
+                    }
+                });
+            }
+        });
+        setMonthlyRevenue(totalRevenue);
+
       } catch (error) {
-        console.error("Error fetching upcoming events: ", error);
+        console.error("Error fetching dashboard data: ", error);
         // Optionally show a toast message here
       } finally {
-        setLoading(false);
+        setLoadingEvents(false);
+        setLoadingStats(false);
       }
     };
 
-    fetchUpcomingEvents();
+    fetchDashboardData();
   }, []);
 
   return (
@@ -60,15 +90,17 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
         <KpiCard 
           title="Total Joueurs"
-          value="125"
+          value={loadingStats ? "..." : playerCount.toString()}
           icon={Users}
-          description="+12 depuis le mois dernier"
+          description="Nombre total de joueurs inscrits"
+          loading={loadingStats}
         />
         <KpiCard 
-          title="Revenus du Mois"
-          value="25,400 MAD"
+          title="Revenus des 30 derniers jours"
+          value={loadingStats ? "..." : `${monthlyRevenue.toFixed(2)} MAD`}
           icon={DollarSign}
-          description="+20.1% vs mois dernier"
+          description="Basé sur les paiements des joueurs"
+          loading={loadingStats}
         />
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
@@ -88,7 +120,7 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loadingEvents ? (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
