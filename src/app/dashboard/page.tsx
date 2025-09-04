@@ -98,8 +98,10 @@ export default function Dashboard() {
                   <TableRow>
                     <TableHead>Équipe</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Adversaire/Lieu</TableHead>
+                    <TableHead>Adversaire</TableHead>
+                    <TableHead>Lieu</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Heure</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -114,13 +116,15 @@ export default function Dashboard() {
                             {event.type}
                           </Badge>
                         </TableCell>
-                        <TableCell>{event.type === 'Match' ? event.opponent : event.location}</TableCell>
-                        <TableCell>{format(event.date, "dd/MM/yyyy - HH:mm", { locale: fr })}</TableCell>
+                        <TableCell>{event.type === 'Match' ? event.opponent : "N/A"}</TableCell>
+                        <TableCell>{event.location}</TableCell>
+                        <TableCell>{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
+                        <TableCell>{format(event.date, "HH:mm", { locale: fr })}</TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                         Aucun événement à venir.
                       </TableCell>
                     </TableRow>
