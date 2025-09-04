@@ -70,7 +70,27 @@ const footballPositions = [
 ];
 
 const playerCategories = [
-    "Seniors", "U19", "U18", "U17", "U16", "U15", "U14", "U13", "U12", "U11", "U10", "U9", "U8", "U7", "U6", "U5", "Vétérans", "École de foot"
+    "Seniors",
+    "Seniors F",
+    "U19",
+    "U18",
+    "U17",
+    "U17 F",
+    "U16",
+    "U15",
+    "U15 F",
+    "U14",
+    "U13",
+    "U13 F",
+    "U12",
+    "U11",
+    "U11 F",
+    "U10",
+    "U9",
+    "U8",
+    "U7",
+    "Vétérans",
+    "École de foot"
 ];
 
 const nationalities = [
@@ -583,5 +603,3 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
-
-    

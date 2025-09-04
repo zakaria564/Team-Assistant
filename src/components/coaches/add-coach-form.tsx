@@ -41,15 +41,20 @@ interface AddCoachFormProps {
 
 const coachCategories = [
     "Seniors",
+    "Seniors F",
     "U19",
     "U18",
     "U17",
+    "U17 F",
     "U16",
     "U15",
+    "U15 F",
     "U14",
     "U13",
+    "U13 F",
     "U12",
     "U11",
+    "U11 F",
     "U10",
     "U9",
     "U8",
@@ -61,6 +66,7 @@ const coachCategories = [
 const coachSpecialties = [
     "Entraîneur Principal",
     "Entraîneur Adjoint",
+    "Entraîneur Équipe Féminine",
     "Entraîneur des Gardiens",
     "Préparateur Physique",
     "Analyste Vidéo",
