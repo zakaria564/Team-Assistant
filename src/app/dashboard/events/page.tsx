@@ -13,6 +13,7 @@ import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Event {
     id: string;
@@ -29,11 +30,12 @@ export default function EventsPage() {
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [calendarKey, setCalendarKey] = useState(0);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Set initial date to today on client-side to avoid hydration errors
+    // This ensures the component has mounted on the client, avoiding hydration errors.
+    setIsClient(true);
     setDate(new Date());
   }, []);
 
@@ -48,7 +50,6 @@ export default function EventsPage() {
         date: doc.data().date.toDate()
       } as Event));
       setAllEvents(eventsData);
-      setCalendarKey(prevKey => prevKey + 1); // Force re-render of calendar
       setLoading(false);
     }, (error) => {
       console.error("Error fetching events:", error);
@@ -127,18 +128,35 @@ export default function EventsPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-2">
-            <Calendar
-              key={calendarKey}
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="w-full"
-              locale={fr}
-              disabled={(d) => d < new Date("1900-01-01")}
-              initialFocus
-              modifiers={modifiers}
-              modifiersClassNames={modifiersClassNames}
-            />
+            {isClient ? (
+                <Calendar
+                    key={allEvents.length} // Force re-render when events change
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="w-full"
+                    locale={fr}
+                    disabled={(d) => d < new Date("1900-01-01")}
+                    initialFocus
+                    modifiers={modifiers}
+                    modifiersClassNames={modifiersClassNames}
+                />
+            ) : (
+                <div className="p-3">
+                    <div className="flex justify-between items-center mb-4">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-24" />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="grid grid-cols-7 gap-2">
+                            {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-9 w-9" />)}
+                        </div>
+                         <div className="grid grid-cols-7 gap-2">
+                            {[...Array(35)].map((_, i) => <Skeleton key={i} className="h-9 w-9 rounded-full" />)}
+                        </div>
+                    </div>
+                </div>
+            )}
           </CardContent>
         </Card>
         
@@ -191,3 +209,4 @@ export default function EventsPage() {
     </div>
   );
 }
+
