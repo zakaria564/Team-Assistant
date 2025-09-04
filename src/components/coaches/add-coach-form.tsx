@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -27,6 +27,16 @@ const formSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide."),
 });
+
+interface CoachData extends z.infer<typeof formSchema> {
+    id: string;
+    photoUrl?: string;
+}
+
+interface AddCoachFormProps {
+    coach?: CoachData;
+}
+
 
 const coachCategories = [
     "Seniors",
@@ -47,18 +57,19 @@ const coachCategories = [
     "École de foot"
 ];
 
-export function AddCoachForm() {
+export function AddCoachForm({ coach }: AddCoachFormProps) {
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(coach?.photoUrl || null);
   const { toast } = useToast();
   const router = useRouter();
+  const isEditMode = !!coach;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? coach : {
       name: "",
       category: "",
       status: "Actif",
@@ -139,23 +150,36 @@ export function AddCoachForm() {
         toast({
             variant: "destructive",
             title: "Photo manquante",
-            description: "Veuillez prendre une photo avant d'ajouter l'entraîneur.",
+            description: "Veuillez prendre une photo avant de continuer.",
         });
         setLoading(false);
         return;
     }
 
     try {
-      await addDoc(collection(db, "coaches"), {
-        ...values,
-        photoUrl: photoDataUrl,
-        createdAt: new Date(),
-      });
+        const dataToSave = {
+            ...values,
+            photoUrl: photoDataUrl
+        };
 
-      toast({
-        title: "Entraîneur ajouté !",
-        description: `${values.name} a été ajouté au club.`,
-      });
+        if (isEditMode) {
+            const coachDocRef = doc(db, "coaches", coach.id);
+            await updateDoc(coachDocRef, dataToSave);
+            toast({
+                title: "Entraîneur modifié !",
+                description: `Les informations de ${values.name} ont été mises à jour.`,
+            });
+        } else {
+            await addDoc(collection(db, "coaches"), {
+                ...dataToSave,
+                createdAt: new Date(),
+            });
+
+            toast({
+                title: "Entraîneur ajouté !",
+                description: `${values.name} a été ajouté au club.`,
+            });
+        }
       
       router.push("/dashboard/coaches");
 
@@ -163,7 +187,7 @@ export function AddCoachForm() {
       toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Une erreur est survenue lors de l'ajout de l'entraîneur.",
+          description: isEditMode ? "Impossible de modifier l'entraîneur." : "Une erreur est survenue lors de l'ajout de l'entraîneur.",
       });
       console.error(e);
     } finally {
@@ -266,9 +290,9 @@ export function AddCoachForm() {
                 {loading ? (
                     <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Ajout en cours...
+                    Enregistrement...
                     </>
-                ) : "Ajouter l'entraîneur"}
+                ) : isEditMode ? "Enregistrer les modifications" : "Ajouter l'entraîneur"}
                 </Button>
             </div>
 
@@ -295,7 +319,7 @@ export function AddCoachForm() {
                 <div className="flex gap-4">
                     <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full">
                         <Camera className="mr-2"/>
-                        Prendre une photo
+                        {photoDataUrl ? "Reprendre la photo" : "Prendre une photo"}
                     </Button>
                 </div>
             </div>
@@ -305,5 +329,3 @@ export function AddCoachForm() {
     </>
   );
 }
-
-    
