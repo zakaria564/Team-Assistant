@@ -30,8 +30,9 @@ interface Player {
 }
 
 interface ChartData {
-    category: string;
-    total: number;
+    name: string;
+    value: number;
+    fill: string;
 }
 
 export default function Dashboard() {
@@ -72,9 +73,19 @@ export default function Dashboard() {
             return acc;
         }, {} as Record<string, number>);
 
-        const chartData = Object.entries(categoryCounts).map(([category, total]) => ({
-            category,
-            total,
+        const colors = [
+            'hsl(var(--primary))',
+            'hsl(var(--accent))',
+            'hsl(24, 9.8%, 10%)',
+            'hsl(60, 4.8%, 95.9%)',
+            'hsl(120, 75%, 53%)',
+            'hsl(280, 75%, 53%)',
+        ];
+
+        const chartData = Object.entries(categoryCounts).map(([category, total], index) => ({
+            name: category,
+            value: total,
+            fill: colors[index % colors.length]
         }));
         setPlayersByCategory(chartData);
 
@@ -108,7 +119,7 @@ export default function Dashboard() {
            </CardHeader>
            <CardContent>
             {loadingStats ? (
-                <div className="flex items-center justify-center h-[250px]">
+                <div className="flex items-center justify-center h-[300px]">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : (
