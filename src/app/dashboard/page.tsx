@@ -169,7 +169,7 @@ export default function Dashboard() {
                           <div className="font-medium">{event.team}</div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className={event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}>
+                          <Badge variant="secondary" className={event.type.includes('Match') ? 'bg-primary/20 text-primary-foreground' : 'bg-accent/20 text-accent-foreground'}>
                             {event.type}
                           </Badge>
                         </TableCell>
