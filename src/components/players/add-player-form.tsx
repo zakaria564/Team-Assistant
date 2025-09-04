@@ -272,6 +272,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
         const dataToSave = {
             ...values,
+            coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl
         };
 
@@ -457,14 +458,14 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Entraîneur</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Assigner un entraîneur" />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="">Aucun</SelectItem>
+                                <SelectItem value="none">Aucun</SelectItem>
                                 {coaches.map(coach => (
                                     <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
                                 ))}
@@ -603,3 +604,5 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
+
+    
