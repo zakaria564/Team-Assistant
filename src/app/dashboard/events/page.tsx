@@ -93,8 +93,8 @@ export default function EventsPage() {
   };
 
   const getEventBadgeClass = (type: string) => {
-    if (type.includes("Match")) return 'bg-primary/20 text-primary-foreground';
-    if (type === "Entraînement") return 'bg-accent text-accent-foreground';
+    if (type.includes("Match")) return 'bg-primary/20 text-primary';
+    if (type === "Entraînement") return 'bg-accent/20 text-accent-foreground';
     if (type === "Tournoi") return 'bg-purple-100 text-purple-800';
     if (type === "Stage") return 'bg-blue-100 text-blue-800';
     if (type === "Réunion") return 'bg-yellow-100 text-yellow-800';
