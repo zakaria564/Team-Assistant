@@ -36,11 +36,17 @@ const formSchema = z.object({
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
+  coachId: z.string().optional(),
 });
 
 interface PlayerData extends z.infer<typeof formSchema> {
     id: string;
     photoUrl?: string;
+}
+
+interface Coach {
+    id: string;
+    name: string;
 }
 
 interface AddPlayerFormProps {
@@ -77,6 +83,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(player?.photoUrl || null);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
   const { toast } = useToast();
   const router = useRouter();
   const isEditMode = !!player;
@@ -94,6 +101,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       tutorName: player.tutorName || "",
       tutorPhone: player.tutorPhone || "",
       tutorEmail: player.tutorEmail || "",
+      coachId: player.coachId || "",
     } : {
       name: "",
       category: "",
@@ -108,8 +116,28 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       tutorName: "",
       tutorPhone: "",
       tutorEmail: "",
+      coachId: "",
     }
   });
+
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      try {
+        const q = query(collection(db, "coaches"), where("status", "==", "Actif"));
+        const querySnapshot = await getDocs(q);
+        const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
+        setCoaches(coachesData);
+      } catch (error) {
+        console.error("Error fetching coaches: ", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger la liste des entraîneurs.",
+        });
+      }
+    };
+    fetchCoaches();
+  }, [toast]);
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -396,6 +424,29 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                         )}
                       />
                 </div>
+                 <FormField
+                    control={form.control}
+                    name="coachId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entraîneur</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Assigner un entraîneur" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="">Aucun</SelectItem>
+                                {coaches.map(coach => (
+                                    <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                />
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                     control={form.control}

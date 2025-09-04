@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,8 @@ interface Player {
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
+  coachId?: string;
+  coachName?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
@@ -68,11 +70,21 @@ export default function PlayerDetailPage() {
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "players", playerId);
-        const docSnap = await getDoc(docRef);
+        const playerRef = doc(db, "players", playerId);
+        const playerSnap = await getDoc(playerRef);
 
-        if (docSnap.exists()) {
-          setPlayer({ id: docSnap.id, ...docSnap.data() } as Player);
+        if (playerSnap.exists()) {
+          const playerData = { id: playerSnap.id, ...playerSnap.data() } as Player;
+          
+          if(playerData.coachId) {
+            const coachRef = doc(db, "coaches", playerData.coachId);
+            const coachSnap = await getDoc(coachRef);
+            if(coachSnap.exists()) {
+              playerData.coachName = coachSnap.data().name;
+            }
+          }
+          
+          setPlayer(playerData);
         } else {
           console.log("No such document!");
         }
@@ -154,6 +166,7 @@ export default function PlayerDetailPage() {
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
+                    <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName} />
                 </CardContent>
             </Card>
         </div>
