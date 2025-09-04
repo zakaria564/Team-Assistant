@@ -23,6 +23,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { Skeleton } from "./ui/skeleton";
 
 
 export function UserNav() {
@@ -43,12 +44,12 @@ export function UserNav() {
 
   if (loading || !clientLoaded) {
     return (
-       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback></AvatarFallback>
-          </Avatar>
-        </Button>
+       <Skeleton className="h-8 w-8 rounded-full" />
     )
+  }
+
+  if (!user) {
+    return null; // Don't render anything if there's no user and we are on the client
   }
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
