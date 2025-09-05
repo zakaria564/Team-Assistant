@@ -25,6 +25,12 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 199 75% 53%;
     
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
     /* Custom Sidebar Colors */
     --sidebar-background: 215 28% 17%;
     --sidebar-foreground: 210 40% 98%; /* Light text for contrast */
@@ -55,6 +61,12 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 199 75% 53%;
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
     /* Custom Sidebar Colors */
     --sidebar-background: 215 28% 17%;

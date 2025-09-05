@@ -75,17 +75,19 @@ export default function Dashboard() {
         
         const playersData = playersSnapshot.docs.map(doc => doc.data() as Player);
         const categoryCounts = playersData.reduce((acc, player) => {
-            acc[player.category] = (acc[player.category] || 0) + 1;
+            const category = player.category || "Sans catégorie";
+            acc[category] = (acc[category] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
 
         const colors = [
             'hsl(var(--primary))',
             'hsl(var(--accent))',
-            'hsl(24, 9.8%, 10%)',
-            'hsl(60, 4.8%, 95.9%)',
-            'hsl(120, 75%, 53%)',
-            'hsl(280, 75%, 53%)',
+            'hsl(var(--chart-1))',
+            'hsl(var(--chart-2))',
+            'hsl(var(--chart-3))',
+            'hsl(var(--chart-4))',
+            'hsl(var(--chart-5))',
         ];
 
         const chartData = Object.entries(categoryCounts).map(([category, total], index) => ({
@@ -137,8 +139,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-center h-[300px]">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-            ) : (
+            ) : playersByCategory.length > 0 ? (
                 <PlayersByCategoryChart data={playersByCategory} />
+            ) : (
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Aucune donnée de joueur à afficher.
+                </div>
             )}
            </CardContent>
          </Card>
@@ -183,6 +189,7 @@ export default function Dashboard() {
                         <TableRow key={event.id}>
                           <TableCell>
                             <div className="font-medium">{event.team}</div>
+                            <div className="text-sm text-muted-foreground md:hidden">{event.location}</div>
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
