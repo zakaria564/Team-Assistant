@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, DollarSign, Activity, ArrowUpRight, Loader2 } from "lucide-react";
+import { Users, DollarSign, Activity, ArrowUpRight, Loader2, ClipboardList } from "lucide-react";
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
+  const [coachCount, setCoachCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
   const [playersByCategory, setPlayersByCategory] = useState<ChartData[]>([]);
 
@@ -66,6 +67,10 @@ export default function Dashboard() {
         // Fetch players data for stats
         const playersSnapshot = await getDocs(collection(db, "players"));
         setPlayerCount(playersSnapshot.size);
+        
+        // Fetch coaches data for stats
+        const coachesSnapshot = await getDocs(collection(db, "coaches"));
+        setCoachCount(coachesSnapshot.size);
         
         const playersData = playersSnapshot.docs.map(doc => doc.data() as Player);
         const categoryCounts = playersData.reduce((acc, player) => {
@@ -105,13 +110,22 @@ export default function Dashboard() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <KpiCard 
-          title="Total Joueurs"
-          value={loadingStats ? "..." : playerCount.toString()}
-          icon={Users}
-          description="Nombre total de joueurs inscrits"
-          loading={loadingStats}
-        />
+         <div className="grid gap-4">
+            <KpiCard 
+              title="Total Joueurs"
+              value={loadingStats ? "..." : playerCount.toString()}
+              icon={Users}
+              description="Nombre total de joueurs inscrits"
+              loading={loadingStats}
+            />
+             <KpiCard 
+              title="Total Entraîneurs"
+              value={loadingStats ? "..." : coachCount.toString()}
+              icon={ClipboardList}
+              description="Nombre total d'entraîneurs actifs"
+              loading={loadingStats}
+            />
+        </div>
          <Card className="md:col-span-1 lg:col-span-2">
            <CardHeader>
             <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
