@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ReceiptText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
@@ -283,18 +283,24 @@ export default function SalariesPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <Link href={`/dashboard/salaries/${salary.id}`}>
-                                    <DropdownMenuItem className="cursor-pointer">
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/salaries/${salary.id}`}>
                                         <FileText className="mr-2 h-4 w-4" />
                                         Voir les détails
-                                    </DropdownMenuItem>
-                                  </Link>
-                                  <Link href={`/dashboard/salaries/${salary.id}/edit`}>
-                                    <DropdownMenuItem className="cursor-pointer">
+                                    </Link>
+                                  </DropdownMenuItem>
+                                   <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/salaries/${salary.id}/receipt`}>
+                                        <ReceiptText className="mr-2 h-4 w-4" />
+                                        Générer le reçu
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/salaries/${salary.id}/edit`}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         Modifier
-                                    </DropdownMenuItem>
-                                  </Link>
+                                    </Link>
+                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
                                     className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
