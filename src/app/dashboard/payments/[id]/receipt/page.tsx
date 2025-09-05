@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react";
@@ -108,10 +109,10 @@ export default function PaymentReceiptPage() {
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeft className="mr-2" /> Retour
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
                 <Button onClick={handlePrint}>
-                    <Printer className="mr-2" /> Imprimer / PDF
+                    <Printer className="mr-2 h-4 w-4" /> Imprimer / PDF
                 </Button>
             </div>
             
