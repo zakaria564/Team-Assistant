@@ -16,7 +16,7 @@ import { Loader2, Sparkles, Dumbbell } from "lucide-react";
 const formSchema = z.object({
   age: z.coerce.number({invalid_type_error: "L'âge est requis."}).min(5, "L'âge doit être d'au moins 5 ans.").max(40, "L'âge ne peut pas dépasser 40 ans."),
   heightCm: z.coerce.number({invalid_type_error: "La taille est requise."}).min(100, "La taille doit être d'au moins 100 cm.").max(220, "La taille ne peut pas dépasser 220 cm."),
-  weightKg: z.coerce.number({invalid_type_error: "Le poids est requis."}).min(20, "Le poids doit être d'au moins 20 kg.").max(150, "Le poids ne peut pas dépasser 150 kg."),
+  weightKg: z.coerce.number({invalid_type_error: "Le poids est requis."}).min(20, "Le poids doit être d'au moins 20 kg.").max(150, "Le poids ne pas dépasser 150 kg."),
   strengths: z.string().min(10, "Décrivez les points forts avec au moins 10 caractères."),
   weaknesses: z.string().min(10, "Décrivez les points faibles avec au moins 10 caractères."),
 });
@@ -98,7 +98,7 @@ export function SuggestionForm() {
                 )}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
                 name="strengths"

@@ -44,7 +44,7 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent className="grid gap-2">
               <CardDescription>{report.description}</CardDescription>
-              <Button variant="outline" className="mt-2">
+              <Button variant="outline" className="mt-2 w-full sm:w-auto">
                 <FileDown className="mr-2 h-4 w-4" />
                 Générer le PDF
               </Button>

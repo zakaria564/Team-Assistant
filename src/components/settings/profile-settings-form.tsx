@@ -88,7 +88,7 @@ export function ProfileSettingsForm() {
       <CardContent>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
                     <Avatar className="h-20 w-20">
                         <AvatarImage key={photoUrlValue} src={photoUrlValue || undefined} alt={user?.displayName || ""} />
                         <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
@@ -97,7 +97,7 @@ export function ProfileSettingsForm() {
                         control={form.control}
                         name="photoURL"
                         render={({ field }) => (
-                            <FormItem className="flex-1">
+                            <FormItem className="flex-1 w-full">
                             <FormLabel>URL de la photo de profil</FormLabel>
                             <FormControl>
                                 <Input 
