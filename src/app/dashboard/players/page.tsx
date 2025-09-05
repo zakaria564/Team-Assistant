@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -17,7 +17,9 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuLabel, 
-  DropdownMenuSeparator 
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -35,7 +37,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 
-type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
+const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
+type PlayerStatus = typeof playerStatuses[number];
 
 interface Player {
   id: string;
@@ -54,10 +57,10 @@ interface Player {
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
     switch (status) {
-        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300';
+        case 'Actif': return 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200';
+        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200';
+        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200';
+        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200';
         default: return '';
     }
 }
@@ -116,6 +119,29 @@ export default function PlayersPage() {
       return (valueToSearch || '').toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [players, searchTerm, searchCategory]);
+  
+  const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
+    try {
+        const playerDocRef = doc(db, "players", playerId);
+        await updateDoc(playerDocRef, { status: newStatus });
+        
+        setPlayers(prevPlayers => 
+            prevPlayers.map(p => p.id === playerId ? { ...p, status: newStatus } : p)
+        );
+
+        toast({
+            title: "Statut mis à jour",
+            description: `Le statut du joueur a été changé en "${newStatus}".`
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de mettre à jour le statut."
+        });
+        console.error("Error updating status: ", error);
+    }
+  };
 
 
   const handleDeletePlayer = async () => {
@@ -217,9 +243,26 @@ export default function PlayersPage() {
                         <TableCell>{player.category}</TableCell>
                         <TableCell>{player.position}</TableCell>
                          <TableCell>
-                            <Badge className={cn("text-xs", getStatusBadgeClass(player.status))}>
-                                {player.status || "N/A"}
-                            </Badge>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(player.status))}>
+                                    {player.status || "N/A"}
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                    <DropdownMenuRadioGroup 
+                                        value={player.status} 
+                                        onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                    >
+                                        {playerStatuses.map(status => (
+                                            <DropdownMenuRadioItem key={status} value={status}>
+                                                {status}
+                                            </DropdownMenuRadioItem>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                          </TableCell>
                         <TableCell>{player.phone}</TableCell>
                         <TableCell>{player.email}</TableCell>
@@ -234,15 +277,15 @@ export default function PlayersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/players/${player.id}`}>
-                                <DropdownMenuItem>Voir les détails</DropdownMenuItem>
+                              <Link href={`/dashboard/players/${player.id}`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">Voir les détails</DropdownMenuItem>
                               </Link>
-                              <Link href={`/dashboard/players/${player.id}/edit`}>
-                                <DropdownMenuItem>Modifier</DropdownMenuItem>
+                              <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
                                 onClick={() => setPlayerToDelete(player)}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -290,4 +333,3 @@ export default function PlayersPage() {
   );
 }
 
-    
