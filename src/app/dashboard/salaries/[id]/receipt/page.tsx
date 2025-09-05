@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react";
@@ -46,10 +45,6 @@ export default function SalaryReceiptPage() {
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   useEffect(() => {
     if (!salaryId) return;
 
@@ -83,25 +78,6 @@ export default function SalaryReceiptPage() {
 
     fetchSalary();
   }, [salaryId, router]);
-  
-  const handleShare = async () => {
-    if (salary && navigator.share) {
-      try {
-        await navigator.share({
-          title: `Fiche de paie: ${salary.description}`,
-          text: `Voici la fiche de paie de ${salary.coachName}.`,
-          url: window.location.href,
-        });
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          console.error("Erreur lors du partage, retour à l'impression:", error);
-          window.print();
-        }
-      }
-    } else {
-      window.print();
-    }
-  };
 
   if (loading) {
     return (

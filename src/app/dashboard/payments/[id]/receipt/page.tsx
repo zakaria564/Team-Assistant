@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react";
@@ -46,10 +45,6 @@ export default function PaymentReceiptPage() {
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const handlePrint = () => {
-    window.print();
-  };
-
   useEffect(() => {
     if (!paymentId) return;
 
@@ -83,25 +78,6 @@ export default function PaymentReceiptPage() {
 
     fetchPayment();
   }, [paymentId, router]);
-  
-  const handleShare = async () => {
-    if (payment && navigator.share) {
-      try {
-        await navigator.share({
-          title: `Reçu de paiement: ${payment.description}`,
-          text: `Voici le reçu pour le paiement de ${payment.playerName}.`,
-          url: window.location.href,
-        });
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          console.error("Erreur lors du partage, retour à l'impression:", error);
-          window.print();
-        }
-      }
-    } else {
-      window.print();
-    }
-  };
 
   if (loading) {
     return (
