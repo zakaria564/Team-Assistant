@@ -53,8 +53,8 @@ interface Coach {
 
 const getStatusBadgeClass = (status?: CoachStatus) => {
     switch (status) {
-        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'Actif': return 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200';
+        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200';
         default: return '';
     }
 }
@@ -240,9 +240,9 @@ export default function CoachesPage() {
                         <TableCell>{coach.specialty}</TableCell>
                         <TableCell>{coach.category}</TableCell>
                         <TableCell>
-                          <DropdownMenu>
+                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                               <Button variant="ghost" className={cn("text-xs px-2 py-1 h-auto", getStatusBadgeClass(coach.status))}>
+                               <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(coach.status))}>
                                   {coach.status || "N/A"}
                                </Button>
                             </DropdownMenuTrigger>
