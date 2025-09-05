@@ -60,17 +60,6 @@ export default function Home() {
                <Link href="/dashboard">Voir la démo</Link>
             </Button>
           </div>
-          <div className="relative mx-auto mt-8 w-full max-w-5xl">
-            <div className="absolute -inset-2 rounded-lg bg-gradient-to-r from-primary to-accent opacity-75 blur"></div>
-            <Image
-              src="https://placehold.co/1200x600.png"
-              alt="Team Assistant Dashboard"
-              width={1200}
-              height={600}
-              className="relative rounded-lg border shadow-lg"
-              data-ai-hint="football dashboard"
-            />
-          </div>
         </section>
         <section id="features" className="container space-y-6 bg-slate-50/50 py-8 dark:bg-transparent md:py-12 lg:py-24">
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
