@@ -258,23 +258,25 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <CardTitle className="text-lg">Historique des transactions</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
-                      {(payment.transactions || []).length > 0 ? (
-                        <ul className="space-y-2">
-                           {payment.transactions.map((t, i) => (
-                              <li key={i} className="flex justify-between items-center">
-                                <span>{t.amount.toFixed(2)} MAD ({t.method})</span>
-                                <span className="text-muted-foreground">{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy HH:mm")}</span>
+                      <div className="w-full overflow-x-auto">
+                        {(payment.transactions || []).length > 0 ? (
+                          <ul className="space-y-2">
+                            {payment.transactions.map((t, i) => (
+                                <li key={i} className="flex justify-between items-center">
+                                  <span>{t.amount.toFixed(2)} MAD ({t.method})</span>
+                                  <span className="text-muted-foreground">{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy HH:mm")}</span>
+                                </li>
+                            ))}
+                            <Separator />
+                              <li className="flex justify-between items-center font-bold">
+                                  <span>Total Payé</span>
+                                  <span>{amountAlreadyPaid.toFixed(2)} MAD</span>
                               </li>
-                           ))}
-                           <Separator />
-                            <li className="flex justify-between items-center font-bold">
-                                <span>Total Payé</span>
-                                <span>{amountAlreadyPaid.toFixed(2)} MAD</span>
-                            </li>
-                        </ul>
-                      ) : (
-                        <p className="text-muted-foreground">Aucune transaction pour le moment.</p>
-                      )}
+                          </ul>
+                        ) : (
+                          <p className="text-muted-foreground">Aucune transaction pour le moment.</p>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 )}
@@ -319,7 +321,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                       />
                     </div>
                      <Separator />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                           <FormItem>
                               <FormLabel>Nouveau total payé</FormLabel>
                               <FormControl>

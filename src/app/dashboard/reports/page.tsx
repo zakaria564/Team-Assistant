@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileDown, Users, CalendarCheck, Trophy } from "lucide-react";
@@ -33,7 +34,7 @@ export default function ReportsPage() {
         <p className="text-muted-foreground">Générez des rapports et exportez les données de votre club.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {reportTypes.map((report) => (
           <Card key={report.title}>
             <CardHeader className="flex flex-row items-center gap-4 space-y-0">

@@ -208,12 +208,12 @@ export default function CoachesPage() {
             <CardDescription>Retrouvez ici tous les entraîneurs du club.</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center items-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="w-full overflow-x-auto">
+            <div className="w-full overflow-x-auto">
+              {loading ? (
+                <div className="flex justify-center items-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -223,7 +223,7 @@ export default function CoachesPage() {
                       <TableHead className="hidden sm:table-cell">Catégorie</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -262,7 +262,7 @@ export default function CoachesPage() {
                             </DropdownMenu>
                           </TableCell>
                           <TableCell className="hidden xl:table-cell">{coach.phone}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-right">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" className="h-8 w-8 p-0">

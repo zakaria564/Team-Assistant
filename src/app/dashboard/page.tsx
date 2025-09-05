@@ -110,8 +110,8 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-         <div className="grid gap-4 lg:col-span-1">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+         <div className="grid gap-4 md:col-span-1 lg:col-span-1">
             <KpiCard 
               title="Total Joueurs"
               value={loadingStats ? "..." : playerCount.toString()}
@@ -127,7 +127,7 @@ export default function Dashboard() {
               loading={loadingStats}
             />
         </div>
-         <Card className="md:col-span-2">
+         <Card className="md:col-span-1 lg:col-span-2">
            <CardHeader>
             <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
             <CardDescription>Visualisez la distribution des joueurs dans les différentes catégories.</CardDescription>
@@ -159,51 +159,53 @@ export default function Dashboard() {
               </Link>
             </Button>
           </CardHeader>
-          <CardContent className="w-full overflow-x-auto">
-            {loadingEvents ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Équipe</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
-                    <TableHead className="hidden md:table-cell">Lieu</TableHead>
-                    <TableHead className="hidden lg:table-cell">Date</TableHead>
-                    <TableHead className="hidden lg:table-cell">Heure</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {upcomingEvents.length > 0 ? (
-                    upcomingEvents.map(event => (
-                      <TableRow key={event.id}>
-                        <TableCell>
-                          <div className="font-medium">{event.team}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
-                            {event.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
-                        <TableCell className="hidden md:table-cell">{event.location}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{format(event.date, "HH:mm", { locale: fr })}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+          <CardContent>
+            <div className="w-full overflow-x-auto">
+              {loadingEvents ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                        Aucun événement à venir.
-                      </TableCell>
+                      <TableHead>Équipe</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
+                      <TableHead className="hidden md:table-cell">Lieu</TableHead>
+                      <TableHead className="hidden lg:table-cell">Date</TableHead>
+                      <TableHead className="hidden lg:table-cell">Heure</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingEvents.length > 0 ? (
+                      upcomingEvents.map(event => (
+                        <TableRow key={event.id}>
+                          <TableCell>
+                            <div className="font-medium">{event.team}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
+                              {event.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
+                          <TableCell className="hidden md:table-cell">{event.location}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{format(event.date, "HH:mm", { locale: fr })}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          Aucun événement à venir.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

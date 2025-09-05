@@ -173,9 +173,9 @@ export default function PlayerDetailPage() {
         <div className="lg:col-span-2 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Informations Personnelles</CardTitle>_
+                    <CardTitle>Informations Personnelles</CardTitle>
                 </CardHeader>
-                 <CardContent className="grid md:grid-cols-2 gap-x-6 gap-y-6">
+                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
@@ -188,7 +188,7 @@ export default function PlayerDetailPage() {
                 <CardHeader>
                     <CardTitle>Informations du Tuteur</CardTitle>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-x-6 gap-y-6">
+                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
                     <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
                     <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />

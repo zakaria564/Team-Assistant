@@ -1,3 +1,4 @@
+
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { ClubSettingsForm } from "@/components/settings/club-settings-form";
 import { AppearanceSettings } from "@/components/settings/appearance-settings";
@@ -15,7 +16,7 @@ export default function SettingsPage() {
       
       <Separator />
 
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl">
         <ProfileSettingsForm />
         <ClubSettingsForm />
         <AppearanceSettings />

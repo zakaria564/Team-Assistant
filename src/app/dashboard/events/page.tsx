@@ -165,7 +165,7 @@ export default function EventsPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
-          <CardContent className="p-2">
+          <CardContent className="p-0 md:p-2">
             {isClient ? (
                 <Calendar
                     key={allEvents.length} // Force re-render when events change for modifiers

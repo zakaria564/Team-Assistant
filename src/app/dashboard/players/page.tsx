@@ -208,12 +208,12 @@ export default function PlayersPage() {
             <CardDescription>Retrouvez ici tous les joueurs inscrits dans votre club.</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center items-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="w-full overflow-x-auto">
+            <div className="w-full overflow-x-auto">
+              {loading ? (
+                <div className="flex justify-center items-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -321,13 +321,11 @@ export default function PlayersPage() {
                     )}
                   </TableBody>
                 </Table>
-              </div>
-            )}
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
     </>
   );
 }
-
-    

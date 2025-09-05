@@ -154,7 +154,7 @@ export default function CoachDetailPage() {
                 <CardHeader>
                     <CardTitle>Coordonnées</CardTitle>
                 </CardHeader>
-                 <CardContent className="grid md:grid-cols-2 gap-x-6 gap-y-6">
+                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={Phone} label="Téléphone" value={coach.phone} />
                     <DetailItem icon={Mail} label="Email" value={coach.email} />
                  </CardContent>
