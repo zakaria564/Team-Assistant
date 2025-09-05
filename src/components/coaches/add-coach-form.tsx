@@ -221,7 +221,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     <>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-12">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-8">
                 <FormField
                   control={form.control}
@@ -258,7 +258,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         </FormItem>
                     )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="category"

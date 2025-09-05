@@ -313,7 +313,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     <>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-12">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -328,7 +328,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     </FormItem>
                   )}
                 />
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="birthDate"
@@ -378,7 +378,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="phone"
@@ -407,7 +407,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     />
                   </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="category"
@@ -476,7 +476,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       </FormItem>
                     )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                     control={form.control}
                     name="number"
@@ -531,7 +531,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="tutorPhone"

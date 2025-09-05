@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -56,7 +57,7 @@ export function SuggestionForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
                 name="age"
@@ -97,7 +98,7 @@ export function SuggestionForm() {
                 )}
               />
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
                 name="strengths"
@@ -140,7 +141,7 @@ export function SuggestionForm() {
       {error && <p className="p-6 pt-0 text-destructive">{error}</p>}
       
       {result && (
-        <div className="p-6 pt-0 grid md:grid-cols-2 gap-6">
+        <div className="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="bg-muted/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />Postes Suggérés</CardTitle>

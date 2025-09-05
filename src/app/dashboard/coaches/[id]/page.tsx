@@ -120,8 +120,8 @@ export default function CoachDetailPage() {
         </Button>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-6">
             <Card>
                 <CardContent className="pt-6">
                     <div className="flex flex-col items-center gap-4">
@@ -149,7 +149,7 @@ export default function CoachDetailPage() {
                 </CardContent>
             </Card>
         </div>
-        <div className="md:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Coordonnées</CardTitle>
