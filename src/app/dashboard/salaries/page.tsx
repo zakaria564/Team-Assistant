@@ -292,7 +292,7 @@ export default function SalariesPage() {
                                    <DropdownMenuItem asChild className="cursor-pointer">
                                     <Link href={`/dashboard/salaries/${salary.id}/receipt`}>
                                         <ReceiptText className="mr-2 h-4 w-4" />
-                                        Générer le reçu
+                                        imprimer le reçu
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild className="cursor-pointer">
@@ -351,5 +351,3 @@ export default function SalariesPage() {
     </>
   );
 }
-
-    

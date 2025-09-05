@@ -300,7 +300,7 @@ export default function PaymentsPage() {
                                   <DropdownMenuItem asChild className="cursor-pointer">
                                     <Link href={`/dashboard/payments/${payment.id}/receipt`}>
                                         <ReceiptText className="mr-2 h-4 w-4" />
-                                        Générer le reçu
+                                        imprimer le reçu
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild className="cursor-pointer">
