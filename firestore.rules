@@ -1,29 +1,25 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read and write to the players collection
-    match /players/{playerId} {
+    
+    match /players/{document=**} {
       allow read, write: if request.auth != null;
     }
     
-    // Allow authenticated users to read and write to the coaches collection
-    match /coaches/{coachId} {
+    match /coaches/{document=**} {
       allow read, write: if request.auth != null;
     }
 
-    // Allow authenticated users to read and write to the events collection
-    match /events/{eventId} {
+    match /events/{document=**} {
       allow read, write: if request.auth != null;
     }
 
-    // Allow authenticated users to read and write to the payments collection
-    match /payments/{paymentId} {
+    match /payments/{document=**} {
       allow read, write: if request.auth != null;
     }
 
-    // Allow authenticated users to read and write to the salaries collection
-    match /salaries/{salaryId} {
+    match /salaries/{document=**} {
       allow read, write: if request.auth != null;
     }
   }
