@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,9 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuLabel, 
-  DropdownMenuSeparator 
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -35,7 +37,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-type CoachStatus = "Actif" | "Inactif";
+const coachStatuses = ["Actif", "Inactif"] as const;
+type CoachStatus = typeof coachStatuses[number];
 
 interface Coach {
   id: string;
@@ -114,6 +117,29 @@ export default function CoachesPage() {
     });
   }, [coaches, searchTerm, searchCategory]);
   
+  const handleUpdateStatus = async (coachId: string, newStatus: CoachStatus) => {
+    try {
+        const coachDocRef = doc(db, "coaches", coachId);
+        await updateDoc(coachDocRef, { status: newStatus });
+        
+        setCoaches(prevCoaches => 
+            prevCoaches.map(c => c.id === coachId ? { ...c, status: newStatus } : c)
+        );
+
+        toast({
+            title: "Statut mis à jour",
+            description: `Le statut de l'entraîneur a été changé en "${newStatus}".`
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de mettre à jour le statut."
+        });
+        console.error("Error updating status: ", error);
+    }
+  };
+
   const handleDeleteCoach = async () => {
     if (!coachToDelete) return;
 
@@ -214,9 +240,26 @@ export default function CoachesPage() {
                         <TableCell>{coach.specialty}</TableCell>
                         <TableCell>{coach.category}</TableCell>
                         <TableCell>
-                          <Badge className={cn("text-xs", getStatusBadgeClass(coach.status))}>
-                              {coach.status || "N/A"}
-                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                               <Button variant="ghost" className={cn("text-xs px-2 py-1 h-auto", getStatusBadgeClass(coach.status))}>
+                                  {coach.status || "N/A"}
+                               </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                <DropdownMenuRadioGroup 
+                                    value={coach.status} 
+                                    onValueChange={(newStatus) => handleUpdateStatus(coach.id, newStatus as CoachStatus)}
+                                >
+                                    {coachStatuses.map(status => (
+                                        <DropdownMenuRadioItem key={status} value={status}>
+                                            {status}
+                                        </DropdownMenuRadioItem>
+                                    ))}
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                         <TableCell>{coach.phone}</TableCell>
                         <TableCell>
