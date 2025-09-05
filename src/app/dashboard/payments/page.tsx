@@ -233,7 +233,7 @@ export default function PaymentsPage() {
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => (
                         <TableRow key={payment.id}>
-                          <TableCell className="font-medium">{payment.playerName}</TableCell>
+                          <TableCell className="font-medium whitespace-nowrap">{payment.playerName}</TableCell>
                           <TableCell className="text-muted-foreground hidden lg:table-cell">{payment.description}</TableCell>
                           <TableCell className="text-right font-semibold text-green-600 hidden sm:table-cell">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
                           <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
