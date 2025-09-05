@@ -112,7 +112,7 @@ export default function PaymentReceiptPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
                 <Button onClick={handlePrint}>
-                    <Printer className="mr-2 h-4 w-4" /> Imprimer / PDF
+                    <Printer className="mr-2 h-4 w-4" /> Imprimer
                 </Button>
             </div>
             
