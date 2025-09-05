@@ -2,6 +2,7 @@
 "use client"
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChartData {
   name: string;
@@ -27,6 +28,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function PlayersByCategoryChart({ data }: PlayersByCategoryChartProps) {
+  const isMobile = useIsMobile();
   // Sort data alphabetically by category for consistent display
   const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -39,8 +41,8 @@ export function PlayersByCategoryChart({ data }: PlayersByCategoryChartProps) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            outerRadius={100}
-            innerRadius={60} // This creates the donut chart effect
+            outerRadius={isMobile ? 80 : 100}
+            innerRadius={isMobile ? 50 : 60} // This creates the donut chart effect
             fill="#8884d8"
             dataKey="value"
             paddingAngle={2}
@@ -52,9 +54,10 @@ export function PlayersByCategoryChart({ data }: PlayersByCategoryChartProps) {
           <Tooltip content={<CustomTooltip />} />
           <Legend 
             iconType="circle" 
-            layout="vertical" 
-            verticalAlign="middle" 
-            align="right" 
+            layout={isMobile ? "horizontal" : "vertical"} 
+            verticalAlign={isMobile ? "bottom" : "middle"} 
+            align={isMobile ? "center" : "right"}
+            wrapperStyle={isMobile ? { bottom: -10 } : {}}
           />
         </PieChart>
       </ResponsiveContainer>
