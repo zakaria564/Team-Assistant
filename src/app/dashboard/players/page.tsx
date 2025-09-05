@@ -219,11 +219,10 @@ export default function PlayersPage() {
                     <TableRow>
                       <TableHead className="w-[80px] hidden sm:table-cell">Photo</TableHead>
                       <TableHead>Nom</TableHead>
-                      <TableHead>Catégorie</TableHead>
-                      <TableHead className="hidden md:table-cell">Poste</TableHead>
+                      <TableHead className="hidden md:table-cell">Catégorie</TableHead>
+                      <TableHead className="hidden lg:table-cell">Poste</TableHead>
                       <TableHead>Statut</TableHead>
-                      <TableHead className="hidden lg:table-cell">Téléphone</TableHead>
-                      <TableHead className="hidden xl:table-cell">Tuteur</TableHead>
+                      <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -238,8 +237,8 @@ export default function PlayersPage() {
                             </Avatar>
                           </TableCell>
                           <TableCell className="font-medium">{player.name}</TableCell>
-                          <TableCell>{player.category}</TableCell>
-                          <TableCell className="hidden md:table-cell">{player.position}</TableCell>
+                          <TableCell className="hidden md:table-cell">{player.category}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
                            <TableCell>
                               <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
@@ -262,8 +261,7 @@ export default function PlayersPage() {
                                   </DropdownMenuContent>
                               </DropdownMenu>
                            </TableCell>
-                          <TableCell className="hidden lg:table-cell">{player.phone}</TableCell>
-                          <TableCell className="hidden xl:table-cell">{player.tutorName}</TableCell>
+                          <TableCell className="hidden xl:table-cell">{player.phone}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -292,21 +290,21 @@ export default function PlayersPage() {
                                           </DropdownMenuItem>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                              Cette action est irréversible. Le joueur "{player.name}" sera définitivement supprimé de la base de données.
-                                              </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                              <AlertDialogAction 
-                                              onClick={() => handleDeletePlayer(player.id)}
-                                              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                              >
-                                              Supprimer
-                                              </AlertDialogAction>
-                                          </AlertDialogFooter>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                          Cette action est irréversible. Le joueur "{player.name}" sera définitivement supprimé de la base de données.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                            onClick={() => handleDeletePlayer(player.id)}
+                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                            >
+                                            Supprimer
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
                                       </AlertDialogContent>
                                   </AlertDialog>
                               </DropdownMenuContent>
@@ -316,7 +314,7 @@ export default function PlayersPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                        <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                           {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
                         </TableCell>
                       </TableRow>
@@ -331,3 +329,5 @@ export default function PlayersPage() {
     </>
   );
 }
+
+    

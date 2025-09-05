@@ -222,7 +222,6 @@ export default function SalariesPage() {
                       <TableHead className="text-right hidden sm:table-cell">Montant Payé</TableHead>
                       <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
                       <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
-                      <TableHead className="hidden xl:table-cell">Date de création</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -236,7 +235,6 @@ export default function SalariesPage() {
                           <TableCell className="text-right font-semibold text-green-600 hidden sm:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
                           <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
                           <TableCell className="text-right hidden xl:table-cell">{salary.totalAmount.toFixed(2)} MAD</TableCell>
-                          <TableCell className="text-muted-foreground hidden xl:table-cell">{format(new Date(salary.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
                           <TableCell>
                             <Badge 
                                 variant={getBadgeVariant(salary.status)}
@@ -279,21 +277,21 @@ export default function SalariesPage() {
                                           </DropdownMenuItem>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                              Cette action est irréversible. Le salaire pour "{salary.description}" sera définitivement supprimé.
-                                              </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                              <AlertDialogAction 
-                                              onClick={() => handleDeleteSalary(salary.id)}
-                                              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                              >
-                                              Supprimer
-                                              </AlertDialogAction>
-                                          </AlertDialogFooter>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                            Cette action est irréversible. Le salaire pour "{salary.description}" sera définitivement supprimé.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                            onClick={() => handleDeleteSalary(salary.id)}
+                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                            >
+                                            Supprimer
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
                                       </AlertDialogContent>
                                   </AlertDialog>
                                 </DropdownMenuContent>
@@ -303,7 +301,7 @@ export default function SalariesPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
+                          <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                              {searchTerm ? "Aucun salaire ne correspond à votre recherche." : "Aucun salaire trouvé."}
                           </TableCell>
                         </TableRow>
@@ -318,3 +316,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    
