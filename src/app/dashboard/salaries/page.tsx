@@ -157,6 +157,37 @@ export default function SalariesPage() {
         default: return '';
     }
   }
+  
+  const handleExport = () => {
+    const csvHeader = "Entraîneur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
+    const csvRows = filteredSalaries.map(s => {
+      const row = [
+        `"${s.coachName}"`,
+        `"${s.description}"`,
+        s.totalAmount.toFixed(2),
+        s.amountPaid.toFixed(2),
+        s.amountRemaining.toFixed(2),
+        s.status,
+        format(new Date(s.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr })
+      ].join(';');
+      return row;
+    }).join('\n');
+
+    const csvString = `${csvHeader}${csvRows}`;
+    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `export_salaires_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
 
   return (
     <>
@@ -167,7 +198,7 @@ export default function SalariesPage() {
               <p className="text-muted-foreground">Suivez et gérez les salaires des entraîneurs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
-              <Button variant="outline" className="w-1/2 md:w-auto">
+              <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
                   <Download className="mr-2 h-4 w-4" />
                   Exporter
               </Button>

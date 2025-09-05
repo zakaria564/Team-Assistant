@@ -162,6 +162,37 @@ export default function PaymentsPage() {
         default: return '';
     }
   }
+  
+  const handleExport = () => {
+    const csvHeader = "Joueur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
+    const csvRows = filteredPayments.map(p => {
+      const row = [
+        `"${p.playerName}"`,
+        `"${p.description}"`,
+        p.totalAmount.toFixed(2),
+        p.amountPaid.toFixed(2),
+        p.amountRemaining.toFixed(2),
+        p.status,
+        format(new Date(p.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr })
+      ].join(';');
+      return row;
+    }).join('\n');
+
+    const csvString = `${csvHeader}${csvRows}`;
+    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `export_paiements_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
 
   return (
     <>
@@ -172,7 +203,7 @@ export default function PaymentsPage() {
               <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
-              <Button variant="outline" className="w-1/2 md:w-auto">
+              <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
                   <Download className="mr-2 h-4 w-4" />
                   Exporter
               </Button>
