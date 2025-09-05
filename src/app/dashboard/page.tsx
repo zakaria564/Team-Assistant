@@ -145,14 +145,14 @@ export default function Dashboard() {
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
         <Card>
-          <CardHeader className="flex flex-row items-center">
-            <div className="grid gap-2">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center">
+            <div className="grid gap-2 flex-1">
               <CardTitle>Événements à venir</CardTitle>
               <CardDescription>
                 Les 5 prochains matchs et entraînements de vos équipes.
               </CardDescription>
             </div>
-            <Button asChild size="sm" className="ml-auto gap-1">
+            <Button asChild size="sm" className="ml-auto gap-1 w-full md:w-auto mt-4 md:mt-0">
               <Link href="/dashboard/events">
                 Voir tout
                 <ArrowUpRight className="h-4 w-4" />
@@ -170,10 +170,10 @@ export default function Dashboard() {
                   <TableRow>
                     <TableHead>Équipe</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Adversaire</TableHead>
-                    <TableHead>Lieu</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Heure</TableHead>
+                    <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
+                    <TableHead className="hidden md:table-cell">Lieu</TableHead>
+                    <TableHead className="hidden lg:table-cell">Date</TableHead>
+                    <TableHead className="hidden lg:table-cell">Heure</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -188,10 +188,10 @@ export default function Dashboard() {
                             {event.type}
                           </Badge>
                         </TableCell>
-                        <TableCell>{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
-                        <TableCell>{event.location}</TableCell>
-                        <TableCell>{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
-                        <TableCell>{format(event.date, "HH:mm", { locale: fr })}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
+                        <TableCell className="hidden md:table-cell">{event.location}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{format(event.date, "HH:mm", { locale: fr })}</TableCell>
                       </TableRow>
                     ))
                   ) : (
