@@ -194,12 +194,12 @@ export default function PaymentsPage() {
   };
 
   const handlePrint = (paymentId: string) => {
-    const printWindow = window.open(`/dashboard/payments/${paymentId}/receipt`, '_blank', 'height=600,width=800');
+    const printWindow = window.open(`/dashboard/payments/${paymentId}/receipt`, '_blank', 'height=800,width=600');
     printWindow?.addEventListener('load', () => {
-        printWindow?.print();
-        setTimeout(() => {
-          printWindow?.close();
-        }, 100);
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
     });
   };
 

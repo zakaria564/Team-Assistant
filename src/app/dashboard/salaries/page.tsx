@@ -189,12 +189,12 @@ export default function SalariesPage() {
   };
 
   const handlePrint = (salaryId: string) => {
-    const printWindow = window.open(`/dashboard/salaries/${salaryId}/receipt`, '_blank', 'height=600,width=800');
+    const printWindow = window.open(`/dashboard/salaries/${salaryId}/receipt`, '_blank', 'height=800,width=600');
     printWindow?.addEventListener('load', () => {
-        printWindow?.print();
-        setTimeout(() => {
-          printWindow?.close();
-        }, 100);
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
     });
   };
 
