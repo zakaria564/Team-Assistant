@@ -195,12 +195,14 @@ export default function PaymentsPage() {
 
   const handlePrint = (paymentId: string) => {
     const printWindow = window.open(`/dashboard/payments/${paymentId}/receipt`, '_blank', 'height=800,width=600');
-    printWindow?.addEventListener('load', () => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-      }, 100);
-    });
+    if (printWindow) {
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 100);
+      };
+    }
   };
 
 
@@ -309,7 +311,10 @@ export default function PaymentsPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     className="cursor-pointer"
-                                    onSelect={() => handlePrint(payment.id)}
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      handlePrint(payment.id);
+                                    }}
                                   >
                                     <ReceiptText className="mr-2 h-4 w-4" />
                                     imprimer le reçu
@@ -370,3 +375,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    

@@ -190,12 +190,14 @@ export default function SalariesPage() {
 
   const handlePrint = (salaryId: string) => {
     const printWindow = window.open(`/dashboard/salaries/${salaryId}/receipt`, '_blank', 'height=800,width=600');
-    printWindow?.addEventListener('load', () => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-      }, 100);
-    });
+    if (printWindow) {
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 100);
+      };
+    }
   };
 
 
@@ -301,7 +303,10 @@ export default function SalariesPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     className="cursor-pointer"
-                                    onSelect={() => handlePrint(salary.id)}
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      handlePrint(salary.id);
+                                    }}
                                    >
                                         <ReceiptText className="mr-2 h-4 w-4" />
                                         imprimer le reçu
@@ -362,3 +367,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    

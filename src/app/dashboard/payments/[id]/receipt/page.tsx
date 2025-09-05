@@ -2,12 +2,12 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Printer, Trophy, Share2, Download } from "lucide-react";
+import { Loader2, ArrowLeft, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -107,13 +107,10 @@ export default function PaymentReceiptPage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
-                 <div className="flex gap-2">
-                   
-                </div>
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
-                 <CardHeader className="bg-muted/30 print:bg-transparent">
+                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -189,7 +186,7 @@ export default function PaymentReceiptPage() {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="bg-muted/30 print:bg-transparent p-6 flex-col items-start gap-4">
+                <CardFooter className="p-6 flex-col items-start gap-4">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold">Statut du paiement:</span>
                         <Badge className={cn("text-base", getBadgeClass(payment.status))}>
@@ -224,3 +221,5 @@ export default function PaymentReceiptPage() {
     </div>
   );
 }
+
+    
