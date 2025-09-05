@@ -88,11 +88,12 @@ export default function SalaryReceiptPage() {
           text: `Voici la fiche de paie de ${salary.coachName}.`,
           url: window.location.href,
         });
-      } catch (error) {
-        console.error("Erreur lors du partage:", error);
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error("Erreur lors du partage:", error);
+        }
       }
     } else {
-      // Fallback to print if Web Share API is not available
       window.print();
     }
   };
