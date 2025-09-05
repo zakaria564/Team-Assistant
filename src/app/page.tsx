@@ -52,14 +52,6 @@ export default function Home() {
               De la gestion des joueurs aux rapports de performance, Team Assistant est l'outil tout-en-un pour les administrateurs de clubs.
             </p>
           </div>
-          <div className="mx-auto flex w-full max-w-sm items-center space-x-4 md:max-w-xl">
-            <Button asChild size="lg" className="w-full md:w-auto">
-              <Link href="/signup">Commencer gratuitement</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild className="w-full md:w-auto">
-               <Link href="/dashboard">Voir la démo</Link>
-            </Button>
-          </div>
         </section>
         <section id="features" className="container space-y-6 bg-slate-50/50 py-8 dark:bg-transparent md:py-12 lg:py-24">
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
