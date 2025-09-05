@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -215,7 +215,7 @@ export default function EventsPage() {
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => (
-                         <Card key={event.id} className="bg-muted/30 group relative">
+                         <Card key={event.id} className="bg-muted/30 group">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center justify-between">
                                     <span>{getEventTitle(event)}</span>
@@ -238,7 +238,7 @@ export default function EventsPage() {
                                     <span>{event.team}</span>
                                 </div>
                             </CardContent>
-                             <div className="absolute top-4 right-4">
+                            <CardFooter className="flex justify-end">
                                 <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -264,7 +264,7 @@ export default function EventsPage() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                                 </DropdownMenu>
-                            </div>
+                            </CardFooter>
                         </Card>
                     ))
                 ) : (
@@ -299,4 +299,3 @@ export default function EventsPage() {
   );
 }
 
-    
