@@ -14,6 +14,7 @@ import { db } from "@/lib/firebase";
 import { format, subDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
+import { cn } from "@/lib/utils";
 
 interface Event {
   id: string;
