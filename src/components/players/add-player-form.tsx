@@ -314,7 +314,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="space-y-4">
+            <div className="space-y-4 lg:order-1">
                 <FormField
                   control={form.control}
                   name="name"
@@ -572,7 +572,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                 </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 lg:order-2">
                 <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
                     <video 
                         ref={videoRef} 

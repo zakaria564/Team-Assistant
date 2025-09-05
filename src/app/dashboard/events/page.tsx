@@ -142,7 +142,7 @@ export default function EventsPage() {
   return (
     <>
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-6 w-6" />
@@ -155,7 +155,7 @@ export default function EventsPage() {
             </p>
           </div>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full md:w-auto">
           <Link href="/dashboard/events/add">
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter un événement
@@ -163,7 +163,7 @@ export default function EventsPage() {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-2">
             {isClient ? (
@@ -220,7 +220,7 @@ export default function EventsPage() {
                                     </span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="flex items-center gap-6 text-sm">
+                            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm">
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Clock className="h-4 w-4" />
                                     <span>{format(event.date, "HH:mm", { locale: fr })}</span>

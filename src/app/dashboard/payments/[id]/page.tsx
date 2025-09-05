@@ -113,7 +113,7 @@ export default function PaymentDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-6 w-6" />
@@ -126,7 +126,7 @@ export default function PaymentDetailPage() {
               </p>
             </div>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full md:w-auto">
           <Link href={`/dashboard/payments/${paymentId}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
             Ajouter un versement
@@ -134,8 +134,8 @@ export default function PaymentDetailPage() {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl">
                     <FileText />
@@ -146,36 +146,38 @@ export default function PaymentDetailPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date du versement</TableHead>
-                    <TableHead>Méthode</TableHead>
-                    <TableHead className="text-right">Montant</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payment.transactions?.length > 0 ? (
-                    payment.transactions.map((transaction, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{format(new Date(transaction.date.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
-                        <TableCell>{transaction.method}</TableCell>
-                        <TableCell className="text-right font-medium">{transaction.amount.toFixed(2)} MAD</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
-                        Aucun versement enregistré pour cette cotisation.
-                      </TableCell>
+                      <TableHead>Date du versement</TableHead>
+                      <TableHead>Méthode</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payment.transactions?.length > 0 ? (
+                      payment.transactions.map((transaction, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{format(new Date(transaction.date.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
+                          <TableCell>{transaction.method}</TableCell>
+                          <TableCell className="text-right font-medium">{transaction.amount.toFixed(2)} MAD</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                          Aucun versement enregistré pour cette cotisation.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
         </Card>
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:col-span-1">
             <Card>
                 <CardHeader>
                   <CardTitle>Résumé Financier</CardTitle>

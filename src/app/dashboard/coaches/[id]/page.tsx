@@ -99,7 +99,7 @@ export default function CoachDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-6 w-6" />
@@ -112,7 +112,7 @@ export default function CoachDetailPage() {
             </p>
             </div>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full md:w-auto">
           <Link href={`/dashboard/coaches/${coachId}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
             Modifier

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface Player {
   id: string;
@@ -164,27 +165,27 @@ export default function PaymentsPage() {
   return (
     <>
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
               <h1 className="text-3xl font-bold tracking-tight">Paiements des Joueurs</h1>
               <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
           </div>
-          <div className="flex gap-2">
-              <Button variant="outline">
+          <div className="flex gap-2 w-full md:w-auto">
+              <Button variant="outline" className="w-1/2 md:w-auto">
                   <Download className="mr-2 h-4 w-4" />
                   Exporter
               </Button>
-              <Button asChild>
+              <Button asChild className="w-1/2 md:w-auto">
                 <Link href="/dashboard/payments/add">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter un paiement
+                  Ajouter
                 </Link>
               </Button>
           </div>
         </div>
 
-        <div className="mb-4 flex items-center gap-4">
-            <div className="relative w-full max-w-sm">
+        <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
+            <div className="relative w-full md:max-w-sm">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                     placeholder="Rechercher..."
@@ -194,7 +195,7 @@ export default function PaymentsPage() {
                 />
             </div>
             <Select value={searchCategory} onValueChange={setSearchCategory}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue placeholder="Critère" />
                 </SelectTrigger>
                 <SelectContent>
@@ -215,102 +216,104 @@ export default function PaymentsPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Joueur</TableHead>
-                    <TableHead className="hidden lg:table-cell">Description</TableHead>
-                    <TableHead className="text-right">Montant Payé</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
-                    <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
-                    <TableHead className="hidden xl:table-cell">Date de création</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPayments.length > 0 ? (
-                      filteredPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.playerName}</TableCell>
-                        <TableCell className="text-muted-foreground hidden lg:table-cell">{payment.description}</TableCell>
-                        <TableCell className="text-right font-semibold text-green-600">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right hidden xl:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground hidden xl:table-cell">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
-                        <TableCell>
-                          <Badge 
-                              variant={getBadgeVariant(payment.status)}
-                              className={getBadgeClass(payment.status)}
-                          >
-                              {payment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Ouvrir le menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/payments/${payment.id}`}>
-                                  <DropdownMenuItem className="cursor-pointer">
-                                      <FileText className="mr-2 h-4 w-4" />
-                                      Voir les détails
-                                  </DropdownMenuItem>
-                                </Link>
-                                <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                  <DropdownMenuItem className="cursor-pointer">
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      Modifier
-                                  </DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuSeparator />
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem 
-                                      className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                      onSelect={(e) => e.preventDefault()}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Supprimer
-                                    </DropdownMenuItem>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Cette action est irréversible. Le paiement pour "{payment.description}" sera définitivement supprimé.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => handleDeletePayment(payment.id)}
-                                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                      >
-                                        Supprimer
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
-                          {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
-                        </TableCell>
-                      </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                      <TableHead>Joueur</TableHead>
+                      <TableHead className="hidden lg:table-cell">Description</TableHead>
+                      <TableHead className="text-right">Montant Payé</TableHead>
+                      <TableHead className="hidden md:table-cell text-right">Montant Restant</TableHead>
+                      <TableHead className="hidden xl:table-cell text-right">Montant Total</TableHead>
+                      <TableHead className="hidden xl:table-cell">Date de création</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.length > 0 ? (
+                        filteredPayments.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="font-medium whitespace-nowrap">{payment.playerName}</TableCell>
+                          <TableCell className="text-muted-foreground hidden lg:table-cell">{payment.description}</TableCell>
+                          <TableCell className="text-right font-semibold text-green-600">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
+                          <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
+                          <TableCell className="text-right hidden xl:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
+                          <TableCell className="text-muted-foreground hidden xl:table-cell">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
+                          <TableCell>
+                            <Badge 
+                                variant={getBadgeVariant(payment.status)}
+                                className={cn("whitespace-nowrap", getBadgeClass(payment.status))}
+                            >
+                                {payment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Ouvrir le menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <Link href={`/dashboard/payments/${payment.id}`}>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Voir les détails
+                                    </DropdownMenuItem>
+                                  </Link>
+                                  <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
+                                  </Link>
+                                  <DropdownMenuSeparator />
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem 
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                        onSelect={(e) => e.preventDefault()}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Cette action est irréversible. Le paiement pour "{payment.description}" sera définitivement supprimé.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                          onClick={() => handleDeletePayment(payment.id)}
+                                          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                        >
+                                          Supprimer
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                          <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
+                            {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
+                          </TableCell>
+                        </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

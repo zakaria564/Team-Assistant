@@ -110,7 +110,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-         <div className="grid gap-4">
+         <div className="grid gap-4 lg:col-span-1">
             <KpiCard 
               title="Total Joueurs"
               value={loadingStats ? "..." : playerCount.toString()}
@@ -126,7 +126,7 @@ export default function Dashboard() {
               loading={loadingStats}
             />
         </div>
-         <Card className="md:col-span-1 lg:col-span-2">
+         <Card className="md:col-span-2">
            <CardHeader>
             <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
             <CardDescription>Visualisez la distribution des joueurs dans les différentes catégories.</CardDescription>
@@ -158,7 +158,7 @@ export default function Dashboard() {
               </Link>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="w-full overflow-x-auto">
             {loadingEvents ? (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -183,7 +183,7 @@ export default function Dashboard() {
                           <div className="font-medium">{event.team}</div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className={event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground'}>
+                          <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
                             {event.type}
                           </Badge>
                         </TableCell>

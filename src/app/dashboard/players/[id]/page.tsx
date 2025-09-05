@@ -119,7 +119,7 @@ export default function PlayerDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-6 w-6" />
@@ -132,7 +132,7 @@ export default function PlayerDetailPage() {
             </p>
             </div>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full md:w-auto">
           <Link href={`/dashboard/players/${playerId}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
             Modifier
@@ -173,7 +173,7 @@ export default function PlayerDetailPage() {
         <div className="lg:col-span-2 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Informations Personnelles</CardTitle>
+                    <CardTitle>Informations Personnelles</CardTitle>_
                 </CardHeader>
                  <CardContent className="grid md:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
@@ -199,5 +199,3 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
-
-    

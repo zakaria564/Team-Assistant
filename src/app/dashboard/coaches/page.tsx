@@ -165,12 +165,12 @@ export default function CoachesPage() {
   return (
     <>
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Entraîneurs</h1>
             <p className="text-muted-foreground">Gérez les entraîneurs de votre club.</p>
           </div>
-          <Button asChild>
+          <Button asChild className="w-full md:w-auto">
             <Link href="/dashboard/coaches/add">
               <PlusCircle className="mr-2 h-4 w-4" />
               Ajouter un entraîneur
@@ -178,8 +178,8 @@ export default function CoachesPage() {
           </Button>
         </div>
 
-        <div className="mb-4 flex items-center gap-4">
-              <div className="relative w-full max-w-sm">
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+              <div className="relative w-full md:max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                       placeholder="Rechercher..."
@@ -189,7 +189,7 @@ export default function CoachesPage() {
                   />
               </div>
               <Select value={searchCategory} onValueChange={setSearchCategory}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="Critère" />
                   </SelectTrigger>
                   <SelectContent>
@@ -213,113 +213,115 @@ export default function CoachesPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">Photo</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead className="hidden md:table-cell">Spécialité</TableHead>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCoaches.length > 0 ? (
-                    filteredCoaches.map((coach) => (
-                      <TableRow key={coach.id}>
-                        <TableCell>
-                          <Avatar>
-                            <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
-                            <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                        </TableCell>
-                        <TableCell className="font-medium">{coach.name}</TableCell>
-                        <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
-                        <TableCell>{coach.category}</TableCell>
-                        <TableCell>
-                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                               <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(coach.status))}>
-                                  {coach.status || "N/A"}
-                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                <DropdownMenuRadioGroup 
-                                    value={coach.status} 
-                                    onValueChange={(newStatus) => handleUpdateStatus(coach.id, newStatus as CoachStatus)}
-                                >
-                                    {coachStatuses.map(status => (
-                                        <DropdownMenuRadioItem key={status} value={status}>
-                                            {status}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">{coach.phone}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px]">Photo</TableHead>
+                      <TableHead>Nom</TableHead>
+                      <TableHead className="hidden md:table-cell">Spécialité</TableHead>
+                      <TableHead>Catégorie</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCoaches.length > 0 ? (
+                      filteredCoaches.map((coach) => (
+                        <TableRow key={coach.id}>
+                          <TableCell>
+                            <Avatar>
+                              <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
+                              <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          </TableCell>
+                          <TableCell className="font-medium">{coach.name}</TableCell>
+                          <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
+                          <TableCell>{coach.category}</TableCell>
+                          <TableCell>
+                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Ouvrir le menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
+                                 <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(coach.status))}>
+                                    {coach.status || "N/A"}
+                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/coaches/${coach.id}`}>
-                                  <DropdownMenuItem className="cursor-pointer">Voir les détails</DropdownMenuItem>
-                                </Link>
-                                <Link href={`/dashboard/coaches/${coach.id}/edit`}>
-                                  <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuSeparator />
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem
-                                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                            onSelect={(e) => e.preventDefault()}
-                                        >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                        </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                            Cette action est irréversible. L'entraîneur "{coach.name}" sera définitivement supprimé de la base de données.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                            <AlertDialogAction 
-                                                onClick={() => handleDeleteCoach(coach.id)}
-                                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                            >
-                                                Supprimer
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                  <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                  <DropdownMenuRadioGroup 
+                                      value={coach.status} 
+                                      onValueChange={(newStatus) => handleUpdateStatus(coach.id, newStatus as CoachStatus)}
+                                  >
+                                      {coachStatuses.map(status => (
+                                          <DropdownMenuRadioItem key={status} value={status}>
+                                              {status}
+                                          </DropdownMenuRadioItem>
+                                      ))}
+                                  </DropdownMenuRadioGroup>
                               </DropdownMenuContent>
                             </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                        <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                          {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun entraîneur trouvé. Commencez par en ajouter un !"}
-                        </TableCell>
-                      </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                          </TableCell>
+                          <TableCell className="hidden xl:table-cell">{coach.phone}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Ouvrir le menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <Link href={`/dashboard/coaches/${coach.id}`}>
+                                    <DropdownMenuItem className="cursor-pointer">Voir les détails</DropdownMenuItem>
+                                  </Link>
+                                  <Link href={`/dashboard/coaches/${coach.id}/edit`}>
+                                    <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
+                                  </Link>
+                                  <DropdownMenuSeparator />
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <DropdownMenuItem
+                                              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                              onSelect={(e) => e.preventDefault()}
+                                          >
+                                              <Trash2 className="mr-2 h-4 w-4" />
+                                              Supprimer
+                                          </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                              Cette action est irréversible. L'entraîneur "{coach.name}" sera définitivement supprimé de la base de données.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                              <AlertDialogAction 
+                                                  onClick={() => handleDeleteCoach(coach.id)}
+                                                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                              >
+                                                  Supprimer
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                          <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                            {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun entraîneur trouvé. Commencez par en ajouter un !"}
+                          </TableCell>
+                        </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
