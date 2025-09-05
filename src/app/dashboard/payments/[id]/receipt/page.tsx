@@ -93,14 +93,12 @@ export default function PaymentReceiptPage() {
           url: window.location.href,
         });
       } catch (error: any) {
-        // Fallback to print if share fails, but ignore user cancellation.
         if (error.name !== 'AbortError') {
           console.error("Erreur lors du partage, retour à l'impression:", error);
           window.print();
         }
       }
     } else {
-      // Fallback for browsers that don't support navigator.share
       window.print();
     }
   };
@@ -132,14 +130,6 @@ export default function PaymentReceiptPage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
-                <div className="flex gap-2">
-                    <Button onClick={handleShare}>
-                        <Share2 className="mr-2 h-4 w-4" /> Partager
-                    </Button>
-                     <Button variant="secondary" onClick={handlePrint}>
-                        <Download className="mr-2 h-4 w-4" /> Exporter
-                    </Button>
-                </div>
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
