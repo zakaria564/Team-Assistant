@@ -1,4 +1,6 @@
 
+"use client";
+
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { ClubSettingsForm } from "@/components/settings/club-settings-form";
 import { AppearanceSettings } from "@/components/settings/appearance-settings";

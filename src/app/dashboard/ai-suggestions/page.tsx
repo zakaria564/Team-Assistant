@@ -1,3 +1,6 @@
+
+"use client";
+
 import { SuggestionForm } from "@/components/ai/suggestion-form";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
