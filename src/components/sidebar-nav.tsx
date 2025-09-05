@@ -12,7 +12,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
-  { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles },
+  // { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles }, // Temporarily disabled
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
