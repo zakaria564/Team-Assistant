@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc } from "firebase/firestore";
@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
@@ -73,31 +74,24 @@ export default function PlayersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlayers = async () => {
       setLoading(true);
+      setFetchError(null);
       try {
         const q = query(collection(db, "players"));
         const querySnapshot = await getDocs(q);
         const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-        
-        // Sort by category, then by name
-        playersData.sort((a, b) => {
-          if (a.category < b.category) return -1;
-          if (a.category > b.category) return 1;
-          if (a.name < b.name) return -1;
-          if (a.name > b.name) return 1;
-          return 0;
-        });
-
         setPlayers(playersData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching players: ", error);
+        setFetchError(error.message);
         toast({
           variant: "destructive",
-          title: "Erreur de permissions",
-          description: "Impossible de charger les joueurs. Veuillez vérifier vos règles de sécurité Firestore.",
+          title: "Erreur de chargement",
+          description: "Impossible de charger les joueurs. Vérifiez les permissions Firestore.",
         });
       } finally {
         setLoading(false);
@@ -219,6 +213,15 @@ export default function PlayersPage() {
             <CardDescription>Retrouvez ici tous les joueurs inscrits dans votre club.</CardDescription>
           </CardHeader>
           <CardContent>
+             {fetchError && (
+              <Alert variant="destructive" className="mb-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Erreur de chargement des données</AlertTitle>
+                  <AlertDescription>
+                    Une erreur s'est produite: <code className="font-mono text-sm">{fetchError}</code>
+                  </AlertDescription>
+              </Alert>
+            )}
             <div className="w-full overflow-x-auto">
               {loading ? (
                 <div className="flex justify-center items-center py-10">
@@ -304,7 +307,7 @@ export default function PlayersPage() {
                           </TableCell>
                         </TableRow>
                       ))
-                    ) : (
+                    ) : !fetchError && (
                       <TableRow>
                         <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                           {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
