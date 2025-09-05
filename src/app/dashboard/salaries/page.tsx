@@ -30,7 +30,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +56,7 @@ export default function SalariesPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("coachName");
+  const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
 
   useEffect(() => {
     const fetchSalaries = async () => {
@@ -118,10 +118,8 @@ export default function SalariesPage() {
   }, [salaries, searchTerm, searchCategory]);
 
 
-  const handleDeleteSalary = async (salaryId: string) => {
-    const salaryToDelete = salaries.find(p => p.id === salaryId);
-    if (!salaryToDelete) return;
-    
+  const confirmDeleteSalary = async () => {
+    if(!salaryToDelete) return;
     try {
       await deleteDoc(doc(db, "salaries", salaryToDelete.id));
       setSalaries(salaries.filter(p => p.id !== salaryToDelete.id));
@@ -136,6 +134,8 @@ export default function SalariesPage() {
         description: "Impossible de supprimer le salaire.",
       });
       console.error("Error deleting salary: ", error);
+    } finally {
+        setSalaryToDelete(null);
     }
   };
 
@@ -265,34 +265,13 @@ export default function SalariesPage() {
                                     </DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuSeparator />
-                                  <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                          <DropdownMenuItem 
-                                          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                          onSelect={(e) => e.preventDefault()}
-                                          >
-                                          <Trash2 className="mr-2 h-4 w-4" />
-                                          Supprimer
-                                          </DropdownMenuItem>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                            Cette action est irréversible. Le salaire pour "{salary.description}" sera définitivement supprimé.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                            <AlertDialogAction 
-                                            onClick={() => handleDeleteSalary(salary.id)}
-                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                            >
-                                            Supprimer
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                  </AlertDialog>
+                                  <DropdownMenuItem 
+                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                    onSelect={() => setSalaryToDelete(salary)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Supprimer
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                           </TableCell>
@@ -312,6 +291,28 @@ export default function SalariesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!salaryToDelete} onOpenChange={(isOpen) => !isOpen && setSalaryToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
+              <AlertDialogDescription>
+              Cette action est irréversible. Le salaire pour "{salaryToDelete?.description}" sera définitivement supprimé.
+              </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setSalaryToDelete(null)}>Annuler</AlertDialogCancel>
+              <AlertDialogAction 
+              onClick={confirmDeleteSalary}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              >
+              Supprimer
+              </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    

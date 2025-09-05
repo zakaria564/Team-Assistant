@@ -30,7 +30,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -61,6 +60,7 @@ export default function PaymentsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("playerName");
+  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -122,8 +122,7 @@ export default function PaymentsPage() {
   }, [payments, searchTerm, searchCategory]);
 
 
-  const handleDeletePayment = async (paymentId: string) => {
-    const paymentToDelete = payments.find(p => p.id === paymentId);
+  const confirmDeletePayment = async () => {
     if (!paymentToDelete) return;
 
     try {
@@ -140,6 +139,8 @@ export default function PaymentsPage() {
         description: "Impossible de supprimer le paiement.",
       });
       console.error("Error deleting payment: ", error);
+    } finally {
+        setPaymentToDelete(null);
     }
   };
 
@@ -268,34 +269,13 @@ export default function PaymentsPage() {
                                     </DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuSeparator />
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <DropdownMenuItem 
-                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                        onSelect={(e) => e.preventDefault()}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Supprimer
-                                      </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Cette action est irréversible. Le paiement pour "{payment.description}" sera définitivement supprimé.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                        <AlertDialogAction 
-                                          onClick={() => handleDeletePayment(payment.id)}
-                                          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                        >
-                                          Supprimer
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                  <DropdownMenuItem 
+                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                    onSelect={() => setPaymentToDelete(payment)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Supprimer
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                           </TableCell>
@@ -315,6 +295,28 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!paymentToDelete} onOpenChange={(isOpen) => !isOpen && setPaymentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le paiement pour "{paymentToDelete?.description}" sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeletePayment}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    

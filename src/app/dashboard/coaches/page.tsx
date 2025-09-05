@@ -34,7 +34,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 
@@ -66,6 +65,7 @@ export default function CoachesPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("name");
+  const [coachToDelete, setCoachToDelete] = useState<Coach | null>(null);
 
 
   useEffect(() => {
@@ -140,13 +140,11 @@ export default function CoachesPage() {
     }
   };
 
-  const handleDeleteCoach = async (coachId: string) => {
+  const confirmDeleteCoach = async () => {
+    if (!coachToDelete) return;
     try {
-      const coachToDelete = coaches.find(c => c.id === coachId);
-      if (!coachToDelete) return;
-      
-      await deleteDoc(doc(db, "coaches", coachId));
-      setCoaches(coaches.filter(p => p.id !== coachId));
+      await deleteDoc(doc(db, "coaches", coachToDelete.id));
+      setCoaches(coaches.filter(p => p.id !== coachToDelete.id));
       toast({
         title: "Entraîneur supprimé",
         description: `${coachToDelete.name} a été retiré du club.`,
@@ -158,6 +156,8 @@ export default function CoachesPage() {
         description: "Impossible de supprimer l'entraîneur.",
       });
       console.error("Error deleting coach: ", error);
+    } finally {
+        setCoachToDelete(null);
     }
   };
 
@@ -279,34 +279,13 @@ export default function CoachesPage() {
                                     <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuSeparator />
-                                  <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                          <DropdownMenuItem
-                                              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                              onSelect={(e) => e.preventDefault()}
-                                          >
-                                              <Trash2 className="mr-2 h-4 w-4" />
-                                              Supprimer
-                                          </DropdownMenuItem>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                              Cette action est irréversible. L'entraîneur "{coach.name}" sera définitivement supprimé de la base de données.
-                                              </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                              <AlertDialogAction 
-                                                  onClick={() => handleDeleteCoach(coach.id)}
-                                                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                              >
-                                                  Supprimer
-                                              </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                  </AlertDialog>
+                                  <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                      onSelect={() => setCoachToDelete(coach)}
+                                  >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Supprimer
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                           </TableCell>
@@ -326,6 +305,28 @@ export default function CoachesPage() {
           </CardContent>
         </Card>
       </div>
+
+       <AlertDialog open={!!coachToDelete} onOpenChange={(isOpen) => !isOpen && setCoachToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. L'entraîneur "{coachToDelete?.name}" sera définitivement supprimé de la base de données.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setCoachToDelete(null)}>Annuler</AlertDialogCancel>
+                <AlertDialogAction 
+                    onClick={confirmDeleteCoach}
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                >
+                    Supprimer
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    
