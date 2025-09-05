@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Printer, Trophy, Share2 } from "lucide-react";
+import { Loader2, ArrowLeft, Printer, Trophy, Share2, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,10 @@ export default function SalaryReceiptPage() {
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     if (!salaryId) return;
@@ -90,7 +94,8 @@ export default function SalaryReceiptPage() {
         });
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          console.error("Erreur lors du partage:", error);
+          console.error("Erreur lors du partage, retour à l'impression:", error);
+          window.print();
         }
       }
     } else {
@@ -125,9 +130,14 @@ export default function SalaryReceiptPage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
-                <Button onClick={handleShare}>
-                    <Share2 className="mr-2 h-4 w-4" /> Partager
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={handleShare}>
+                        <Share2 className="mr-2 h-4 w-4" /> Partager
+                    </Button>
+                     <Button variant="secondary" onClick={handlePrint}>
+                        <Download className="mr-2 h-4 w-4" /> Exporter
+                    </Button>
+                </div>
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
