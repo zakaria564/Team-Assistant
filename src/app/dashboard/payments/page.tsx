@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ReceiptText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
@@ -253,6 +253,7 @@ export default function PaymentsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Joueur</TableHead>
+                      <TableHead className="hidden md:table-cell">Montant Total</TableHead>
                       <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
                       <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -263,12 +264,15 @@ export default function PaymentsPage() {
                         filteredPayments.map((payment) => (
                         <TableRow key={payment.id}>
                           <TableCell>
-                            <div className="flex flex-col">
+                             <div className="flex flex-col">
                                 <span className="font-medium">{payment.playerName}</span>
-                                <span className="text-muted-foreground text-sm md:hidden">{(payment.amountPaid || 0).toFixed(2)} MAD</span>
-                            </div>
+                                <span className="text-muted-foreground text-sm md:hidden">
+                                  {payment.amountPaid.toFixed(2)} MAD / {payment.totalAmount.toFixed(2)} MAD
+                                </span>
+                             </div>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
+                          <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
+                          <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge 
                                 variant={getBadgeVariant(payment.status)}
@@ -287,18 +291,24 @@ export default function PaymentsPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <Link href={`/dashboard/payments/${payment.id}`}>
-                                    <DropdownMenuItem className="cursor-pointer">
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/payments/${payment.id}`}>
                                         <FileText className="mr-2 h-4 w-4" />
                                         Voir les détails
-                                    </DropdownMenuItem>
-                                  </Link>
-                                  <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                    <DropdownMenuItem className="cursor-pointer">
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/payments/${payment.id}/receipt`}>
+                                        <ReceiptText className="mr-2 h-4 w-4" />
+                                        Générer le reçu
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/dashboard/payments/${payment.id}/edit`}>
                                         <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier
-                                    </DropdownMenuItem>
-                                  </Link>
+                                        Modifier / Verser
+                                    </Link>
+                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
                                     className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
@@ -314,7 +324,7 @@ export default function PaymentsPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
                             {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
                           </TableCell>
                         </TableRow>
@@ -349,5 +359,3 @@ export default function PaymentsPage() {
     </>
   );
 }
-
-    

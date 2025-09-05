@@ -71,7 +71,7 @@ export default function EditPaymentPage() {
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier le paiement</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Modifier / Ajouter un versement</h1>
             <p className="text-muted-foreground">
               Mettez à jour la cotisation pour {loading ? "..." : playerName}.
             </p>
