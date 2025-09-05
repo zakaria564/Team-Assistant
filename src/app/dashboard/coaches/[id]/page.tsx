@@ -131,10 +131,6 @@ export default function CoachDetailPage() {
                         </Avatar>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold">{coach.name}</h2>
-                            <p className="text-base text-muted-foreground">{coach.specialty}</p>
-                            <Badge className={cn("text-base mt-2", getStatusBadgeClass(coach.status))}>
-                                {coach.status}
-                            </Badge>
                         </div>
                     </div>
                 </CardContent>
@@ -146,6 +142,11 @@ export default function CoachDetailPage() {
                 <CardContent className="space-y-4">
                     <DetailItem icon={Star} label="Spécialité" value={coach.specialty} />
                     <DetailItem icon={Shield} label="Catégorie Entraînée" value={coach.category} />
+                     <DetailItem icon={User} label="Statut">
+                        <Badge className={cn("text-base", getStatusBadgeClass(coach.status))}>
+                            {coach.status}
+                        </Badge>
+                    </DetailItem>
                 </CardContent>
             </Card>
         </div>
