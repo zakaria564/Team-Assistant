@@ -601,13 +601,13 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                 )}
                 
                 <div className="flex gap-4">
-                    <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full">
-                        <Camera className="mr-2"/>
-                        Prendre une photo
+                    <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full" size="sm">
+                        <Camera className="mr-2 h-4 w-4"/>
+                        Prendre
                     </Button>
                      {photoDataUrl && (
-                        <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full">
-                            <RefreshCcw className="mr-2" />
+                        <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full" size="sm">
+                            <RefreshCcw className="mr-2 h-4 w-4" />
                             Reprendre
                         </Button>
                      )}
