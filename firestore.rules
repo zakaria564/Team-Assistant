@@ -1,30 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Règle pour la collection 'players'
+
+    // Players
     match /players/{playerId} {
-      allow read, write: if request.auth != null;
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /players/{wildcard=**} {
+      allow list: if request.auth != null;
     }
 
-    // Règle pour la collection 'coaches'
+    // Coaches
     match /coaches/{coachId} {
-      allow read, write: if request.auth != null;
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /coaches/{wildcard=**} {
+      allow list: if request.auth != null;
     }
 
-    // Règle pour la collection 'events'
+    // Events
     match /events/{eventId} {
-      allow read, write: if request.auth != null;
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /events/{wildcard=**} {
+      allow list: if request.auth != null;
     }
 
-    // Règle pour la collection 'payments'
+    // Payments
     match /payments/{paymentId} {
-      allow read, write: if request.auth != null;
+      allow read, create, update, delete: if request.auth != null;
+    }
+     match /payments/{wildcard=**} {
+      allow list: if request.auth != null;
     }
 
-    // Règle pour la collection 'salaries'
+    // Salaries
     match /salaries/{salaryId} {
-      allow read, write: if request.auth != null;
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /salaries/{wildcard=**} {
+      allow list: if request.auth != null;
     }
   }
 }
