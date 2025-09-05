@@ -217,10 +217,10 @@ export default function CoachesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px]">Photo</TableHead>
+                      <TableHead className="w-[80px] hidden sm:table-cell">Photo</TableHead>
                       <TableHead>Nom</TableHead>
                       <TableHead className="hidden md:table-cell">Spécialité</TableHead>
-                      <TableHead>Catégorie</TableHead>
+                      <TableHead className="hidden sm:table-cell">Catégorie</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
                       <TableHead>Actions</TableHead>
@@ -230,7 +230,7 @@ export default function CoachesPage() {
                     {filteredCoaches.length > 0 ? (
                       filteredCoaches.map((coach) => (
                         <TableRow key={coach.id}>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <Avatar>
                               <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
                               <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
@@ -238,7 +238,7 @@ export default function CoachesPage() {
                           </TableCell>
                           <TableCell className="font-medium">{coach.name}</TableCell>
                           <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
-                          <TableCell>{coach.category}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{coach.category}</TableCell>
                           <TableCell>
                              <DropdownMenu>
                               <DropdownMenuTrigger asChild>

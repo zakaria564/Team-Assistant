@@ -217,13 +217,12 @@ export default function PlayersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px]">Photo</TableHead>
+                      <TableHead className="w-[80px] hidden sm:table-cell">Photo</TableHead>
                       <TableHead>Nom</TableHead>
                       <TableHead>Catégorie</TableHead>
                       <TableHead className="hidden md:table-cell">Poste</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="hidden lg:table-cell">Téléphone</TableHead>
-                      <TableHead className="hidden xl:table-cell">Email</TableHead>
                       <TableHead className="hidden xl:table-cell">Tuteur</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -232,7 +231,7 @@ export default function PlayersPage() {
                     {filteredPlayers.length > 0 ? (
                       filteredPlayers.map((player) => (
                         <TableRow key={player.id}>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <Avatar>
                               <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
                               <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
@@ -264,7 +263,6 @@ export default function PlayersPage() {
                               </DropdownMenu>
                            </TableCell>
                           <TableCell className="hidden lg:table-cell">{player.phone}</TableCell>
-                          <TableCell className="hidden xl:table-cell">{player.email}</TableCell>
                           <TableCell className="hidden xl:table-cell">{player.tutorName}</TableCell>
                           <TableCell>
                             <DropdownMenu>
@@ -318,7 +316,7 @@ export default function PlayersPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
+                        <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                           {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
                         </TableCell>
                       </TableRow>
