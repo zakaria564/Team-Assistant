@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,7 +58,6 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("playerName");
 
@@ -121,7 +121,8 @@ export default function PaymentsPage() {
   }, [payments, searchTerm, searchCategory]);
 
 
-  const handleDeletePayment = async () => {
+  const handleDeletePayment = async (paymentId: string) => {
+    const paymentToDelete = payments.find(p => p.id === paymentId);
     if (!paymentToDelete) return;
 
     try {
@@ -138,8 +139,6 @@ export default function PaymentsPage() {
         description: "Impossible de supprimer le paiement.",
       });
       console.error("Error deleting payment: ", error);
-    } finally {
-      setPaymentToDelete(null);
     }
   };
 
@@ -220,10 +219,10 @@ export default function PaymentsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Joueur</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Description</TableHead>
                     <TableHead className="text-right">Montant Payé</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">Montant Restant</TableHead>
-                    <TableHead className="text-right hidden lg:table-cell">Montant Total</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
+                    <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
                     <TableHead className="hidden xl:table-cell">Date de création</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -234,10 +233,10 @@ export default function PaymentsPage() {
                       filteredPayments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{payment.playerName}</TableCell>
-                        <TableCell className="text-muted-foreground hidden md:table-cell">{payment.description}</TableCell>
+                        <TableCell className="text-muted-foreground hidden lg:table-cell">{payment.description}</TableCell>
                         <TableCell className="text-right font-semibold text-green-600">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600 hidden sm:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right hidden lg:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right hidden xl:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
                         <TableCell className="text-muted-foreground hidden xl:table-cell">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
                         <TableCell>
                           <Badge 
@@ -270,13 +269,34 @@ export default function PaymentsPage() {
                                   </DropdownMenuItem>
                                 </Link>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                  onClick={() => setPaymentToDelete(payment)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Supprimer
-                                </DropdownMenuItem>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem 
+                                      className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                      onSelect={(e) => e.preventDefault()}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Supprimer
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Cette action est irréversible. Le paiement pour "{payment.description}" sera définitivement supprimé.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => handleDeletePayment(payment.id)}
+                                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                      >
+                                        Supprimer
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -295,28 +315,6 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
       </div>
-
-       <AlertDialog open={!!paymentToDelete} onOpenChange={(open) => !open && setPaymentToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Le paiement pour "{paymentToDelete?.description}" sera définitivement supprimé.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeletePayment}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
-
-    

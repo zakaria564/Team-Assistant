@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -224,8 +225,8 @@ export default function PlayersPage() {
                     <TableHead className="hidden md:table-cell">Poste</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="hidden lg:table-cell">Téléphone</TableHead>
-                    <TableHead className="hidden lg:table-cell">Email</TableHead>
-                    <TableHead className="hidden md:table-cell">Nom du tuteur</TableHead>
+                    <TableHead className="hidden xl:table-cell">Email</TableHead>
+                    <TableHead className="hidden xl:table-cell">Nom du tuteur</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -265,8 +266,8 @@ export default function PlayersPage() {
                             </DropdownMenu>
                          </TableCell>
                         <TableCell className="hidden lg:table-cell">{player.phone}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{player.email}</TableCell>
-                        <TableCell className="hidden md:table-cell">{player.tutorName}</TableCell>
+                        <TableCell className="hidden xl:table-cell">{player.email}</TableCell>
+                        <TableCell className="hidden xl:table-cell">{player.tutorName}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -284,13 +285,34 @@ export default function PlayersPage() {
                                 <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                onClick={() => setPlayerToDelete(player)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Supprimer
-                              </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem 
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                        onSelect={(e) => e.preventDefault()}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Supprimer
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                            Cette action est irréversible. Le joueur "{player.name}" sera définitivement supprimé de la base de données.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                            onClick={() => handleDeletePlayer(player.id)}
+                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                            >
+                                            Supprimer
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -309,28 +331,6 @@ export default function PlayersPage() {
           </CardContent>
         </Card>
       </div>
-
-      <AlertDialog open={!!playerToDelete} onOpenChange={(open) => !open && setPlayerToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Le joueur "{playerToDelete?.name}" sera définitivement supprimé de la base de données.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPlayerToDelete(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeletePlayer}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
-
-    

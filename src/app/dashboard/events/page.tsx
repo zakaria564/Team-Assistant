@@ -32,6 +32,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface Event {
@@ -51,7 +52,6 @@ export default function EventsPage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -120,11 +120,9 @@ export default function EventsPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
-  const handleDeleteEvent = async () => {
-    if (!eventToDelete) return;
-
+  const handleDeleteEvent = async (eventId: string) => {
     try {
-      await deleteDoc(doc(db, "events", eventToDelete.id));
+      await deleteDoc(doc(db, "events", eventId));
       // No need to manually filter `allEvents` as `onSnapshot` will trigger an update
       toast({
         title: "Événement supprimé",
@@ -137,8 +135,6 @@ export default function EventsPage() {
         description: "Impossible de supprimer l'événement.",
       });
       console.error("Error deleting event: ", error);
-    } finally {
-      setEventToDelete(null);
     }
   };
 
@@ -255,13 +251,34 @@ export default function EventsPage() {
                                     </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                    onClick={() => setEventToDelete(event)}
-                                    >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Supprimer
-                                    </DropdownMenuItem>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem
+                                                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                                onSelect={(e) => e.preventDefault()}
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Supprimer
+                                            </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Cette action est irréversible. L'événement sera définitivement supprimé de la base de données.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() => handleDeleteEvent(event.id)}
+                                                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                                >
+                                                    Supprimer
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </DropdownMenuContent>
                                 </DropdownMenu>
                             </CardFooter>
@@ -276,26 +293,6 @@ export default function EventsPage() {
         </Card>
       </div>
     </div>
-     <AlertDialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. L'événement sera définitivement supprimé de la base de données.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setEventToDelete(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteEvent}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
-

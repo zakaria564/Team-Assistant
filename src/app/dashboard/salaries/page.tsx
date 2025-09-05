@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -53,7 +54,6 @@ export default function SalariesPage() {
   const [salaries, setSalaries] = useState<Salary[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("coachName");
 
@@ -117,9 +117,10 @@ export default function SalariesPage() {
   }, [salaries, searchTerm, searchCategory]);
 
 
-  const handleDeleteSalary = async () => {
+  const handleDeleteSalary = async (salaryId: string) => {
+    const salaryToDelete = salaries.find(p => p.id === salaryId);
     if (!salaryToDelete) return;
-
+    
     try {
       await deleteDoc(doc(db, "salaries", salaryToDelete.id));
       setSalaries(salaries.filter(p => p.id !== salaryToDelete.id));
@@ -134,8 +135,6 @@ export default function SalariesPage() {
         description: "Impossible de supprimer le salaire.",
       });
       console.error("Error deleting salary: ", error);
-    } finally {
-      setSalaryToDelete(null);
     }
   };
 
@@ -217,10 +216,10 @@ export default function SalariesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Entraîneur</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead className="hidden lg:table-cell">Description</TableHead>
                     <TableHead className="text-right">Montant Payé</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">Montant Restant</TableHead>
-                    <TableHead className="text-right hidden lg:table-cell">Montant Total</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
+                    <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
                     <TableHead className="hidden xl:table-cell">Date de création</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -231,10 +230,10 @@ export default function SalariesPage() {
                       filteredSalaries.map((salary) => (
                       <TableRow key={salary.id}>
                         <TableCell className="font-medium">{salary.coachName}</TableCell>
-                        <TableCell className="text-muted-foreground hidden md:table-cell">{salary.description}</TableCell>
+                        <TableCell className="text-muted-foreground hidden lg:table-cell">{salary.description}</TableCell>
                         <TableCell className="text-right font-semibold text-green-600">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600 hidden sm:table-cell">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right hidden lg:table-cell">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right hidden xl:table-cell">{salary.totalAmount.toFixed(2)} MAD</TableCell>
                         <TableCell className="text-muted-foreground hidden xl:table-cell">{format(new Date(salary.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
                         <TableCell>
                           <Badge 
@@ -267,13 +266,34 @@ export default function SalariesPage() {
                                   </DropdownMenuItem>
                                 </Link>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                  onClick={() => setSalaryToDelete(salary)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Supprimer
-                                </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem 
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                        onSelect={(e) => e.preventDefault()}
+                                        >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                            Cette action est irréversible. Le salaire pour "{salary.description}" sera définitivement supprimé.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                            onClick={() => handleDeleteSalary(salary.id)}
+                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                            >
+                                            Supprimer
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                               </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -292,28 +312,6 @@ export default function SalariesPage() {
           </CardContent>
         </Card>
       </div>
-
-       <AlertDialog open={!!salaryToDelete} onOpenChange={(open) => !open && setSalaryToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Le salaire pour "{salaryToDelete?.description}" sera définitivement supprimé.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSalaryToDelete(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteSalary}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
-
-    
