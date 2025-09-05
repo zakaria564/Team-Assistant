@@ -223,7 +223,7 @@ export default function PlayersPage() {
                       <TableHead className="hidden lg:table-cell">Poste</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -262,7 +262,7 @@ export default function PlayersPage() {
                               </DropdownMenu>
                            </TableCell>
                           <TableCell className="hidden xl:table-cell">{player.phone}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 w-8 p-0">
