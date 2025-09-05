@@ -217,12 +217,10 @@ export default function PlayersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px] hidden sm:table-cell">Photo</TableHead>
-                      <TableHead>Nom</TableHead>
-                      <TableHead className="hidden lg:table-cell">Catégorie</TableHead>
-                      <TableHead className="hidden xl:table-cell">Poste</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead className="hidden md:table-cell">Téléphone</TableHead>
+                      <TableHead>Joueur</TableHead>
+                      <TableHead className="hidden md:table-cell">Catégorie</TableHead>
+                      <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -230,16 +228,21 @@ export default function PlayersPage() {
                     {filteredPlayers.length > 0 ? (
                       filteredPlayers.map((player) => (
                         <TableRow key={player.id}>
-                          <TableCell className="hidden sm:table-cell">
-                            <Avatar>
-                              <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
-                              <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                    <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{player.name}</span>
+                                    <span className="text-muted-foreground text-sm sm:hidden">{player.category}</span>
+                                </div>
+                            </div>
                           </TableCell>
-                          <TableCell className="font-medium">{player.name}</TableCell>
-                          <TableCell className="hidden lg:table-cell">{player.category}</TableCell>
-                          <TableCell className="hidden xl:table-cell">{player.position}</TableCell>
-                           <TableCell>
+                          <TableCell className="hidden md:table-cell">{player.category}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                           <TableCell className="hidden sm:table-cell">
                               <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                   <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
@@ -261,7 +264,6 @@ export default function PlayersPage() {
                                   </DropdownMenuContent>
                               </DropdownMenu>
                            </TableCell>
-                          <TableCell className="hidden md:table-cell">{player.phone}</TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -314,7 +316,7 @@ export default function PlayersPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                        <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                           {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
                         </TableCell>
                       </TableRow>
@@ -329,5 +331,3 @@ export default function PlayersPage() {
     </>
   );
 }
-
-    

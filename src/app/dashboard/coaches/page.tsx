@@ -217,12 +217,9 @@ export default function CoachesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px] hidden sm:table-cell">Photo</TableHead>
-                      <TableHead>Nom</TableHead>
+                      <TableHead>Entraîneur</TableHead>
                       <TableHead className="hidden md:table-cell">Spécialité</TableHead>
-                      <TableHead className="hidden sm:table-cell">Catégorie</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead className="hidden xl:table-cell">Téléphone</TableHead>
+                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -230,16 +227,20 @@ export default function CoachesPage() {
                     {filteredCoaches.length > 0 ? (
                       filteredCoaches.map((coach) => (
                         <TableRow key={coach.id}>
-                          <TableCell className="hidden sm:table-cell">
-                            <Avatar>
-                              <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
-                              <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                           <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar>
+                                      <AvatarImage src={coach.photoUrl} alt={coach.name} data-ai-hint="coach portrait" />
+                                      <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">{coach.name}</span>
+                                        <span className="text-muted-foreground text-sm md:hidden">{coach.specialty}</span>
+                                    </div>
+                                </div>
                           </TableCell>
-                          <TableCell className="font-medium">{coach.name}</TableCell>
                           <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
-                          <TableCell className="hidden sm:table-cell">{coach.category}</TableCell>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                              <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                  <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(coach.status))}>
@@ -261,7 +262,6 @@ export default function CoachesPage() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                          <TableCell className="hidden xl:table-cell">{coach.phone}</TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -314,7 +314,7 @@ export default function CoachesPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                          <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
                             {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun entraîneur trouvé. Commencez par en ajouter un !"}
                           </TableCell>
                         </TableRow>

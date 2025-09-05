@@ -218,11 +218,8 @@ export default function SalariesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Entraîneur</TableHead>
-                      <TableHead className="hidden lg:table-cell">Description</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">Montant Payé</TableHead>
-                      <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
-                      <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
-                      <TableHead>Statut</TableHead>
+                      <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
+                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -230,12 +227,14 @@ export default function SalariesPage() {
                     {filteredSalaries.length > 0 ? (
                         filteredSalaries.map((salary) => (
                         <TableRow key={salary.id}>
-                          <TableCell className="font-medium whitespace-nowrap">{salary.coachName}</TableCell>
-                          <TableCell className="text-muted-foreground hidden lg:table-cell">{salary.description}</TableCell>
-                          <TableCell className="text-right font-semibold text-green-600 hidden sm:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                          <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
-                          <TableCell className="text-right hidden xl:table-cell">{salary.totalAmount.toFixed(2)} MAD</TableCell>
                           <TableCell>
+                            <div className="flex flex-col">
+                                <span className="font-medium">{salary.coachName}</span>
+                                <span className="text-muted-foreground text-sm md:hidden">{salary.amountPaid.toFixed(2)} MAD</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <Badge 
                                 variant={getBadgeVariant(salary.status)}
                                 className={cn("whitespace-nowrap", getBadgeClass(salary.status))}
@@ -301,7 +300,7 @@ export default function SalariesPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
                              {searchTerm ? "Aucun salaire ne correspond à votre recherche." : "Aucun salaire trouvé."}
                           </TableCell>
                         </TableRow>
@@ -316,5 +315,3 @@ export default function SalariesPage() {
     </>
   );
 }
-
-    

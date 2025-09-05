@@ -221,11 +221,8 @@ export default function PaymentsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Joueur</TableHead>
-                      <TableHead className="hidden lg:table-cell">Description</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">Montant Payé</TableHead>
-                      <TableHead className="text-right hidden md:table-cell">Montant Restant</TableHead>
-                      <TableHead className="text-right hidden xl:table-cell">Montant Total</TableHead>
-                      <TableHead>Statut</TableHead>
+                      <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
+                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -233,12 +230,14 @@ export default function PaymentsPage() {
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => (
                         <TableRow key={payment.id}>
-                          <TableCell className="font-medium whitespace-nowrap">{payment.playerName}</TableCell>
-                          <TableCell className="text-muted-foreground hidden lg:table-cell">{payment.description}</TableCell>
-                          <TableCell className="text-right font-semibold text-green-600 hidden sm:table-cell">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
-                          <TableCell className="text-right font-semibold text-red-600 hidden md:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
-                          <TableCell className="text-right hidden xl:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
                           <TableCell>
+                            <div className="flex flex-col">
+                                <span className="font-medium">{payment.playerName}</span>
+                                <span className="text-muted-foreground text-sm md:hidden">{(payment.amountPaid || 0).toFixed(2)} MAD</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <Badge 
                                 variant={getBadgeVariant(payment.status)}
                                 className={cn("whitespace-nowrap", getBadgeClass(payment.status))}
@@ -304,7 +303,7 @@ export default function PaymentsPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
                             {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
                           </TableCell>
                         </TableRow>
