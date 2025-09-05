@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react";
@@ -107,9 +108,7 @@ export default function PaymentReceiptPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => window.print()}>
-                        <Printer className="mr-2 h-4 w-4" /> Imprimer / PDF
-                    </Button>
+                   
                 </div>
             </div>
             
