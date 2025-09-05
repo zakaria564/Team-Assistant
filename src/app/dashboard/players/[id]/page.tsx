@@ -35,12 +35,20 @@ interface Player {
   coachName?: string;
 }
 
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3">
     <Icon className="h-5 w-5 text-muted-foreground mt-1" />
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium">{value || children || "Non spécifié"}</div>
+      <div className="text-base font-medium">
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+            {value || children}
+          </a>
+        ) : (
+          value || children || "Non spécifié"
+        )}
+      </div>
     </div>
   </div>
 );
@@ -179,9 +187,9 @@ export default function PlayerDetailPage() {
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                    <DetailItem icon={Home} label="Adresse" value={player.address} />
-                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
-                    <DetailItem icon={Mail} label="Email" value={player.email} />
+                    <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
+                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
+                    <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined}/>
                  </CardContent>
             </Card>
             <Card>
@@ -190,8 +198,8 @@ export default function PlayerDetailPage() {
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
-                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
-                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
+                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
+                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
                 </CardContent>
             </Card>
         </div>

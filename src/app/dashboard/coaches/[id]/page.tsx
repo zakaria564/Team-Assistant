@@ -26,12 +26,20 @@ interface Coach {
   specialty?: string;
 }
 
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3">
     <Icon className="h-5 w-5 text-muted-foreground mt-1" />
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium">{value || children || "Non spécifié"}</div>
+      <div className="text-base font-medium">
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+            {value || children}
+          </a>
+        ) : (
+          value || children || "Non spécifié"
+        )}
+      </div>
     </div>
   </div>
 );
@@ -156,8 +164,8 @@ export default function CoachDetailPage() {
                     <CardTitle>Coordonnées</CardTitle>
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={Phone} label="Téléphone" value={coach.phone} />
-                    <DetailItem icon={Mail} label="Email" value={coach.email} />
+                    <DetailItem icon={Phone} label="Téléphone" value={coach.phone} href={coach.phone ? `tel:${coach.phone}` : undefined} />
+                    <DetailItem icon={Mail} label="Email" value={coach.email} href={coach.email ? `mailto:${coach.email}` : undefined} />
                  </CardContent>
             </Card>
         </div>
