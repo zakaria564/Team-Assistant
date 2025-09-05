@@ -185,7 +185,7 @@ export default function SalaryReceiptPage() {
                               <div className="flex justify-between font-bold text-lg">
                                 <span>Montant restant :</span>
                                 <span>{amountRemaining.toFixed(2)} MAD</span>
-                             </div>
+                              </div>
                         </div>
                     </div>
                 </CardContent>
