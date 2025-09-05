@@ -117,7 +117,7 @@ export default function SalaryReceiptPage() {
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
-                 <CardHeader className="bg-muted/30">
+                 <CardHeader className="bg-muted/30 print:bg-transparent">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -193,7 +193,7 @@ export default function SalaryReceiptPage() {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="bg-muted/30 p-6 flex-col items-start gap-4">
+                <CardFooter className="bg-muted/30 print:bg-transparent p-6 flex-col items-start gap-4">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold">Statut du paiement:</span>
                         <Badge className={cn("text-base", getBadgeClass(salary.status))}>
@@ -209,7 +209,7 @@ export default function SalaryReceiptPage() {
         <style jsx global>{`
             @media print {
                 body {
-                    background-color: #fff;
+                    background-color: #fff !important;
                 }
                 .print\\:hidden {
                     display: none;
@@ -220,10 +220,11 @@ export default function SalaryReceiptPage() {
                 .print\\:border-none {
                     border: none;
                 }
+                 .print\\:bg-transparent {
+                    background-color: transparent;
+                }
             }
         `}</style>
     </div>
   );
 }
-
-    
