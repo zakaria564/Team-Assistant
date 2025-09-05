@@ -81,13 +81,13 @@ export default function Dashboard() {
         }, {} as Record<string, number>);
 
         const colors = [
-            'hsl(var(--primary))',
-            'hsl(var(--accent))',
-            'hsl(var(--chart-1))',
-            'hsl(var(--chart-2))',
-            'hsl(var(--chart-3))',
-            'hsl(var(--chart-4))',
-            'hsl(var(--chart-5))',
+            '#0088FE',
+            '#00C49F',
+            '#FFBB28',
+            '#FF8042',
+            '#8884d8',
+            '#82ca9d',
+            '#ffc658',
         ];
 
         const chartData = Object.entries(categoryCounts).map(([category, total], index) => ({
