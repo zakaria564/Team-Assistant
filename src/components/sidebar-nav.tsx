@@ -17,7 +17,11 @@ const links = [
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
-export function SidebarNav() {
+interface SidebarNavProps {
+  onLinkClick?: () => void;
+}
+
+export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
@@ -26,6 +30,7 @@ export function SidebarNav() {
         <Link
           key={href}
           href={href}
+          onClick={onLinkClick}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             pathname.startsWith(href) && (href !== "/dashboard" || pathname === "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""

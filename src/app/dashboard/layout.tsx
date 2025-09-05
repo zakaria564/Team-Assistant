@@ -1,15 +1,21 @@
+
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Trophy } from "lucide-react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
+import { useState } from "react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
@@ -27,7 +33,7 @@ export default function DashboardLayout({
       </div>
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
@@ -46,7 +52,7 @@ export default function DashboardLayout({
                   </Link>
                 </div>
                 <div className="flex-1 py-4">
-                    <SidebarNav />
+                    <SidebarNav onLinkClick={() => setIsSheetOpen(false)} />
                 </div>
             </SheetContent>
           </Sheet>
