@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Printer, Trophy, Download } from "lucide-react";
+import { Loader2, ArrowLeft, Printer, Trophy, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -80,8 +80,21 @@ export default function SalaryReceiptPage() {
     fetchSalary();
   }, [salaryId, router]);
   
-  const handlePrint = () => {
-    window.print();
+  const handleShare = async () => {
+    if (salary && navigator.share) {
+      try {
+        await navigator.share({
+          title: `Fiche de paie: ${salary.description}`,
+          text: `Voici la fiche de paie de ${salary.coachName}.`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error("Erreur lors du partage:", error);
+      }
+    } else {
+      // Fallback to print if Web Share API is not available
+      window.print();
+    }
   };
 
   if (loading) {
@@ -111,8 +124,8 @@ export default function SalaryReceiptPage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
-                <Button onClick={handlePrint}>
-                    <Download className="mr-2 h-4 w-4" /> Exporter
+                <Button onClick={handleShare}>
+                    <Share2 className="mr-2 h-4 w-4" /> Partager
                 </Button>
             </div>
             
