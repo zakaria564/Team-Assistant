@@ -208,12 +208,12 @@ export default function CoachesPage() {
             <CardDescription>Retrouvez ici tous les entraîneurs du club.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="w-full overflow-x-auto">
-              {loading ? (
-                <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
+            {loading ? (
+              <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="w-full overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
