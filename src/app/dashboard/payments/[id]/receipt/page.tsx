@@ -81,7 +81,7 @@ export default function PaymentReceiptPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-muted">
+      <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -100,12 +100,17 @@ export default function PaymentReceiptPage() {
   const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div className="bg-muted min-h-screen p-4 sm:p-8 flex flex-col items-center">
+    <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
+                 <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => window.print()}>
+                        <Printer className="mr-2 h-4 w-4" /> Imprimer / PDF
+                    </Button>
+                </div>
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
