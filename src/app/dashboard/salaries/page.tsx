@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ReceiptText } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
@@ -188,19 +188,6 @@ export default function SalariesPage() {
     }
   };
 
-  const handlePrint = (salaryId: string) => {
-    const printWindow = window.open(`/dashboard/salaries/${salaryId}/receipt`, '_blank', 'height=800,width=600');
-    if (printWindow) {
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.print();
-          printWindow.close();
-        }, 100);
-      };
-    }
-  };
-
-
   return (
     <>
       <div>
@@ -300,16 +287,6 @@ export default function SalariesPage() {
                                         <FileText className="mr-2 h-4 w-4" />
                                         Voir les détails
                                     </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    className="cursor-pointer"
-                                    onSelect={(e) => {
-                                      e.preventDefault();
-                                      handlePrint(salary.id);
-                                    }}
-                                   >
-                                        <ReceiptText className="mr-2 h-4 w-4" />
-                                        imprimer le reçu
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild className="cursor-pointer">
                                     <Link href={`/dashboard/salaries/${salary.id}/edit`}>
