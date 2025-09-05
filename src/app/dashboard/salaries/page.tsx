@@ -188,6 +188,16 @@ export default function SalariesPage() {
     }
   };
 
+  const handlePrint = (salaryId: string) => {
+    const printWindow = window.open(`/dashboard/salaries/${salaryId}/receipt`, '_blank', 'height=600,width=800');
+    printWindow?.addEventListener('load', () => {
+        printWindow?.print();
+        setTimeout(() => {
+          printWindow?.close();
+        }, 100);
+    });
+  };
+
 
   return (
     <>
@@ -289,11 +299,12 @@ export default function SalariesPage() {
                                         Voir les détails
                                     </Link>
                                   </DropdownMenuItem>
-                                   <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/salaries/${salary.id}/receipt`}>
+                                  <DropdownMenuItem 
+                                    className="cursor-pointer"
+                                    onSelect={() => handlePrint(salary.id)}
+                                   >
                                         <ReceiptText className="mr-2 h-4 w-4" />
                                         imprimer le reçu
-                                    </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild className="cursor-pointer">
                                     <Link href={`/dashboard/salaries/${salary.id}/edit`}>

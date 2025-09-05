@@ -193,6 +193,16 @@ export default function PaymentsPage() {
     }
   };
 
+  const handlePrint = (paymentId: string) => {
+    const printWindow = window.open(`/dashboard/payments/${paymentId}/receipt`, '_blank', 'height=600,width=800');
+    printWindow?.addEventListener('load', () => {
+        printWindow?.print();
+        setTimeout(() => {
+          printWindow?.close();
+        }, 100);
+    });
+  };
+
 
   return (
     <>
@@ -297,11 +307,12 @@ export default function PaymentsPage() {
                                         Voir les détails
                                     </Link>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/payments/${payment.id}/receipt`}>
-                                        <ReceiptText className="mr-2 h-4 w-4" />
-                                        imprimer le reçu
-                                    </Link>
+                                  <DropdownMenuItem 
+                                    className="cursor-pointer"
+                                    onSelect={() => handlePrint(payment.id)}
+                                  >
+                                    <ReceiptText className="mr-2 h-4 w-4" />
+                                    imprimer le reçu
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild className="cursor-pointer">
                                     <Link href={`/dashboard/payments/${payment.id}/edit`}>
