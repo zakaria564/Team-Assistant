@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Printer, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, Printer, Trophy, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -112,7 +112,7 @@ export default function SalaryReceiptPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
                 <Button onClick={handlePrint}>
-                    <Printer className="mr-2 h-4 w-4" /> Imprimer
+                    <Download className="mr-2 h-4 w-4" /> Exporter
                 </Button>
             </div>
             
