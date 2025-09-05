@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Menu, Trophy } from "lucide-react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
@@ -45,12 +45,13 @@ export default function DashboardLayout({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
-               <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+               <SheetHeader className="h-14 flex flex-row items-center border-b border-sidebar-border px-4">
                   <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
                     <Trophy className="h-6 w-6" />
                     <span className="">Team Assistant</span>
                   </Link>
-                </div>
+                   <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
+                </SheetHeader>
                 <div className="flex-1 py-4">
                     <SidebarNav onLinkClick={() => setIsSheetOpen(false)} />
                 </div>
