@@ -81,6 +81,16 @@ export default function PlayersPage() {
         const q = query(collection(db, "players"));
         const querySnapshot = await getDocs(q);
         const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+        
+        // Sort by category, then by name
+        playersData.sort((a, b) => {
+          if (a.category < b.category) return -1;
+          if (a.category > b.category) return 1;
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        });
+
         setPlayers(playersData);
       } catch (error) {
         console.error("Error fetching players: ", error);
@@ -236,7 +246,7 @@ export default function PlayersPage() {
                                 </Avatar>
                                 <div className="flex flex-col">
                                     <span className="font-medium">{player.name}</span>
-                                    <span className="text-muted-foreground text-sm sm:hidden">{player.category}</span>
+                                    <span className="text-muted-foreground text-sm md:hidden">{player.category}</span>
                                 </div>
                             </div>
                           </TableCell>
