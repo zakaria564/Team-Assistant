@@ -149,7 +149,7 @@ export default function PlayersPage() {
       const playerToDelete = players.find(p => p.id === playerId);
       if (!playerToDelete) return;
       await deleteDoc(doc(db, "players", playerToDelete.id));
-      setPlayers(players.filter(p => p.id !== playerToDelete.id));
+      setPlayers(players.filter(p => p.id !== playerId));
       toast({
         title: "Joueur supprimé",
         description: `${playerToDelete.name} a été retiré du club.`,
@@ -242,9 +242,9 @@ export default function PlayersPage() {
                            <TableCell>
                               <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" className={cn("text-xs font-semibold px-2 py-1 h-auto border", getStatusBadgeClass(player.status))}>
+                                  <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
                                       {player.status || "N/A"}
-                                  </Button>
+                                  </Badge>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                       <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
