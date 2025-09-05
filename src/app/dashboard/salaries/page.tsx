@@ -217,11 +217,11 @@ export default function SalariesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Entraîneur</TableHead>
-                    <TableHead>Description</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="text-right">Montant Payé</TableHead>
-                    <TableHead className="text-right">Montant Restant</TableHead>
-                    <TableHead className="text-right">Montant Total</TableHead>
-                    <TableHead>Date de création</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">Montant Restant</TableHead>
+                    <TableHead className="text-right hidden lg:table-cell">Montant Total</TableHead>
+                    <TableHead className="hidden xl:table-cell">Date de création</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -231,11 +231,11 @@ export default function SalariesPage() {
                       filteredSalaries.map((salary) => (
                       <TableRow key={salary.id}>
                         <TableCell className="font-medium">{salary.coachName}</TableCell>
-                        <TableCell className="text-muted-foreground">{salary.description}</TableCell>
+                        <TableCell className="text-muted-foreground hidden md:table-cell">{salary.description}</TableCell>
                         <TableCell className="text-right font-semibold text-green-600">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right">{salary.totalAmount.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground">{format(new Date(salary.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600 hidden sm:table-cell">{salary.amountRemaining.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right hidden lg:table-cell">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-muted-foreground hidden xl:table-cell">{format(new Date(salary.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
                         <TableCell>
                           <Badge 
                               variant={getBadgeVariant(salary.status)}
@@ -315,3 +315,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    

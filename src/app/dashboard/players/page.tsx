@@ -221,11 +221,11 @@ export default function PlayersPage() {
                     <TableHead className="w-[80px]">Photo</TableHead>
                     <TableHead>Nom</TableHead>
                     <TableHead>Catégorie</TableHead>
-                    <TableHead>Poste</TableHead>
+                    <TableHead className="hidden md:table-cell">Poste</TableHead>
                     <TableHead>Statut</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Nom du tuteur</TableHead>
+                    <TableHead className="hidden lg:table-cell">Téléphone</TableHead>
+                    <TableHead className="hidden lg:table-cell">Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Nom du tuteur</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -241,7 +241,7 @@ export default function PlayersPage() {
                         </TableCell>
                         <TableCell className="font-medium">{player.name}</TableCell>
                         <TableCell>{player.category}</TableCell>
-                        <TableCell>{player.position}</TableCell>
+                        <TableCell className="hidden md:table-cell">{player.position}</TableCell>
                          <TableCell>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -264,9 +264,9 @@ export default function PlayersPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                          </TableCell>
-                        <TableCell>{player.phone}</TableCell>
-                        <TableCell>{player.email}</TableCell>
-                        <TableCell>{player.tutorName}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{player.phone}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{player.email}</TableCell>
+                        <TableCell className="hidden md:table-cell">{player.tutorName}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -333,3 +333,4 @@ export default function PlayersPage() {
   );
 }
 
+    

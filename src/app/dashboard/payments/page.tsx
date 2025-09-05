@@ -220,11 +220,11 @@ export default function PaymentsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Joueur</TableHead>
-                    <TableHead>Description</TableHead>
+                    <TableHead className="hidden md:table-cell">Description</TableHead>
                     <TableHead className="text-right">Montant Payé</TableHead>
-                    <TableHead className="text-right">Montant Restant</TableHead>
-                    <TableHead className="text-right">Montant Total</TableHead>
-                    <TableHead>Date de création</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">Montant Restant</TableHead>
+                    <TableHead className="text-right hidden lg:table-cell">Montant Total</TableHead>
+                    <TableHead className="hidden xl:table-cell">Date de création</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -234,11 +234,11 @@ export default function PaymentsPage() {
                       filteredPayments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{payment.playerName}</TableCell>
-                        <TableCell className="text-muted-foreground">{payment.description}</TableCell>
+                        <TableCell className="text-muted-foreground hidden md:table-cell">{payment.description}</TableCell>
                         <TableCell className="text-right font-semibold text-green-600">{(payment.amountPaid || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right font-semibold text-red-600">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-right">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-muted-foreground">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600 hidden sm:table-cell">{(payment.amountRemaining || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-right hidden lg:table-cell">{(payment.totalAmount || 0).toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-muted-foreground hidden xl:table-cell">{payment.createdAt ? format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr }) : '-'}</TableCell>
                         <TableCell>
                           <Badge 
                               variant={getBadgeVariant(payment.status)}
@@ -318,3 +318,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    

@@ -219,10 +219,10 @@ export default function CoachesPage() {
                   <TableRow>
                     <TableHead className="w-[80px]">Photo</TableHead>
                     <TableHead>Nom</TableHead>
-                    <TableHead>Spécialité</TableHead>
+                    <TableHead className="hidden md:table-cell">Spécialité</TableHead>
                     <TableHead>Catégorie</TableHead>
                     <TableHead>Statut</TableHead>
-                    <TableHead>Téléphone</TableHead>
+                    <TableHead className="hidden lg:table-cell">Téléphone</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -237,7 +237,7 @@ export default function CoachesPage() {
                           </Avatar>
                         </TableCell>
                         <TableCell className="font-medium">{coach.name}</TableCell>
-                        <TableCell>{coach.specialty}</TableCell>
+                        <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
                         <TableCell>{coach.category}</TableCell>
                         <TableCell>
                            <DropdownMenu>
@@ -261,7 +261,7 @@ export default function CoachesPage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
-                        <TableCell>{coach.phone}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{coach.phone}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -327,3 +327,5 @@ export default function CoachesPage() {
     </>
   );
 }
+
+    
