@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { format, subDays, startOfDay } from "date-fns";
+import { format, subDays, startOfDay, isAfter } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
 import { cn } from "@/lib/utils";
@@ -61,13 +61,10 @@ export default function Dashboard() {
 
       try {
         // Fetch upcoming events for the current user
-        const startDate = startOfDay(new Date());
+        const today = startOfDay(new Date());
         const eventsQuery = query(
           collection(db, "events"),
-          where("userId", "==", user.uid),
-          where("date", ">=", startDate),
-          orderBy("date", "asc"),
-          limit(5)
+          where("userId", "==", user.uid)
         );
         const eventsSnapshot = await getDocs(eventsQuery);
         const eventsData = eventsSnapshot.docs.map(doc => ({
@@ -75,7 +72,13 @@ export default function Dashboard() {
           ...doc.data(),
           date: doc.data().date.toDate(),
         } as Event));
-        setUpcomingEvents(eventsData);
+        
+        const futureEvents = eventsData
+          .filter(event => isAfter(event.date, today))
+          .sort((a, b) => a.date.getTime() - b.date.getTime())
+          .slice(0, 5);
+
+        setUpcomingEvents(futureEvents);
 
         // Fetch players data for stats for the current user
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
