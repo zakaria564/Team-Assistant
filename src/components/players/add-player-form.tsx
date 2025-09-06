@@ -114,6 +114,9 @@ const nationalities = [
 const documentTypes = [
     "Certificat Médical",
     "Carte d'identité",
+    "Passeport",
+    "Extrait de naissance",
+    "Justificatif de domicile",
     "Photo d'identité",
     "Autorisation parentale",
     "Certificat de surclassement",
