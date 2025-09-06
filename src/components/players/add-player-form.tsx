@@ -50,8 +50,6 @@ const formSchema = z.object({
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   coachId: z.string().optional(),
-  medicalCertificateProvided: z.boolean().default(false).optional(),
-  medicalCertificateDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
 
@@ -114,6 +112,7 @@ const nationalities = [
 ];
 
 const documentTypes = [
+    "Certificat Médical",
     "Carte d'identité",
     "Photo d'identité",
     "Autorisation parentale",
@@ -152,8 +151,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       tutorPhone: "",
       tutorEmail: "",
       coachId: "",
-      medicalCertificateProvided: false,
-      medicalCertificateDate: "",
       documents: [],
     }
   });
@@ -179,8 +176,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         tutorName: player.tutorName || "",
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
-        medicalCertificateProvided: player.medicalCertificateProvided || false,
-        medicalCertificateDate: player.medicalCertificateDate ? player.medicalCertificateDate.split('T')[0] : '',
         documents: player.documents || [],
       });
     }
@@ -536,43 +531,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                           </FormItem>
                         )}
                       />
-                    </div>
-                </div>
-                 <Separator />
-                
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Certificat Médical</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                       <FormField
-                        control={form.control}
-                        name="medicalCertificateDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Date de validité</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                          control={form.control}
-                          name="medicalCertificateProvided"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-start space-x-2 rounded-md border p-3">
-                               <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                              <FormLabel className="!mt-0 font-normal">
-                                Certificat médical fourni
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
                     </div>
                 </div>
 

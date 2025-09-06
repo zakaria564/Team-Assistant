@@ -41,8 +41,6 @@ interface Player {
   coachName?: string;
   entryDate?: string;
   exitDate?: string;
-  medicalCertificateProvided?: boolean;
-  medicalCertificateDate?: string;
   documents?: PlayerDocument[];
 }
 
@@ -208,17 +206,9 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
                 <CardHeader>
                     <CardTitle>Documents</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                     <DetailItem icon={FileHeart} label="Certificat Médical">
-                        <Badge variant={player.medicalCertificateProvided ? "default" : "destructive"} className={player.medicalCertificateProvided ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                            {player.medicalCertificateProvided ? "Fourni" : "Manquant"}
-                        </Badge>
-                     </DetailItem>
-                    <DetailItem icon={Calendar} label="Date de validité" value={player.medicalCertificateDate} />
-                    {(player.documents && player.documents.length > 0) && (
-                      <>
-                        <h4 className="text-sm font-medium pt-2">Autres documents</h4>
-                        <ul className="space-y-2">
+                <CardContent>
+                    {(player.documents && player.documents.length > 0) ? (
+                      <ul className="space-y-2">
                           {player.documents.map((doc, index) => (
                             <li key={index} className="flex items-center justify-between text-sm p-2 rounded-md bg-muted/50">
                                 <span className="font-medium">{doc.name}</span>
@@ -231,7 +221,8 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
                             </li>
                           ))}
                         </ul>
-                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Aucun document n'a été ajouté pour ce joueur.</p>
                     )}
                 </CardContent>
             </Card>
@@ -250,5 +241,3 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
     </div>
   );
 }
-
-    
