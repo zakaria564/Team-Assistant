@@ -85,7 +85,7 @@ export default function EventsPage() {
       toast({
         variant: "destructive",
         title: "Erreur de chargement",
-        description: "Impossible de charger les événements depuis la base de données.",
+        description: "Impossible de charger les événements. Vérifiez les index Firestore.",
       });
       setLoading(false);
     });
