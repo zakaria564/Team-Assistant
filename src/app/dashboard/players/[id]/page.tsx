@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,8 @@ interface Player {
   coachName?: string;
   entryDate?: string;
   exitDate?: string;
+  medicalCertificateProvided?: boolean;
+  medicalCertificateDate?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -198,6 +200,19 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
             </Card>
             <Card>
                 <CardHeader>
+                    <CardTitle>Certificat Médical</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
+                     <DetailItem icon={FileHeart} label="Statut">
+                        <Badge variant={player.medicalCertificateProvided ? "default" : "destructive"} className={player.medicalCertificateProvided ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                            {player.medicalCertificateProvided ? "Fourni" : "Manquant"}
+                        </Badge>
+                     </DetailItem>
+                    <DetailItem icon={Calendar} label="Date de validité" value={player.medicalCertificateDate} />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
                     <CardTitle>Informations du Tuteur</CardTitle>
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
@@ -211,3 +226,5 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
     </div>
   );
 }
+
+    
