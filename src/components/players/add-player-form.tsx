@@ -647,6 +647,17 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                     <h3 className="text-lg font-medium">Documents du Joueur</h3>
                     {fields.map((field, index) => (
                       <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Supprimer le document</span>
+                          </Button>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            <FormField
                             control={form.control}
@@ -689,7 +700,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           name={`documents.${index}.file`}
                           render={({ field: { onChange, value, ...rest } }) => (
                             <FormItem>
-                               <FormLabel>Fichier (Scan/Photo)</FormLabel>
+                               <FormLabel>Fichier (Photo)</FormLabel>
                                <FormControl>
                                    <Input 
                                       type="file" 
@@ -778,3 +789,5 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
+
+    
