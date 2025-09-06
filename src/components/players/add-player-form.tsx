@@ -27,7 +27,7 @@ import { Checkbox } from "../ui/checkbox";
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
 const documentSchema = z.object({
-  name: z.string().min(1, "Le nom du document est requis."),
+  name: z.string().optional(),
   url: z.string().url("L'URL du document est requise.").optional(),
   file: z.any().optional(), // Pour le fichier avant l'upload
   validityDate: z.string().optional(),
@@ -301,8 +301,10 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
 
     try {
+        const validDocuments = (values.documents || []).filter(doc => doc.name);
+
         const uploadedDocuments = await Promise.all(
-          (values.documents || []).map(async (doc) => {
+          validDocuments.map(async (doc) => {
             let fileUrl = doc.url;
             if (doc.file) {
               fileUrl = await uploadFile(doc.file);
