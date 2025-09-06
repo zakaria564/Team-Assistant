@@ -320,104 +320,53 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-6 md:order-2">
+            
+            {/* Colonne de Gauche: Photo et Infos Club */}
+            <div className="space-y-6">
                 <div className="space-y-4">
-                     <h3 className="text-lg font-medium">Informations Personnelles</h3>
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nom complet</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Jean Dupont" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="birthDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Date de naissance</FormLabel>
-                              <FormControl>
-                                <Input type="date" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                    <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
+                        <video 
+                            ref={videoRef} 
+                            className={cn(
+                                "w-full h-full object-cover",
+                                photoDataUrl && "hidden"
+                            )} 
+                            autoPlay 
+                            muted 
+                            playsInline 
                         />
-                        <FormField
-                          control={form.control}
-                          name="nationality"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nationalité</FormLabel>
-                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une nationalité" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {nationalities.map(nat => (
-                                          <SelectItem key={nat} value={nat}>{nat}</SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                     <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Adresse</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="123 Rue du Stade..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Téléphone</FormLabel>
-                              <FormControl>
-                                <Input type="tel" placeholder="0612345678" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="contact@email.com" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                        {photoDataUrl && (
+                            <Image src={photoDataUrl} alt="Photo du joueur" layout="fill" objectFit="cover" />
+                        )}
+                        { hasCameraPermission === false && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
+                    </div>
+                    <canvas ref={canvasRef} className="hidden" />
+
+                    {hasCameraPermission === false && (
+                        <Alert variant="destructive">
+                        <AlertTitle>Accès à la caméra requis</AlertTitle>
+                        <AlertDescription>
+                            Veuillez autoriser l'accès à la caméra pour utiliser cette fonctionnalité.
+                        </AlertDescription>
+                        </Alert>
+                    )}
+                    
+                    <div className="flex gap-4">
+                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full" size="sm">
+                            <Camera className="mr-2 h-4 w-4"/>
+                            Prendre
+                        </Button>
+                        {photoDataUrl && (
+                            <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full" size="sm">
+                                <RefreshCcw className="mr-2 h-4 w-4" />
+                                Reprendre
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <Separator />
-
+                
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium">Informations Club</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -555,6 +504,104 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       />
                     </div>
                 </div>
+            </div>
+
+            {/* Colonne de Droite: Infos Personnelles, Tuteur et Bouton */}
+            <div className="space-y-6">
+                <div className="space-y-4">
+                     <h3 className="text-lg font-medium">Informations Personnelles</h3>
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom complet</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Jean Dupont" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="birthDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Date de naissance</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="nationality"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nationalité</FormLabel>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner une nationalité" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {nationalities.map(nat => (
+                                          <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                     <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Adresse</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="123 Rue du Stade..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone</FormLabel>
+                              <FormControl>
+                                <Input type="tel" placeholder="0612345678" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="contact@email.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                </div>
 
                 <Separator />
 
@@ -614,47 +661,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                 </Button>
             </div>
 
-            <div className="space-y-4 md:order-1">
-                <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-                    <video 
-                        ref={videoRef} 
-                        className={cn(
-                            "w-full h-full object-cover",
-                            photoDataUrl && "hidden"
-                        )} 
-                        autoPlay 
-                        muted 
-                        playsInline 
-                    />
-                    {photoDataUrl && (
-                         <Image src={photoDataUrl} alt="Photo du joueur" layout="fill" objectFit="cover" />
-                    )}
-                    { hasCameraPermission === false && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
-                </div>
-                <canvas ref={canvasRef} className="hidden" />
-
-                {hasCameraPermission === false && (
-                    <Alert variant="destructive">
-                    <AlertTitle>Accès à la caméra requis</AlertTitle>
-                    <AlertDescription>
-                        Veuillez autoriser l'accès à la caméra pour utiliser cette fonctionnalité.
-                    </AlertDescription>
-                    </Alert>
-                )}
-                
-                <div className="flex gap-4">
-                    <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full" size="sm">
-                        <Camera className="mr-2 h-4 w-4"/>
-                        Prendre
-                    </Button>
-                     {photoDataUrl && (
-                        <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full" size="sm">
-                            <RefreshCcw className="mr-2 h-4 w-4" />
-                            Reprendre
-                        </Button>
-                     )}
-                </div>
-            </div>
           </form>
         </Form>
       </CardContent>
