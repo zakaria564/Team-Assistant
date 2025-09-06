@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -177,6 +178,8 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
                     <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName} />
+                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate} />
                 </CardContent>
             </Card>
         </div>
@@ -192,8 +195,6 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
                     <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
                     <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined}/>
-                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
-                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate} />
                  </CardContent>
             </Card>
             <Card>
