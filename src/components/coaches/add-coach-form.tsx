@@ -28,6 +28,8 @@ const formSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide."),
   specialty: z.string().optional(),
+  entryDate: z.string().optional(),
+  exitDate: z.string().optional(),
 });
 
 interface CoachData extends z.infer<typeof formSchema> {
@@ -89,15 +91,28 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: isEditMode ? coach : {
+    defaultValues: {
       name: "",
       category: "",
       status: "Actif",
       phone: "",
       email: "",
       specialty: "",
+      entryDate: "",
+      exitDate: "",
     }
   });
+
+  useEffect(() => {
+    if (coach) {
+        form.reset({
+            ...coach,
+            entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
+            exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
+        });
+    }
+  }, [coach, form]);
+
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -303,6 +318,34 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                           </FormItem>
                         )}
                     />
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="entryDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date d'entrée</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="exitDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date de sortie</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                 </div>
                  <FormField
                     control={form.control}

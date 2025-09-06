@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,8 @@ interface Coach {
   phone?: string;
   email?: string;
   specialty?: string;
+  entryDate?: string;
+  exitDate?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -155,6 +157,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                             {coach.status}
                         </Badge>
                     </DetailItem>
+                    <DetailItem icon={LogIn} label="Date d'entrée" value={coach.entryDate} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={coach.exitDate} />
                 </CardContent>
             </Card>
         </div>

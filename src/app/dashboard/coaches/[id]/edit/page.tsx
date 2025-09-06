@@ -19,6 +19,8 @@ interface Coach {
   email: string;
   photoUrl?: string;
   specialty?: string;
+  entryDate?: string;
+  exitDate?: string;
 }
 
 export default function EditCoachPage({ params }: { params: { id: string } }) {
