@@ -208,6 +208,16 @@ export default function PlayerDetailPage() {
             </Card>
             <Card>
                 <CardHeader>
+                    <CardTitle>Informations du Tuteur</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
+                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
+                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
                     <CardTitle>Documents</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -236,16 +246,6 @@ export default function PlayerDetailPage() {
                     ) : (
                       <p className="text-sm text-muted-foreground">Aucun document n'a été ajouté pour ce joueur.</p>
                     )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Informations du Tuteur</CardTitle>
-                </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
-                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
-                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
                 </CardContent>
             </Card>
         </div>
