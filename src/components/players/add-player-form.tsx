@@ -28,8 +28,9 @@ const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
-  url: z.string().url("L'URL du document est requise."),
+  url: z.string().url("L'URL du document est requise.").optional(),
   file: z.any().optional(), // Pour le fichier avant l'upload
+  validityDate: z.string().optional(),
 });
 
 
@@ -123,7 +124,8 @@ const documentTypes = [
     "Autre"
 ];
 
-export function AddPlayerForm({ player }: AddPlayerFormProps) {
+export function AddPlayerForm(props: AddPlayerFormProps) {
+  const { player } = props;
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -179,7 +181,10 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         tutorName: player.tutorName || "",
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
-        documents: player.documents || [],
+        documents: (player.documents || []).map(doc => ({
+            ...doc,
+            validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : ''
+        })),
       });
     }
   }, [player, form]);
@@ -298,11 +303,11 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     try {
         const uploadedDocuments = await Promise.all(
           (values.documents || []).map(async (doc) => {
+            let fileUrl = doc.url;
             if (doc.file) {
-              const url = await uploadFile(doc.file);
-              return { name: doc.name, url: url };
+              fileUrl = await uploadFile(doc.file);
             }
-            return { name: doc.name, url: doc.url };
+            return { name: doc.name, url: fileUrl, validityDate: doc.validityDate || null };
           })
         );
 
@@ -311,7 +316,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl,
-            documents: uploadedDocuments,
+            documents: uploadedDocuments.map(d => ({...d, url: d.url || ''})),
         };
 
         if (isEditMode && player) {
@@ -642,38 +647,53 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                     <h3 className="text-lg font-medium">Documents du Joueur</h3>
                     {fields.map((field, index) => (
                       <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                        <FormField
-                          control={form.control}
-                          name={`documents.${index}.name`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nom du document</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           <FormField
+                            control={form.control}
+                            name={`documents.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type du document</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner un type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {documentTypes.map(docType => (
+                                      <SelectItem key={docType} value={docType}>{docType}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`documents.${index}.validityDate`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date d'expiration</FormLabel>
                                 <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un type de document" />
-                                  </SelectTrigger>
+                                  <Input type="date" {...field} />
                                 </FormControl>
-                                <SelectContent>
-                                  {documentTypes.map(docType => (
-                                    <SelectItem key={docType} value={docType}>{docType}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                          <FormField
                           control={form.control}
                           name={`documents.${index}.file`}
                           render={({ field: { onChange, value, ...rest } }) => (
                             <FormItem>
-                               <FormLabel>Fichier (Photo)</FormLabel>
+                               <FormLabel>Fichier (Scan/Photo)</FormLabel>
                                <FormControl>
                                    <Input 
                                       type="file" 
-                                      accept="image/*"
+                                      accept="image/*,application/pdf"
                                       onChange={(e) => {
                                         onChange(e.target.files?.[0]);
                                       }}
@@ -690,7 +710,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                         </Button>
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '' })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Ajouter un document
                     </Button>
@@ -762,3 +782,4 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   );
 }
 
+    

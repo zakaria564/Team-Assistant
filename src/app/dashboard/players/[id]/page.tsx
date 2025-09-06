@@ -9,16 +9,19 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
 interface PlayerDocument {
   name: string;
   url: string;
+  validityDate?: string;
 }
 
 interface Player {
@@ -183,8 +186,8 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
                     <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName} />
-                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
-                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate} />
+                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy') : undefined} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy') : undefined} />
                 </CardContent>
             </Card>
         </div>
@@ -195,7 +198,7 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
-                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate} />
+                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
                     <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
@@ -208,10 +211,18 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
                 </CardHeader>
                 <CardContent>
                     {(player.documents && player.documents.length > 0) ? (
-                      <ul className="space-y-2">
+                      <ul className="space-y-3">
                           {player.documents.map((doc, index) => (
-                            <li key={index} className="flex items-center justify-between text-sm p-2 rounded-md bg-muted/50">
-                                <span className="font-medium">{doc.name}</span>
+                            <li key={index} className="flex items-center justify-between text-sm p-3 rounded-md bg-muted/50">
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{doc.name}</span>
+                                    {doc.validityDate && (
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <Calendar className="h-3 w-3"/>
+                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy')}
+                                        </span>
+                                    )}
+                                </div>
                                 <Button asChild variant="ghost" size="sm">
                                   <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                     <Download className="mr-2 h-4 w-4" />
@@ -241,3 +252,5 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
     </div>
   );
 }
+
+    
