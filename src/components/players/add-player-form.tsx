@@ -320,235 +320,243 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-4 md:order-2">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom complet</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Jean Dupont" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-6 md:order-2">
+                <div className="space-y-4">
+                     <h3 className="text-lg font-medium">Informations Personnelles</h3>
                     <FormField
                       control={form.control}
-                      name="birthDate"
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date de naissance</FormLabel>
+                          <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Input placeholder="Ex: Jean Dupont" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="nationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nationalité</FormLabel>
-                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="birthDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Date de naissance</FormLabel>
                               <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une nationalité" />
-                              </SelectTrigger>
+                                <Input type="date" {...field} />
                               </FormControl>
-                              <SelectContent>
-                                  {nationalities.map(nat => (
-                                      <SelectItem key={nat} value={nat}>{nat}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="entryDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date d'entrée</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="nationality"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nationalité</FormLabel>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner une nationalité" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {nationalities.map(nat => (
+                                          <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                      <FormField
                       control={form.control}
-                      name="exitDate"
+                      name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date de sortie</FormLabel>
+                          <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Textarea placeholder="123 Rue du Stade..." {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                 <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Adresse</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="123 Rue du Stade..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Téléphone</FormLabel>
-                          <FormControl>
-                            <Input type="tel" placeholder="0612345678" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="contact@email.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Catégorie</FormLabel>
-                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone</FormLabel>
                               <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une catégorie" />
-                              </SelectTrigger>
+                                <Input type="tel" placeholder="0612345678" {...field} />
                               </FormControl>
-                              <SelectContent>
-                                  {playerCategories.map(cat => (
-                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Poste</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un poste" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {footballPositions.map(pos => (
-                                        <SelectItem key={pos} value={pos}>{pos}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                </div>
-                 <FormField
-                    control={form.control}
-                    name="coachId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Entraîneur</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Assigner un entraîneur" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="none">Aucun</SelectItem>
-                                {coaches.map(coach => (
-                                    <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                    control={form.control}
-                    name="number"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Numéro</FormLabel>
-                        <FormControl>
-                            <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Statut</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un statut" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {playerStatuses.map(status => (
-                                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="contact@email.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                 </div>
 
-                <Separator className="my-6" />
+                <Separator />
+
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Informations Club</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Catégorie</FormLabel>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner une catégorie" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {playerCategories.map(cat => (
+                                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="position"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Poste</FormLabel>
+                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un poste" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {footballPositions.map(pos => (
+                                            <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                    </div>
+                     <FormField
+                        control={form.control}
+                        name="coachId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entraîneur</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Assigner un entraîneur" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="none">Aucun</SelectItem>
+                                    {coaches.map(coach => (
+                                        <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                        control={form.control}
+                        name="number"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Numéro</FormLabel>
+                            <FormControl>
+                                <Input type="number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Statut</FormLabel>
+                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un statut" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {playerStatuses.map(status => (
+                                            <SelectItem key={status} value={status}>{status}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                    </div>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="entryDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date d'entrée</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="exitDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date de sortie</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                </div>
+
+                <Separator />
 
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium">Informations du Tuteur (Optionnel)</h3>
@@ -653,3 +661,5 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
+
+    
