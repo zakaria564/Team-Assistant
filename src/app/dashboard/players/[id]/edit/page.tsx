@@ -26,6 +26,8 @@ interface Player {
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
+  entryDate?: string;
+  exitDate?: string;
 }
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {

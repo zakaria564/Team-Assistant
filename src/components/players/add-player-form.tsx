@@ -29,6 +29,8 @@ const formSchema = z.object({
   status: z.enum(playerStatuses),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
   birthDate: z.string().optional(),
+  entryDate: z.string().optional(),
+  exitDate: z.string().optional(),
   address: z.string().optional(),
   nationality: z.string().optional(),
   phone: z.string().optional(),
@@ -117,6 +119,8 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       status: "Actif",
       number: 10,
       birthDate: "",
+      entryDate: "",
+      exitDate: "",
       address: "",
       nationality: "",
       phone: "",
@@ -135,6 +139,8 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         ...player,
         coachId: player.coachId || "",
         birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
+        entryDate: player.entryDate ? player.entryDate.split('T')[0] : '',
+        exitDate: player.exitDate ? player.exitDate.split('T')[0] : '',
         address: player.address || "",
         nationality: player.nationality || "",
         phone: player.phone || "",
@@ -360,6 +366,34 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                                   ))}
                               </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="entryDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date d'entrée</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="exitDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date de sortie</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,8 @@ interface Player {
   tutorEmail?: string;
   coachId?: string;
   coachName?: string;
+  entryDate?: string;
+  exitDate?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -191,6 +193,8 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
                     <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
                     <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined}/>
+                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate} />
                  </CardContent>
             </Card>
             <Card>
