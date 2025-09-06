@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -49,9 +50,9 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryDetailPage({ params }: { params: { id: string } }) {
+export default function SalaryDetailPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const salaryId = params.id;
+  const salaryId = props.params.id;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);

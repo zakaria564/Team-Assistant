@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -19,9 +20,9 @@ interface Event {
     location: string;
 }
 
-export default function EditEventPage({ params }: { params: { id: string } }) {
+export default function EditEventPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const eventId = params.id;
+  const eventId = props.params.id;
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);

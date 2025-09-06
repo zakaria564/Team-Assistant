@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -19,9 +20,9 @@ interface Salary {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditSalaryPage({ params }: { params: { id: string } }) {
+export default function EditSalaryPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const salaryId = params.id;
+  const salaryId = props.params.id;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);

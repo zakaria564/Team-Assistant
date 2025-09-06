@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -23,9 +24,9 @@ interface Coach {
   exitDate?: string;
 }
 
-export default function EditCoachPage({ params }: { params: { id: string } }) {
+export default function EditCoachPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const coachId = params.id;
+  const coachId = props.params.id;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

@@ -58,9 +58,9 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 }
 
 
-export default function CoachDetailPage({ params }: { params: { id: string } }) {
+export default function CoachDetailPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const coachId = params.id;
+  const coachId = props.params.id;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

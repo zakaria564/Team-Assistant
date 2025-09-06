@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -29,9 +30,9 @@ interface Player {
   exitDate?: string;
 }
 
-export default function EditPlayerPage({ params }: { params: { id: string } }) {
+export default function EditPlayerPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const playerId = params.id;
+  const playerId = props.params.id;
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);

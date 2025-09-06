@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -19,9 +20,9 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditPaymentPage({ params }: { params: { id: string } }) {
+export default function EditPaymentPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const paymentId = params.id;
+  const paymentId = props.params.id;
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);

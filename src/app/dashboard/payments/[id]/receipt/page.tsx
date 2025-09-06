@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react";
@@ -38,9 +39,9 @@ const getBadgeClass = (status?: Payment['status']) => {
 }
 
 
-export default function PaymentReceiptPage({ params }: { params: { id: string } }) {
+export default function PaymentReceiptPage(props: { params: { id: string } }) {
   const router = useRouter();
-  const paymentId = params.id;
+  const paymentId = props.params.id;
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
