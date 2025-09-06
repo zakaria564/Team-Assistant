@@ -9,7 +9,7 @@ import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHoriz
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, query, orderBy, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -68,8 +68,7 @@ export default function EventsPage() {
     setLoading(true);
     const q = query(
         collection(db, "events"), 
-        where("userId", "==", user.uid),
-        orderBy("date", "asc")
+        where("userId", "==", user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -78,7 +77,11 @@ export default function EventsPage() {
         ...doc.data(),
         date: doc.data().date.toDate()
       } as Event));
-      setAllEvents(eventsData);
+      
+      // Sort events by date on the client side
+      const sortedEvents = eventsData.sort((a, b) => a.date.getTime() - b.date.getTime());
+      
+      setAllEvents(sortedEvents);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching events:", error);
@@ -306,3 +309,5 @@ export default function EventsPage() {
     </>
   );
 }
+
+    
