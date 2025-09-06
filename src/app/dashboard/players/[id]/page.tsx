@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,8 +64,7 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
 }
 
 
-export default function PlayerDetailPage() {
-  const params = useParams();
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const playerId = params.id as string;
   

@@ -53,8 +53,7 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 }
 
 
-export default function CoachDetailPage() {
-  const params = useParams();
+export default function CoachDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const coachId = params.id as string;
   

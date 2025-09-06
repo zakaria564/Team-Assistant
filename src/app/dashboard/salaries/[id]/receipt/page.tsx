@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -38,8 +38,7 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryReceiptPage() {
-  const params = useParams();
+export default function SalaryReceiptPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const salaryId = params.id as string;
   
@@ -221,5 +220,3 @@ export default function SalaryReceiptPage() {
     </div>
   );
 }
-
-    

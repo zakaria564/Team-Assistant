@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddPaymentForm } from "@/components/payments/add-payment-form";
@@ -19,9 +19,8 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditPaymentPage() {
+export default function EditPaymentPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
   const paymentId = params.id as string;
   
   const [payment, setPayment] = useState<Payment | null>(null);

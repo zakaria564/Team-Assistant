@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddSalaryForm } from "@/components/salaries/add-salary-form";
@@ -19,9 +19,8 @@ interface Salary {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditSalaryPage() {
+export default function EditSalaryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
   const salaryId = params.id as string;
   
   const [salary, setSalary] = useState<Salary | null>(null);

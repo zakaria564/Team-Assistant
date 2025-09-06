@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddCoachForm } from "@/components/coaches/add-coach-form";
@@ -21,9 +21,8 @@ interface Coach {
   specialty?: string;
 }
 
-export default function EditCoachPage() {
+export default function EditCoachPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
   const coachId = params.id as string;
   
   const [coach, setCoach] = useState<Coach | null>(null);

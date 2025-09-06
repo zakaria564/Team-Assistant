@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddEventForm } from "@/components/events/add-event-form";
@@ -19,9 +19,8 @@ interface Event {
     location: string;
 }
 
-export default function EditEventPage() {
+export default function EditEventPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
   const eventId = params.id as string;
   
   const [event, setEvent] = useState<Event | null>(null);

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddPlayerForm } from "@/components/players/add-player-form";
@@ -27,9 +27,8 @@ interface Player {
   tutorEmail?: string;
 }
 
-export default function EditPlayerPage() {
+export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
   const playerId = params.id as string;
   
   const [player, setPlayer] = useState<Player | null>(null);
