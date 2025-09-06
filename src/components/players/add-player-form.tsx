@@ -28,9 +28,9 @@ const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
 const documentSchema = z.object({
   name: z.string().optional(),
-  url: z.string().url("L'URL du document est requise.").optional(),
   file: z.any().optional(),
   validityDate: z.string().optional(),
+  // url is not part of the form, it's retrieved from existing data
 });
 
 
@@ -57,6 +57,7 @@ const formSchema = z.object({
 interface PlayerData extends z.infer<typeof formSchema> {
     id: string;
     photoUrl?: string;
+    documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 interface Coach {
@@ -182,8 +183,9 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
         documents: (player.documents || []).map(doc => ({
-            ...doc,
-            validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : ''
+            name: doc.name,
+            validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
+            // file and url are handled separately
         })),
       });
     }
@@ -272,7 +274,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setPhotoDataUrl(dataUrl);
 
-        // Stop the camera stream
         if (video.srcObject) {
           const stream = video.srcObject as MediaStream;
           stream.getTracks().forEach(track => track.stop());
@@ -283,7 +284,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
   const retakePicture = () => {
     setPhotoDataUrl(null);
-    // getCameraPermission will be called by the useEffect
   };
 
 
@@ -314,24 +314,36 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
 
     try {
-        const validDocuments = (values.documents || []).filter(doc => doc.name);
-
         const uploadedDocuments = await Promise.all(
-          validDocuments.map(async (doc) => {
-            let fileUrl = doc.url;
-            if (doc.file) {
-              fileUrl = await uploadFile(doc.file);
-            }
-            return { name: doc.name, url: fileUrl, validityDate: doc.validityDate || null };
+          (values.documents || []).map(async (doc, index) => {
+              if (!doc.name) return null; // Ignore empty document fields
+
+              let fileUrl = player?.documents?.[index]?.url || ''; // Keep old URL if no new file
+              
+              if (doc.file) {
+                  const newUrl = await uploadFile(doc.file);
+                  if (newUrl) {
+                      fileUrl = newUrl;
+                  }
+              }
+              
+              return { 
+                  name: doc.name, 
+                  url: fileUrl, 
+                  validityDate: doc.validityDate || null 
+              };
           })
         );
+        
+        const finalDocuments = uploadedDocuments.filter(doc => doc && doc.url);
+
 
         const dataToSave = {
             ...values,
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl,
-            documents: uploadedDocuments.map(d => ({...d, url: d.url || ''})),
+            documents: finalDocuments,
         };
 
         if (isEditMode && player) {
@@ -729,7 +741,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', file: null, validityDate: '' })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', validityDate: '' })}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Ajouter un document
                     </Button>
@@ -800,5 +812,3 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
-
-    
