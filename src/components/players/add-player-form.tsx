@@ -113,6 +113,14 @@ const nationalities = [
     "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Autre"
 ];
 
+const documentTypes = [
+    "Carte d'identité",
+    "Photo d'identité",
+    "Autorisation parentale",
+    "Certificat de surclassement",
+    "Autre"
+];
+
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
@@ -679,9 +687,18 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Nom du document</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ex: Carte d'identité" {...field} />
-                              </FormControl>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un type de document" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {documentTypes.map(docType => (
+                                    <SelectItem key={docType} value={docType}>{docType}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -784,4 +801,3 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   );
 }
 
-    
