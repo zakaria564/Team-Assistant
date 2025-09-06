@@ -8,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy, doc, deleteDoc, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Player {
   id: string;
@@ -55,6 +56,7 @@ interface Payment {
 
 
 export default function PaymentsPage() {
+  const [user, loadingUser] = useAuthState(auth);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -64,16 +66,20 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     const fetchPayments = async () => {
+      if (!user) {
+        if (!loadingUser) setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const playersQuery = query(collection(db, "players"));
+        const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
         const playersMap = new Map<string, string>();
         playersSnapshot.forEach(doc => {
             playersMap.set(doc.id, doc.data().name);
         });
 
-        const paymentsQuery = query(collection(db, "payments"), orderBy("createdAt", "desc"));
+        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -109,7 +115,7 @@ export default function PaymentsPage() {
     };
 
     fetchPayments();
-  }, [toast]);
+  }, [user, loadingUser, toast]);
 
   const filteredPayments = useMemo(() => {
     if (!searchTerm) return payments;
@@ -242,7 +248,7 @@ export default function PaymentsPage() {
             <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loading || loadingUser ? (
               <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
@@ -352,5 +358,3 @@ export default function PaymentsPage() {
     </>
   );
 }
-
-    

@@ -13,13 +13,14 @@ import { Loader2, Camera, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -101,6 +102,7 @@ const nationalities = [
 ];
 
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
+  const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -156,8 +158,9 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
   useEffect(() => {
     const fetchCoaches = async () => {
+      if (!user) return;
       try {
-        const q = query(collection(db, "coaches"), where("status", "==", "Actif"));
+        const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
         const querySnapshot = await getDocs(q);
         const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
         setCoaches(coachesData);
@@ -171,7 +174,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       }
     };
     fetchCoaches();
-  }, [toast]);
+  }, [user, toast]);
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -239,6 +242,10 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+        return;
+    }
     setLoading(true);
 
     if (!photoDataUrl) {
@@ -252,33 +259,9 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     }
 
     try {
-        const playersRef = collection(db, "players");
-        const q = query(playersRef, where("name", "==", values.name));
-        const querySnapshot = await getDocs(q);
-        
-        let isDuplicate = false;
-        if (!querySnapshot.empty) {
-            if (isEditMode && player) {
-                // In edit mode, it's a duplicate if another player has the same name
-                isDuplicate = querySnapshot.docs.some(doc => doc.id !== player.id);
-            } else {
-                // In add mode, any result is a duplicate
-                isDuplicate = true;
-            }
-        }
-
-        if (isDuplicate) {
-            toast({
-                variant: "destructive",
-                title: "Nom de joueur déjà existant",
-                description: "Un autre joueur porte déjà ce nom. Veuillez en choisir un autre.",
-            });
-            setLoading(false);
-            return;
-        }
-
         const dataToSave = {
             ...values,
+            userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl
         };
@@ -302,6 +285,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         }
       
       router.push("/dashboard/players");
+      router.refresh();
 
     } catch (e: any) {
       toast({
@@ -667,5 +651,3 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     </>
   );
 }
-
-    

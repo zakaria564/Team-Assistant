@@ -8,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu, 
@@ -36,6 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
@@ -68,6 +69,7 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
 
 
 export default function PlayersPage() {
+  const [user, loadingUser] = useAuthState(auth);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -78,28 +80,32 @@ export default function PlayersPage() {
 
   useEffect(() => {
     const fetchPlayers = async () => {
-      setLoading(true);
-      setFetchError(null);
-      try {
-        const q = query(collection(db, "players"));
-        const querySnapshot = await getDocs(q);
-        const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-        setPlayers(playersData);
-      } catch (error: any) {
-        console.error("Error fetching players: ", error);
-        setFetchError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Erreur de chargement",
-          description: "Impossible de charger les joueurs. Vérifiez les permissions Firestore.",
-        });
-      } finally {
-        setLoading(false);
-      }
+        if (!user) {
+            if(!loadingUser) setLoading(false);
+            return;
+        }
+        setLoading(true);
+        setFetchError(null);
+        try {
+            const q = query(collection(db, "players"), where("userId", "==", user.uid));
+            const querySnapshot = await getDocs(q);
+            const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+            setPlayers(playersData);
+        } catch (error: any) {
+            console.error("Error fetching players: ", error);
+            setFetchError(error.message);
+            toast({
+            variant: "destructive",
+            title: "Erreur de chargement",
+            description: "Impossible de charger les joueurs. Vérifiez les permissions Firestore.",
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     fetchPlayers();
-  }, [toast]);
+  }, [user, loadingUser, toast]);
   
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
@@ -223,7 +229,7 @@ export default function PlayersPage() {
               </Alert>
             )}
             <div className="w-full overflow-x-auto">
-              {loading ? (
+              {loading || loadingUser ? (
                 <div className="flex justify-center items-center py-10">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -344,5 +350,3 @@ export default function PlayersPage() {
     </>
   );
 }
-
-    

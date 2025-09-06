@@ -10,11 +10,12 @@ import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { format, subDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Event {
   id: string;
@@ -37,6 +38,7 @@ interface ChartData {
 }
 
 export default function Dashboard() {
+  const [user, loadingUser] = useAuthState(auth);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
@@ -46,13 +48,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      if (!user) {
+        if (!loadingUser) {
+          setLoadingEvents(false);
+          setLoadingStats(false);
+        }
+        return;
+      };
+
       setLoadingEvents(true);
       setLoadingStats(true);
+
       try {
-        // Fetch upcoming events
+        // Fetch upcoming events for the current user
         const startDate = startOfDay(new Date());
         const eventsQuery = query(
           collection(db, "events"),
+          where("userId", "==", user.uid),
           where("date", ">=", startDate),
           orderBy("date", "asc"),
           limit(5)
@@ -65,12 +77,14 @@ export default function Dashboard() {
         } as Event));
         setUpcomingEvents(eventsData);
 
-        // Fetch players data for stats
-        const playersSnapshot = await getDocs(collection(db, "players"));
+        // Fetch players data for stats for the current user
+        const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+        const playersSnapshot = await getDocs(playersQuery);
         setPlayerCount(playersSnapshot.size);
         
-        // Fetch coaches data for stats
-        const coachesSnapshot = await getDocs(collection(db, "coaches"));
+        // Fetch coaches data for stats for the current user
+        const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
+        const coachesSnapshot = await getDocs(coachesQuery);
         setCoachCount(coachesSnapshot.size);
         
         const playersData = playersSnapshot.docs.map(doc => doc.data() as Player);
@@ -108,7 +122,7 @@ export default function Dashboard() {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [user, loadingUser]);
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -119,14 +133,14 @@ export default function Dashboard() {
               value={loadingStats ? "..." : playerCount.toString()}
               icon={Users}
               description="Nombre total de joueurs inscrits"
-              loading={loadingStats}
+              loading={loadingStats || loadingUser}
             />
              <KpiCard 
               title="Total Entraîneurs"
               value={loadingStats ? "..." : coachCount.toString()}
               icon={ClipboardList}
               description="Nombre total d'entraîneurs actifs"
-              loading={loadingStats}
+              loading={loadingStats || loadingUser}
             />
         </div>
          <Card className="md:col-span-1 lg:col-span-2">
@@ -135,7 +149,7 @@ export default function Dashboard() {
             <CardDescription>Visualisez la distribution des joueurs dans les différentes catégories.</CardDescription>
            </CardHeader>
            <CardContent>
-            {loadingStats ? (
+            {loadingStats || loadingUser ? (
                 <div className="flex items-center justify-center h-[300px]">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -167,7 +181,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="w-full overflow-x-auto">
-              {loadingEvents ? (
+              {loadingEvents || loadingUser ? (
                 <div className="flex items-center justify-center py-10">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>

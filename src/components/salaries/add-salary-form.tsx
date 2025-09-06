@@ -12,11 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Coach {
   id: string;
@@ -53,6 +54,7 @@ const paymentMethods = ["Virement", "Chèque", "Espèces"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
 export function AddSalaryForm({ salary }: AddSalaryFormProps) {
+    const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [coaches, setCoaches] = useState<Coach[]>([]);
@@ -103,9 +105,10 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
     useEffect(() => {
         const fetchCoaches = async () => {
+            if (!user) return;
             setLoadingCoaches(true);
             try {
-                const q = query(collection(db, "coaches"));
+                const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
                 setCoaches(coachesData);
@@ -121,9 +124,13 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             }
         };
         fetchCoaches();
-    }, [toast]);
+    }, [user, toast]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!user) {
+            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+            return;
+        }
         setLoading(true);
 
         const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
@@ -141,6 +148,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     totalAmount: values.totalAmount,
                     status: values.status,
                     description: values.description,
+                    userId: user.uid, // Ensure userId is present on updates
                 };
                 if(newTransactionData){
                     updateData.transactions = arrayUnion(newTransactionData);
@@ -163,6 +171,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                  }
                  const initialTransactions = newTransactionData ? [newTransactionData] : [];
                  await addDoc(collection(db, "salaries"), {
+                    userId: user.uid,
                     coachId: values.coachId,
                     totalAmount: values.totalAmount,
                     description: values.description,
@@ -176,6 +185,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                 });
             }
             router.push("/dashboard/salaries");
+            router.refresh();
         } catch (e) {
              toast({
                 variant: "destructive",

@@ -8,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy, doc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy, doc, deleteDoc, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 interface Salary {
@@ -51,6 +52,7 @@ interface Salary {
 
 
 export default function SalariesPage() {
+  const [user, loadingUser] = useAuthState(auth);
   const [salaries, setSalaries] = useState<Salary[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -60,16 +62,20 @@ export default function SalariesPage() {
 
   useEffect(() => {
     const fetchSalaries = async () => {
+        if (!user) {
+            if (!loadingUser) setLoading(false);
+            return;
+        }
       setLoading(true);
       try {
-        const coachesQuery = query(collection(db, "coaches"));
+        const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
         const coachesSnapshot = await getDocs(coachesQuery);
         const coachesMap = new Map<string, string>();
         coachesSnapshot.forEach(doc => {
             coachesMap.set(doc.id, doc.data().name);
         });
 
-        const salariesQuery = query(collection(db, "salaries"), orderBy("createdAt", "desc"));
+        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
         const salariesSnapshot = await getDocs(salariesQuery);
         const salariesData = salariesSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -105,7 +111,7 @@ export default function SalariesPage() {
     };
 
     fetchSalaries();
-  }, [toast]);
+  }, [user, loadingUser, toast]);
 
   const filteredSalaries = useMemo(() => {
     if (!searchTerm) return salaries;
@@ -238,7 +244,7 @@ export default function SalariesPage() {
             <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loading || loadingUser ? (
               <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
@@ -344,5 +350,3 @@ export default function SalariesPage() {
     </>
   );
 }
-
-    

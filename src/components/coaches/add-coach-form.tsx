@@ -13,13 +13,14 @@ import { Loader2, Camera, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
@@ -88,6 +89,7 @@ const nationalities = [
 ];
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {
+  const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -192,6 +194,11 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+        return;
+    }
+
     setLoading(true);
 
     if (!photoDataUrl) {
@@ -207,6 +214,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     try {
         const dataToSave = {
             ...values,
+            userId: user.uid,
             photoUrl: photoDataUrl,
             specialty: values.specialty || '',
         };
@@ -231,6 +239,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         }
       
       router.push("/dashboard/coaches");
+      router.refresh();
 
     } catch (e: any) {
       toast({
@@ -492,4 +501,3 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
-

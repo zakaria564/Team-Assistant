@@ -8,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,6 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 const coachStatuses = ["Actif", "Inactif"] as const;
@@ -60,6 +61,7 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 }
 
 export default function CoachesPage() {
+  const [user, loadingUser] = useAuthState(auth);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -70,9 +72,13 @@ export default function CoachesPage() {
 
   useEffect(() => {
     const fetchCoaches = async () => {
+      if (!user) {
+        if (!loadingUser) setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const q = query(collection(db, "coaches"));
+        const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
         const querySnapshot = await getDocs(q);
         const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
         setCoaches(coachesData);
@@ -89,7 +95,7 @@ export default function CoachesPage() {
     };
 
     fetchCoaches();
-  }, [toast]);
+  }, [user, loadingUser, toast]);
   
   const filteredCoaches = useMemo(() => {
     if (!searchTerm) return coaches;
@@ -208,7 +214,7 @@ export default function CoachesPage() {
             <CardDescription>Retrouvez ici tous les entraîneurs du club.</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loading || loadingUser ? (
               <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
@@ -328,5 +334,3 @@ export default function CoachesPage() {
     </>
   );
 }
-
-    

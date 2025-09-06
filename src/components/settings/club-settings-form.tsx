@@ -12,9 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
@@ -24,6 +25,7 @@ const formSchema = z.object({
 });
 
 export function ClubSettingsForm() {
+  const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -40,12 +42,21 @@ export function ClubSettingsForm() {
 
   useEffect(() => {
     const fetchClubData = async () => {
+        if (!user) {
+            setLoadingData(false);
+            return;
+        }
         setLoadingData(true);
         try {
-            const clubDocRef = doc(db, "club", "main");
+            const clubDocRef = doc(db, "clubs", user.uid);
             const docSnap = await getDoc(clubDocRef);
             if (docSnap.exists()) {
                 form.reset(docSnap.data());
+            } else {
+                // If user has an email, pre-fill the contact email
+                if (user.email) {
+                    form.setValue('contactEmail', user.email);
+                }
             }
         } catch (error) {
             console.error("Error fetching club data: ", error);
@@ -59,15 +70,24 @@ export function ClubSettingsForm() {
         }
     };
 
-    fetchClubData();
-  }, [form, toast]);
+    if(!loadingUser) {
+       fetchClubData();
+    }
+  }, [user, loadingUser, form, toast]);
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) {
+        toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour enregistrer." });
+        return;
+    }
     setLoading(true);
     try {
-        const clubDocRef = doc(db, "club", "main");
-        await setDoc(clubDocRef, values, { merge: true });
+        const clubDocRef = doc(db, "clubs", user.uid);
+        await setDoc(clubDocRef, {
+            ...values,
+            userId: user.uid,
+        }, { merge: true });
         toast({ title: "Informations du club enregistrées", description: "Les données de votre club ont été mises à jour." });
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les informations." });
@@ -83,7 +103,7 @@ export function ClubSettingsForm() {
         <CardDescription>Gérez les informations publiques de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
-        {loadingData ? (
+        {loadingData || loadingUser ? (
              <div className="space-y-4">
                 <Skeleton className="h-9 w-1/2" />
                 <div className="grid sm:grid-cols-2 gap-4">

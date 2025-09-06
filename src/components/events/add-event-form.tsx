@@ -19,7 +19,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 const eventTypes = [
@@ -69,6 +70,7 @@ interface AddEventFormProps {
 }
 
 export function AddEventForm({ event }: AddEventFormProps) {
+    const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -98,6 +100,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const eventTypeIsMatch = eventType?.includes("Match");
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!user) {
+            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+            return;
+        }
         setLoading(true);
         try {
             const [hours, minutes] = values.time.split(':').map(Number);
@@ -105,6 +111,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
             combinedDate.setHours(hours, minutes);
 
             const dataToSave = {
+                userId: user.uid,
                 type: values.type,
                 team: values.team,
                 date: combinedDate,

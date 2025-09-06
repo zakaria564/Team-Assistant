@@ -9,8 +9,8 @@ import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHoriz
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, query, orderBy, onSnapshot, doc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, query, orderBy, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Event {
     id: string;
@@ -45,6 +46,7 @@ interface Event {
 }
 
 export default function EventsPage() {
+  const [user, loadingUser] = useAuthState(auth);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
@@ -59,8 +61,16 @@ export default function EventsPage() {
   }, []);
 
   useEffect(() => {
+    if (!user) {
+        if (!loadingUser) setLoading(false);
+        return;
+    }
     setLoading(true);
-    const q = query(collection(db, "events"), orderBy("date", "asc"));
+    const q = query(
+        collection(db, "events"), 
+        where("userId", "==", user.uid),
+        orderBy("date", "asc")
+    );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const eventsData = querySnapshot.docs.map(doc => ({
@@ -81,7 +91,7 @@ export default function EventsPage() {
     });
 
     return () => unsubscribe();
-  }, [toast]);
+  }, [user, loadingUser, toast]);
 
   useEffect(() => {
     if (date) {
@@ -205,7 +215,7 @@ export default function EventsPage() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {loading ? (
+                {loading || loadingUser ? (
                     <div className="flex justify-center items-center py-10">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
