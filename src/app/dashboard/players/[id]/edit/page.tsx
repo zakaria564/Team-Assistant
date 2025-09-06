@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -33,7 +32,7 @@ interface Player {
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const resolvedParams = React.use(params);
   const router = useRouter();
-  const playerId = resolvedParams.id as string;
+  const playerId = resolvedParams.id;
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);

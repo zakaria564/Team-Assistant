@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -57,7 +56,7 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
   const resolvedParams = React.use(params);
   const router = useRouter();
-  const coachId = resolvedParams.id as string;
+  const coachId = resolvedParams.id;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

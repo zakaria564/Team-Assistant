@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react";
@@ -42,7 +41,7 @@ const getBadgeClass = (status?: Salary['status']) => {
 export default function SalaryReceiptPage({ params }: { params: { id: string } }) {
   const resolvedParams = React.use(params);
   const router = useRouter();
-  const salaryId = resolvedParams.id as string;
+  const salaryId = resolvedParams.id;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);
