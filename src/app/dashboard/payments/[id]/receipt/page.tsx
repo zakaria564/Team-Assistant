@@ -1,6 +1,7 @@
 
 "use client"
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
@@ -39,8 +40,9 @@ const getBadgeClass = (status?: Payment['status']) => {
 
 
 export default function PaymentReceiptPage({ params }: { params: { id: string } }) {
+  const resolvedParams = React.use(params);
   const router = useRouter();
-  const paymentId = params.id as string;
+  const paymentId = resolvedParams.id as string;
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);

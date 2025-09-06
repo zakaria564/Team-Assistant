@@ -1,8 +1,9 @@
 
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -54,8 +55,9 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 
 
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = React.use(params);
   const router = useRouter();
-  const coachId = params.id as string;
+  const coachId = resolvedParams.id as string;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

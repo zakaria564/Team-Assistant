@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
@@ -22,8 +23,9 @@ interface Coach {
 }
 
 export default function EditCoachPage({ params }: { params: { id: string } }) {
+  const resolvedParams = React.use(params);
   const router = useRouter();
-  const coachId = params.id as string;
+  const coachId = resolvedParams.id as string;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

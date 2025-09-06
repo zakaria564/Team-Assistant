@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
@@ -50,8 +51,9 @@ const getBadgeClass = (status?: Salary['status']) => {
 
 
 export default function SalaryDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = React.use(params);
   const router = useRouter();
-  const salaryId = params.id as string;
+  const salaryId = resolvedParams.id as string;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);
