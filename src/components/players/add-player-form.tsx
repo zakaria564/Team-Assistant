@@ -362,20 +362,18 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             <div className="space-y-6">
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-                        <video 
-                            ref={videoRef} 
-                            className={cn(
-                                "w-full h-full object-cover",
-                                photoDataUrl && "hidden"
-                            )} 
-                            autoPlay 
-                            muted 
-                            playsInline 
-                        />
-                        {photoDataUrl && (
+                        {!photoDataUrl ? (
+                             <video 
+                                ref={videoRef} 
+                                className="w-full h-full object-cover" 
+                                autoPlay 
+                                muted 
+                                playsInline 
+                            />
+                        ) : (
                             <Image src={photoDataUrl} alt="Photo du joueur" layout="fill" objectFit="cover" />
                         )}
-                        { hasCameraPermission === false && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
+                        { hasCameraPermission === false && !photoDataUrl && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
 
@@ -718,7 +716,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', file: null, validityDate: '' })}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Ajouter un document
                     </Button>
