@@ -85,7 +85,7 @@ const coachSpecialties = [
 ];
 
 const nationalities = [
-    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Autre"
+    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Ghanéenne", "Égyptienne", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Néerlandaise", "Brésilienne", "Argentine", "Suisse", "Autre"
 ];
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {

@@ -13,8 +13,9 @@ import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db, auth } from "@/lib/firebase";
+import { db, auth, storage } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
@@ -107,7 +108,7 @@ const playerCategories = [
 ];
 
 const nationalities = [
-    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Autre"
+    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Ghanéenne", "Égyptienne", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Néerlandaise", "Brésilienne", "Argentine", "Suisse", "Autre"
 ];
 
 const documentTypes = [
