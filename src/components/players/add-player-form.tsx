@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Loader2, Camera, RefreshCcw, FileHeart, PlusCircle, Trash2 } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -22,7 +22,6 @@ import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Checkbox } from "../ui/checkbox";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -30,7 +29,6 @@ const documentSchema = z.object({
   name: z.string().optional(),
   file: z.any().optional(),
   validityDate: z.string().optional(),
-  // url is not part of the form, it's retrieved from existing data
 });
 
 
@@ -185,7 +183,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         documents: (player.documents || []).map(doc => ({
             name: doc.name,
             validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
-            // file and url are handled separately
+            // file is handled separately
         })),
       });
     }
@@ -274,10 +272,11 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setPhotoDataUrl(dataUrl);
 
-        if (video.srcObject) {
-          const stream = video.srcObject as MediaStream;
+        const stream = video.srcObject as MediaStream;
+        if (stream) {
           stream.getTracks().forEach(track => track.stop());
         }
+        videoRef.current.srcObject = null;
       }
     }
   };
@@ -314,36 +313,41 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
 
     try {
-        const uploadedDocuments = await Promise.all(
-          (values.documents || []).map(async (doc, index) => {
-              if (!doc.name) return null; // Ignore empty document fields
+      const documentPromises = (values.documents || []).map(async (docData, index) => {
+        if (!docData.name) {
+          return null; // Skip documents without a name
+        }
 
-              let fileUrl = player?.documents?.[index]?.url || ''; // Keep old URL if no new file
-              
-              if (doc.file) {
-                  const newUrl = await uploadFile(doc.file);
-                  if (newUrl) {
-                      fileUrl = newUrl;
-                  }
-              }
-              
-              return { 
-                  name: doc.name, 
-                  url: fileUrl, 
-                  validityDate: doc.validityDate || null 
-              };
-          })
-        );
+        let fileUrl = player?.documents?.find(d => d.name === docData.name)?.url || '';
         
-        const finalDocuments = uploadedDocuments.filter(doc => doc && doc.url);
+        // If a new file is provided, upload it and get the new URL
+        if (docData.file) {
+          const newUrl = await uploadFile(docData.file);
+          if (newUrl) {
+            fileUrl = newUrl;
+          }
+        }
+        
+        // Only include the document if it has a URL
+        if (fileUrl) {
+          return {
+            name: docData.name,
+            url: fileUrl,
+            validityDate: docData.validityDate || null,
+          };
+        }
+        
+        return null;
+      });
 
+      const uploadedDocuments = (await Promise.all(documentPromises)).filter(Boolean) as PlayerData['documents'];
 
         const dataToSave = {
             ...values,
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl,
-            documents: finalDocuments,
+            documents: uploadedDocuments,
         };
 
         if (isEditMode && player) {
