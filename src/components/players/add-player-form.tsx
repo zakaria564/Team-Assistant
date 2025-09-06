@@ -13,9 +13,8 @@ import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db, auth, storage } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
@@ -27,7 +26,7 @@ const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
 const documentSchema = z.object({
   name: z.string().optional(),
-  file: z.any().optional(),
+  url: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   validityDate: z.string().optional(),
 });
 
@@ -182,8 +181,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         tutorEmail: player.tutorEmail || "",
         documents: (player.documents || []).map(doc => ({
             name: doc.name,
+            url: doc.url,
             validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
-            // file is handled separately
         })),
       });
     }
@@ -285,16 +284,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     setPhotoDataUrl(null);
   };
 
-
-  const uploadFile = async (file: File) => {
-    if (!user) return null;
-    const storagePath = `users/${user.uid}/player_documents/${Date.now()}_${file.name}`;
-    const fileRef = storageRef(storage, storagePath);
-    await uploadBytes(fileRef, file);
-    return getDownloadURL(fileRef);
-  };
-
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
         toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
@@ -313,41 +302,20 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
 
     try {
-      const documentPromises = (values.documents || []).map(async (docData, index) => {
-        if (!docData.name) {
-          return null; // Skip documents without a name
-        }
-
-        let fileUrl = player?.documents?.find(d => d.name === docData.name)?.url || '';
-        
-        // If a new file is provided, upload it and get the new URL
-        if (docData.file) {
-          const newUrl = await uploadFile(docData.file);
-          if (newUrl) {
-            fileUrl = newUrl;
-          }
-        }
-        
-        // Only include the document if it has a URL
-        if (fileUrl) {
-          return {
-            name: docData.name,
-            url: fileUrl,
-            validityDate: docData.validityDate || null,
-          };
-        }
-        
-        return null;
-      });
-
-      const uploadedDocuments = (await Promise.all(documentPromises)).filter(Boolean) as PlayerData['documents'];
+        const documentsToSave = (values.documents || [])
+          .filter(doc => doc.name && doc.url) // Only save documents that have a name and a URL
+          .map(doc => ({
+              name: doc.name,
+              url: doc.url,
+              validityDate: doc.validityDate || null,
+          }));
 
         const dataToSave = {
             ...values,
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             photoUrl: photoDataUrl,
-            documents: uploadedDocuments,
+            documents: documentsToSave,
         };
 
         if (isEditMode && player) {
@@ -392,7 +360,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             <div className="space-y-6">
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-                        {!photoDataUrl ? (
+                        {!photoDataUrl && hasCameraPermission ? (
                              <video 
                                 ref={videoRef} 
                                 className="w-full h-full object-cover" 
@@ -400,10 +368,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 muted 
                                 playsInline 
                             />
-                        ) : (
+                        ) : photoDataUrl ? (
                             <Image src={photoDataUrl} alt="Photo du joueur" layout="fill" objectFit="cover" />
-                        )}
-                        { hasCameraPermission === false && !photoDataUrl && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
+                        ) : (
+                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
+                        )
+                        }
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
 
@@ -724,18 +694,16 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         </div>
                          <FormField
                           control={form.control}
-                          name={`documents.${index}.file`}
-                          render={({ field: { onChange, value, ...rest } }) => (
+                          name={`documents.${index}.url`}
+                          render={({ field }) => (
                             <FormItem>
-                               <FormLabel>Fichier (Photo)</FormLabel>
+                               <FormLabel>URL du Document</FormLabel>
                                <FormControl>
                                    <Input 
-                                      type="file" 
-                                      accept="image/*,application/pdf"
-                                      onChange={(e) => {
-                                        onChange(e.target.files?.[0]);
-                                      }}
-                                      {...rest}
+                                      type="text" 
+                                      placeholder="https://example.com/document.pdf"
+                                      {...field}
+                                      value={field.value || ''}
                                     />
                                </FormControl>
                                <FormMessage />
@@ -745,7 +713,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', validityDate: '' })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Ajouter un document
                     </Button>
