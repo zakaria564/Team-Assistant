@@ -75,7 +75,7 @@ export default function SalariesPage() {
             coachesMap.set(doc.id, doc.data().name);
         });
 
-        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
         const salariesSnapshot = await getDocs(salariesQuery);
         const salariesData = salariesSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -95,8 +95,9 @@ export default function SalariesPage() {
                 transactions
             } as Salary;
         });
-
-        setSalaries(salariesData);
+        
+        const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+        setSalaries(sortedSalaries);
 
       } catch (error: any) {
         console.error("Error fetching salaries: ", error);
@@ -350,3 +351,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    
