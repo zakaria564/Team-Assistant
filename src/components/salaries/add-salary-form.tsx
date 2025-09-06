@@ -73,14 +73,14 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             totalAmount: salary.totalAmount,
             description: salary.description,
             status: salary.status,
-            newTransactionAmount: 0,
+            newTransactionAmount: undefined,
             newTransactionMethod: paymentMethods[0],
         } : {
             description: "Salaire mensuel",
             coachId: "",
             totalAmount: 5000,
             status: "En attente",
-            newTransactionAmount: 0,
+            newTransactionAmount: undefined,
             newTransactionMethod: paymentMethods[0],
         }
     });
@@ -295,7 +295,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           <FormItem>
                               <FormLabel>Montant du versement (MAD)</FormLabel>
                               <FormControl>
-                                <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber || 0)} />
+                                <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                               </FormControl>
                               <FormMessage />
                           </FormItem>
