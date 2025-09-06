@@ -9,12 +9,20 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut, Flag, Home } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut, Flag, Home, Calendar, Download } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 type CoachStatus = "Actif" | "Inactif";
+
+interface CoachDocument {
+  name: string;
+  url: string;
+  validityDate?: string;
+}
 
 interface Coach {
   id: string;
@@ -29,6 +37,7 @@ interface Coach {
   exitDate?: string;
   nationality?: string;
   address?: string;
+  documents?: CoachDocument[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -176,6 +185,38 @@ export default function CoachDetailPage() {
                     <DetailItem icon={Mail} label="Email" value={coach.email} href={coach.email ? `mailto:${coach.email}` : undefined} />
                     <DetailItem icon={Home} label="Adresse" value={coach.address} href={coach.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}` : undefined} />
                  </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Documents</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {(coach.documents && coach.documents.length > 0) ? (
+                      <ul className="space-y-3">
+                          {coach.documents.map((doc, index) => (
+                            <li key={index} className="flex items-center justify-between text-sm p-3 rounded-md bg-muted/50">
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{doc.name}</span>
+                                    {doc.validityDate && (
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <Calendar className="h-3 w-3"/>
+                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', {locale: fr})}
+                                        </span>
+                                    )}
+                                </div>
+                                <Button asChild variant="ghost" size="sm">
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Voir
+                                  </a>
+                                </Button>
+                            </li>
+                          ))}
+                        </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Aucun document n'a été ajouté pour cet entraîneur.</p>
+                    )}
+                </CardContent>
             </Card>
         </div>
       </div>

@@ -22,6 +22,9 @@ interface Coach {
   specialty?: string;
   entryDate?: string;
   exitDate?: string;
+  nationality?: string;
+  address?: string;
+  documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 export default function EditCoachPage() {

@@ -1,15 +1,15 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
-import { useState, useRef, useEffect } from "react";
-import { Loader2, Camera, RefreshCcw } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -24,6 +24,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
+const documentSchema = z.object({
+  name: z.string().optional(),
+  url: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
+  validityDate: z.string().optional(),
+});
+
+
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   category: z.string({ required_error: "La catégorie est requise."}),
@@ -35,11 +42,13 @@ const formSchema = z.object({
   exitDate: z.string().optional(),
   nationality: z.string().optional(),
   address: z.string().optional(),
+  documents: z.array(documentSchema).optional(),
 });
 
 interface CoachData extends z.infer<typeof formSchema> {
     id: string;
     photoUrl?: string;
+    documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 interface AddCoachFormProps {
@@ -85,7 +94,18 @@ const coachSpecialties = [
 ];
 
 const nationalities = [
-    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Ghanéenne", "Égyptienne", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Néerlandaise", "Brésilienne", "Argentine", "Suisse", "Autre"
+    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Ghanéenne", "Égyptienne", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Néerlandaise", "Brésilienne", "Argentine", "Suisse", "Autre", "Angolaise", "Béninoise", "Botswanaise", "Burkinabée", "Burundaise", "Cap-verdienne", "Centrafricaine", "Comorienne", "Congolaise (Brazzaville)", "Congolaise (Kinshasa)", "Djiboutienne", "Érythréenne", "Éthiopienne", "Gabonaise", "Gambienne", "Guinéenne", "Guinéenne-Bissau", "Équato-guinéenne", "Kényane", "Libérienne", "Libyenne", "Malawite", "Malienne", "Mauritanienne", "Mozambicaine", "Namibienne", "Nigérienne", "Ougandaise", "Rwandaise", "Sierra-léonaise", "Somalienne", "Soudanaise", "Tanzanienne", "Tchadienne", "Togolaise", "Zambienne", "Zimbabwéenne", "Américaine (USA)", "Canadienne", "Mexicaine", "Colombienne", "Vénézuélienne", "Péruvienne", "Chilienne", "Uruguayenne", "Paraguayenne", "Bolivienne", "Équatorienne", "Britannique", "Irlandaise", "Suédoise", "Norvégienne", "Danoise", "Finlandaise", "Polonaise", "Tchèque", "Slovaque", "Hongroise", "Roumaine", "Bulgare", "Grecque", "Turque"
+];
+
+const documentTypes = [
+    "Diplôme d'entraîneur",
+    "Carte d'identité",
+    "Passeport",
+    "Extrait de naissance",
+    "Justificatif de domicile",
+    "Photo d'identité",
+    "Contrat",
+    "Autre"
 ];
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {
@@ -112,7 +132,13 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
       exitDate: "",
       nationality: "",
       address: "",
+      documents: [],
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "documents",
   });
 
   useEffect(() => {
@@ -122,38 +148,45 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
             nationality: coach.nationality || "",
-            address: coach.address || ""
+            address: coach.address || "",
+            documents: (coach.documents || []).map(doc => ({
+                name: doc.name,
+                url: doc.url,
+                validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
+            })),
         });
     }
   }, [coach, form]);
 
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+  const getCameraPermission = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setHasCameraPermission(false);
         return;
-      }
-      try {
+    }
+    try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasCameraPermission(true);
-
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+            videoRef.current.srcObject = stream;
         }
-      } catch (error) {
+        setHasCameraPermission(true);
+    } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
         toast({
-          variant: 'destructive',
-          title: 'Accès à la caméra refusé',
-          description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
+            variant: 'destructive',
+            title: 'Accès à la caméra refusé',
+            description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
         });
-      }
-    };
-
-    getCameraPermission();
+    }
   }, [toast]);
+
+  useEffect(() => {
+    if(!photoDataUrl) {
+      getCameraPermission();
+    }
+  }, [photoDataUrl, getCameraPermission]);
+
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -188,10 +221,20 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setPhotoDataUrl(dataUrl);
+
+        const stream = video.srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        videoRef.current.srcObject = null;
       }
     }
   };
 
+
+  const retakePicture = () => {
+    setPhotoDataUrl(null);
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
@@ -212,11 +255,20 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     }
 
     try {
+        const documentsToSave = (values.documents || [])
+          .filter(doc => doc.name && doc.url) // Only save documents that have a name and a URL
+          .map(doc => ({
+              name: doc.name,
+              url: doc.url,
+              validityDate: doc.validityDate || null,
+          }));
+
         const dataToSave = {
             ...values,
             userId: user.uid,
             photoUrl: photoDataUrl,
             specialty: values.specialty || '',
+            documents: documentsToSave,
         };
 
         if (isEditMode) {
@@ -263,20 +315,20 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             <div className="space-y-6">
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-                        <video 
-                            ref={videoRef} 
-                            className={cn(
-                                "w-full h-full object-cover",
-                                photoDataUrl && "hidden"
-                            )} 
-                            autoPlay 
-                            muted 
-                            playsInline 
-                        />
-                        {photoDataUrl && (
+                         {!photoDataUrl && hasCameraPermission ? (
+                             <video 
+                                ref={videoRef} 
+                                className="w-full h-full object-cover" 
+                                autoPlay 
+                                muted 
+                                playsInline 
+                            />
+                        ) : photoDataUrl ? (
                             <Image src={photoDataUrl} alt="Photo de l'entraîneur" layout="fill" objectFit="cover" />
-                        )}
-                        { hasCameraPermission === false && <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p> }
+                        ) : (
+                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
+                        )
+                        }
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
 
@@ -290,12 +342,12 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                     )}
 
                     <div className="flex gap-4">
-                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full" size="sm">
+                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm">
                             <Camera className="mr-2 h-4 w-4"/>
                             Prendre
                         </Button>
                         {photoDataUrl && (
-                            <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full" size="sm">
+                            <Button type="button" variant="secondary" onClick={retakePicture} className="w-full" size="sm">
                                 <RefreshCcw className="mr-2 h-4 w-4" />
                                 Reprendre
                             </Button>
@@ -404,6 +456,89 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                           />
                     </div>
                 </div>
+
+                <Separator />
+
+                 <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Documents</h3>
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Supprimer le document</span>
+                          </Button>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           <FormField
+                            control={form.control}
+                            name={`documents.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type du document</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner un type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {documentTypes.map(docType => (
+                                      <SelectItem key={docType} value={docType}>{docType}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`documents.${index}.validityDate`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date d'expiration</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} value={field.value || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                         <FormField
+                          control={form.control}
+                          name={`documents.${index}.url`}
+                          render={({ field }) => (
+                            <FormItem>
+                               <FormLabel>URL du Document</FormLabel>
+                               <FormControl>
+                                   <Input 
+                                      type="text" 
+                                      placeholder="https://example.com/document.pdf"
+                                      {...field}
+                                      value={field.value || ''}
+                                    />
+                               </FormControl>
+                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Ajouter un document
+                    </Button>
+                </div>
+
+
             </div>
 
             {/* Colonne de Droite: Infos Personnelles et Bouton */}
