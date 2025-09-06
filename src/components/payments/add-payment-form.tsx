@@ -301,7 +301,14 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           <FormItem>
                               <FormLabel>Montant du versement (MAD)</FormLabel>
                               <FormControl>
-                                <Input type="number" step="0.01" placeholder="0" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                <Input 
+                                    type="number" 
+                                    step="0.01" 
+                                    placeholder="0" 
+                                    {...field} 
+                                    value={field.value ?? ''}
+                                    onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
+                                />
                               </FormControl>
                               <FormMessage />
                           </FormItem>
@@ -383,3 +390,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
