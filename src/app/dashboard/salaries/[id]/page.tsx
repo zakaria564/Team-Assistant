@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -50,9 +50,10 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryDetailPage(props: { params: { id: string } }) {
+export default function SalaryDetailPage() {
   const router = useRouter();
-  const salaryId = props.params.id;
+  const params = useParams();
+  const salaryId = params.id as string;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);

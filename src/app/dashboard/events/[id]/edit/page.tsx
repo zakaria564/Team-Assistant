@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddEventForm } from "@/components/events/add-event-form";
@@ -20,9 +20,10 @@ interface Event {
     location: string;
 }
 
-export default function EditEventPage(props: { params: { id: string } }) {
+export default function EditEventPage() {
   const router = useRouter();
-  const eventId = props.params.id;
+  const params = useParams();
+  const eventId = params.id as string;
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);

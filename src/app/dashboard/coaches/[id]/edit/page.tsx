@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddCoachForm } from "@/components/coaches/add-coach-form";
@@ -24,9 +24,10 @@ interface Coach {
   exitDate?: string;
 }
 
-export default function EditCoachPage(props: { params: { id: string } }) {
+export default function EditCoachPage() {
   const router = useRouter();
-  const coachId = props.params.id;
+  const params = useParams();
+  const coachId = params.id as string;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

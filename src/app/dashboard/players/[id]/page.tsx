@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -76,9 +76,10 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
 }
 
 
-export default function PlayerDetailPage(props: { params: { id: string } }) {
+export default function PlayerDetailPage() {
   const router = useRouter();
-  const playerId = props.params.id;
+  const params = useParams();
+  const playerId = params.id as string;
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,5 +253,3 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
     </div>
   );
 }
-
-    

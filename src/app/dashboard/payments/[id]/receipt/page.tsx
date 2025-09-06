@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -39,9 +39,10 @@ const getBadgeClass = (status?: Payment['status']) => {
 }
 
 
-export default function PaymentReceiptPage(props: { params: { id: string } }) {
+export default function PaymentReceiptPage() {
   const router = useRouter();
-  const paymentId = props.params.id;
+  const params = useParams();
+  const paymentId = params.id as string;
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);

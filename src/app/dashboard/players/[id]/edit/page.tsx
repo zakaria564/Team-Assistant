@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddPlayerForm } from "@/components/players/add-player-form";
@@ -28,11 +28,13 @@ interface Player {
   tutorEmail?: string;
   entryDate?: string;
   exitDate?: string;
+  documents?: { name: string; url: string; validityDate?: string }[];
 }
 
-export default function EditPlayerPage(props: { params: { id: string } }) {
+export default function EditPlayerPage() {
   const router = useRouter();
-  const playerId = props.params.id;
+  const params = useParams();
+  const playerId = params.id as string;
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);

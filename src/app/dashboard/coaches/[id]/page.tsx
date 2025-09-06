@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -58,9 +58,10 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
 }
 
 
-export default function CoachDetailPage(props: { params: { id: string } }) {
+export default function CoachDetailPage() {
   const router = useRouter();
-  const coachId = props.params.id;
+  const params = useParams();
+  const coachId = params.id as string;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
