@@ -24,9 +24,8 @@ interface Coach {
 }
 
 export default function EditCoachPage({ params }: { params: { id: string } }) {
-  const resolvedParams = React.use(params);
   const router = useRouter();
-  const coachId = resolvedParams.id;
+  const coachId = params.id;
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
