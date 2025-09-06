@@ -79,7 +79,7 @@ export default function PaymentsPage() {
             playersMap.set(doc.id, doc.data().name);
         });
 
-        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -99,8 +99,11 @@ export default function PaymentsPage() {
                 transactions
             } as Payment;
         });
+        
+        // Sort payments by creation date on the client side
+        const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
-        setPayments(paymentsData);
+        setPayments(sortedPayments);
 
       } catch (error: any) {
         console.error("Error fetching payments: ", error);
