@@ -18,6 +18,7 @@ import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
@@ -30,6 +31,8 @@ const formSchema = z.object({
   specialty: z.string().optional(),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
+  nationality: z.string().optional(),
+  address: z.string().optional(),
 });
 
 interface CoachData extends z.infer<typeof formSchema> {
@@ -79,6 +82,10 @@ const coachSpecialties = [
     "Autre"
 ];
 
+const nationalities = [
+    "Française", "Algérienne", "Marocaine", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Portugaise", "Espagnole", "Italienne", "Belge", "Allemande", "Autre"
+];
+
 export function AddCoachForm({ coach }: AddCoachFormProps) {
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -100,6 +107,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
       specialty: "",
       entryDate: "",
       exitDate: "",
+      nationality: "",
+      address: "",
     }
   });
 
@@ -109,6 +118,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             ...coach,
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
+            nationality: coach.nationality || "",
+            address: coach.address || ""
         });
     }
   }, [coach, form]);
@@ -347,6 +358,41 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         )}
                       />
                 </div>
+                <FormField
+                  control={form.control}
+                  name="nationality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nationalité</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                          <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner une nationalité" />
+                          </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                              {nationalities.map(nat => (
+                                  <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Adresse</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Adresse complète..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                  <FormField
                     control={form.control}
                     name="email"

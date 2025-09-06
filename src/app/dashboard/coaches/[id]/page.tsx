@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -8,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut, Flag, Home } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,8 @@ interface Coach {
   specialty?: string;
   entryDate?: string;
   exitDate?: string;
+  nationality?: string;
+  address?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -168,8 +171,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     <CardTitle>Coordonnées</CardTitle>
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
+                    <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
                     <DetailItem icon={Phone} label="Téléphone" value={coach.phone} href={coach.phone ? `tel:${coach.phone}` : undefined} />
                     <DetailItem icon={Mail} label="Email" value={coach.email} href={coach.email ? `mailto:${coach.email}` : undefined} />
+                    <DetailItem icon={Home} label="Adresse" value={coach.address} href={coach.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}` : undefined} />
                  </CardContent>
             </Card>
         </div>
