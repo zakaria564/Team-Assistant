@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Loader2, Camera, RefreshCcw, FileHeart, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +29,7 @@ const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 const documentSchema = z.object({
   name: z.string().optional(),
   url: z.string().url("L'URL du document est requise.").optional(),
-  file: z.any().optional(), // Pour le fichier avant l'upload
+  file: z.any().optional(),
   validityDate: z.string().optional(),
 });
 
@@ -210,32 +210,33 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     fetchCoaches();
   }, [user, toast]);
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+  const getCameraPermission = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setHasCameraPermission(false);
         return;
-      }
-      try {
+    }
+    try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasCameraPermission(true);
-
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+            videoRef.current.srcObject = stream;
         }
-      } catch (error) {
+        setHasCameraPermission(true);
+    } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
         toast({
-          variant: 'destructive',
-          title: 'Accès à la caméra refusé',
-          description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
+            variant: 'destructive',
+            title: 'Accès à la caméra refusé',
+            description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
         });
-      }
-    };
-
-    getCameraPermission();
+    }
   }, [toast]);
+
+  useEffect(() => {
+    if(!photoDataUrl) {
+      getCameraPermission();
+    }
+  }, [photoDataUrl, getCameraPermission]);
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -255,12 +256,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         
         let sx, sy, sWidth, sHeight;
 
-        if (aspectRatio > 1) { // landscape
+        if (aspectRatio > 1) {
             sHeight = videoHeight;
             sWidth = videoHeight;
             sx = (videoWidth - videoHeight) / 2;
             sy = 0;
-        } else { // portrait
+        } else {
             sWidth = videoWidth;
             sHeight = videoWidth;
             sx = 0;
@@ -268,11 +269,23 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         }
         
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Compress JPEG
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setPhotoDataUrl(dataUrl);
+
+        // Stop the camera stream
+        if (video.srcObject) {
+          const stream = video.srcObject as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+        }
       }
     }
   };
+
+  const retakePicture = () => {
+    setPhotoDataUrl(null);
+    // getCameraPermission will be called by the useEffect
+  };
+
 
   const uploadFile = async (file: File) => {
     if (!user) return null;
@@ -360,7 +373,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
             
-            {/* Colonne de Gauche: Photo et Infos Club */}
             <div className="space-y-6">
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
@@ -389,12 +401,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                     )}
                     
                     <div className="flex gap-4">
-                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission} className="w-full" size="sm">
+                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm">
                             <Camera className="mr-2 h-4 w-4"/>
                             Prendre
                         </Button>
                         {photoDataUrl && (
-                            <Button type="button" variant="secondary" onClick={() => setPhotoDataUrl(null)} className="w-full" size="sm">
+                            <Button type="button" variant="secondary" onClick={retakePicture} className="w-full" size="sm">
                                 <RefreshCcw className="mr-2 h-4 w-4" />
                                 Reprendre
                             </Button>
@@ -544,7 +556,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
             </div>
 
-            {/* Colonne de Droite: Infos Personnelles, Tuteur et Bouton */}
             <div className="space-y-6">
                 <div className="space-y-4">
                      <h3 className="text-lg font-medium">Informations Personnelles</h3>
