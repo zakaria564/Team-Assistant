@@ -9,12 +9,17 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
+
+interface PlayerDocument {
+  name: string;
+  url: string;
+}
 
 interface Player {
   id: string;
@@ -38,6 +43,7 @@ interface Player {
   exitDate?: string;
   medicalCertificateProvided?: boolean;
   medicalCertificateDate?: string;
+  documents?: PlayerDocument[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -200,15 +206,33 @@ export default function PlayerDetailPage(props: { params: { id: string } }) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Certificat Médical</CardTitle>
+                    <CardTitle>Documents</CardTitle>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                     <DetailItem icon={FileHeart} label="Statut">
+                <CardContent className="space-y-4">
+                     <DetailItem icon={FileHeart} label="Certificat Médical">
                         <Badge variant={player.medicalCertificateProvided ? "default" : "destructive"} className={player.medicalCertificateProvided ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
                             {player.medicalCertificateProvided ? "Fourni" : "Manquant"}
                         </Badge>
                      </DetailItem>
                     <DetailItem icon={Calendar} label="Date de validité" value={player.medicalCertificateDate} />
+                    {(player.documents && player.documents.length > 0) && (
+                      <>
+                        <h4 className="text-sm font-medium pt-2">Autres documents</h4>
+                        <ul className="space-y-2">
+                          {player.documents.map((doc, index) => (
+                            <li key={index} className="flex items-center justify-between text-sm p-2 rounded-md bg-muted/50">
+                                <span className="font-medium">{doc.name}</span>
+                                <Button asChild variant="ghost" size="sm">
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Voir
+                                  </a>
+                                </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
                 </CardContent>
             </Card>
             <Card>

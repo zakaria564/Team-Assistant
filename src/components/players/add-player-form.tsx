@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Camera, RefreshCcw, FileHeart } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, FileHeart, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { db, auth } from "@/lib/firebase";
+import { db, auth, storage } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
@@ -24,6 +25,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Checkbox } from "../ui/checkbox";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
+
+const documentSchema = z.object({
+  name: z.string().min(1, "Le nom du document est requis."),
+  url: z.string().url("L'URL du document est requise."),
+  file: z.any().optional(), // Pour le fichier avant l'upload
+});
+
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -44,6 +52,7 @@ const formSchema = z.object({
   coachId: z.string().optional(),
   medicalCertificateProvided: z.boolean().default(false).optional(),
   medicalCertificateDate: z.string().optional(),
+  documents: z.array(documentSchema).optional(),
 });
 
 interface PlayerData extends z.infer<typeof formSchema> {
@@ -137,7 +146,13 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
       coachId: "",
       medicalCertificateProvided: false,
       medicalCertificateDate: "",
+      documents: [],
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "documents",
   });
 
   useEffect(() => {
@@ -158,6 +173,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         tutorEmail: player.tutorEmail || "",
         medicalCertificateProvided: player.medicalCertificateProvided || false,
         medicalCertificateDate: player.medicalCertificateDate ? player.medicalCertificateDate.split('T')[0] : '',
+        documents: player.documents || [],
       });
     }
   }, [player, form]);
@@ -247,6 +263,14 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     }
   };
 
+  const uploadFile = async (file: File) => {
+    if (!user) return null;
+    const storagePath = `users/${user.uid}/player_documents/${Date.now()}_${file.name}`;
+    const fileRef = storageRef(storage, storagePath);
+    await uploadBytes(fileRef, file);
+    return getDownloadURL(fileRef);
+  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
@@ -266,11 +290,22 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     }
 
     try {
+        const uploadedDocuments = await Promise.all(
+          (values.documents || []).map(async (doc) => {
+            if (doc.file) {
+              const url = await uploadFile(doc.file);
+              return { name: doc.name, url: url };
+            }
+            return { name: doc.name, url: doc.url };
+          })
+        );
+
         const dataToSave = {
             ...values,
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
-            photoUrl: photoDataUrl
+            photoUrl: photoDataUrl,
+            documents: uploadedDocuments,
         };
 
         if (isEditMode && player) {
@@ -495,6 +530,44 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       />
                     </div>
                 </div>
+                 <Separator />
+                
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Certificat Médical</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                       <FormField
+                        control={form.control}
+                        name="medicalCertificateDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date de validité</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                          control={form.control}
+                          name="medicalCertificateProvided"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-start space-x-2 rounded-md border p-3">
+                               <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              <FormLabel className="!mt-0 font-normal">
+                                Certificat médical fourni
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                    </div>
+                </div>
+
             </div>
 
             {/* Colonne de Droite: Infos Personnelles, Tuteur et Bouton */}
@@ -595,41 +668,54 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                 </div>
 
                 <Separator />
-                
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Certificat Médical</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                       <FormField
-                        control={form.control}
-                        name="medicalCertificateDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Date de validité</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
+
+                 <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Documents du Joueur</h3>
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                        <FormField
                           control={form.control}
-                          name="medicalCertificateProvided"
+                          name={`documents.${index}.name`}
                           render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-start space-x-2 rounded-md border p-3">
-                               <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                              <FormLabel className="!mt-0 font-normal">
-                                Certificat médical fourni
-                              </FormLabel>
+                            <FormItem>
+                              <FormLabel>Nom du document</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Ex: Carte d'identité" {...field} />
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
-                    </div>
+                         <FormField
+                          control={form.control}
+                          name={`documents.${index}.file`}
+                          render={({ field: { onChange, value, ...rest } }) => (
+                            <FormItem>
+                               <FormLabel>Fichier (Photo)</FormLabel>
+                               <FormControl>
+                                   <Input 
+                                      type="file" 
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        onChange(e.target.files?.[0]);
+                                      }}
+                                      {...rest}
+                                    />
+                               </FormControl>
+                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4"/>
+                            <span className="sr-only">Supprimer le document</span>
+                        </Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '' })}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Ajouter un document
+                    </Button>
                 </div>
 
 
