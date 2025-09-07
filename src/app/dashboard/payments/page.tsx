@@ -79,32 +79,38 @@ export default function PaymentsPage() {
             playersMap.set(doc.id, doc.data().name);
         });
 
-        const paymentsQuery = query(collection(db, "payments"));
+        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
         const paymentsSnapshot = await getDocs(paymentsQuery);
-        const paymentsData = paymentsSnapshot.docs.map(doc => {
-            const data = doc.data() as any;
-            
-            const transactions = data.transactions || [];
-            const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-            const totalAmount = data.totalAmount || 0;
-            const amountRemaining = totalAmount - amountPaid;
-            
-            let status = data.status;
-            if (amountRemaining <= 0) {
-              status = 'Payé';
-            }
-            
-            return { 
-                id: doc.id, 
-                ...data,
-                playerName: playersMap.get(data.playerId) || "Joueur inconnu",
-                amountPaid,
-                amountRemaining,
-                totalAmount,
-                transactions,
-                status // Use the corrected status
-            } as Payment;
-        });
+        const paymentsData = paymentsSnapshot.docs
+            .map(doc => {
+                const data = doc.data() as any;
+                 // Skip payments for players who no longer exist
+                if (!playersMap.has(data.playerId)) {
+                    return null;
+                }
+
+                const transactions = data.transactions || [];
+                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+                const totalAmount = data.totalAmount || 0;
+                const amountRemaining = totalAmount - amountPaid;
+                
+                let status = data.status;
+                if (amountRemaining <= 0) {
+                status = 'Payé';
+                }
+                
+                return { 
+                    id: doc.id, 
+                    ...data,
+                    playerName: playersMap.get(data.playerId) || "Joueur inconnu",
+                    amountPaid,
+                    amountRemaining,
+                    totalAmount,
+                    transactions,
+                    status // Use the corrected status
+                } as Payment;
+            })
+            .filter((p): p is Payment => p !== null); // Filter out null values
         
         // Sort payments by creation date on the client side
         const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
@@ -360,3 +366,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    

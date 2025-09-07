@@ -75,32 +75,39 @@ export default function SalariesPage() {
             coachesMap.set(doc.id, doc.data().name);
         });
 
-        const salariesQuery = query(collection(db, "salaries"));
+        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
         const salariesSnapshot = await getDocs(salariesQuery);
-        const salariesData = salariesSnapshot.docs.map(doc => {
-            const data = doc.data() as any;
-            
-            const transactions = data.transactions || [];
-            const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-            const totalAmount = data.totalAmount || 0;
-            const amountRemaining = totalAmount - amountPaid;
-            
-            let status = data.status;
-            if (amountRemaining <= 0) {
-              status = 'Payé';
-            }
+        const salariesData = salariesSnapshot.docs
+            .map(doc => {
+                const data = doc.data() as any;
+                
+                // Skip salaries for coaches who no longer exist
+                if (!coachesMap.has(data.coachId)) {
+                    return null;
+                }
 
-            return { 
-                id: doc.id, 
-                ...data,
-                coachName: coachesMap.get(data.coachId) || "Entraîneur inconnu",
-                amountPaid,
-                amountRemaining,
-                totalAmount,
-                transactions,
-                status // Use the corrected status
-            } as Salary;
-        });
+                const transactions = data.transactions || [];
+                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+                const totalAmount = data.totalAmount || 0;
+                const amountRemaining = totalAmount - amountPaid;
+                
+                let status = data.status;
+                if (amountRemaining <= 0) {
+                status = 'Payé';
+                }
+
+                return { 
+                    id: doc.id, 
+                    ...data,
+                    coachName: coachesMap.get(data.coachId) || "Entraîneur inconnu",
+                    amountPaid,
+                    amountRemaining,
+                    totalAmount,
+                    transactions,
+                    status // Use the corrected status
+                } as Salary;
+            })
+            .filter((s): s is Salary => s !== null); // Filter out null values
         
         const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
         setSalaries(sortedSalaries);
@@ -350,3 +357,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    
