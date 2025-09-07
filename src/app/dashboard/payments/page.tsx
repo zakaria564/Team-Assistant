@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -282,12 +282,9 @@ export default function PaymentsPage() {
                           <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
                           <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
                           <TableCell className="hidden sm:table-cell">
-                            <Badge 
-                                variant={getBadgeVariant(payment.status)}
-                                className={cn("whitespace-nowrap", getBadgeClass(payment.status), payment.amountRemaining > 0 && "cursor-pointer")}
-                            >
-                                {payment.status}
-                            </Badge>
+                                <Badge variant={getBadgeVariant(payment.status)} className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
+                                  {payment.status}
+                                </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -361,3 +358,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    

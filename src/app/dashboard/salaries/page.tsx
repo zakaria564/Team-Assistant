@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -272,12 +272,9 @@ export default function SalariesPage() {
                           </TableCell>
                           <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
                           <TableCell className="hidden sm:table-cell">
-                            <Badge 
-                                variant={getBadgeVariant(salary.status)}
-                                className={cn("whitespace-nowrap", getBadgeClass(salary.status))}
-                            >
-                                {salary.status}
-                            </Badge>
+                             <Badge variant={getBadgeVariant(salary.status)} className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
+                                  {salary.status}
+                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -351,4 +348,5 @@ export default function SalariesPage() {
     </>
   );
 }
+    
     
