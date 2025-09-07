@@ -90,11 +90,11 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
-          format: [85.6, 53.98] // Credit card size
+          format: 'a6' // A6 is a good size for a player card
         });
 
-        const pdfWidth = 85.6;
-        const pdfHeight = 53.98;
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
         
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`carte-${player?.name?.replace(/ /g, "_")}.pdf`);
@@ -128,7 +128,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-sm space-y-4">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -148,34 +148,61 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
           </Button>
         </div>
 
-        <div id="printable-card" className="w-full aspect-[85.6/53.98] bg-white text-black shadow-lg rounded-xl overflow-hidden p-3 flex flex-col justify-between">
+        <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col">
             {/* Header */}
-            <header className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                    <Trophy className="h-6 w-6 text-primary" />
-                    <h1 className="font-bold text-sm text-primary">{clubName}</h1>
-                </div>
-                <div className="text-right">
-                    <p className="font-bold text-lg leading-tight text-black/80 -mb-1">#{player.number}</p>
-                    <p className="font-semibold text-xs leading-tight text-primary">{player.category}</p>
+            <header className="bg-primary text-primary-foreground p-4 text-center">
+                <div className="flex items-center justify-center gap-3">
+                    <Trophy className="h-8 w-8" />
+                    <h1 className="font-bold text-2xl">{clubName}</h1>
                 </div>
             </header>
 
             {/* Body */}
-            <div className="flex items-center gap-3">
-                <Avatar className="h-20 w-20 border-2 border-primary">
+            <div className="p-6 flex-grow flex flex-col items-center justify-center gap-4">
+                <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
                     <AvatarImage src={player.photoUrl} alt={player.name} />
-                    <AvatarFallback className="text-3xl">{playerInitial}</AvatarFallback>
+                    <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
-                    <h2 className="text-xl font-bold leading-tight">{player.name}</h2>
-                    {player.position && <p className="text-sm font-medium text-black/70 flex items-center gap-1"><Star className="h-3 w-3" />{player.position}</p>}
-                    {player.birthDate && <p className="text-xs text-black/60 flex items-center gap-1"><Cake className="h-3 w-3" />{format(new Date(player.birthDate), "dd/MM/yyyy", { locale: fr })}</p>}
+                <div className="text-center space-y-1">
+                    <h2 className="text-3xl font-bold leading-tight">{player.name}</h2>
+                    <p className="text-lg font-semibold text-primary">{player.position || "Poste non spécifié"}</p>
                 </div>
+
+                 <div className="w-full grid grid-cols-2 gap-4 text-sm mt-4">
+                    <div className="flex items-center gap-2">
+                        <Shirt className="h-5 w-5 text-primary/80"/>
+                        <div>
+                            <p className="font-semibold">Numéro</p>
+                            <p className="text-base text-black/80">{player.number}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary/80"/>
+                        <div>
+                            <p className="font-semibold">Catégorie</p>
+                            <p className="text-base text-black/80">{player.category}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <Cake className="h-5 w-5 text-primary/80"/>
+                        <div>
+                            <p className="font-semibold">Date de naissance</p>
+                            <p className="text-base text-black/80">{player.birthDate ? format(new Date(player.birthDate), "dd/MM/yyyy", { locale: fr }) : 'N/A'}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <Flag className="h-5 w-5 text-primary/80"/>
+                        <div>
+                            <p className="font-semibold">Nationalité</p>
+                            <p className="text-base text-black/80">{player.nationality || "N/A"}</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {/* Footer */}
-            <footer className="text-xs text-black/60">
+            <footer className="bg-muted p-3 text-center text-xs text-black/60 mt-auto">
                 <p>Saison 2024-2025</p>
             </footer>
         </div>
@@ -183,3 +210,5 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
     </div>
   );
 }
+
+    
