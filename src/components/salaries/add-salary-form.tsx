@@ -207,7 +207,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Entraîneur</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingCoaches || isEditMode}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={loadingCoaches || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder={loadingCoaches ? "Chargement des entraîneurs..." : "Sélectionner un entraîneur"} />
@@ -285,6 +285,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
+                {(!isEditMode || salary.status !== 'Payé') && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -298,7 +299,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder="0" 
+                                    placeholder="0.00" 
                                     {...field} 
                                     value={field.value ?? ''}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
@@ -347,6 +348,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           </FormItem>
                       </div>
                 </div>
+                )}
 
                  <FormField
                     control={form.control}
@@ -384,5 +386,3 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
-
-    

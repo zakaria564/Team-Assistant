@@ -213,7 +213,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Joueur</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingPlayers || isEditMode}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder={loadingPlayers ? "Chargement des joueurs..." : "Sélectionner un joueur"} />
@@ -291,6 +291,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
+               {(!isEditMode || payment.status !== 'Payé') && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -304,7 +305,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder="0" 
+                                    placeholder="0.00" 
                                     {...field} 
                                     value={field.value ?? ''}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
@@ -353,6 +354,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           </FormItem>
                       </div>
                 </div>
+                )}
 
                  <FormField
                     control={form.control}
@@ -390,5 +392,3 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
