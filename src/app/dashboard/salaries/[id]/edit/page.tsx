@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddSalaryForm } from "@/components/salaries/add-salary-form";
@@ -34,7 +34,7 @@ export default function EditSalaryPage({ params }: { params: { id: string } }) {
     const fetchSalary = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "salaries", salaryId);
+        const docRef = doc(db, "salaries", salaryId as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

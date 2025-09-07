@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddPaymentForm } from "@/components/payments/add-payment-form";
@@ -34,7 +34,7 @@ export default function EditPaymentPage({ params }: { params: { id: string } }) 
     const fetchPayment = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "payments", paymentId);
+        const docRef = doc(db, "payments", paymentId as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

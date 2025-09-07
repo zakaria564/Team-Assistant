@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
     const fetchSalary = async () => {
       setLoading(true);
       try {
-        const salaryRef = doc(db, "salaries", salaryId);
+        const salaryRef = doc(db, "salaries", salaryId as string);
         const salarySnap = await getDoc(salaryRef);
 
         if (salarySnap.exists()) {

@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     const fetchPayment = async () => {
       setLoading(true);
       try {
-        const paymentRef = doc(db, "payments", paymentId);
+        const paymentRef = doc(db, "payments", paymentId as string);
         const paymentSnap = await getDoc(paymentRef);
 
         if (paymentSnap.exists()) {

@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddEventForm } from "@/components/events/add-event-form";
@@ -33,7 +33,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     const fetchEvent = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "events", eventId);
+        const docRef = doc(db, "events", eventId as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

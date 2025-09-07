@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,7 +91,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const playerRef = doc(db, "players", playerId);
+        const playerRef = doc(db, "players", playerId as string);
         const playerSnap = await getDoc(playerRef);
 
         if (playerSnap.exists()) {

@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddPlayerForm } from "@/components/players/add-player-form";
@@ -46,7 +46,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "players", playerId);
+        const docRef = doc(db, "players", playerId as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddCoachForm } from "@/components/coaches/add-coach-form";
@@ -40,7 +40,7 @@ export default function EditCoachPage({ params }: { params: { id: string } }) {
     const fetchCoach = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "coaches", coachId);
+        const docRef = doc(db, "coaches", coachId as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
