@@ -131,8 +131,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
             
             if (eventTypeIsMatch) {
                 dataToSave.opponent = values.opponent || null;
-                dataToSave.scoreTeam = values.scoreTeam ?? null;
-                dataToSave.scoreOpponent = values.scoreOpponent ?? null;
+                if(isPastEvent) {
+                  dataToSave.scoreTeam = values.scoreTeam ?? null;
+                  dataToSave.scoreOpponent = values.scoreOpponent ?? null;
+                }
             }
 
             if(isEditMode && event) {
@@ -150,7 +152,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 });
             }
            
-            router.push("/dashboard/results");
+            router.push("/dashboard/events");
             router.refresh();
 
         } catch (error) {
@@ -182,6 +184,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 }
                             }} 
                             value={field.value}
+                            disabled={isEditMode}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -205,7 +208,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
@@ -355,5 +358,3 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
-
-    
