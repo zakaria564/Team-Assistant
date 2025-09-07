@@ -17,6 +17,7 @@ import { db, auth } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Coach {
@@ -66,6 +67,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
       ? (salary.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
 
+    const defaultDescription = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: isEditMode ? {
@@ -76,7 +79,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             newTransactionAmount: undefined,
             newTransactionMethod: paymentMethods[0],
         } : {
-            description: "Salaire mensuel",
+            description: defaultDescription,
             coachId: "",
             totalAmount: 5000,
             status: "En attente",
@@ -104,27 +107,65 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
 
     useEffect(() => {
-        const fetchCoaches = async () => {
+         const fetchCoachesAndSalaries = async () => {
             if (!user) return;
             setLoadingCoaches(true);
             try {
-                const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-                const querySnapshot = await getDocs(q);
-                const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
-                setCoaches(coachesData);
+                const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
+                const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
+
+                const [coachesSnapshot, salariesSnapshot] = await Promise.all([
+                    getDocs(coachesQuery),
+                    getDocs(salariesQuery)
+                ]);
+
+                const coachesData = coachesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
+                
+                const currentMonthDesc = format(new Date(), "MMMM yyyy", { locale: fr });
+                const paidCoachIds = new Set<string>();
+                salariesSnapshot.forEach(doc => {
+                    const salaryData = doc.data();
+                    if (salaryData.description.includes(currentMonthDesc) && salaryData.status === 'Payé') {
+                         paidCoachIds.add(salaryData.coachId);
+                    }
+                });
+
+                const availableCoaches = coachesData.filter(coach => !paidCoachIds.has(coach.id));
+
+                setCoaches(availableCoaches);
             } catch (error) {
-                console.error("Error fetching coaches: ", error);
+                console.error("Error fetching data: ", error);
                 toast({
                     variant: "destructive",
-                    title: "Erreur de permissions",
-                    description: "Impossible de charger les entraîneurs. Veuillez vérifier vos règles de sécurité Firestore.",
+                    title: "Erreur de chargement",
+                    description: "Impossible de charger les entraîneurs disponibles.",
                 });
             } finally {
                 setLoadingCoaches(false);
             }
         };
-        fetchCoaches();
-    }, [user, toast]);
+
+        if (!isEditMode) {
+           fetchCoachesAndSalaries();
+        } else {
+             // In edit mode, just load all coaches to show the selected one
+            const fetchAllCoaches = async () => {
+                if (!user) return;
+                setLoadingCoaches(true);
+                 try {
+                    const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
+                    const querySnapshot = await getDocs(q);
+                    const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
+                    setCoaches(coachesData);
+                } catch(e) {
+                     console.error("Error fetching coaches: ", e);
+                } finally {
+                    setLoadingCoaches(false);
+                }
+            }
+            fetchAllCoaches();
+        }
+    }, [user, toast, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -215,7 +256,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                             </FormControl>
                             <SelectContent>
                             {coaches.length === 0 && !loadingCoaches ? (
-                                <SelectItem value="no-coach" disabled>Aucun entraîneur trouvé</SelectItem>
+                                <SelectItem value="no-coach" disabled>Aucun entraîneur disponible pour le paiement</SelectItem>
                             ) : (
                                 coaches.map(coach => (
                                     <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
@@ -300,9 +341,9 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                     type="number" 
                                     step="0.01" 
                                     placeholder="0.00" 
-                                    {...field} 
-                                    value={field.value ?? ''}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onChange={e => field.onChange(e.target.value === "" ? undefined : e.target.valueAsNumber)} 
                                 />
                               </FormControl>
                               <FormMessage />
@@ -386,3 +427,5 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
+
+    

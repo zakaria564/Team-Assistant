@@ -17,6 +17,7 @@ import { db, auth } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Player {
@@ -72,6 +73,8 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
       ? (payment.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
 
+    const defaultDescription = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: isEditMode ? {
@@ -82,7 +85,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             newTransactionAmount: undefined,
             newTransactionMethod: paymentMethods[0],
         } : {
-            description: "Cotisation annuelle",
+            description: defaultDescription,
             playerId: "",
             totalAmount: 1500,
             status: "En attente",
@@ -110,27 +113,66 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
 
     useEffect(() => {
-        const fetchPlayers = async () => {
+        const fetchPlayersAndPayments = async () => {
             if (!user) return;
             setLoadingPlayers(true);
             try {
-                const q = query(collection(db, "players"), where("userId", "==", user.uid));
-                const querySnapshot = await getDocs(q);
-                const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-                setPlayers(playersData);
+                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+                const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
+
+                const [playersSnapshot, paymentsSnapshot] = await Promise.all([
+                    getDocs(playersQuery),
+                    getDocs(paymentsQuery)
+                ]);
+
+                const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
+
+                const currentMonthDesc = format(new Date(), "MMMM yyyy", { locale: fr });
+                const paidPlayerIds = new Set<string>();
+                paymentsSnapshot.forEach(doc => {
+                    const paymentData = doc.data();
+                    if (paymentData.description.includes(currentMonthDesc) && paymentData.status === 'Payé') {
+                         paidPlayerIds.add(paymentData.playerId);
+                    }
+                });
+
+                const availablePlayers = playersData.filter(player => !paidPlayerIds.has(player.id));
+
+                setPlayers(availablePlayers);
+
             } catch (error) {
-                console.error("Error fetching players: ", error);
+                console.error("Error fetching data: ", error);
                 toast({
                     variant: "destructive",
-                    title: "Erreur de permissions",
-                    description: "Impossible de charger les joueurs. Veuillez vérifier vos règles de sécurité Firestore.",
+                    title: "Erreur de chargement",
+                    description: "Impossible de charger les joueurs disponibles.",
                 });
             } finally {
                 setLoadingPlayers(false);
             }
         };
-        fetchPlayers();
-    }, [user, toast]);
+
+        if (!isEditMode) {
+           fetchPlayersAndPayments();
+        } else {
+             // In edit mode, just load all players to show the selected one
+            const fetchAllPlayers = async () => {
+                if (!user) return;
+                setLoadingPlayers(true);
+                 try {
+                    const q = query(collection(db, "players"), where("userId", "==", user.uid));
+                    const querySnapshot = await getDocs(q);
+                    const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
+                    setPlayers(playersData);
+                } catch(e) {
+                     console.error("Error fetching players: ", e);
+                } finally {
+                    setLoadingPlayers(false);
+                }
+            }
+            fetchAllPlayers();
+        }
+    }, [user, toast, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -221,7 +263,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             </FormControl>
                             <SelectContent>
                             {players.length === 0 && !loadingPlayers ? (
-                                <SelectItem value="no-player" disabled>Aucun joueur trouvé</SelectItem>
+                                <SelectItem value="no-player" disabled>Aucun joueur disponible pour le paiement</SelectItem>
                             ) : (
                                 players.map(player => (
                                     <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
@@ -306,9 +348,9 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                     type="number" 
                                     step="0.01" 
                                     placeholder="0.00" 
-                                    {...field} 
-                                    value={field.value ?? ''}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onChange={e => field.onChange(e.target.value === "" ? undefined : e.target.valueAsNumber)} 
                                 />
                               </FormControl>
                               <FormMessage />
@@ -392,3 +434,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
