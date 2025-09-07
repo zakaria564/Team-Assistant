@@ -14,6 +14,9 @@ export default function RegistrationFormPage() {
     return (
         <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
             <style jsx global>{`
+                body {
+                    background-color: white !important;
+                }
                 @media print {
                     body {
                         background-color: white !important;
