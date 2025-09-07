@@ -16,9 +16,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, isPast, startOfDay, isToday } from "date-fns";
+import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -77,6 +77,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [clubName, setClubName] = useState("");
     const router = useRouter();
     const isEditMode = !!event;
 
@@ -93,6 +94,22 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     });
     
+    useEffect(() => {
+        const fetchClubName = async () => {
+            if (!user) return;
+            try {
+                const clubDocRef = doc(db, "clubs", user.uid);
+                const docSnap = await getDoc(clubDocRef);
+                if (docSnap.exists() && docSnap.data().clubName) {
+                    setClubName(docSnap.data().clubName);
+                }
+            } catch (error) {
+                console.error("Error fetching club name: ", error);
+            }
+        };
+        fetchClubName();
+    }, [user]);
+
     useEffect(() => {
         if(isEditMode && event) {
             form.reset({
@@ -123,10 +140,12 @@ export function AddEventForm({ event }: AddEventFormProps) {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
 
+            const teamValue = clubName && values.team ? `${clubName} - ${values.team}` : values.team;
+
             const dataToSave: any = {
                 userId: user.uid,
                 type: values.type,
-                team: values.team,
+                team: teamValue,
                 date: combinedDate,
                 location: values.location,
             };
@@ -141,6 +160,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
+                // In edit mode, we don't update the team name automatically
+                // We just save what's already there unless explicitly changed (which is disabled)
+                dataToSave.team = event.team;
                 await updateDoc(eventDocRef, dataToSave);
                 toast({
                     title: "Événement modifié !",
@@ -169,6 +191,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     }
     
+    const teamDisplayValue = isEditMode && event ? event.team : form.getValues("team");
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
@@ -181,6 +205,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
+                            disabled={isEditMode}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -204,15 +229,17 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner une équipe/catégorie" />
+                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                <SelectItem key={cat} value={cat}>
+                                    {clubName ? `${clubName} - ${cat}` : cat}
+                                </SelectItem>
                             ))}
                             </SelectContent>
                         </Select>
@@ -220,6 +247,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         </FormItem>
                     )}
                 />
+
 
                 {eventTypeIsMatch && (
                      <FormField
