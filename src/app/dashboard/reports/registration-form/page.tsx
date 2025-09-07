@@ -5,13 +5,49 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ArrowLeft, Printer, Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { db, auth } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 export default function RegistrationFormPage() {
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
+  const [clubName, setClubName] = useState("");
+  const [loadingClub, setLoadingClub] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
+
+  useEffect(() => {
+    const fetchClubName = async () => {
+      if (!user) {
+        if (!loadingUser) {
+          setLoadingClub(false);
+        }
+        return;
+      }
+      try {
+        const clubDocRef = doc(db, "clubs", user.uid);
+        const docSnap = await getDoc(clubDocRef);
+        if (docSnap.exists() && docSnap.data().clubName) {
+          setClubName(docSnap.data().clubName);
+        } else {
+          setClubName("votre club");
+        }
+      } catch (error) {
+        console.error("Error fetching club name: ", error);
+        setClubName("votre club");
+      } finally {
+        setLoadingClub(false);
+      }
+    };
+    
+    fetchClubName();
+  }, [user, loadingUser]);
+
   
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
@@ -83,7 +119,11 @@ export default function RegistrationFormPage() {
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
                  <CardHeader className="text-center space-y-4">
-                    <CardTitle className="text-2xl font-bold uppercase">FICHE D'INSCRIPTION CLUB DE FOOTBALL</CardTitle>
+                    {loadingClub || loadingUser ? (
+                        <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
+                    ) : (
+                        <CardTitle className="text-2xl font-bold uppercase">FICHE D'INSCRIPTION - {clubName}</CardTitle>
+                    )}
                     <p className="font-semibold">Saison sportive : ........................</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-8">
@@ -159,3 +199,4 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
+
