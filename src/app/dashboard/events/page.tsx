@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2 } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -257,12 +257,18 @@ export default function EventsPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <Link href={`/dashboard/events/${event.id}/edit`}>
-                                    <DropdownMenuItem className="cursor-pointer">
+                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                        <Link href={`/dashboard/events/${event.id}/edit`}>
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Voir les détails
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                      <Link href={`/dashboard/events/${event.id}/edit`}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         Modifier
+                                      </Link>
                                     </DropdownMenuItem>
-                                    </Link>
                                     <DropdownMenuSeparator />
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
@@ -309,5 +315,3 @@ export default function EventsPage() {
     </>
   );
 }
-
-    
