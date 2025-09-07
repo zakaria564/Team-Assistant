@@ -351,5 +351,4 @@ export default function SalariesPage() {
     </>
   );
 }
-
     

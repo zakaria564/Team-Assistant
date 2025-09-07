@@ -284,7 +284,7 @@ export default function PaymentsPage() {
                           <TableCell className="hidden sm:table-cell">
                             <Badge 
                                 variant={getBadgeVariant(payment.status)}
-                                className={cn("whitespace-nowrap", getBadgeClass(payment.status))}
+                                className={cn("whitespace-nowrap", getBadgeClass(payment.status), payment.amountRemaining > 0 && "cursor-pointer")}
                             >
                                 {payment.status}
                             </Badge>
