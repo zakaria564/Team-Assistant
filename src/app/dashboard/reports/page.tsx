@@ -22,14 +22,6 @@ const reports = [
         href: "/dashboard/reports/player-cards",
         cta: "Générer le PDF",
         disabled: false,
-    },
-    {
-        title: "Résultats des matchs",
-        description: "Consultez et enregistrez les résultats de tous les matchs de la saison.",
-        icon: BarChart,
-        href: "/dashboard/results",
-        cta: "Voir les résultats",
-        disabled: false,
     }
 ];
 
