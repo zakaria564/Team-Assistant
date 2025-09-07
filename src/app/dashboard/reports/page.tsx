@@ -3,30 +3,39 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileDown, Users, CalendarCheck, Trophy } from "lucide-react";
+import { FileDown, Users, CalendarCheck, Trophy, FilePlus } from "lucide-react";
+import Link from "next/link";
 
 export default function ReportsPage() {
   const reportTypes = [
     {
+      title: "Fiche d'inscription",
+      description: "Générez une fiche d'inscription vierge à imprimer.",
+      icon: <FilePlus className="h-6 w-6 text-primary" />,
+      href: "/dashboard/reports/registration-form",
+      buttonText: "Ouvrir la fiche"
+    },
+    {
       title: "Cartes des joueurs",
       description: "Générez un PDF avec les cartes de tous les joueurs.",
       icon: <Users className="h-6 w-6 text-primary" />,
+      href: "#",
+      buttonText: "Générer le PDF"
     },
     {
       title: "Présence aux entraînements",
       description: "Exportez le registre des présences pour une période donnée.",
       icon: <CalendarCheck className="h-6 w-6 text-primary" />,
+       href: "#",
+      buttonText: "Exporter les données"
     },
     {
       title: "Résultats des matchs",
       description: "Créez un rapport des résultats de tous les matchs de la saison.",
       icon: <Trophy className="h-6 w-6 text-primary" />,
+       href: "#",
+      buttonText: "Créer le rapport"
     },
-    {
-      title: "Rapport mensuel",
-      description: "Générez un rapport financier et d'activité complet pour le mois.",
-      icon: <FileDown className="h-6 w-6 text-primary" />,
-    }
   ];
 
   return (
@@ -47,9 +56,11 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent className="grid gap-2">
               <CardDescription>{report.description}</CardDescription>
-              <Button variant="outline" className="mt-2 w-full sm:w-auto">
-                <FileDown className="mr-2 h-4 w-4" />
-                Générer le PDF
+               <Button asChild variant="outline" className="mt-2 w-full sm:w-auto">
+                <Link href={report.href}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  {report.buttonText}
+                </Link>
               </Button>
             </CardContent>
           </Card>
