@@ -51,7 +51,6 @@ interface AddSalaryFormProps {
 }
 
 
-const paymentMethods = ["Virement", "Chèque", "Espèces"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
 const normalizeString = (str: string) => {
@@ -85,14 +84,14 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             description: salary.description,
             status: salary.status,
             newTransactionAmount: undefined,
-            newTransactionMethod: paymentMethods[0],
+            newTransactionMethod: "Espèces",
         } : {
             description: defaultDescription,
             coachId: "",
             totalAmount: 5000,
             status: "En attente",
             newTransactionAmount: undefined,
-            newTransactionMethod: paymentMethods[0],
+            newTransactionMethod: "Espèces",
         }
     });
 
@@ -359,7 +358,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                     placeholder="0.00" 
                                     {...field}
                                     value={field.value ?? ""}
-                                    onChange={e => field.onChange(e.target.value === "" ? undefined : e.target.valueAsNumber)} 
+                                    onChange={e => field.onChange(e.target.value === "" ? "" : e.target.valueAsNumber)} 
                                 />
                               </FormControl>
                               <FormMessage />
@@ -372,18 +371,9 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           render={({ field }) => (
                               <FormItem>
                               <FormLabel>Méthode du versement</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une méthode" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {paymentMethods.map(method => (
-                                          <SelectItem key={method} value={method}>{method}</SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
+                                <FormControl>
+                                    <Input type="text" readOnly value="Espèces" {...field} className="bg-muted" />
+                                </FormControl>
                               <FormMessage />
                               </FormItem>
                           )}

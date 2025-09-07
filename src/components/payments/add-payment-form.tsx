@@ -57,7 +57,6 @@ interface AddPaymentFormProps {
 }
 
 
-const paymentMethods = ["Carte Bancaire", "Espèces", "Virement", "Chèque"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
 const normalizeString = (str: string) => {
@@ -92,14 +91,14 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             description: payment.description,
             status: payment.status,
             newTransactionAmount: undefined,
-            newTransactionMethod: paymentMethods[0],
+            newTransactionMethod: "Espèces",
         } : {
             description: defaultDescription,
             playerId: "",
             totalAmount: 1500,
             status: "En attente",
             newTransactionAmount: undefined,
-            newTransactionMethod: paymentMethods[0],
+            newTransactionMethod: "Espèces",
         }
     });
 
@@ -350,7 +349,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-               {(!isEditMode || amountRemaining > 0) && (
+                {(!isEditMode || amountRemaining > 0) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -367,7 +366,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                     placeholder="0.00" 
                                     {...field}
                                     value={field.value ?? ""}
-                                    onChange={e => field.onChange(e.target.value === "" ? undefined : e.target.valueAsNumber)} 
+                                    onChange={e => field.onChange(e.target.value === "" ? "" : e.target.valueAsNumber)} 
                                 />
                               </FormControl>
                               <FormMessage />
@@ -379,20 +378,11 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           name="newTransactionMethod"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Méthode du versement</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une méthode" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {paymentMethods.map(method => (
-                                          <SelectItem key={method} value={method}>{method}</SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
+                                <FormLabel>Méthode du versement</FormLabel>
+                                <FormControl>
+                                    <Input type="text" readOnly value="Espèces" {...field} className="bg-muted" />
+                                </FormControl>
+                                <FormMessage />
                               </FormItem>
                           )}
                       />
