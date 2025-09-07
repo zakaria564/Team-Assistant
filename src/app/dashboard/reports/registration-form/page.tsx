@@ -15,9 +15,9 @@ export default function RegistrationFormPage() {
     };
 
     return (
-        <div className="min-h-screen bg-muted/40 p-4 sm:p-8 flex flex-col items-center print:bg-white print:p-0">
-            <div className="w-full max-w-4xl space-y-4 print:space-y-0">
-                <div className="flex justify-between items-center print:hidden">
+        <div className="printable-area">
+            <div className="controls-container bg-muted/40 p-4 sm:p-8 print:hidden">
+                 <div className="w-full max-w-4xl mx-auto flex justify-between items-center">
                     <Button variant="outline" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
@@ -25,8 +25,10 @@ export default function RegistrationFormPage() {
                         <Printer className="mr-2 h-4 w-4" /> Imprimer
                     </Button>
                 </div>
+            </div>
 
-                <Card className="w-full mx-auto print:shadow-none print:border-none print:bg-white" id="printable-form">
+            <div className="form-container bg-muted/40 print:bg-white p-4 sm:p-8 pt-0 sm:pt-0">
+                <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
                     <CardHeader className="p-8">
                         <div className="flex flex-col items-center text-center">
                             <Trophy className="h-12 w-12 text-primary" />
@@ -98,23 +100,26 @@ export default function RegistrationFormPage() {
             </div>
              <style jsx global>{`
                 @media print {
-                    body {
-                        background-color: #fff !important;
-                    }
-                    .print\\:hidden {
+                    body > *:not(.printable-area) {
                         display: none;
                     }
-                    .print\\:shadow-none {
-                        box-shadow: none;
+                    .printable-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
                     }
-                    .print\\:border-none {
-                        border: none;
-                    }
-                    .print\\:p-0 {
-                        padding: 0;
+                    .print\\:hidden {
+                        display: none !important;
                     }
                     .print\\:bg-white {
                         background-color: #fff !important;
+                    }
+                    .print\\:shadow-none {
+                        box-shadow: none !important;
+                    }
+                    .print\\:border-none {
+                        border: none !important;
                     }
                     @page {
                         size: A4;
@@ -125,3 +130,4 @@ export default function RegistrationFormPage() {
         </div>
     );
 }
+
