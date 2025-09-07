@@ -292,23 +292,21 @@ export default function SalariesPage() {
                                         </Link>
                                       </DropdownMenuItem>
                                       {!isPaid && (
-                                        <>
                                           <DropdownMenuItem asChild className="cursor-pointer">
                                             <Link href={`/dashboard/salaries/${salary.id}/edit`}>
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Modifier
                                             </Link>
                                           </DropdownMenuItem>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem 
-                                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                            onSelect={() => setSalaryToDelete(salary)}
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                          </DropdownMenuItem>
-                                        </>
                                       )}
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem 
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                        onSelect={() => setSalaryToDelete(salary)}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                      </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                               </TableCell>
@@ -352,5 +350,3 @@ export default function SalariesPage() {
     </>
   );
 }
-
-    
