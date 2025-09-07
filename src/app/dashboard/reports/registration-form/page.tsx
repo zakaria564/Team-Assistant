@@ -1,15 +1,15 @@
-
 "use client";
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Trophy, ArrowLeft, Printer } from "lucide-react";
 
-// This component uses a more direct HTML and JS approach to avoid React complexities
-// that might interfere with the window.print() functionality.
-
 export default function RegistrationFormPage() {
     const router = useRouter();
+
+    const handlePrint = () => {
+        window.print();
+    };
 
     return (
         <>
@@ -28,6 +28,12 @@ export default function RegistrationFormPage() {
                         padding: 0;
                         border: none;
                         box-shadow: none;
+                        color: #000;
+                        background-color: #fff;
+                    }
+                     #printable-form *, #printable-form *:before, #printable-form *:after {
+                        color: #000 !important;
+                        background-color: #fff !important;
                     }
                     @page {
                         size: A4;
@@ -35,10 +41,10 @@ export default function RegistrationFormPage() {
                     }
                 }
                 body {
-                    background-color: #f1f5f9; // bg-slate-100
+                    background-color: #f1f5f9;
                 }
                 .dark body {
-                   background-color: #020817; // dark:bg-slate-900
+                   background-color: #020817;
                 }
             `}</style>
             <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
@@ -47,14 +53,10 @@ export default function RegistrationFormPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Retour
                     </Button>
-                    {/* Direct onClick call to window.print() as suggested */}
-                    <button
-                        onClick={() => window.print()}
-                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                    >
+                    <Button onClick={handlePrint}>
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimer
-                    </button>
+                    </Button>
                 </div>
 
                 <div id="printable-form" className="bg-white rounded-lg border shadow-sm p-8 text-black">
