@@ -15,11 +15,11 @@ export default function RegistrationFormPage() {
 
     const handleCopyLink = () => {
         const path = "/dashboard/reports/registration-form";
-        navigator.clipboard.writeText(window.location.origin + path)
+        navigator.clipboard.writeText(path)
             .then(() => {
                 toast({
                     title: "Lien copié !",
-                    description: `Le lien vers la fiche (${path}) a été copié.`,
+                    description: `Le chemin relatif (${path}) a été copié dans le presse-papiers.`,
                 });
             })
             .catch(err => {
