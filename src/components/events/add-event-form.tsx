@@ -71,10 +71,9 @@ interface EventData {
 
 interface AddEventFormProps {
     event?: EventData;
-    isReadOnly?: boolean;
 }
 
-export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
+export function AddEventForm({ event }: AddEventFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -113,7 +112,6 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
 
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (isReadOnly) return;
         if (!user) {
             toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
             return;
@@ -182,7 +180,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={isEditMode || isReadOnly}
+                            disabled={isEditMode}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -206,7 +204,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || isReadOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
@@ -231,7 +229,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} readOnly={isEditMode || isReadOnly} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} readOnly={isEditMode} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -255,7 +253,6 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                                         "pl-3 text-left font-normal",
                                         !field.value && "text-muted-foreground"
                                     )}
-                                    disabled={isReadOnly}
                                     >
                                     {field.value ? (
                                         format(field.value, "PPP", { locale: fr })
@@ -272,7 +269,6 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                                     selected={field.value}
                                     onSelect={field.onChange}
                                     initialFocus
-                                    disabled={isReadOnly}
                                 />
                                 </PopoverContent>
                             </Popover>
@@ -287,7 +283,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Heure</FormLabel>
                             <FormControl>
-                                <Input type="time" {...field} readOnly={isReadOnly} />
+                                <Input type="time" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -301,7 +297,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Domicile, Stade Municipal, Extérieur..." {...field} readOnly={isReadOnly} />
+                            <Input placeholder="Ex: Domicile, Stade Municipal, Extérieur..." {...field} />
                         </FormControl>
                          <FormDescription>
                             Indiquez si le match est à domicile, à l'extérieur ou le nom du stade.
@@ -328,7 +324,6 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                                       {...field} 
                                       value={field.value ?? ''}
                                       onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                      readOnly={isReadOnly}
                                     />
                                     </FormControl>
                                     <FormMessage />
@@ -348,7 +343,6 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                                       {...field} 
                                       value={field.value ?? ''}
                                       onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                      readOnly={isReadOnly}
                                     />
                                     </FormControl>
                                     <FormMessage />
@@ -360,16 +354,14 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                 )}
 
 
-                {!isReadOnly && (
-                    <Button type="submit" disabled={loading} className="w-full">
-                        {loading ? (
-                            <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Enregistrement...
-                            </>
-                        ) : isEditMode ? "Modifier l'événement" : "Ajouter l'événement"}
-                    </Button>
-                )}
+                <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                        </>
+                    ) : isEditMode ? "Modifier l'événement" : "Ajouter l'événement"}
+                </Button>
             </form>
         </Form>
     );
