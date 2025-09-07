@@ -1,27 +1,35 @@
 
 "use client";
 
-import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft, FileDown } from "lucide-react";
+import { Trophy, ArrowLeft, Link as LinkIcon, Printer } from "lucide-react";
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegistrationFormPage() {
+    const { toast } = useToast();
 
-    useEffect(() => {
-        const printButton = document.getElementById('print-button');
-        if (printButton) {
-            const handlePrint = () => {
-                window.print();
-            };
-            printButton.addEventListener('click', handlePrint);
+    const handlePrint = () => {
+        window.print();
+    };
 
-            // Cleanup the event listener when the component unmounts
-            return () => {
-                printButton.removeEventListener('click', handlePrint);
-            };
-        }
-    }, []);
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => {
+                toast({
+                    title: "Lien copié !",
+                    description: "Le lien vers la fiche a été copié dans le presse-papiers.",
+                });
+            })
+            .catch(err => {
+                console.error('Erreur lors de la copie du lien:', err);
+                toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: "Impossible de copier le lien.",
+                });
+            });
+    };
 
     return (
         <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
@@ -47,13 +55,23 @@ export default function RegistrationFormPage() {
             `}</style>
 
             <div className="max-w-4xl mx-auto p-4 sm:p-8">
-                <div className="mb-8 flex justify-start items-center print-hidden">
+                <div className="mb-8 flex flex-col sm:flex-row justify-start items-center gap-4 print-hidden">
                     <Button variant="outline" asChild>
                         <Link href="/dashboard/reports">
                            <ArrowLeft className="mr-2 h-4 w-4" />
                            Retour
                         </Link>
                     </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleCopyLink}>
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            Copier le lien
+                        </Button>
+                        <Button onClick={handlePrint}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer / Enregistrer en PDF
+                        </Button>
+                    </div>
                 </div>
 
                 <div id="printable-form" className="printable-content bg-white rounded-lg border shadow-sm p-8 text-black">
