@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, isPast } from "date-fns";
+import { format, isPast, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -229,7 +229,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} disabled={isEditMode} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -307,7 +307,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     )}
                 />
                 
-                {isEditMode && eventTypeIsMatch && isPastEvent && (
+                {eventTypeIsMatch && isPastEvent && (
                     <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Résultat du Match</h4>
                         <div className="grid grid-cols-2 gap-4">
@@ -316,7 +316,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreTeam"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {event.team}</FormLabel>
+                                    <FormLabel>Score {form.getValues("team") || "Mon équipe"}</FormLabel>
                                     <FormControl>
                                     <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
@@ -329,7 +329,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreOpponent"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {event.opponent}</FormLabel>
+                                    <FormLabel>Score {form.getValues("opponent") || "Adversaire"}</FormLabel>
                                     <FormControl>
                                     <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
