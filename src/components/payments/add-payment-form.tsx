@@ -127,12 +127,17 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
                 const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
 
-                const currentMonthDesc = format(new Date(), "MMMM yyyy", { locale: fr });
+                const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+                const normalizedCurrentMonthDesc = currentMonthDesc.toLowerCase().replace(/\s/g, '');
+
                 const paidPlayerIds = new Set<string>();
                 paymentsSnapshot.forEach(doc => {
                     const paymentData = doc.data();
-                    if (paymentData.description.includes(currentMonthDesc) && paymentData.status === 'Payé') {
-                         paidPlayerIds.add(paymentData.playerId);
+                    if (paymentData.description) {
+                         const normalizedPaymentDesc = paymentData.description.toLowerCase().replace(/\s/g, '');
+                        if (normalizedPaymentDesc === normalizedCurrentMonthDesc && paymentData.status === 'Payé') {
+                            paidPlayerIds.add(paymentData.playerId);
+                        }
                     }
                 });
 
@@ -190,7 +195,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             : null;
 
         try {
-            if (isEditMode) {
+            if (isEditMode && payment) {
                 const paymentDocRef = doc(db, "payments", payment.id);
                 const updateData: any = {
                     totalAmount: values.totalAmount,
@@ -304,7 +309,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   )}
               />
 
-                {isEditMode && (
+                {isEditMode && payment && (
                   <Card className="bg-muted/30">
                     <CardHeader>
                         <CardTitle className="text-lg">Historique des transactions</CardTitle>
@@ -333,7 +338,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-               {(!isEditMode || payment.status !== 'Payé') && (
+               {(!isEditMode || (payment && payment.status !== 'Payé')) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

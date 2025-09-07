@@ -121,12 +121,17 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
                 const coachesData = coachesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
                 
-                const currentMonthDesc = format(new Date(), "MMMM yyyy", { locale: fr });
+                const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+                const normalizedCurrentMonthDesc = currentMonthDesc.toLowerCase().replace(/\s/g, '');
+
                 const paidCoachIds = new Set<string>();
                 salariesSnapshot.forEach(doc => {
                     const salaryData = doc.data();
-                    if (salaryData.description.includes(currentMonthDesc) && salaryData.status === 'Payé') {
-                         paidCoachIds.add(salaryData.coachId);
+                    if (salaryData.description) {
+                        const normalizedSalaryDesc = salaryData.description.toLowerCase().replace(/\s/g, '');
+                        if (normalizedSalaryDesc === normalizedCurrentMonthDesc && salaryData.status === 'Payé') {
+                            paidCoachIds.add(salaryData.coachId);
+                        }
                     }
                 });
 
@@ -183,7 +188,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             : null;
 
         try {
-            if (isEditMode) {
+            if (isEditMode && salary) {
                 const salaryDocRef = doc(db, "salaries", salary.id);
                 const updateData: any = {
                     totalAmount: values.totalAmount,
@@ -297,7 +302,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   )}
               />
 
-                {isEditMode && (
+                {isEditMode && salary && (
                   <Card className="bg-muted/30">
                     <CardHeader>
                         <CardTitle className="text-lg">Historique des transactions</CardTitle>
@@ -326,7 +331,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
-                {(!isEditMode || salary.status !== 'Payé') && (
+                {(!isEditMode || (salary && salary.status !== 'Payé')) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
