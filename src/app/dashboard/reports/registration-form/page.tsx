@@ -3,17 +3,37 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft, Printer } from "lucide-react";
+import { Trophy, ArrowLeft, Printer, Link as LinkIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegistrationFormPage() {
     const router = useRouter();
+    const { toast } = useToast();
 
     const handlePrint = () => {
         window.print();
     };
 
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => {
+            toast({
+                title: "Lien copié !",
+                description: "Le lien de la page a été copié dans le presse-papiers.",
+            });
+          })
+          .catch(err => {
+            console.error('Erreur lors de la copie du lien:', err);
+            toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible de copier le lien.",
+            });
+          });
+    };
+
     return (
-        <div className="bg-gray-100 dark:bg-gray-900">
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
             <style jsx global>{`
                 @media print {
                     body {
@@ -32,7 +52,7 @@ export default function RegistrationFormPage() {
                     }
                     #printable-form *, #printable-form *:before, #printable-form *:after {
                         color: #000 !important;
-                        background-color: #fff !important;
+                        background-color: transparent !important;
                     }
                     @page {
                         size: A4;
@@ -46,10 +66,16 @@ export default function RegistrationFormPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Retour
                     </Button>
-                    <Button onClick={handlePrint}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Imprimer
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={handleCopyLink}>
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            Copier le lien
+                        </Button>
+                        <Button onClick={handlePrint}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer
+                        </Button>
+                    </div>
                 </div>
 
                 <div id="printable-form" className="bg-white rounded-lg border shadow-sm p-8 text-black">
