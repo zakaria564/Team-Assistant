@@ -5,25 +5,61 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Trophy, ArrowLeft, Printer } from "lucide-react";
 
+// This component uses a more direct HTML and JS approach to avoid React complexities
+// that might interfere with the window.print() functionality.
+
 export default function RegistrationFormPage() {
     const router = useRouter();
 
+    // The handlePrint function is now defined but will be called directly from the HTML onClick.
     const handlePrint = () => {
         window.print();
     };
 
     return (
-        <div className="bg-gray-200 dark:bg-gray-900 min-h-screen p-4 sm:p-8">
-            <div className="w-full max-w-4xl mx-auto">
-                <div className="mb-8 flex justify-between items-center print:hidden">
+        <>
+            <style jsx global>{`
+                @media print {
+                    body {
+                        background-color: #fff !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .print-hidden {
+                        display: none !important;
+                    }
+                    #printable-form {
+                        margin: 0;
+                        padding: 0;
+                        border: none;
+                        box-shadow: none;
+                    }
+                    @page {
+                        size: A4;
+                        margin: 1.5cm;
+                    }
+                }
+                body {
+                    background-color: #f1f5f9; // bg-slate-100
+                }
+                .dark body {
+                   background-color: #020817; // dark:bg-slate-900
+                }
+            `}</style>
+            <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
+                <div className="mb-8 flex justify-between items-center print-hidden">
                     <Button variant="outline" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Retour
                     </Button>
-                    <Button onClick={handlePrint}>
+                    {/* Direct onClick call to window.print() */}
+                    <button
+                        onClick={() => window.print()}
+                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimer
-                    </Button>
+                    </button>
                 </div>
 
                 <div id="printable-form" className="bg-white rounded-lg border shadow-sm p-8 text-black">
@@ -84,22 +120,6 @@ export default function RegistrationFormPage() {
                     </footer>
                 </div>
             </div>
-             <style jsx global>{`
-                @media print {
-                    body {
-                        background-color: #fff !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                    .print\\:hidden {
-                        display: none !important;
-                    }
-                    @page {
-                        size: A4;
-                        margin: 1.5cm;
-                    }
-                }
-            `}</style>
-        </div>
+        </>
     );
 }
