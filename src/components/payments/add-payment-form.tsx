@@ -58,6 +58,7 @@ interface AddPaymentFormProps {
 
 
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
+const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
 const normalizeString = (str: string) => {
     return str
@@ -349,7 +350,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {(!isEditMode || amountRemaining > 0) && (
+                {amountRemaining > 0 && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -363,10 +364,10 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder="0.00" 
+                                    placeholder="0.00"
                                     {...field}
-                                    value={field.value ?? ""}
-                                    onChange={e => field.onChange(e.target.value === "" ? "" : e.target.valueAsNumber)} 
+                                    value={field.value === undefined ? '' : field.value}
+                                    onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -377,13 +378,22 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           control={form.control}
                           name="newTransactionMethod"
                           render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Méthode du versement</FormLabel>
+                            <FormItem>
+                              <FormLabel>Méthode du versement</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                    <Input type="text" readOnly value="Espèces" {...field} className="bg-muted" />
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner une méthode" />
+                                  </SelectTrigger>
                                 </FormControl>
-                                <FormMessage />
-                              </FormItem>
+                                <SelectContent>
+                                    {paymentMethods.map(method => (
+                                        <SelectItem key={method} value={method}>{method}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
                           )}
                       />
                     </div>
