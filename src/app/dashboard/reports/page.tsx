@@ -1,9 +1,8 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileDown, Users, CalendarCheck, Trophy, FilePlus } from "lucide-react";
+import { FileDown, Users, CalendarCheck, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export default function ReportsPage() {
@@ -49,7 +48,7 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent className="grid gap-2">
               <CardDescription>{report.description}</CardDescription>
-               <Button asChild variant="outline" className="mt-2 w-full sm:w-auto">
+               <Button asChild variant="outline" className="mt-2 w-full sm:w-auto" disabled>
                 <Link href={report.href}>
                   <FileDown className="mr-2 h-4 w-4" />
                   {report.buttonText}
