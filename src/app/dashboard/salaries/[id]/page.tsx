@@ -111,7 +111,7 @@ export default function SalaryDetailPage() {
   
   const amountPaid = salary.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
   const amountRemaining = salary.totalAmount - amountPaid;
-  const isPaid = salary.status === 'Payé' || amountRemaining <= 0;
+  const correctedStatus = amountRemaining <= 0 ? 'Payé' : salary.status;
 
   return (
     <div className="space-y-6">
@@ -128,7 +128,7 @@ export default function SalaryDetailPage() {
               </p>
             </div>
         </div>
-        {!isPaid && (
+        {correctedStatus !== 'Payé' && (
           <Button asChild className="w-full md:w-auto">
             <Link href={`/dashboard/salaries/${salaryId}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
@@ -191,8 +191,8 @@ export default function SalaryDetailPage() {
                     <DetailItem icon={DollarSign} label="Montant total payé" value={`${amountPaid.toFixed(2)} MAD`} />
                     <DetailItem icon={DollarSign} label="Montant restant" value={`${amountRemaining.toFixed(2)} MAD`} />
                     <DetailItem icon={BadgeHelp} label="Statut">
-                        <Badge className={cn("text-base", getBadgeClass(salary.status))}>
-                            {salary.status}
+                        <Badge className={cn("text-base", getBadgeClass(correctedStatus))}>
+                            {correctedStatus}
                         </Badge>
                     </DetailItem>
                 </CardContent>
