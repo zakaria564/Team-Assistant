@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, isPast, startOfDay } from "date-fns";
+import { format, isPast, startOfDay, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -109,7 +109,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
     const eventType = form.watch("type");
     const eventDate = form.watch("date");
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
-    const isPastEvent = eventDate ? isPast(startOfDay(eventDate)) || format(eventDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') : false;
+    const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
 
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -134,7 +134,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
             
             if (eventTypeIsMatch) {
                 dataToSave.opponent = values.opponent || null;
-                if(isPastEvent) {
+                 if(isPastEvent) {
                   dataToSave.scoreTeam = values.scoreTeam ?? null;
                   dataToSave.scoreOpponent = values.scoreOpponent ?? null;
                 }
@@ -182,7 +182,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={isReadOnly}
+                            disabled={isEditMode || isReadOnly}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -206,7 +206,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isReadOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || isReadOnly}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
@@ -231,7 +231,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} readOnly={isReadOnly} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} readOnly={isEditMode || isReadOnly} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -311,7 +311,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                     )}
                 />
                 
-                {eventTypeIsMatch && isPastEvent && (
+                {isEditMode && eventTypeIsMatch && isPastEvent && (
                     <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Résultat du Match</h4>
                         <div className="grid grid-cols-2 gap-4">
