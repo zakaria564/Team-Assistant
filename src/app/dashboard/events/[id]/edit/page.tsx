@@ -18,6 +18,8 @@ interface Event {
     opponent?: string;
     date: Date;
     location: string;
+    scoreTeam?: number;
+    scoreOpponent?: number;
 }
 
 export default function EditEventPage({ params }: { params: { id: string } }) {

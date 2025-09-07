@@ -1,0 +1,185 @@
+
+"use client";
+
+import React from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, ArrowLeft, Pencil, Calendar, Clock, MapPin, Users, Trophy } from "lucide-react";
+import Link from "next/link";
+import { format, isPast } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+
+interface Event {
+  id: string;
+  type: string;
+  team: string;
+  opponent?: string;
+  date: Date;
+  location: string;
+  scoreTeam?: number;
+  scoreOpponent?: number;
+}
+
+const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number, children?: React.ReactNode }) => (
+  <div className="flex items-start gap-4">
+    <Icon className="h-6 w-6 text-muted-foreground mt-1" />
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="text-base font-medium">{value || children || "Non spécifié"}</div>
+    </div>
+  </div>
+);
+
+const getResultBadgeClass = (scoreTeam?: number, scoreOpponent?: number) => {
+    if (scoreTeam === undefined || scoreTeam === null || scoreOpponent === undefined || scoreOpponent === null) {
+      return "bg-gray-100 text-gray-800 border-gray-300";
+    }
+    if (scoreTeam > scoreOpponent) return "bg-green-100 text-green-800 border-green-300";
+    if (scoreTeam < scoreOpponent) return "bg-red-100 text-red-800 border-red-300";
+    return "bg-yellow-100 text-yellow-800 border-yellow-300";
+};
+  
+const getResultLabel = (scoreTeam?: number, scoreOpponent?: number) => {
+    if (scoreTeam === undefined || scoreTeam === null || scoreOpponent === undefined || scoreOpponent === null) {
+        return "En attente";
+    }
+    if (scoreTeam > scoreOpponent) return "Victoire";
+    if (scoreTeam < scoreOpponent) return "Défaite";
+    return "Match Nul";
+};
+
+
+export default function EventDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const { id: eventId } = React.use(params);
+  
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    const fetchEvent = async () => {
+      setLoading(true);
+      try {
+        const eventRef = doc(db, "events", eventId as string);
+        const eventSnap = await getDoc(eventRef);
+
+        if (eventSnap.exists()) {
+           const data = eventSnap.data();
+           const date = data.date?.toDate ? data.date.toDate() : new Date();
+           setEvent({ 
+              id: eventSnap.id, 
+              ...data,
+              date: date
+            } as Event);
+        } else {
+          console.log("No such event document!");
+          router.push('/dashboard/events');
+        }
+      } catch (error) {
+        console.error("Error fetching event details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [eventId, router]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="text-center">
+        <p>Événement non trouvé.</p>
+        <Button onClick={() => router.push("/dashboard/events")} className="mt-4">Retour à la liste</Button>
+      </div>
+    );
+  }
+
+  const isPastEvent = isPast(event.date);
+  const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
+  const showScore = isPastEvent && eventTypeIsMatch;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="h-6 w-6" />
+              <span className="sr-only">Retour</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Détails de l'événement</h1>
+              <p className="text-muted-foreground">
+                  Consultez les informations de l'événement.
+              </p>
+            </div>
+        </div>
+         <Button asChild className="w-full md:w-auto">
+            <Link href={`/dashboard/events/${eventId}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Modifier
+            </Link>
+          </Button>
+      </div>
+      
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                    <Trophy />
+                    <span>
+                      {eventTypeIsMatch ? `${event.team} vs ${event.opponent}` : `${event.type} - ${event.team}`}
+                    </span>
+                </CardTitle>
+                <CardDescription>
+                   {event.type}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailItem icon={Calendar} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
+                  <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
+                  <DetailItem icon={MapPin} label="Lieu" value={event.location} />
+                  <DetailItem icon={Users} label="Équipe" value={event.team} />
+                  {eventTypeIsMatch && <DetailItem icon={Users} label="Adversaire" value={event.opponent} />}
+               </div>
+               
+               {showScore && (
+                 <div className="pt-4 border-t">
+                    <h4 className="text-lg font-semibold mb-4">Résultat du Match</h4>
+                    <div className="flex items-center gap-6">
+                        <div className="text-center">
+                            <p className="text-sm text-muted-foreground">{event.team}</p>
+                            <p className="text-4xl font-bold">{event.scoreTeam ?? '-'}</p>
+                        </div>
+                         <div className="text-2xl font-bold text-muted-foreground">vs</div>
+                        <div className="text-center">
+                            <p className="text-sm text-muted-foreground">{event.opponent}</p>
+                            <p className="text-4xl font-bold">{event.scoreOpponent ?? '-'}</p>
+                        </div>
+                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreTeam, event.scoreOpponent))}>
+                          {getResultLabel(event.scoreTeam, event.scoreOpponent)}
+                        </Badge>
+                    </div>
+                 </div>
+               )}
+            </CardContent>
+        </Card>
+    </div>
+  );
+}

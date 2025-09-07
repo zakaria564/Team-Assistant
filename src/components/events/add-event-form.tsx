@@ -109,6 +109,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const eventDate = form.watch("date");
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
     const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
+    const showScoreFields = isEditMode && eventTypeIsMatch && isPastEvent;
 
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -180,7 +181,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={isEditMode}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -204,7 +204,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
@@ -229,7 +229,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} readOnly={isEditMode} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -307,7 +307,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     )}
                 />
                 
-                {isEditMode && eventTypeIsMatch && isPastEvent && (
+                {showScoreFields && (
                     <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Résultat du Match</h4>
                         <div className="grid grid-cols-2 gap-4">
@@ -360,7 +360,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Enregistrement...
                         </>
-                    ) : isEditMode ? "Modifier l'événement" : "Ajouter l'événement"}
+                    ) : isEditMode ? "Enregistrer les modifications" : "Ajouter l'événement"}
                 </Button>
             </form>
         </Form>
