@@ -14,9 +14,9 @@ export default function RegistrationFormPage() {
     };
 
     return (
-        <div className="bg-muted/40 print:bg-white">
-            <div className="w-full max-w-5xl mx-auto p-4 sm:p-8 print:hidden">
-                 <div className="flex justify-between items-center mb-6">
+        <div className="bg-muted/40 min-h-screen">
+            <div className="w-full max-w-5xl mx-auto p-4 sm:p-8">
+                 <div className="flex justify-between items-center mb-6 print:hidden">
                     <Button variant="outline" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
@@ -24,10 +24,8 @@ export default function RegistrationFormPage() {
                         <Printer className="mr-2 h-4 w-4" /> Imprimer
                     </Button>
                 </div>
-            </div>
 
-            <div className="p-4 sm:p-8 pt-0 print:p-0">
-                <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
+                <Card className="w-full mx-auto print:shadow-none print:border-none" id="printable-form">
                     <CardHeader className="p-8">
                         <div className="flex flex-col items-center text-center">
                             <Trophy className="h-12 w-12 text-primary" />
@@ -99,37 +97,32 @@ export default function RegistrationFormPage() {
             </div>
              <style jsx global>{`
                 @media print {
-                    body {
-                        background: #fff !important;
+                    body * {
+                        visibility: hidden;
+                    }
+                    #printable-form, #printable-form * {
+                        visibility: visible;
+                    }
+                    #printable-form {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        margin: 0;
+                        padding: 0;
+                        border: none;
+                        box-shadow: none;
                     }
                     .print\\:hidden {
                         display: none !important;
                     }
-                    .print\\:p-0 {
-                        padding: 0 !important;
-                    }
-                    .print\\:bg-white {
-                        background-color: #fff !important;
-                    }
-                    .print\\:shadow-none {
-                        box-shadow: none !important;
-                    }
-                    .print\\:border-none {
-                        border: none !important;
-                    }
-                    main {
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                    header, footer, nav {
-                        display: none !important;
-                    }
-                    @page {
-                        size: A4;
-                        margin: 1.5cm;
-                    }
+                }
+                @page {
+                    size: A4;
+                    margin: 1.5cm;
                 }
             `}</style>
         </div>
     );
 }
+
