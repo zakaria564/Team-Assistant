@@ -3,7 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft, Printer } from "lucide-react";
+import { Trophy, ArrowLeft, FileDown } from "lucide-react";
 
 export default function RegistrationFormPage() {
     const router = useRouter();
@@ -48,8 +48,8 @@ export default function RegistrationFormPage() {
                     </Button>
                     <div className="flex items-center gap-2">
                         <Button onClick={handlePrint}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Imprimer
+                            <FileDown className="mr-2 h-4 w-4" />
+                            Partager la fiche en tant que fichier (PDF)
                         </Button>
                     </div>
                 </div>
