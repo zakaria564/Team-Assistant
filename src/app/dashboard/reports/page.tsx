@@ -9,13 +9,6 @@ import Link from "next/link";
 export default function ReportsPage() {
   const reportTypes = [
     {
-      title: "Fiche d'inscription",
-      description: "Générez une fiche d'inscription vierge à imprimer.",
-      icon: <FilePlus className="h-6 w-6 text-primary" />,
-      href: "/dashboard/reports/registration-form",
-      buttonText: "Ouvrir la fiche"
-    },
-    {
       title: "Cartes des joueurs",
       description: "Générez un PDF avec les cartes de tous les joueurs.",
       icon: <Users className="h-6 w-6 text-primary" />,
