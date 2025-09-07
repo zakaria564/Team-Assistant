@@ -45,12 +45,12 @@ const formSchema = z.object({
   scoreTeam: z.coerce.number().optional(),
   scoreOpponent: z.coerce.number().optional(),
 }).refine(data => {
-    if (data.type.includes("Match")) {
+    if (data.type.includes("Match") || data.type.includes("Tournoi")) {
         return !!data.opponent && data.opponent.length > 1;
     }
     return true;
 }, {
-    message: "L'adversaire est requis pour un match.",
+    message: "L'adversaire est requis pour un match ou un tournoi.",
     path: ["opponent"],
 });
 
@@ -106,8 +106,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
     const eventType = form.watch("type");
     const eventDate = form.watch("date");
-    const eventTypeIsMatch = eventType?.includes("Match");
-    const isPastEvent = eventDate ? isPast(eventDate) : false;
+    const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
+    const isPastEvent = eventDate ? isPast(startOfDay(eventDate)) || format(eventDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') : false;
+
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -354,3 +355,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
