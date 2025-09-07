@@ -300,7 +300,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} />
+                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} readOnly className="bg-muted"/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -380,7 +380,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Méthode du versement</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Sélectionner une méthode" />

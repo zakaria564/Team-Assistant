@@ -292,7 +292,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Salaire de Septembre" {...field} />
+                            <Input placeholder="Ex: Salaire de Septembre" {...field} readOnly className="bg-muted"/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -372,7 +372,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Méthode du versement</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Sélectionner une méthode" />
