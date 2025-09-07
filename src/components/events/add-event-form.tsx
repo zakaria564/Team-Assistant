@@ -126,10 +126,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 team: values.team,
                 date: combinedDate,
                 location: values.location,
-                opponent: values.opponent || null,
             };
             
             if (eventTypeIsMatch) {
+                dataToSave.opponent = values.opponent || null;
                 dataToSave.scoreTeam = values.scoreTeam ?? null;
                 dataToSave.scoreOpponent = values.scoreOpponent ?? null;
             }
@@ -149,7 +149,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 });
             }
            
-            router.push("/dashboard/events");
+            router.push("/dashboard/results");
             router.refresh();
 
         } catch (error) {
@@ -229,7 +229,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} />
+                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} disabled={isEditMode} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

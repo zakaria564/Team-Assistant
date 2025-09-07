@@ -176,7 +176,7 @@ export default function ResultsPage() {
                             {match.team} vs {match.opponent}
                           </TableCell>
                           <TableCell>
-                            {match.scoreTeam !== undefined && match.scoreTeam !== null ? (
+                            {(match.scoreTeam !== undefined && match.scoreTeam !== null) ? (
                                 <span className="font-bold">{match.scoreTeam} - {match.scoreOpponent}</span>
                             ) : (
                                 <span className="text-muted-foreground"> - </span>
@@ -191,7 +191,7 @@ export default function ResultsPage() {
                              <Button asChild variant="outline" size="sm">
                                 <Link href={`/dashboard/events/${match.id}/edit`}>
                                     <Pencil className="mr-2 h-3 w-3"/>
-                                    {match.scoreTeam !== undefined && match.scoreTeam !== null ? "Modifier" : "Ajouter"}
+                                    {(match.scoreTeam !== undefined && match.scoreTeam !== null) ? "Modifier" : "Ajouter"}
                                 </Link>
                              </Button>
                           </TableCell>
