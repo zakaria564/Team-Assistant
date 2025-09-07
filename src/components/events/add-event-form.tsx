@@ -162,8 +162,26 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                dataToSave.team = event.team;
-                await updateDoc(eventDocRef, dataToSave);
+                // In edit mode, don't change the team name, just update other fields.
+                const { team, ...restOfValues } = values;
+                const updateData = {
+                  ...restOfValues,
+                  userId: user.uid,
+                  type: values.type,
+                  date: combinedDate,
+                  location: values.location,
+                  team: event.team
+                };
+
+                 if (eventTypeIsMatch) {
+                    updateData.opponent = values.opponent || null;
+                    if(isPastEvent) {
+                        updateData.scoreTeam = values.scoreTeam ?? null;
+                        updateData.scoreOpponent = values.scoreOpponent ?? null;
+                    }
+                }
+
+                await updateDoc(eventDocRef, updateData);
                 toast({
                     title: "Événement modifié !",
                     description: `L'événement a été mis à jour avec succès.`
@@ -229,9 +247,11 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <FormLabel>Équipe / Catégorie</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                             <FormControl>
-                            <SelectTrigger>
-                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
-                            </SelectTrigger>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner une équipe/catégorie">
+                                        {isEditMode && event ? event.team : (clubName && field.value ? `${clubName} - ${field.value}` : field.value)}
+                                    </SelectValue>
+                                </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {playerCategories.map(cat => (
