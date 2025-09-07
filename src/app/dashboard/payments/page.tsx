@@ -269,58 +269,65 @@ export default function PaymentsPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredPayments.length > 0 ? (
-                        filteredPayments.map((payment) => (
-                        <TableRow key={payment.id}>
-                          <TableCell>
-                             <div className="flex flex-col">
-                                <span className="font-medium">{payment.playerName}</span>
-                                <span className="text-muted-foreground text-sm md:hidden">
-                                  {payment.amountPaid.toFixed(2)} MAD / {payment.totalAmount.toFixed(2)} MAD
-                                </span>
-                             </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                          <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
-                          <TableCell className="hidden sm:table-cell">
+                        filteredPayments.map((payment) => {
+                          const isPaid = payment.status === 'Payé' || payment.amountRemaining <= 0;
+                          return (
+                            <TableRow key={payment.id}>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{payment.playerName}</span>
+                                    <span className="text-muted-foreground text-sm md:hidden">
+                                      {payment.amountPaid.toFixed(2)} MAD / {payment.totalAmount.toFixed(2)} MAD
+                                    </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
+                              <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
+                              <TableCell className="hidden sm:table-cell">
                                 <Badge variant={getBadgeVariant(payment.status)} className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
                                   {payment.status}
                                 </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Ouvrir le menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/payments/${payment.id}`}>
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        Voir les détails
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier / Verser
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                    onSelect={() => setPaymentToDelete(payment)}
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Supprimer
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Ouvrir le menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                      <DropdownMenuItem asChild className="cursor-pointer">
+                                        <Link href={`/dashboard/payments/${payment.id}`}>
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Voir les détails
+                                        </Link>
+                                      </DropdownMenuItem>
+                                      {!isPaid && (
+                                        <>
+                                          <DropdownMenuItem asChild className="cursor-pointer">
+                                            <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier / Verser
+                                            </Link>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem 
+                                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                            onSelect={() => setPaymentToDelete(payment)}
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Supprimer
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
                     ) : (
                       <TableRow>
                           <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
@@ -358,5 +365,3 @@ export default function PaymentsPage() {
     </>
   );
 }
-
-    

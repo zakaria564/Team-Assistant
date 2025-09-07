@@ -262,55 +262,62 @@ export default function SalariesPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredSalaries.length > 0 ? (
-                        filteredSalaries.map((salary) => (
-                        <TableRow key={salary.id}>
-                          <TableCell>
-                            <div className="flex flex-col">
-                                <span className="font-medium">{salary.coachName}</span>
-                                <span className="text-muted-foreground text-sm md:hidden">{salary.amountPaid.toFixed(2)} MAD</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                             <Badge variant={getBadgeVariant(salary.status)} className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
-                                  {salary.status}
-                             </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Ouvrir le menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/salaries/${salary.id}`}>
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        Voir les détails
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                    <Link href={`/dashboard/salaries/${salary.id}/edit`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                    onSelect={() => setSalaryToDelete(salary)}
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Supprimer
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                        filteredSalaries.map((salary) => {
+                          const isPaid = salary.status === 'Payé' || salary.amountRemaining <= 0;
+                          return (
+                            <TableRow key={salary.id}>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{salary.coachName}</span>
+                                    <span className="text-muted-foreground text-sm md:hidden">{salary.amountPaid.toFixed(2)} MAD</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <Badge variant={getBadgeVariant(salary.status)} className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
+                                      {salary.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Ouvrir le menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                      <DropdownMenuItem asChild className="cursor-pointer">
+                                        <Link href={`/dashboard/salaries/${salary.id}`}>
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Voir les détails
+                                        </Link>
+                                      </DropdownMenuItem>
+                                      {!isPaid && (
+                                        <>
+                                          <DropdownMenuItem asChild className="cursor-pointer">
+                                            <Link href={`/dashboard/salaries/${salary.id}/edit`}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier
+                                            </Link>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem 
+                                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                            onSelect={() => setSalaryToDelete(salary)}
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Supprimer
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
                     ) : (
                       <TableRow>
                           <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
@@ -348,5 +355,3 @@ export default function SalariesPage() {
     </>
   );
 }
-    
-    

@@ -111,6 +111,7 @@ export default function SalaryDetailPage() {
   
   const amountPaid = salary.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
   const amountRemaining = salary.totalAmount - amountPaid;
+  const isPaid = salary.status === 'Payé' || amountRemaining <= 0;
 
   return (
     <div className="space-y-6">
@@ -127,12 +128,14 @@ export default function SalaryDetailPage() {
               </p>
             </div>
         </div>
-        <Button asChild className="w-full md:w-auto">
-          <Link href={`/dashboard/salaries/${salaryId}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Ajouter un versement
-          </Link>
-        </Button>
+        {!isPaid && (
+          <Button asChild className="w-full md:w-auto">
+            <Link href={`/dashboard/salaries/${salaryId}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Ajouter un versement
+            </Link>
+          </Button>
+        )}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
