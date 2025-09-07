@@ -3,15 +3,63 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ArrowLeft, Printer, Download } from "lucide-react";
+import { ArrowLeft, Printer, Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function RegistrationFormPage() {
   const router = useRouter();
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleDownloadPdf = () => {
+    setLoadingPdf(true);
+    const formElement = document.getElementById("printable-form");
+    if (formElement) {
+        html2canvas(formElement, {
+            scale: 2, // Augmente la résolution pour une meilleure qualité
+            useCORS: true
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const ratio = canvasWidth / canvasHeight;
+            
+            const width = pdfWidth - 40; // Marge de 20pt de chaque côté
+            const height = width / ratio;
+            
+            let finalHeight = height;
+            if (height > pdfHeight - 40) {
+              finalHeight = pdfHeight - 40;
+            }
+
+            const x = (pdfWidth - width) / 2;
+            const y = (pdfHeight - finalHeight) / 2;
+
+            pdf.addImage(imgData, 'PNG', x, y, width, finalHeight);
+            pdf.save("fiche-inscription.pdf");
+        }).finally(() => {
+            setLoadingPdf(false);
+        });
+    } else {
+        console.error("L'élément à imprimer est introuvable.");
+        setLoadingPdf(false);
+    }
+  };
+
 
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
@@ -25,9 +73,18 @@ export default function RegistrationFormPage() {
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimer
                     </Button>
-                    <Button onClick={handlePrint}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Télécharger en PDF
+                    <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+                        {loadingPdf ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Téléchargement...
+                            </>
+                        ) : (
+                             <>
+                                <Download className="mr-2 h-4 w-4" />
+                                Télécharger en PDF
+                             </>
+                        )}
                     </Button>
                 </div>
             </div>
