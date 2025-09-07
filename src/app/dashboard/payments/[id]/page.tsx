@@ -50,10 +50,9 @@ const getBadgeClass = (status?: Payment['status']) => {
 }
 
 
-export default function PaymentDetailPage() {
+export default function PaymentDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
-  const paymentId = params.id as string;
+  const { id: paymentId } = React.use(params);
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);

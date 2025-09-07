@@ -27,10 +27,9 @@ interface Coach {
   documents?: { name: string; url: string; validityDate?: string }[];
 }
 
-export default function EditCoachPage() {
+export default function EditCoachPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
-  const coachId = params.id as string;
+  const { id: coachId } = React.use(params);
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);

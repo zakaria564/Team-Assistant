@@ -78,10 +78,9 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
 }
 
 
-export default function PlayerDetailPage() {
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const params = useParams();
-  const playerId = params.id as string;
+  const { id: playerId } = React.use(params);
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
