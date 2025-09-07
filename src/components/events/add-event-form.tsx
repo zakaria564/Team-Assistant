@@ -112,10 +112,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
     useEffect(() => {
         if(isEditMode && event) {
-            const teamCategory = event.team.split(' - ').pop() || '';
             form.reset({
                 ...event,
-                team: teamCategory,
+                team: event.team, // Use the full team name
                 time: format(event.date, "HH:mm"),
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
@@ -142,7 +141,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
 
-            const teamValue = clubName && values.team ? `${clubName} - ${values.team}` : values.team;
+            const teamValue = isEditMode ? values.team : (clubName && values.team ? `${clubName} - ${values.team}` : values.team);
 
             const dataToSave: any = {
                 userId: user.uid,
@@ -162,26 +161,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                // In edit mode, don't change the team name, just update other fields.
-                const { team, ...restOfValues } = values;
-                const updateData = {
-                  ...restOfValues,
-                  userId: user.uid,
-                  type: values.type,
-                  date: combinedDate,
-                  location: values.location,
-                  team: event.team
-                };
-
-                 if (eventTypeIsMatch) {
-                    updateData.opponent = values.opponent || null;
-                    if(isPastEvent) {
-                        updateData.scoreTeam = values.scoreTeam ?? null;
-                        updateData.scoreOpponent = values.scoreOpponent ?? null;
-                    }
-                }
-
-                await updateDoc(eventDocRef, updateData);
+                await updateDoc(eventDocRef, dataToSave);
                 toast({
                     title: "Événement modifié !",
                     description: `L'événement a été mis à jour avec succès.`
@@ -249,13 +229,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Sélectionner une équipe/catégorie">
-                                        {isEditMode && event ? event.team : (clubName && field.value ? `${clubName} - ${field.value}` : field.value)}
+                                       {isEditMode ? field.value : (clubName && field.value ? `${clubName} - ${field.value}` : field.value)}
                                     </SelectValue>
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>
+                                <SelectItem key={cat} value={isEditMode ? `${clubName} - ${cat}` : cat}>
                                     {clubName ? `${clubName} - ${cat}` : cat}
                                 </SelectItem>
                             ))}
