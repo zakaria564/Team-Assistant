@@ -25,11 +25,11 @@ const reports = [
     },
     {
         title: "Résultats des matchs",
-        description: "Créez un rapport des résultats de tous les matchs de la saison.",
+        description: "Consultez et enregistrez les résultats de tous les matchs de la saison.",
         icon: BarChart,
-        href: "#",
-        cta: "Créer le rapport",
-        disabled: true,
+        href: "/dashboard/results",
+        cta: "Voir les résultats",
+        disabled: false,
     }
 ];
 

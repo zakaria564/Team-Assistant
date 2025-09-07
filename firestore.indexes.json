@@ -29,6 +29,23 @@
         }
       ]
     },
+     {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "in": ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi"]},
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
     {
       "collectionGroup": "players",
       "queryScope": "COLLECTION",

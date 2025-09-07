@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -42,6 +42,8 @@ const formSchema = z.object({
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
   location: z.string().min(2, "Le lieu est requis."),
   opponent: z.string().optional(),
+  scoreTeam: z.coerce.number().optional(),
+  scoreOpponent: z.coerce.number().optional(),
 }).refine(data => {
     if (data.type.includes("Match")) {
         return !!data.opponent && data.opponent.length > 1;
@@ -63,6 +65,8 @@ interface EventData {
   opponent?: string;
   date: Date;
   location: string;
+  scoreTeam?: number;
+  scoreOpponent?: number;
 }
 
 interface AddEventFormProps {
@@ -84,6 +88,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
             time: "15:00",
             location: "",
             opponent: "",
+            scoreTeam: undefined,
+            scoreOpponent: undefined,
         }
     });
     
@@ -91,13 +97,17 @@ export function AddEventForm({ event }: AddEventFormProps) {
         if(isEditMode && event) {
             form.reset({
                 ...event,
-                time: format(event.date, "HH:mm")
+                time: format(event.date, "HH:mm"),
+                scoreTeam: event.scoreTeam ?? undefined,
+                scoreOpponent: event.scoreOpponent ?? undefined,
             });
         }
     }, [event, isEditMode, form]);
 
     const eventType = form.watch("type");
+    const eventDate = form.watch("date");
     const eventTypeIsMatch = eventType?.includes("Match");
+    const isPastEvent = eventDate ? isPast(eventDate) : false;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -110,7 +120,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
 
-            const dataToSave = {
+            const dataToSave: any = {
                 userId: user.uid,
                 type: values.type,
                 team: values.team,
@@ -118,6 +128,11 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 location: values.location,
                 opponent: values.opponent || null,
             };
+            
+            if (eventTypeIsMatch) {
+                dataToSave.scoreTeam = values.scoreTeam ?? null;
+                dataToSave.scoreOpponent = values.scoreOpponent ?? null;
+            }
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
@@ -253,9 +268,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     mode="single"
                                     selected={field.value}
                                     onSelect={field.onChange}
-                                    disabled={(date) =>
-                                        date < new Date(new Date().setHours(0,0,0,0)) && !isEditMode
-                                    }
                                     initialFocus
                                 />
                                 </PopoverContent>
@@ -294,6 +306,41 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         </FormItem>
                     )}
                 />
+                
+                {isEditMode && eventTypeIsMatch && isPastEvent && (
+                    <div className="space-y-4 rounded-md border p-4">
+                        <h4 className="font-medium">Résultat du Match</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="scoreTeam"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Score {event.team}</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="scoreOpponent"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Score {event.opponent}</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+                )}
+
 
                 <Button type="submit" disabled={loading} className="w-full">
                     {loading ? (
