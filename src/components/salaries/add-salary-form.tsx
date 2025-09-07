@@ -54,6 +54,14 @@ interface AddSalaryFormProps {
 const paymentMethods = ["Virement", "Chèque", "Espèces"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
+const normalizeString = (str: string) => {
+    return str
+        .toLowerCase()
+        .normalize("NFD") // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
+        .replace(/\s+/g, ''); // Remove all whitespace
+};
+
 export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
@@ -122,14 +130,18 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                 const coachesData = coachesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
                 
                 const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                const normalizedCurrentMonthDesc = currentMonthDesc.toLowerCase().replace(/\s/g, '');
+                const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
 
                 const paidCoachIds = new Set<string>();
                 salariesSnapshot.forEach(doc => {
                     const salaryData = doc.data();
                     if (salaryData.description) {
-                        const normalizedSalaryDesc = salaryData.description.toLowerCase().replace(/\s/g, '');
-                        if (normalizedSalaryDesc === normalizedCurrentMonthDesc && salaryData.status === 'Payé') {
+                        const normalizedSalaryDesc = normalizeString(salaryData.description);
+                        const amountPaid = (salaryData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
+                        const totalAmount = salaryData.totalAmount || 0;
+                        const isPaid = amountPaid >= totalAmount;
+
+                        if (normalizedSalaryDesc === normalizedCurrentMonthDesc && isPaid) {
                             paidCoachIds.add(salaryData.coachId);
                         }
                     }
@@ -153,7 +165,6 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         if (!isEditMode) {
            fetchCoachesAndSalaries();
         } else {
-             // In edit mode, just load all coaches to show the selected one
             const fetchAllCoaches = async () => {
                 if (!user) return;
                 setLoadingCoaches(true);
@@ -194,7 +205,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     totalAmount: values.totalAmount,
                     status: values.status,
                     description: values.description,
-                    userId: user.uid, // Ensure userId is present on updates
+                    userId: user.uid,
                 };
                 if(newTransactionData){
                     updateData.transactions = arrayUnion(newTransactionData);
@@ -331,7 +342,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
-                {(!isEditMode || (salary && salary.status !== 'Payé')) && (
+                {(!isEditMode || amountRemaining > 0) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

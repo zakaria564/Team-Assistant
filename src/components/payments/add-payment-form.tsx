@@ -60,6 +60,15 @@ interface AddPaymentFormProps {
 const paymentMethods = ["Carte Bancaire", "Espèces", "Virement", "Chèque"];
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 
+const normalizeString = (str: string) => {
+    return str
+        .toLowerCase()
+        .normalize("NFD") // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
+        .replace(/\s+/g, ''); // Remove all whitespace
+};
+
+
 export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
@@ -128,14 +137,18 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
 
                 const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                const normalizedCurrentMonthDesc = currentMonthDesc.toLowerCase().replace(/\s/g, '');
+                const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
 
                 const paidPlayerIds = new Set<string>();
                 paymentsSnapshot.forEach(doc => {
                     const paymentData = doc.data();
                     if (paymentData.description) {
-                         const normalizedPaymentDesc = paymentData.description.toLowerCase().replace(/\s/g, '');
-                        if (normalizedPaymentDesc === normalizedCurrentMonthDesc && paymentData.status === 'Payé') {
+                         const normalizedPaymentDesc = normalizeString(paymentData.description);
+                         const amountPaid = (paymentData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
+                         const totalAmount = paymentData.totalAmount || 0;
+                         const isPaid = amountPaid >= totalAmount;
+
+                        if (normalizedPaymentDesc === normalizedCurrentMonthDesc && isPaid) {
                             paidPlayerIds.add(paymentData.playerId);
                         }
                     }
@@ -160,7 +173,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         if (!isEditMode) {
            fetchPlayersAndPayments();
         } else {
-             // In edit mode, just load all players to show the selected one
             const fetchAllPlayers = async () => {
                 if (!user) return;
                 setLoadingPlayers(true);
@@ -201,7 +213,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     totalAmount: values.totalAmount,
                     status: values.status,
                     description: values.description,
-                    userId: user.uid // Ensure userId is present on updates
+                    userId: user.uid
                 };
                 if(newTransactionData){
                     updateData.transactions = arrayUnion(newTransactionData);
@@ -338,7 +350,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-               {(!isEditMode || (payment && payment.status !== 'Payé')) && (
+               {(!isEditMode || amountRemaining > 0) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
