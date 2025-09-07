@@ -112,8 +112,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
     useEffect(() => {
         if(isEditMode && event) {
+            const teamCategory = event.team.split(' - ').pop() || '';
             form.reset({
                 ...event,
+                team: teamCategory,
                 time: format(event.date, "HH:mm"),
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
@@ -160,8 +162,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                // In edit mode, we don't update the team name automatically
-                // We just save what's already there unless explicitly changed (which is disabled)
                 dataToSave.team = event.team;
                 await updateDoc(eventDocRef, dataToSave);
                 toast({
@@ -191,8 +191,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     }
     
-    const teamDisplayValue = isEditMode && event ? event.team : form.getValues("team");
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
@@ -344,7 +342,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreTeam"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {form.getValues("team") || "Mon équipe"}</FormLabel>
+                                    <FormLabel>Score {event.team}</FormLabel>
                                     <FormControl>
                                     <Input 
                                       type="number" 
@@ -363,7 +361,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreOpponent"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {form.getValues("opponent") || "Adversaire"}</FormLabel>
+                                    <FormLabel>Score {event.opponent}</FormLabel>
                                     <FormControl>
                                     <Input 
                                       type="number" 
