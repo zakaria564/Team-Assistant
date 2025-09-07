@@ -138,7 +138,7 @@ export default function PlayerCardsPage() {
             <div id="printable-cards" className="p-2 bg-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {players.map(player => (
-                    <Link href={`/dashboard/players/${player.id}`} key={player.id} className="no-underline">
+                    <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
                         <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-4 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
                             <header className="w-full">
                                 <div className="flex items-center justify-center gap-2">
