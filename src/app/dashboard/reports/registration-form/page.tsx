@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -12,13 +13,11 @@ export default function RegistrationFormPage() {
     };
 
     return (
-        <>
+        <div className="bg-gray-100 dark:bg-gray-900">
             <style jsx global>{`
                 @media print {
                     body {
                         background-color: #fff !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
                     }
                     .print-hidden {
                         display: none !important;
@@ -28,10 +27,10 @@ export default function RegistrationFormPage() {
                         padding: 0;
                         border: none;
                         box-shadow: none;
-                        color: #000;
-                        background-color: #fff;
+                        color: #000 !important;
+                        background-color: #fff !important;
                     }
-                     #printable-form *, #printable-form *:before, #printable-form *:after {
+                    #printable-form *, #printable-form *:before, #printable-form *:after {
                         color: #000 !important;
                         background-color: #fff !important;
                     }
@@ -39,12 +38,6 @@ export default function RegistrationFormPage() {
                         size: A4;
                         margin: 1.5cm;
                     }
-                }
-                body {
-                    background-color: #f1f5f9;
-                }
-                .dark body {
-                   background-color: #020817;
                 }
             `}</style>
             <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
@@ -117,6 +110,6 @@ export default function RegistrationFormPage() {
                     </footer>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
