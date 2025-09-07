@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -41,6 +41,7 @@ const formSchema = z.object({
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   nationality: z.string().optional(),
+  cin: z.string().optional(),
   address: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
@@ -131,6 +132,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
       entryDate: "",
       exitDate: "",
       nationality: "",
+      cin: "",
       address: "",
       documents: [],
     }
@@ -148,6 +150,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
             nationality: coach.nationality || "",
+            cin: coach.cin || "",
             address: coach.address || "",
             documents: (coach.documents || []).map(doc => ({
                 name: doc.name,
@@ -558,28 +561,43 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="nationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nationalité</FormLabel>
-                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une nationalité" />
-                              </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                  {nationalities.map(nat => (
-                                      <SelectItem key={nat} value={nat}>{nat}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                        control={form.control}
+                        name="nationality"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Nationalité</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner une nationalité" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {nationalities.map(nat => (
+                                        <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="cin"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>N° CIN</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Numéro de CIN" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                      <FormField
                       control={form.control}
                       name="address"
@@ -636,3 +654,5 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
+
+    
