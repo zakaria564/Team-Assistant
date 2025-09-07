@@ -371,4 +371,3 @@ export function AddEventForm({ event }: AddEventFormProps) {
     );
 }
 
-    
