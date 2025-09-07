@@ -79,7 +79,7 @@ export default function PaymentsPage() {
             playersMap.set(doc.id, doc.data().name);
         });
 
-        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
+        const paymentsQuery = query(collection(db, "payments"));
         const paymentsSnapshot = await getDocs(paymentsQuery);
         const paymentsData = paymentsSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -267,7 +267,7 @@ export default function PaymentsPage() {
                   <TableBody>
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => {
-                           const isPaid = payment.status === 'Payé' || payment.amountRemaining <= 0;
+                           const isPaid = payment.status === 'Payé';
                           return (
                             <TableRow key={payment.id}>
                               <TableCell>
@@ -304,8 +304,8 @@ export default function PaymentsPage() {
                                       {!isPaid && (
                                           <DropdownMenuItem asChild className="cursor-pointer">
                                             <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Modifier / Verser
+                                                <PlusCircle className="mr-2 h-4 w-4" />
+                                                Ajouter un versement
                                             </Link>
                                           </DropdownMenuItem>
                                       )}

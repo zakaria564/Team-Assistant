@@ -75,7 +75,7 @@ export default function SalariesPage() {
             coachesMap.set(doc.id, doc.data().name);
         });
 
-        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
+        const salariesQuery = query(collection(db, "salaries"));
         const salariesSnapshot = await getDocs(salariesQuery);
         const salariesData = salariesSnapshot.docs.map(doc => {
             const data = doc.data() as any;
@@ -260,7 +260,7 @@ export default function SalariesPage() {
                   <TableBody>
                     {filteredSalaries.length > 0 ? (
                         filteredSalaries.map((salary) => {
-                          const isPaid = salary.status === 'Payé' || salary.amountRemaining <= 0;
+                          const isPaid = salary.status === 'Payé';
                           return (
                             <TableRow key={salary.id}>
                               <TableCell>
@@ -294,8 +294,8 @@ export default function SalariesPage() {
                                       {!isPaid && (
                                           <DropdownMenuItem asChild className="cursor-pointer">
                                             <Link href={`/dashboard/salaries/${salary.id}/edit`}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Modifier
+                                                <PlusCircle className="mr-2 h-4 w-4" />
+                                                Ajouter un versement
                                             </Link>
                                           </DropdownMenuItem>
                                       )}
