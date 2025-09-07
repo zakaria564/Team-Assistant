@@ -102,6 +102,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 const docSnap = await getDoc(clubDocRef);
                 if (docSnap.exists() && docSnap.data().clubName) {
                     setClubName(docSnap.data().clubName);
+                } else {
+                    setClubName("Votre Club");
                 }
             } catch (error) {
                 console.error("Error fetching club name: ", error);
@@ -114,7 +116,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         if(isEditMode && event) {
             form.reset({
                 ...event,
-                team: event.team, // Use the full team name
+                team: event.team,
                 time: format(event.date, "HH:mm"),
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
@@ -140,8 +142,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
             const [hours, minutes] = values.time.split(':').map(Number);
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
-
-            const teamValue = isEditMode ? values.team : (clubName && values.team ? `${clubName} - ${values.team}` : values.team);
+            
+            const teamValue = isEditMode ? values.team : `${clubName} - ${values.team}`;
 
             const dataToSave: any = {
                 userId: user.uid,
@@ -228,15 +230,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                             <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner une équipe/catégorie">
-                                       {isEditMode ? field.value : (clubName && field.value ? `${clubName} - ${field.value}` : field.value)}
-                                    </SelectValue>
+                                     <SelectValue placeholder="Sélectionner une équipe/catégorie" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={isEditMode ? `${clubName} - ${cat}` : cat}>
-                                    {clubName ? `${clubName} - ${cat}` : cat}
+                                <SelectItem key={cat} value={cat}>
+                                    {clubName} - {cat}
                                 </SelectItem>
                             ))}
                             </SelectContent>
