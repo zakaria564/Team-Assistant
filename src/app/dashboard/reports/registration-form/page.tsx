@@ -3,33 +3,13 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft, Printer, Link as LinkIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Trophy, ArrowLeft, Printer } from "lucide-react";
 
 export default function RegistrationFormPage() {
     const router = useRouter();
-    const { toast } = useToast();
 
     const handlePrint = () => {
         window.print();
-    };
-
-    const handleCopyLink = () => {
-        navigator.clipboard.writeText(window.location.href)
-          .then(() => {
-            toast({
-                title: "Lien copié !",
-                description: "Le lien de la page a été copié dans le presse-papiers.",
-            });
-          })
-          .catch(err => {
-            console.error('Erreur lors de la copie du lien:', err);
-            toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de copier le lien.",
-            });
-          });
     };
 
     return (
@@ -67,10 +47,6 @@ export default function RegistrationFormPage() {
                         Retour
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={handleCopyLink}>
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                            Copier le lien
-                        </Button>
                         <Button onClick={handlePrint}>
                             <Printer className="mr-2 h-4 w-4" />
                             Imprimer
