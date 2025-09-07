@@ -40,16 +40,16 @@ export default function ReportsPage() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {reportTypes.map((report) => (
-          <Card key={report.title}>
+          <Card key={report.title} className="flex flex-col">
             <CardHeader className="flex flex-row items-center gap-4 space-y-0">
               {report.icon}
               <div className="grid gap-1">
                 <CardTitle>{report.title}</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-2">
+            <CardContent className="flex-1 flex flex-col justify-between gap-4">
               <CardDescription>{report.description}</CardDescription>
-               <Button asChild variant="outline" className="mt-2 w-full sm:w-auto" disabled>
+               <Button asChild variant="outline" className="w-full" disabled>
                 <Link href={report.href}>
                   <FileDown className="mr-2 h-4 w-4" />
                   {report.buttonText}
