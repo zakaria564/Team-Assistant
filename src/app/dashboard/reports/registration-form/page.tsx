@@ -3,7 +3,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Printer, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,9 +14,9 @@ export default function RegistrationFormPage() {
     };
 
     return (
-        <div className="printable-area">
-            <div className="controls-container bg-muted/40 p-4 sm:p-8 print:hidden">
-                 <div className="w-full max-w-4xl mx-auto flex justify-between items-center">
+        <div className="bg-muted/40 print:bg-white">
+            <div className="w-full max-w-5xl mx-auto p-4 sm:p-8 print:hidden">
+                 <div className="flex justify-between items-center mb-6">
                     <Button variant="outline" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
@@ -27,7 +26,7 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
 
-            <div className="form-container bg-muted/40 print:bg-white p-4 sm:p-8 pt-0 sm:pt-0">
+            <div className="p-4 sm:p-8 pt-0 print:p-0">
                 <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
                     <CardHeader className="p-8">
                         <div className="flex flex-col items-center text-center">
@@ -100,17 +99,14 @@ export default function RegistrationFormPage() {
             </div>
              <style jsx global>{`
                 @media print {
-                    body > *:not(.printable-area) {
-                        display: none;
-                    }
-                    .printable-area {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
+                    body {
+                        background: #fff !important;
                     }
                     .print\\:hidden {
                         display: none !important;
+                    }
+                    .print\\:p-0 {
+                        padding: 0 !important;
                     }
                     .print\\:bg-white {
                         background-color: #fff !important;
@@ -121,13 +117,19 @@ export default function RegistrationFormPage() {
                     .print\\:border-none {
                         border: none !important;
                     }
+                    main {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    }
+                    header, footer, nav {
+                        display: none !important;
+                    }
                     @page {
                         size: A4;
-                        margin: 2cm;
+                        margin: 1.5cm;
                     }
                 }
             `}</style>
         </div>
     );
 }
-
