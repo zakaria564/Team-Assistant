@@ -12,6 +12,7 @@ import { Loader2, ArrowLeft, Download, Trophy } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 interface Player {
   id: string;
@@ -137,27 +138,29 @@ export default function PlayerCardsPage() {
             <div id="printable-cards" className="p-2 bg-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {players.map(player => (
-                    <Card key={player.id} className="aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-4 text-center text-black shadow-lg break-inside-avoid">
-                        <header className="w-full">
-                            <div className="flex items-center justify-center gap-2">
-                                <Trophy className="h-6 w-6 text-primary" />
-                                <h2 className="font-bold text-lg text-primary">{clubName}</h2>
+                    <Link href={`/dashboard/players/${player.id}`} key={player.id} className="no-underline">
+                        <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-4 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
+                            <header className="w-full">
+                                <div className="flex items-center justify-center gap-2">
+                                    <Trophy className="h-6 w-6 text-primary" />
+                                    <h2 className="font-bold text-lg text-primary">{clubName}</h2>
+                                </div>
+                            </header>
+                            <div className="flex flex-col items-center gap-2 my-auto">
+                            <Avatar className="h-28 w-28 border-4 border-primary">
+                                    <AvatarImage src={player.photoUrl} alt={player.name} />
+                                    <AvatarFallback className="text-3xl">{player.name?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <h3 className="text-2xl font-bold">{player.name}</h3>
                             </div>
-                        </header>
-                        <div className="flex flex-col items-center gap-2 my-auto">
-                           <Avatar className="h-28 w-28 border-4 border-primary">
-                                <AvatarImage src={player.photoUrl} alt={player.name} />
-                                <AvatarFallback className="text-3xl">{player.name?.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <h3 className="text-2xl font-bold">{player.name}</h3>
-                        </div>
-                        <footer className="w-full space-y-2 text-lg">
-                            <div className="flex justify-between items-center text-left">
-                                <span className="font-semibold text-primary">{player.category}</span>
-                                <span className="font-bold text-2xl text-black/80">#{player.number}</span>
-                            </div>
-                        </footer>
-                    </Card>
+                            <footer className="w-full space-y-2 text-lg">
+                                <div className="flex justify-between items-center text-left">
+                                    <span className="font-semibold text-primary">{player.category}</span>
+                                    <span className="font-bold text-2xl text-black/80">#{player.number}</span>
+                                </div>
+                            </footer>
+                        </Card>
+                    </Link>
                 ))}
                 </div>
             </div>
