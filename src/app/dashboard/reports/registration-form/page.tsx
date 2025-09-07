@@ -7,6 +7,10 @@ import Link from 'next/link';
 
 export default function RegistrationFormPage() {
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
         <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
             <style jsx global>{`
@@ -21,6 +25,8 @@ export default function RegistrationFormPage() {
                     .printable-content {
                         box-shadow: none !important;
                         border: none !important;
+                        margin: 0;
+                        padding: 0;
                     }
                 }
             `}</style>
@@ -33,15 +39,10 @@ export default function RegistrationFormPage() {
                            Retour
                         </Link>
                     </Button>
-                    {/* Utilisation d'un lien <a> simple pour déclencher l'impression */}
-                    <a 
-                      href="#" 
-                      onClick={(e) => { e.preventDefault(); window.print(); }}
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                    >
-                      <FileDown className="h-4 w-4" />
+                    <Button onClick={handlePrint}>
+                      <FileDown className="mr-2 h-4 w-4" />
                       Partager la fiche en tant que fichier (PDF)
-                    </a>
+                    </Button>
                 </div>
 
                 <div className="printable-content bg-white rounded-lg border shadow-sm p-8 text-black">
