@@ -20,6 +20,7 @@ interface Event {
   id: string;
   type: string;
   team: string;
+  category: string;
   opponent?: string;
   date: Date;
   location: string;

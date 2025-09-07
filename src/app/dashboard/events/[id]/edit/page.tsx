@@ -15,6 +15,7 @@ interface Event {
     id: string;
     type: any;
     team: string;
+    category: string;
     opponent?: string;
     date: Date;
     location: string;

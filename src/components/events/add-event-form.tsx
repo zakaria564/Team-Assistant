@@ -37,7 +37,7 @@ const eventTypes = [
 
 const formSchema = z.object({
   type: z.enum(eventTypes, { required_error: "Le type d'événement est requis." }),
-  team: z.string({ required_error: "L'équipe est requise." }),
+  category: z.string({ required_error: "La catégorie est requise." }),
   date: z.date({ required_error: "La date est requise."}),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
   location: z.string().min(2, "Le lieu est requis."),
@@ -62,6 +62,7 @@ interface EventData {
   id: string;
   type: typeof eventTypes[number];
   team: string;
+  category: string;
   opponent?: string;
   date: Date;
   location: string;
@@ -85,7 +86,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             type: "Match de Championnat",
-            team: "",
+            category: "",
             time: "15:00",
             location: "",
             opponent: "",
@@ -116,7 +117,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         if(isEditMode && event) {
             form.reset({
                 ...event,
-                team: event.team,
+                category: event.category,
                 time: format(event.date, "HH:mm"),
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
@@ -143,12 +144,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes);
             
-            const teamValue = isEditMode ? values.team : `${clubName} - ${values.team}`;
+            const teamValue = `${clubName} - ${values.category}`;
 
             const dataToSave: any = {
                 userId: user.uid,
                 type: values.type,
                 team: teamValue,
+                category: values.category,
                 date: combinedDate,
                 location: values.location,
             };
@@ -203,7 +205,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={isEditMode}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -220,23 +221,30 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         </FormItem>
                     )}
                 />
+                
+                <FormItem>
+                    <FormLabel>Club</FormLabel>
+                    <FormControl>
+                        <Input value={clubName} disabled />
+                    </FormControl>
+                </FormItem>
 
                 <FormField
                     control={form.control}
-                    name="team"
+                    name="category"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
+                        <FormLabel>Catégorie</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger>
-                                     <SelectValue placeholder="Sélectionner une équipe/catégorie" />
+                                     <SelectValue placeholder="Sélectionner une catégorie" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {playerCategories.map(cat => (
                                 <SelectItem key={cat} value={cat}>
-                                    {clubName} - {cat}
+                                    {cat}
                                 </SelectItem>
                             ))}
                             </SelectContent>
