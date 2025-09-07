@@ -662,6 +662,66 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
                 <Separator />
 
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Informations du Tuteur (Optionnel)</h3>
+                     <FormField
+                      control={form.control}
+                      name="tutorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom complet du tuteur</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Marie Dupont" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tutorCin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>N° CIN du tuteur</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Numéro de Carte d'Identité Nationale du tuteur" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="tutorPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone du tuteur</FormLabel>
+                              <FormControl>
+                                <Input type="tel" placeholder="0612345678" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="tutorEmail"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email du tuteur</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="tuteur@email.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
+                </div>
+                
+                <Separator />
+
                  <div className="space-y-4">
                     <h3 className="text-lg font-medium">Documents du Joueur</h3>
                     {fields.map((field, index) => (
@@ -739,67 +799,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Ajouter un document
                     </Button>
-                </div>
-
-
-                <Separator />
-
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Informations du Tuteur (Optionnel)</h3>
-                     <FormField
-                      control={form.control}
-                      name="tutorName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nom complet du tuteur</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Marie Dupont" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="tutorCin"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>N° CIN du tuteur</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Numéro de Carte d'Identité Nationale du tuteur" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="tutorPhone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Téléphone du tuteur</FormLabel>
-                              <FormControl>
-                                <Input type="tel" placeholder="0612345678" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="tutorEmail"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email du tuteur</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="tuteur@email.com" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                    </div>
                 </div>
 
 
