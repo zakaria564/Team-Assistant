@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function RegistrationFormPage() {
@@ -20,10 +20,16 @@ export default function RegistrationFormPage() {
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
-                <Button onClick={handlePrint}>
-                    <Printer className="mr-2 h-4 w-4" />
-                    Imprimer / Enregistrer en PDF
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handlePrint}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimer
+                    </Button>
+                    <Button onClick={handlePrint}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Télécharger en PDF
+                    </Button>
+                </div>
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
