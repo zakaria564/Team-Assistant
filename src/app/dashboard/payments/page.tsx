@@ -89,6 +89,11 @@ export default function PaymentsPage() {
             const totalAmount = data.totalAmount || 0;
             const amountRemaining = totalAmount - amountPaid;
             
+            let status = data.status;
+            if (amountRemaining <= 0) {
+              status = 'Payé';
+            }
+            
             return { 
                 id: doc.id, 
                 ...data,
@@ -96,7 +101,8 @@ export default function PaymentsPage() {
                 amountPaid,
                 amountRemaining,
                 totalAmount,
-                transactions
+                transactions,
+                status // Use the corrected status
             } as Payment;
         });
         
@@ -152,15 +158,6 @@ export default function PaymentsPage() {
         setPaymentToDelete(null);
     }
   };
-
-  const getBadgeVariant = (status: Payment['status']) => {
-    switch (status) {
-        case 'Payé': return 'default';
-        case 'Partiel': return 'secondary';
-        case 'En retard': return 'destructive';
-        default: return 'outline';
-    }
-  }
 
   const getBadgeClass = (status: Payment['status']) => {
      switch (status) {
@@ -270,7 +267,7 @@ export default function PaymentsPage() {
                   <TableBody>
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => {
-                          const isPaid = payment.status === 'Payé' || payment.amountRemaining <= 0;
+                           const isPaid = payment.status === 'Payé' || payment.amountRemaining <= 0;
                           return (
                             <TableRow key={payment.id}>
                               <TableCell>
@@ -284,7 +281,7 @@ export default function PaymentsPage() {
                               <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
                               <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
                               <TableCell className="hidden sm:table-cell">
-                                <Badge variant={getBadgeVariant(payment.status)} className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
+                                <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
                                   {payment.status}
                                 </Badge>
                               </TableCell>
@@ -365,3 +362,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    

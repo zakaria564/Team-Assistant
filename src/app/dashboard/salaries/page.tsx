@@ -85,6 +85,11 @@ export default function SalariesPage() {
             const totalAmount = data.totalAmount || 0;
             const amountRemaining = totalAmount - amountPaid;
             
+            let status = data.status;
+            if (amountRemaining <= 0) {
+              status = 'Payé';
+            }
+
             return { 
                 id: doc.id, 
                 ...data,
@@ -92,7 +97,8 @@ export default function SalariesPage() {
                 amountPaid,
                 amountRemaining,
                 totalAmount,
-                transactions
+                transactions,
+                status // Use the corrected status
             } as Salary;
         });
         
@@ -145,15 +151,6 @@ export default function SalariesPage() {
         setSalaryToDelete(null);
     }
   };
-
-  const getBadgeVariant = (status: Salary['status']) => {
-    switch (status) {
-        case 'Payé': return 'default';
-        case 'Partiel': return 'secondary';
-        case 'En retard': return 'destructive';
-        default: return 'outline';
-    }
-  }
 
   const getBadgeClass = (status: Salary['status']) => {
      switch (status) {
@@ -274,7 +271,7 @@ export default function SalariesPage() {
                               </TableCell>
                               <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} MAD</TableCell>
                               <TableCell className="hidden sm:table-cell">
-                                <Badge variant={getBadgeVariant(salary.status)} className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
+                                <Badge className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
                                       {salary.status}
                                 </Badge>
                               </TableCell>
@@ -355,3 +352,5 @@ export default function SalariesPage() {
     </>
   );
 }
+
+    
