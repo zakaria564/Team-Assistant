@@ -1,23 +1,27 @@
 
 "use client";
 
+import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Trophy, ArrowLeft, FileDown } from "lucide-react";
 import Link from 'next/link';
 
 export default function RegistrationFormPage() {
-    
-    // This string contains the raw HTML for the print button.
-    // By using a simple `onclick`, we bypass any potential React event handling issues.
-    const printButtonHtml = `
-        <button 
-            onclick="window.print()" 
-            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12 17h.01"/><path d="M17 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4l-4-2Z"/><path d="M7 2v4h10V2"/><path d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-            Partager la fiche en tant que fichier (PDF)
-        </button>
-    `;
+
+    useEffect(() => {
+        const printButton = document.getElementById('print-button');
+        if (printButton) {
+            const handlePrint = () => {
+                window.print();
+            };
+            printButton.addEventListener('click', handlePrint);
+
+            // Cleanup the event listener when the component unmounts
+            return () => {
+                printButton.removeEventListener('click', handlePrint);
+            };
+        }
+    }, []);
 
     return (
         <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
@@ -50,8 +54,10 @@ export default function RegistrationFormPage() {
                            Retour
                         </Link>
                     </Button>
-                    {/* We render the button using dangerouslySetInnerHTML to ensure the onclick fires */}
-                    <div dangerouslySetInnerHTML={{ __html: printButtonHtml }} />
+                    <Button id="print-button">
+                        <FileDown className="mr-2 h-4 w-4" />
+                        Partager la fiche en tant que fichier (PDF)
+                    </Button>
                 </div>
 
                 <div id="printable-form" className="printable-content bg-white rounded-lg border shadow-sm p-8 text-black">
