@@ -12,10 +12,6 @@ import html2canvas from "html2canvas";
 export default function RegistrationFormPage() {
   const router = useRouter();
   const [loadingPdf, setLoadingPdf] = useState(false);
-
-  const handlePrint = () => {
-    window.print();
-  };
   
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
@@ -69,10 +65,6 @@ export default function RegistrationFormPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={handlePrint}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Imprimer
-                    </Button>
                     <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
                         {loadingPdf ? (
                             <>
