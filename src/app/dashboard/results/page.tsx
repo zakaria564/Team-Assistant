@@ -67,7 +67,7 @@ export default function ResultsPage() {
       }
       setLoading(true);
       try {
-        const matchTypes = ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi"];
+        // Simplified query to avoid complex indexes
         const q = query(
             collection(db, "events"), 
             where("userId", "==", user.uid),
@@ -79,6 +79,7 @@ export default function ResultsPage() {
         const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchEvent));
         
         // Filter for match types on the client side
+        const matchTypes = ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi"];
         const matchesData = eventsData.filter(event => matchTypes.includes(event.type));
 
         setMatches(matchesData);
@@ -87,7 +88,7 @@ export default function ResultsPage() {
         toast({
           variant: "destructive",
           title: "Erreur de chargement",
-          description: "Impossible de charger les résultats. Vérifiez vos règles de sécurité et index Firestore.",
+          description: "Impossible de charger les résultats. Veuillez vérifier vos règles de sécurité et index Firestore.",
         });
       } finally {
         setLoading(false);
