@@ -42,10 +42,12 @@ const formSchema = z.object({
   exitDate: z.string().optional(),
   address: z.string().optional(),
   nationality: z.string().optional(),
+  cin: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   position: z.string().optional(),
   tutorName: z.string().optional(),
+  tutorCin: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   coachId: z.string().optional(),
@@ -148,10 +150,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
       exitDate: "",
       address: "",
       nationality: "",
+      cin: "",
       phone: "",
       email: "",
       position: "",
       tutorName: "",
+      tutorCin: "",
       tutorPhone: "",
       tutorEmail: "",
       coachId: "",
@@ -174,10 +178,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         exitDate: player.exitDate ? player.exitDate.split('T')[0] : '',
         address: player.address || "",
         nationality: player.nationality || "",
+        cin: player.cin || "",
         phone: player.phone || "",
         email: player.email || "",
         position: player.position || "",
         tutorName: player.tutorName || "",
+        tutorCin: player.tutorCin || "",
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
         documents: (player.documents || []).map(doc => ({
@@ -599,6 +605,19 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         />
                       </div>
                      <FormField
+                        control={form.control}
+                        name="cin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>N° CIN</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Numéro de Carte d'Identité Nationale" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                     <FormField
                       control={form.control}
                       name="address"
                       render={({ field }) => (
@@ -735,6 +754,19 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           <FormLabel>Nom complet du tuteur</FormLabel>
                           <FormControl>
                             <Input placeholder="Ex: Marie Dupont" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tutorCin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>N° CIN du tuteur</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Numéro de Carte d'Identité Nationale du tuteur" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

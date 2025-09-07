@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -35,9 +35,11 @@ interface Player {
   birthDate?: string;
   address?: string;
   nationality?: string;
+  cin?: string;
   phone?: string;
   email?: string;
   tutorName?: string;
+  tutorCin?: string;
   tutorPhone?: string;
   tutorEmail?: string;
   coachId?: string;
@@ -201,6 +203,7 @@ export default function PlayerDetailPage() {
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
+                    <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
                     <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
                     <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
                     <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined}/>
@@ -212,6 +215,7 @@ export default function PlayerDetailPage() {
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                    <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
                     <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
                     <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
                 </CardContent>

@@ -21,9 +21,11 @@ interface Player {
   birthDate?: string;
   address?: string;
   nationality?: string;
+  cin?: string;
   phone?: string;
   email?: string;
   tutorName?: string;
+  tutorCin?: string;
   tutorPhone?: string;
   tutorEmail?: string;
   entryDate?: string;
