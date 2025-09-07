@@ -89,14 +89,14 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
             
-            <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
+            <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
                  <CardHeader className="text-center space-y-4">
                     <CardTitle className="text-2xl font-bold uppercase">FICHE D'INSCRIPTION CLUB DE FOOTBALL</CardTitle>
                     <p className="font-semibold">Saison sportive : ........................</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2">I. INFORMATIONS DU JOUEUR</h3>
+                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-base">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Date et Lieu de naissance : .........................................................................................................................</p>
@@ -113,7 +113,7 @@ export default function RegistrationFormPage() {
                     </div>
 
                      <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
+                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-base">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Lien de parenté : (Père / Mère / Tuteur) : ..................................................................................................</p>
@@ -126,7 +126,7 @@ export default function RegistrationFormPage() {
                     </div>
                     
                      <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2">III. AUTORISATION ET DÉCLARATION</h3>
+                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
                         <div className="space-y-4 text-sm">
                             <p>
                                 Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. 
