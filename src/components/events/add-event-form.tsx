@@ -322,7 +322,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Score {form.getValues("team") || "Mon équipe"}</FormLabel>
                                     <FormControl>
-                                    <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                    <Input 
+                                      type="number" 
+                                      placeholder="-" 
+                                      {...field} 
+                                      value={field.value ?? ''}
+                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
+                                    />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -335,7 +341,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Score {form.getValues("opponent") || "Adversaire"}</FormLabel>
                                     <FormControl>
-                                    <Input type="number" placeholder="-" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                    <Input 
+                                      type="number" 
+                                      placeholder="-" 
+                                      {...field} 
+                                      value={field.value ?? ''}
+                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} 
+                                    />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -358,3 +370,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
