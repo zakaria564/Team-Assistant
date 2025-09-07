@@ -10,7 +10,6 @@ const links = [
   { href: "/dashboard/players", label: "Joueurs", icon: Users },
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
-  { href: "/dashboard/results", label: "Résultats", icon: BarChart },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
   // { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles }, // Temporarily disabled
