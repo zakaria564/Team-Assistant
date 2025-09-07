@@ -1,60 +1,50 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Trophy, ArrowLeft, FileDown } from "lucide-react";
+import Link from 'next/link';
 
 export default function RegistrationFormPage() {
-    const router = useRouter();
-
-    const handlePrint = () => {
-        window.print();
-    };
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
+        <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
             <style jsx global>{`
                 @media print {
                     body {
-                        background-color: #fff !important;
+                        background-color: white !important;
+                        -webkit-print-color-adjust: exact;
                     }
                     .print-hidden {
                         display: none !important;
                     }
-                    #printable-form {
-                        margin: 0;
-                        padding: 0;
-                        border: none;
-                        box-shadow: none;
-                        color: #000 !important;
-                        background-color: #fff !important;
-                    }
-                    #printable-form *, #printable-form *:before, #printable-form *:after {
-                        color: #000 !important;
-                        background-color: transparent !important;
-                    }
-                    @page {
-                        size: A4;
-                        margin: 1.5cm;
+                    .printable-content {
+                        box-shadow: none !important;
+                        border: none !important;
                     }
                 }
             `}</style>
-            <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
+
+            <div className="max-w-4xl mx-auto p-4 sm:p-8">
                 <div className="mb-8 flex justify-between items-center print-hidden">
-                    <Button variant="outline" onClick={() => router.back()}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Retour
+                    <Button variant="outline" asChild>
+                        <Link href="/dashboard/reports">
+                           <ArrowLeft className="mr-2 h-4 w-4" />
+                           Retour
+                        </Link>
                     </Button>
-                    <div className="flex items-center gap-2">
-                        <Button onClick={handlePrint}>
-                            <FileDown className="mr-2 h-4 w-4" />
-                            Partager la fiche en tant que fichier (PDF)
-                        </Button>
-                    </div>
+                    {/* Utilisation d'un lien <a> simple pour déclencher l'impression */}
+                    <a 
+                      href="#" 
+                      onClick={(e) => { e.preventDefault(); window.print(); }}
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
+                      <FileDown className="h-4 w-4" />
+                      Partager la fiche en tant que fichier (PDF)
+                    </a>
                 </div>
 
-                <div id="printable-form" className="bg-white rounded-lg border shadow-sm p-8 text-black">
+                <div className="printable-content bg-white rounded-lg border shadow-sm p-8 text-black">
                      <header className="p-8 border-b border-gray-200">
                         <div className="flex flex-col items-center text-center">
                             <Trophy className="h-12 w-12 text-blue-600" />
