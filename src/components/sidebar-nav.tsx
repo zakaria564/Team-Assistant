@@ -13,7 +13,7 @@ const links = [
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
   // { href: "/dashboard/ai-suggestions", label: "Suggestions IA", icon: Sparkles }, // Temporarily disabled
-  { href: "/dashboard/reports", label: "Rapports", icon: FileText },
+  { href: "/dashboard/reports", label: "Inscription Club", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
