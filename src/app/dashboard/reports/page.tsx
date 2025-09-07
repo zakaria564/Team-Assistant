@@ -1,23 +1,68 @@
 
 "use client";
 
-import { ClubSettingsForm } from "@/components/settings/club-settings-form";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { FileText, Users, BarChart } from "lucide-react";
+import Link from "next/link";
 
-export default function ClubRegistrationPage() {
+const reports = [
+    {
+        title: "Fiche d'inscription vierge",
+        description: "Générez un PDF de la fiche d'inscription pour un nouveau joueur.",
+        icon: FileText,
+        href: "/dashboard/reports/registration-form",
+        cta: "Ouvrir la fiche",
+        disabled: false,
+    },
+    {
+        title: "Cartes des joueurs",
+        description: "Générez un PDF avec les cartes de tous les joueurs inscrits.",
+        icon: Users,
+        href: "#",
+        cta: "Générer le PDF",
+        disabled: true,
+    },
+    {
+        title: "Résultats des matchs",
+        description: "Créez un rapport des résultats de tous les matchs de la saison.",
+        icon: BarChart,
+        href: "#",
+        cta: "Créer le rapport",
+        disabled: true,
+    }
+];
+
+
+export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Inscription du Club</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Rapports & Exports</h1>
         <p className="text-muted-foreground">
-          Gérez les informations principales de votre club ici.
+          Générez des rapports et exportez les données de votre club.
         </p>
       </div>
-      
-      <Separator />
 
-      <div className="space-y-8 max-w-4xl">
-        <ClubSettingsForm />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {reports.map((report) => (
+            <Card key={report.title} className="flex flex-col">
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <report.icon className="h-8 w-8 text-primary" />
+                        <CardTitle>{report.title}</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <CardDescription>{report.description}</CardDescription>
+                </CardContent>
+                <CardFooter>
+                    <Button asChild className="w-full" disabled={report.disabled}>
+                        <Link href={report.href}>{report.cta}</Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+        ))}
       </div>
     </div>
   );

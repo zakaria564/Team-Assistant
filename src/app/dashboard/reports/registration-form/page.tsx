@@ -1,0 +1,106 @@
+
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ArrowLeft, Printer } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+export default function RegistrationFormPage() {
+  const router = useRouter();
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
+        <div className="w-full max-w-4xl space-y-4">
+            <div className="flex justify-between items-center print:hidden">
+                <Button variant="outline" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+                </Button>
+                <Button onClick={handlePrint}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Imprimer / Enregistrer en PDF
+                </Button>
+            </div>
+            
+            <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none" id="printable-form">
+                 <CardHeader className="text-center space-y-4">
+                    <CardTitle className="text-2xl font-bold uppercase">FICHE D'INSCRIPTION CLUB DE FOOTBALL</CardTitle>
+                    <p className="font-semibold">Saison sportive : ........................</p>
+                </CardHeader>
+                <CardContent className="p-6 space-y-8">
+                    <div className="space-y-4">
+                        <h3 className="font-bold text-lg border-b pb-2">I. INFORMATIONS DU JOUEUR</h3>
+                        <div className="space-y-4 text-base">
+                            <p>Nom et Prénom : ............................................................................................................................................</p>
+                            <p>Date et Lieu de naissance : .........................................................................................................................</p>
+                             <div className="grid grid-cols-2">
+                                <p>Nationalité : .................................................................</p>
+                                <p>Sexe : ..........................................................................</p>
+                            </div>
+                            <p>Adresse : ......................................................................................................................................................</p>
+                             <div className="grid grid-cols-2">
+                                <p>Téléphone : ......................................................................</p>
+                                <p>Adresse e-mail : ................................................................</p>
+                             </div>
+                        </div>
+                    </div>
+
+                     <div className="space-y-4">
+                        <h3 className="font-bold text-lg border-b pb-2">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
+                        <div className="space-y-4 text-base">
+                            <p>Nom et Prénom : ............................................................................................................................................</p>
+                            <p>Lien de parenté : (Père / Mère / Tuteur) : ..................................................................................................</p>
+                            <p>N° de CIN : ........................................................................................................................................................</p>
+                            <div className="grid grid-cols-2">
+                                <p>Téléphone : ......................................................................</p>
+                                <p>Adresse e-mail : ................................................................</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                     <div className="space-y-4">
+                        <h3 className="font-bold text-lg border-b pb-2">III. AUTORISATION ET DÉCLARATION</h3>
+                        <div className="space-y-4 text-sm">
+                            <p>
+                                Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. 
+                                J'autorise mon enfant, ......................................................................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                            </p>
+                            <p className="font-semibold">
+                                Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
+                            </p>
+                            <div className="pt-8">
+                                <p>Fait à ........................................................................., le ..............................................................</p>
+                                <p className="pt-12 text-center">Signature du parent / tuteur (légalisée) :</p>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+        <style jsx global>{`
+            @media print {
+                body {
+                    background-color: #fff !important;
+                }
+                .print\\:hidden {
+                    display: none;
+                }
+                .print\\:shadow-none {
+                    box-shadow: none;
+                }
+                .print\\:border-none {
+                    border: none;
+                }
+                 @page {
+                    size: A4;
+                    margin: 20mm;
+                }
+            }
+        `}</style>
+    </div>
+  );
+}
