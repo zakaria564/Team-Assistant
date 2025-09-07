@@ -71,16 +71,16 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier l'événement</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Détails de l'événement</h1>
             <p className="text-muted-foreground">
-              Mettez à jour les informations de l'événement.
+              Consultez les informations de l'événement.
             </p>
         </div>
       </div>
       <Card>
         <CardHeader>
-            <CardTitle>Détails de l'événement</CardTitle>
-            <CardDescription>Modifiez les champs ci-dessous et enregistrez.</CardDescription>
+            <CardTitle>Informations sur l'événement</CardTitle>
+            <CardDescription>Tous les détails enregistrés pour cet événement.</CardDescription>
         </CardHeader>
         <CardContent>
             {loading ? (
@@ -88,7 +88,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : event ? (
-                <AddEventForm event={event} />
+                <AddEventForm event={event} isReadOnly={true} />
             ) : (
                 <p className="p-6">Événement non trouvé.</p>
             )}
