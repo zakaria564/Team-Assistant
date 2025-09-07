@@ -2,35 +2,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft, Link as LinkIcon, Printer } from "lucide-react";
+import { Trophy, ArrowLeft, Printer } from "lucide-react";
 import Link from 'next/link';
-import { useToast } from "@/hooks/use-toast";
 
 export default function RegistrationFormPage() {
-    const { toast } = useToast();
 
-    const handlePrint = () => {
-        window.print();
-    };
-
-    const handleCopyLink = () => {
-        const path = "/dashboard/reports/registration-form";
-        navigator.clipboard.writeText(path)
-            .then(() => {
-                toast({
-                    title: "Lien copié !",
-                    description: `Le chemin relatif (${path}) a été copié dans le presse-papiers.`,
-                });
-            })
-            .catch(err => {
-                console.error('Erreur lors de la copie du lien:', err);
-                toast({
-                    variant: "destructive",
-                    title: "Erreur",
-                    description: "Impossible de copier le lien.",
-                });
-            });
-    };
+    const buttonContainerHTML = `
+        <div class="mb-8 flex flex-col sm:flex-row justify-start items-center gap-4 print-hidden">
+            <a href="/dashboard/reports" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                Retour
+            </a>
+            <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                Imprimer / Enregistrer en PDF
+            </button>
+        </div>
+    `;
 
     return (
         <div className="bg-gray-100 dark:bg-gray-800 min-h-screen">
@@ -56,24 +44,7 @@ export default function RegistrationFormPage() {
             `}</style>
 
             <div className="max-w-4xl mx-auto p-4 sm:p-8">
-                <div className="mb-8 flex flex-col sm:flex-row justify-start items-center gap-4 print-hidden">
-                    <Button variant="outline" asChild>
-                        <Link href="/dashboard/reports">
-                           <ArrowLeft className="mr-2 h-4 w-4" />
-                           Retour
-                        </Link>
-                    </Button>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCopyLink}>
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                            Copier le lien
-                        </Button>
-                        <Button onClick={handlePrint}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Imprimer / Enregistrer en PDF
-                        </Button>
-                    </div>
-                </div>
+                <div dangerouslySetInnerHTML={{ __html: buttonContainerHTML }} />
 
                 <div id="printable-form" className="printable-content bg-white rounded-lg border shadow-sm p-8 text-black">
                      <header className="p-8 border-b border-gray-200">
