@@ -14,11 +14,12 @@ export default function RegistrationFormPage() {
     };
 
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(window.location.href)
+        const path = "/dashboard/reports/registration-form";
+        navigator.clipboard.writeText(window.location.origin + path)
             .then(() => {
                 toast({
                     title: "Lien copié !",
-                    description: "Le lien vers la fiche a été copié dans le presse-papiers.",
+                    description: `Le lien vers la fiche (${path}) a été copié.`,
                 });
             })
             .catch(err => {
