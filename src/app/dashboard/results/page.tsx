@@ -71,12 +71,16 @@ export default function ResultsPage() {
         const q = query(
             collection(db, "events"), 
             where("userId", "==", user.uid),
-            where("type", "in", matchTypes),
             where("date", "<=", new Date()),
             orderBy("date", "desc")
         );
         const querySnapshot = await getDocs(q);
-        const matchesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchEvent));
+        
+        const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchEvent));
+        
+        // Filter for match types on the client side
+        const matchesData = eventsData.filter(event => matchTypes.includes(event.type));
+
         setMatches(matchesData);
       } catch (error: any) {
         console.error("Error fetching matches: ", error);
