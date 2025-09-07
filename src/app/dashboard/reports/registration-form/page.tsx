@@ -14,7 +14,7 @@ export default function RegistrationFormPage() {
     };
 
     return (
-        <div className="bg-background min-h-screen p-4 sm:p-8">
+        <div className="bg-background min-h-screen p-4 sm:p-8 flex items-center justify-center">
             <div className="w-full max-w-4xl mx-auto">
                 <div className="mb-8 flex justify-between items-center print:hidden">
                     <Button variant="outline" onClick={() => router.back()}>
@@ -65,21 +65,9 @@ export default function RegistrationFormPage() {
                                 </div>
                             </div>
                         </div>
-                        
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold border-b pb-2">III. DOCUMENTS À FOURNIR</h2>
-                                <p className="text-sm">Veuillez joindre au dossier les documents suivants :</p>
-                            <ul className="list-disc list-inside space-y-1 text-sm">
-                                <li>Copie légalisée de la CIN du joueur ou passeport (si disponible).</li>
-                                <li>Copie légalisée de la CIN du parent/tuteur.</li>
-                                <li>Extrait d'acte de naissance du joueur.</li>
-                                <li>Certificat médical d'aptitude à la pratique du football.</li>
-                                <li>Photos d'identité récentes.</li>
-                            </ul>
-                        </div>
 
                         <div className="space-y-4 pt-4">
-                            <h2 className="text-xl font-semibold border-b pb-2">IV. AUTORISATION ET DÉCLARATION</h2>
+                            <h2 className="text-xl font-semibold border-b pb-2">III. AUTORISATION ET DÉCLARATION</h2>
                             <p className="text-sm leading-relaxed">
                                 Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. J'autorise mon enfant, ......................................................................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
                             </p>
@@ -122,3 +110,4 @@ export default function RegistrationFormPage() {
         </div>
     );
 }
+
