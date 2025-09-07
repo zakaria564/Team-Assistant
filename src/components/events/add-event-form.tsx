@@ -180,14 +180,9 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                         <FormItem>
                         <FormLabel>Type d'événement</FormLabel>
                         <Select 
-                            onValueChange={(value: typeof eventTypes[number]) => {
-                                field.onChange(value);
-                                if (!value.includes("Match")) {
-                                    form.setValue("opponent", "");
-                                }
-                            }} 
+                            onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={isEditMode || isReadOnly}
+                            disabled={isReadOnly}
                         >
                             <FormControl>
                             <SelectTrigger>
@@ -211,7 +206,7 @@ export function AddEventForm({ event, isReadOnly = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Équipe / Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || isReadOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isReadOnly}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner une équipe/catégorie" />
