@@ -114,12 +114,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       </div>
     );
   }
-
-  const isPastEvent = isPast(event.date);
+  
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
-  const showScore = isPastEvent && eventTypeIsMatch;
+  const isPastEvent = isPast(event.date);
+  const showScore = eventTypeIsMatch && isPastEvent;
   const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
-  const category = event.category;
 
 
   return (
@@ -150,7 +149,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 <CardTitle className="flex items-center gap-3 text-2xl">
                     <Trophy />
                     <span>
-                      {eventTypeIsMatch ? `${clubName} (${category}) vs ${event.opponent}` : `${event.type} - ${clubName} (${category})`}
+                      {eventTypeIsMatch ? `${clubName} (${event.category}) vs ${event.opponent}` : `${event.type} - ${clubName} (${event.category})`}
                     </span>
                 </CardTitle>
                 <CardDescription>
