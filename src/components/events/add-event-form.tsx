@@ -51,14 +51,14 @@ const formSchema = z.object({
   scoreTeam: z.coerce.number().optional(),
   scoreOpponent: z.coerce.number().optional(),
   scorers: z.array(z.object({
-      playerId: z.string().min(1),
+      playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
       playerName: z.string().optional(),
-      goals: z.coerce.number().min(1),
+      goals: z.coerce.number().min(1, "Minimum 1 but."),
   })).optional(),
   assisters: z.array(z.object({
-      playerId: z.string().min(1),
+      playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
       playerName: z.string().optional(),
-      assists: z.coerce.number().min(1),
+      assists: z.coerce.number().min(1, "Minimum 1 passe."),
   })).optional(),
 }).refine(data => {
     if (data.type.includes("Match") || data.type.includes("Tournoi")) {
@@ -465,6 +465,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                         control={form.control}
                                         name={`scorers.${index}.playerId`}
                                         render={({ field }) => (
+                                          <FormItem className="flex-1">
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -475,13 +476,20 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
+                                            <FormMessage />
+                                           </FormItem>
                                         )}
                                     />
                                      <FormField
                                         control={form.control}
                                         name={`scorers.${index}.goals`}
                                         render={({ field }) => (
-                                           <Input type="number" placeholder="Buts" className="w-24" {...field} />
+                                          <FormItem>
+                                           <FormControl>
+                                              <Input type="number" placeholder="Buts" className="w-24" {...field} />
+                                           </FormControl>
+                                           <FormMessage />
+                                           </FormItem>
                                         )}
                                     />
                                     <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
@@ -505,23 +513,31 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                         control={form.control}
                                         name={`assisters.${index}.playerId`}
                                         render={({ field }) => (
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Choisir un joueur" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
+                                            <FormItem className="flex-1">
+                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                  <FormControl>
+                                                      <SelectTrigger>
+                                                          <SelectValue placeholder="Choisir un joueur" />
+                                                      </SelectTrigger>
+                                                  </FormControl>
+                                                  <SelectContent>
+                                                      {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                  </SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                            </FormItem>
                                         )}
                                     />
                                      <FormField
                                         control={form.control}
                                         name={`assisters.${index}.assists`}
                                         render={({ field }) => (
-                                           <Input type="number" placeholder="Passes" className="w-24" {...field} />
+                                            <FormItem>
+                                              <FormControl>
+                                                <Input type="number" placeholder="Passes" className="w-24" {...field} />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
                                         )}
                                     />
                                     <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
@@ -551,5 +567,3 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
-
-    
