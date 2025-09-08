@@ -21,6 +21,7 @@ import { collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where } fro
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Separator } from "../ui/separator";
+import { Label } from "../ui/label";
 
 interface Player {
     id: string;
