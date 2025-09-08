@@ -229,7 +229,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                await updateDoc(eventDocRef, dataToSave);
+                // In edit mode, we don't update team and category
+                const { team, category, ...restOfData } = dataToSave;
+                await updateDoc(eventDocRef, restOfData);
                 toast({
                     title: "Événement modifié !",
                     description: `L'événement a été mis à jour avec succès.`
@@ -458,7 +460,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         
                         {/* Scorers */}
                         <div>
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="mb-2 flex items-center justify-between">
                                 <Label>Buteurs</Label>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
@@ -510,7 +512,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
                         {/* Assisters */}
                          <div>
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="mb-2 flex items-center justify-between">
                                 <Label>Passeurs</Label>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
@@ -575,5 +577,3 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
-
-    
