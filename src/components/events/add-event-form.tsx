@@ -106,6 +106,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         defaultValues: {
             type: "Match de Championnat",
             category: "",
+            date: new Date(),
             time: "15:00",
             location: "",
             opponent: "",
@@ -149,8 +150,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
             form.reset({
                 type: event.type,
                 category: event.category,
-                date: event.date,
-                time: format(event.date, "HH:mm"),
+                date: new Date(event.date),
+                time: format(new Date(event.date), "HH:mm"),
                 location: event.location,
                 opponent: event.opponent || "",
                 scoreTeam: event.scoreTeam ?? undefined,
@@ -204,7 +205,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         try {
             const [hours, minutes] = values.time.split(':').map(Number);
             const combinedDate = new Date(values.date);
-            combinedDate.setHours(hours, minutes);
+            combinedDate.setHours(hours, minutes, 0, 0);
             
             const teamValue = `${clubName} - ${values.category}`;
 
@@ -232,8 +233,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                // In edit mode, we don't update team and category
-                const { team, category, ...restOfData } = dataToSave;
+                // In edit mode, we don't update team 
+                const { team, ...restOfData } = dataToSave;
                 await updateDoc(eventDocRef, restOfData);
                 toast({
                     title: "Événement modifié !",
@@ -307,7 +308,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 <FormLabel>Catégorie</FormLabel>
                                 {isEditMode ? (
                                     <FormControl>
-                                        <Input {...field} disabled />
+                                        <Input value={field.value} disabled />
                                     </FormControl>
                                 ) : (
                                     <Select onValueChange={field.onChange} value={field.value}>
@@ -584,3 +585,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
