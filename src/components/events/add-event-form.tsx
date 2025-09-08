@@ -147,11 +147,14 @@ export function AddEventForm({ event }: AddEventFormProps) {
     useEffect(() => {
         if(isEditMode && event) {
             form.reset({
-                ...event,
+                type: event.type,
+                category: event.category,
+                date: event.date,
                 time: format(event.date, "HH:mm"),
+                location: event.location,
+                opponent: event.opponent || "",
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
-                opponent: event.opponent || "",
                 scorers: event.scorers || [],
                 assisters: event.assisters || [],
             });
@@ -301,22 +304,28 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         name="category"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Catégorie</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner une catégorie" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {playerCategories.map(cat => (
-                                    <SelectItem key={cat} value={cat}>
-                                        {cat}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
+                                <FormLabel>Catégorie</FormLabel>
+                                {isEditMode ? (
+                                    <FormControl>
+                                        <Input {...field} disabled />
+                                    </FormControl>
+                                ) : (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner une catégorie" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {playerCategories.map(cat => (
+                                                <SelectItem key={cat} value={cat}>
+                                                    {cat}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
@@ -458,9 +467,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
                      <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Statistiques des joueurs</h4>
                         
-                        {/* Scorers */}
-                        <div>
-                            <div className="mb-2 flex items-center justify-between">
+                        <div className="space-y-4">
+                             <div className="mb-2 flex items-center justify-between">
                                 <Label>Buteurs</Label>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
@@ -510,9 +518,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
                         <Separator />
 
-                        {/* Assisters */}
-                         <div>
-                            <div className="mb-2 flex items-center justify-between">
+                        <div className="space-y-4">
+                             <div className="mb-2 flex items-center justify-between">
                                 <Label>Passeurs</Label>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
