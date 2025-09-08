@@ -14,6 +14,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 interface Player {
   id: string;
   name: string;
+  gender: "Masculin" | "Féminin";
   category: string;
   number: number;
   photoUrl?: string;

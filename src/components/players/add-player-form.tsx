@@ -34,6 +34,7 @@ const documentSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
+  gender: z.enum(["Masculin", "Féminin"], { required_error: "Le genre est requis." }),
   category: z.string().min(1, "La catégorie est requise."),
   status: z.enum(playerStatuses),
   number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
@@ -142,6 +143,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      gender: "Masculin",
       category: "",
       status: "Actif",
       number: 10,
@@ -581,6 +583,29 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             </FormItem>
                           )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Genre</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner le genre" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Masculin">Masculin</SelectItem>
+                                        <SelectItem value="Féminin">Féminin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="nationality"
@@ -603,20 +628,20 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             </FormItem>
                           )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="cin"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>N° CIN</FormLabel>
+                                <FormControl>
+                                <Input placeholder="Numéro de Carte d'Identité Nationale" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                       </div>
-                     <FormField
-                        control={form.control}
-                        name="cin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>N° CIN</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Numéro de Carte d'Identité Nationale" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                      <FormField
                       control={form.control}
                       name="address"

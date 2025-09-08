@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint, VenetianMask } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ interface PlayerDocument {
 interface Player {
   id: string;
   name: string;
+  gender: "Masculin" | "Féminin";
   category: string;
   number: number;
   status: PlayerStatus;
@@ -201,6 +202,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={player.name} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
+                    <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
                     <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
