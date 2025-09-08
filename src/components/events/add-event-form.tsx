@@ -222,37 +222,39 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     )}
                 />
                 
-                <FormItem>
-                    <FormLabel>Club</FormLabel>
-                    <FormControl>
-                        <Input value={clubName} disabled />
-                    </FormControl>
-                </FormItem>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormItem>
+                        <FormLabel>Club</FormLabel>
+                        <FormControl>
+                            <Input value={clubName.replace(/^Club\s/i, '')} disabled />
+                        </FormControl>
+                    </FormItem>
 
-                <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                     <SelectValue placeholder="Sélectionner une catégorie" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>
-                                    {cat}
-                                </SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Catégorie</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner une catégorie" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                {playerCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>
+                                        {cat}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
 
 
                 {eventTypeIsMatch && (
@@ -350,7 +352,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreTeam"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {event.team}</FormLabel>
+                                    <FormLabel>Score {clubName.replace(/^Club\s/i, '')}</FormLabel>
                                     <FormControl>
                                     <Input 
                                       type="number" 

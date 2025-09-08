@@ -40,6 +40,7 @@ interface Event {
     id: string;
     type: string;
     team: string;
+    category: string;
     opponent?: string;
     date: Date;
     location: string;
@@ -118,10 +119,11 @@ export default function EventsPage() {
   };
 
   const getEventTitle = (event: Event) => {
+    const teamName = event.team.replace(/^Club\s/i, '');
     if (event.type.includes("Match")) {
-      return `${event.team} vs ${event.opponent}`;
+      return `${teamName} vs ${event.opponent}`;
     }
-    return `${event.type} ${event.team}`;
+    return `${event.type} ${teamName}`;
   };
 
   const getEventBadgeClass = (type: string) => {
@@ -244,7 +246,7 @@ export default function EventsPage() {
                                 </div>
                                  <div className="flex items-center gap-2 text-muted-foreground">
                                     <Users className="h-4 w-4" />
-                                    <span>{event.team}</span>
+                                    <span>{event.category}</span>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end">

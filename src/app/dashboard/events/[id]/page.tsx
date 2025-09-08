@@ -115,6 +115,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const isPastEvent = isPast(event.date);
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const showScore = isPastEvent && eventTypeIsMatch;
+  const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
+  const category = event.category;
+
 
   return (
     <div className="space-y-6">
@@ -138,7 +141,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 <CardTitle className="flex items-center gap-3 text-2xl">
                     <Trophy />
                     <span>
-                      {eventTypeIsMatch ? `${event.team} vs ${event.opponent}` : `${event.type} - ${event.team}`}
+                      {eventTypeIsMatch ? `${clubName} (${category}) vs ${event.opponent}` : `${event.type} - ${clubName} (${category})`}
                     </span>
                 </CardTitle>
                 <CardDescription>
@@ -150,7 +153,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   <DetailItem icon={Calendar} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
                   <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
                   <DetailItem icon={MapPin} label="Lieu" value={event.location} />
-                  <DetailItem icon={Users} label="Équipe" value={event.team} />
+                  <DetailItem icon={Users} label="Club" value={clubName} />
+                  <DetailItem icon={Users} label="Catégorie" value={category} />
                   {eventTypeIsMatch && <DetailItem icon={Users} label="Adversaire" value={event.opponent} />}
                </div>
                
@@ -159,7 +163,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     <h4 className="text-lg font-semibold mb-4">Résultat du Match</h4>
                     <div className="flex items-center gap-6">
                         <div className="text-center">
-                            <p className="text-sm text-muted-foreground">{event.team}</p>
+                            <p className="text-sm text-muted-foreground">{clubName}</p>
                             <p className="text-4xl font-bold">{event.scoreTeam ?? '-'}</p>
                         </div>
                          <div className="text-2xl font-bold text-muted-foreground">vs</div>

@@ -22,6 +22,7 @@ interface MatchEvent {
   id: string;
   type: string;
   team: string;
+  category: string;
   opponent: string;
   date: { seconds: number, nanoseconds: number };
   location: string;
@@ -103,7 +104,7 @@ export default function ResultsPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return matches.filter(match => {
-      const valueToSearch = searchCategory === 'team' ? match.team : match.opponent;
+      const valueToSearch = searchCategory === 'team' ? match.category : match.opponent;
       return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
     });
   }, [matches, searchTerm, searchCategory]);
@@ -133,7 +134,7 @@ export default function ResultsPage() {
                       <SelectValue placeholder="Critère" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="team">Mes équipes</SelectItem>
+                      <SelectItem value="team">Catégories</SelectItem>
                       <SelectItem value="opponent">Adversaires</SelectItem>
                   </SelectContent>
               </Select>
@@ -173,7 +174,7 @@ export default function ResultsPage() {
                             <Badge variant="outline">{match.type}</Badge>
                           </TableCell>
                           <TableCell className="font-medium">
-                            {match.team} vs {match.opponent}
+                            {match.team.replace(/^Club\s/i, '')} vs {match.opponent}
                           </TableCell>
                           <TableCell>
                             {(match.scoreTeam !== undefined && match.scoreTeam !== null) ? (

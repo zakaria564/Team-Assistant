@@ -21,6 +21,7 @@ interface Event {
   id: string;
   type: "Match" | "Entraînement";
   team: string;
+  category: string;
   opponent?: string;
   date: Date;
   location: string;
@@ -205,7 +206,7 @@ export default function Dashboard() {
                       upcomingEvents.map(event => (
                         <TableRow key={event.id}>
                           <TableCell>
-                            <div className="font-medium">{event.team}</div>
+                            <div className="font-medium">{event.team.replace(/^Club\s/i, '')}</div>
                             <div className="text-sm text-muted-foreground md:hidden">{event.location}</div>
                           </TableCell>
                           <TableCell>
