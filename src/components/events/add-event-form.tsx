@@ -459,7 +459,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         {/* Scorers */}
                         <div>
                             <Label>Buteurs</Label>
-                             <div className="space-y-2 mt-2">
+                            <div className="space-y-2 mt-2">
                                 {scorerFields.map((field, index) => (
                                     <div key={field.id} className="flex items-center gap-2">
                                         <FormField
@@ -499,9 +499,11 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     </div>
                                 ))}
                             </div>
-                             <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un buteur
-                            </Button>
+                            <div className="flex justify-end mt-2">
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un buteur
+                                </Button>
+                            </div>
                         </div>
 
                         <Separator />
@@ -549,9 +551,11 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     </div>
                                 ))}
                             </div>
-                             <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un passeur
-                            </Button>
+                            <div className="flex justify-end mt-2">
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un passeur
+                                </Button>
+                            </div>
                         </div>
 
                     </div>
