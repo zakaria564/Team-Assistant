@@ -287,7 +287,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 />
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <FormItem>
+                    <FormItem>
                         <FormLabel>Club</FormLabel>
                         <FormControl>
                             <Input value={clubName.replace(/^Club\s/i, '')} disabled />
@@ -458,8 +458,13 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         
                         {/* Scorers */}
                         <div>
-                            <Label>Buteurs</Label>
-                            <div className="space-y-2 mt-2">
+                            <div className="flex justify-between items-center mb-2">
+                                <Label>Buteurs</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
                                 {scorerFields.map((field, index) => (
                                     <div key={field.id} className="flex items-center gap-2">
                                         <FormField
@@ -499,19 +504,19 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-end mt-2">
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un buteur
-                                </Button>
-                            </div>
                         </div>
 
                         <Separator />
 
                         {/* Assisters */}
                          <div>
-                            <Label>Passeurs</Label>
-                            <div className="space-y-2 mt-2">
+                            <div className="flex justify-between items-center mb-2">
+                                <Label>Passeurs</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
                                 {assisterFields.map((field, index) => (
                                     <div key={field.id} className="flex items-center gap-2">
                                         <FormField
@@ -551,11 +556,6 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-end mt-2">
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un passeur
-                                </Button>
-                            </div>
                         </div>
 
                     </div>
@@ -575,3 +575,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
