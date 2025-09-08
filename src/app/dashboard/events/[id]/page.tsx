@@ -7,11 +7,12 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints, Pencil } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 
 interface Event {
@@ -133,6 +134,12 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
+         <Button asChild className="w-full md:w-auto">
+            <Link href={`/dashboard/events/${event.id}/edit`}>
+                <Pencil className="mr-2 h-4 w-4"/>
+                Modifier
+            </Link>
+         </Button>
       </div>
       
         <Card>
