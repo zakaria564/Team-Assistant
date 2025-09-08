@@ -199,8 +199,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                         <div className="space-y-3">
                             <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs</h4>
                             <ul className="list-disc pl-5 text-sm space-y-1">
-                                {event.scorers.map(scorer => (
-                                    <li key={scorer.playerId}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
+                                {event.scorers.map((scorer, index) => (
+                                    <li key={index}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
                                 ))}
                             </ul>
                         </div>
@@ -209,8 +209,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                         <div className="space-y-3">
                             <h4 className="font-semibold flex items-center gap-2"><Footprints className="h-5 w-5" />Passeurs</h4>
                              <ul className="list-disc pl-5 text-sm space-y-1">
-                                {event.assisters.map(assister => (
-                                    <li key={assister.playerId}>{assister.playerName} ({assister.assists} passe{assister.assists > 1 ? 's' : ''})</li>
+                                {event.assisters.map((assister, index) => (
+                                    <li key={index}>{assister.playerName} ({assister.assists} passe{assister.assists > 1 ? 's' : ''})</li>
                                 ))}
                             </ul>
                         </div>
