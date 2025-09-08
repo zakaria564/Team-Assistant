@@ -40,7 +40,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const getResultBadgeClass = (scoreTeam?: number, scoreOpponent?: number) => {
-    if (scoreTeam === undefined || scoreTeam === null || scoreOpponent === undefined || scoreOpponent === null) {
+    if (typeof scoreTeam !== 'number' || typeof scoreOpponent !== 'number') {
       return "bg-gray-100 text-gray-800 border-gray-300";
     }
     if (scoreTeam > scoreOpponent) return "bg-green-100 text-green-800 border-green-300";
@@ -49,7 +49,7 @@ const getResultBadgeClass = (scoreTeam?: number, scoreOpponent?: number) => {
 };
   
 const getResultLabel = (scoreTeam?: number, scoreOpponent?: number) => {
-    if (scoreTeam === undefined || scoreTeam === null || scoreOpponent === undefined || scoreOpponent === null) {
+    if (typeof scoreTeam !== 'number' || typeof scoreOpponent !== 'number') {
         return "En attente";
     }
     if (scoreTeam > scoreOpponent) return "Victoire";
