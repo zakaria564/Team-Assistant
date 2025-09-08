@@ -136,12 +136,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
-         <Button asChild className="w-full md:w-auto">
-          <Link href={`/dashboard/events/${eventId}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Modifier
-          </Link>
-        </Button>
       </div>
       
         <Card>
