@@ -8,12 +8,13 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Pencil, Calendar, Clock, MapPin, Users, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, Pencil, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
 import Link from "next/link";
 import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 
 interface Event {
@@ -26,6 +27,8 @@ interface Event {
   location: string;
   scoreTeam?: number;
   scoreOpponent?: number;
+  scorers?: { playerId: string, playerName: string, goals: number }[];
+  assisters?: { playerId: string, playerName: string, assists: number }[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number, children?: React.ReactNode }) => (
@@ -134,6 +137,12 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
+         <Button asChild className="w-full md:w-auto">
+          <Link href={`/dashboard/events/${eventId}/edit`}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Modifier
+          </Link>
+        </Button>
       </div>
       
         <Card>
@@ -159,8 +168,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                </div>
                
                {showScore && (
-                 <div className="pt-4 border-t">
-                    <h4 className="text-lg font-semibold mb-4">Résultat du Match</h4>
+                 <div className="pt-6 border-t">
+                    <h4 className="text-lg font-semibold mb-4">Résultat Final</h4>
                     <div className="flex items-center gap-6">
                         <div className="text-center">
                             <p className="text-sm text-muted-foreground">{clubName}</p>
@@ -179,6 +188,38 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                )}
             </CardContent>
         </Card>
+
+        {showScore && (event.scorers?.length || event.assisters?.length) && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Statistiques du Match</CardTitle>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-6">
+                    {event.scorers && event.scorers.length > 0 && (
+                        <div className="space-y-3">
+                            <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs</h4>
+                            <ul className="list-disc pl-5 text-sm space-y-1">
+                                {event.scorers.map(scorer => (
+                                    <li key={scorer.playerId}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                     {event.assisters && event.assisters.length > 0 && (
+                        <div className="space-y-3">
+                            <h4 className="font-semibold flex items-center gap-2"><Footprints className="h-5 w-5" />Passeurs</h4>
+                             <ul className="list-disc pl-5 text-sm space-y-1">
+                                {event.assisters.map(assister => (
+                                    <li key={assister.playerId}>{assister.playerName} ({assister.assists} passe{assister.assists > 1 ? 's' : ''})</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        )}
     </div>
   );
 }
+
+    

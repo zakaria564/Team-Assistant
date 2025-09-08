@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,23 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Separator } from "../ui/separator";
 
+interface Player {
+    id: string;
+    name: string;
+    category: string;
+}
 
 const eventTypes = [
     "Match de Championnat",
@@ -44,6 +49,16 @@ const formSchema = z.object({
   opponent: z.string().optional(),
   scoreTeam: z.coerce.number().optional(),
   scoreOpponent: z.coerce.number().optional(),
+  scorers: z.array(z.object({
+      playerId: z.string().min(1),
+      playerName: z.string().optional(),
+      goals: z.coerce.number().min(1),
+  })).optional(),
+  assisters: z.array(z.object({
+      playerId: z.string().min(1),
+      playerName: z.string().optional(),
+      assists: z.coerce.number().min(1),
+  })).optional(),
 }).refine(data => {
     if (data.type.includes("Match") || data.type.includes("Tournoi")) {
         return !!data.opponent && data.opponent.length > 1;
@@ -68,6 +83,8 @@ interface EventData {
   location: string;
   scoreTeam?: number;
   scoreOpponent?: number;
+  scorers?: { playerId: string, playerName: string, goals: number }[];
+  assisters?: { playerId: string, playerName: string, assists: number }[];
 }
 
 interface AddEventFormProps {
@@ -79,6 +96,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [clubName, setClubName] = useState("");
+    const [players, setPlayers] = useState<Player[]>([]);
     const router = useRouter();
     const isEditMode = !!event;
 
@@ -92,8 +110,20 @@ export function AddEventForm({ event }: AddEventFormProps) {
             opponent: "",
             scoreTeam: undefined,
             scoreOpponent: undefined,
+            scorers: [],
+            assisters: [],
         }
     });
+
+    const { fields: scorerFields, append: appendScorer, remove: removeScorer } = useFieldArray({
+        control: form.control,
+        name: "scorers"
+    });
+     const { fields: assisterFields, append: appendAssister, remove: removeAssister } = useFieldArray({
+        control: form.control,
+        name: "assisters"
+    });
+
     
     useEffect(() => {
         const fetchClubName = async () => {
@@ -117,20 +147,48 @@ export function AddEventForm({ event }: AddEventFormProps) {
         if(isEditMode && event) {
             form.reset({
                 ...event,
-                category: event.category,
                 time: format(event.date, "HH:mm"),
                 scoreTeam: event.scoreTeam ?? undefined,
                 scoreOpponent: event.scoreOpponent ?? undefined,
                 opponent: event.opponent || "",
+                scorers: event.scorers || [],
+                assisters: event.assisters || [],
             });
         }
     }, [event, isEditMode, form]);
 
     const eventType = form.watch("type");
     const eventDate = form.watch("date");
+    const eventCategory = form.watch("category");
+    
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
     const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
     const showScoreFields = isEditMode && eventTypeIsMatch && isPastEvent;
+
+    useEffect(() => {
+        const fetchPlayers = async () => {
+            if(!user || !eventCategory) {
+                setPlayers([]);
+                return;
+            }
+            try {
+                const q = query(
+                    collection(db, "players"), 
+                    where("userId", "==", user.uid),
+                    where("category", "==", eventCategory)
+                );
+                const querySnapshot = await getDocs(q);
+                const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+                setPlayers(playersData);
+            } catch (error) {
+                console.error("Error fetching players for category:", error);
+            }
+        };
+
+        if (showScoreFields) {
+            fetchPlayers();
+        }
+    }, [user, eventCategory, showScoreFields]);
 
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -160,6 +218,11 @@ export function AddEventForm({ event }: AddEventFormProps) {
                  if(isPastEvent) {
                   dataToSave.scoreTeam = values.scoreTeam ?? null;
                   dataToSave.scoreOpponent = values.scoreOpponent ?? null;
+                  
+                  const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Joueur inconnu';
+                  
+                  dataToSave.scorers = (values.scorers || []).map(s => ({...s, playerName: getPlayerName(s.playerId)}));
+                  dataToSave.assisters = (values.assisters || []).map(a => ({...a, playerName: getPlayerName(a.playerId)}));
                 }
             }
 
@@ -195,7 +258,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
     
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                 <FormField
                     control={form.control}
                     name="type"
@@ -223,7 +286,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 />
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormItem>
+                     <FormItem>
                         <FormLabel>Club</FormLabel>
                         <FormControl>
                             <Input value={clubName.replace(/^Club\s/i, '')} disabled />
@@ -236,7 +299,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Catégorie</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner une catégorie" />
@@ -344,6 +407,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 />
                 
                 {showScoreFields && (
+                  <>
                     <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Résultat du Match</h4>
                         <div className="grid grid-cols-2 gap-4">
@@ -371,7 +435,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 name="scoreOpponent"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {event.opponent}</FormLabel>
+                                    <FormLabel>Score {event?.opponent}</FormLabel>
                                     <FormControl>
                                     <Input 
                                       type="number" 
@@ -387,6 +451,90 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             />
                         </div>
                     </div>
+
+                     <div className="space-y-4 rounded-md border p-4">
+                        <h4 className="font-medium">Statistiques des joueurs</h4>
+                        
+                        {/* Scorers */}
+                        <div className="space-y-2">
+                            <Label>Buteurs</Label>
+                            {scorerFields.map((field, index) => (
+                                <div key={field.id} className="flex items-center gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name={`scorers.${index}.playerId`}
+                                        render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Choisir un joueur" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name={`scorers.${index}.goals`}
+                                        render={({ field }) => (
+                                           <Input type="number" placeholder="Buts" className="w-24" {...field} />
+                                        )}
+                                    />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+                            ))}
+                             <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un buteur
+                            </Button>
+                        </div>
+
+                        <Separator />
+
+                        {/* Assisters */}
+                         <div className="space-y-2">
+                            <Label>Passeurs</Label>
+                            {assisterFields.map((field, index) => (
+                                <div key={field.id} className="flex items-center gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name={`assisters.${index}.playerId`}
+                                        render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Choisir un joueur" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name={`assisters.${index}.assists`}
+                                        render={({ field }) => (
+                                           <Input type="number" placeholder="Passes" className="w-24" {...field} />
+                                        )}
+                                    />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+                            ))}
+                             <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un passeur
+                            </Button>
+                        </div>
+
+                    </div>
+                  </>
                 )}
 
 
@@ -402,3 +550,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
