@@ -163,7 +163,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
                   <DetailItem icon={MapPin} label="Lieu" value={event.location} />
                   <DetailItem icon={Users} label="Club" value={clubName} />
-                  <DetailItem icon={Users} label="Catégorie" value={category} />
+                  <DetailItem icon={Users} label="Catégorie" value={event.category} />
                   {eventTypeIsMatch && <DetailItem icon={Users} label="Adversaire" value={event.opponent} />}
                </div>
                
