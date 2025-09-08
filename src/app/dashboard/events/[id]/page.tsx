@@ -189,7 +189,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardContent>
         </Card>
 
-        {showScore && (event.scorers?.length || event.assisters?.length) ? (
+        {showScore && ((event.scorers && event.scorers.length > 0) || (event.assisters && event.assisters.length > 0)) && (
             <Card>
                 <CardHeader>
                     <CardTitle>Statistiques du Match</CardTitle>
@@ -217,9 +217,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     )}
                 </CardContent>
             </Card>
-        ) : null}
+        )}
     </div>
   );
 }
-
-    
