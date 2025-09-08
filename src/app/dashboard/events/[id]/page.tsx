@@ -8,13 +8,11 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Pencil, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
-import Link from "next/link";
+import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 
 
 interface Event {
@@ -117,7 +115,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isPastEvent = isPast(event.date);
-  const showScore = eventTypeIsMatch && isPastEvent;
+  const showScoreAndStats = eventTypeIsMatch && isPastEvent;
   const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
 
 
@@ -159,11 +157,16 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   <DetailItem icon={Users} label="Catégorie" value={event.category} />
                   {eventTypeIsMatch && <DetailItem icon={Users} label="Adversaire" value={event.opponent} />}
                </div>
-               
-               {showScore && (
-                 <div className="pt-6 border-t">
-                    <h4 className="text-lg font-semibold mb-4">Résultat Final</h4>
-                    <div className="flex items-center gap-6">
+            </CardContent>
+        </Card>
+
+        {showScoreAndStats && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Résultat Final</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between gap-6">
                         <div className="text-center">
                             <p className="text-sm text-muted-foreground">{clubName}</p>
                             <p className="text-4xl font-bold">{event.scoreTeam ?? '-'}</p>
@@ -177,12 +180,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                           {getResultLabel(event.scoreTeam, event.scoreOpponent)}
                         </Badge>
                     </div>
-                 </div>
-               )}
-            </CardContent>
-        </Card>
-
-        {showScore && ((event.scorers && event.scorers.length > 0) || (event.assisters && event.assisters.length > 0)) && (
+                </CardContent>
+            </Card>
+        )}
+        
+        {showScoreAndStats && ((event.scorers && event.scorers.length > 0) || (event.assisters && event.assisters.length > 0)) && (
             <Card>
                 <CardHeader>
                     <CardTitle>Statistiques du Match</CardTitle>
