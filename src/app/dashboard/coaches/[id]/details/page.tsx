@@ -218,7 +218,6 @@ export default function CoachDetailsPdfPage({ params }: { params: { id: string }
                 </Avatar>
                 <div className="text-center sm:text-left">
                     <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(coach.name)}</h1>
-                    <p className="text-xl text-primary font-semibold">{toTitleCase(coach.specialty || '')}</p>
                 </div>
             </section>
             
