@@ -85,54 +85,6 @@ export default function PlayerCardsPage() {
     fetchPlayers();
   }, [user, loadingUser]);
 
-  const handleDownloadPdf = () => {
-    setLoadingPdf(true);
-    const cardsElement = document.getElementById("printable-cards");
-    if (cardsElement) {
-      html2canvas(cardsElement, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: null, 
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'pt',
-          format: 'a4'
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-
-        let imgWidth = pdfWidth;
-        let imgHeight = pdfWidth / ratio;
-        
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-
-        pdf.save("cartes-joueurs.pdf");
-      }).finally(() => {
-        setLoadingPdf(false);
-      });
-    } else {
-      console.error("L'élément à imprimer est introuvable.");
-      setLoadingPdf(false);
-    }
-  };
-
   const hasPlayers = Object.keys(groupedPlayers).length > 0;
 
   return (
@@ -155,7 +107,7 @@ export default function PlayerCardsPage() {
                         <h2 className="text-xl font-bold mb-4 text-black">{category}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         {players.map(player => (
-                            <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
+                            <Link href={`/dashboard/players/${player.id}`} key={player.id} className="no-underline">
                                 <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-2 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
                                     <header className="w-full">
                                         <div className="flex items-center justify-center gap-1">
