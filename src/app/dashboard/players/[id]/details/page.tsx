@@ -241,7 +241,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
                 </Avatar>
                 <div className="text-center sm:text-left">
                     <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(player.name)}</h1>
-                    <p className="text-xl text-primary font-semibold">{player.position || 'Poste non spécifié'}</p>
                 </div>
             </section>
             
@@ -305,5 +304,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
+
 
 
