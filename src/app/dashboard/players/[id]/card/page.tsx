@@ -127,7 +127,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
 
   return (
-    <div className="p-4 bg-background">
+    <div className="bg-background p-4">
       <div className="w-full max-w-sm mx-auto space-y-4">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
