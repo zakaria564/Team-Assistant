@@ -67,16 +67,11 @@ const SectionTitle = ({ title }: { title: string }) => (
     <h2 className="text-lg font-semibold text-gray-800 border-b-2 border-primary/20 pb-2 mb-4 col-span-full">{title}</h2>
 );
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
 
-const getStatusBadgeClass = (status?: PlayerStatus) => {
-    switch (status) {
-        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300';
-        default: return '';
-    }
-}
 
 export default function PlayerDetailsPdfPage({ params }: { params: { id: string } }) {
   const { id: playerId } = React.use(params);
@@ -229,7 +224,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
                  <div className="flex items-center gap-4">
                     <Trophy className="h-10 w-10 text-primary" />
                     <div>
-                        <h1 className="text-2xl font-bold text-primary">{clubName}</h1>
+                        <h1 className="text-2xl font-bold text-primary">{toTitleCase(clubName)}</h1>
                         <p className="text-muted-foreground">Fiche d'information du joueur</p>
                     </div>
                 </div>
@@ -245,11 +240,8 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
                     <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
                 </Avatar>
                 <div className="text-center sm:text-left">
-                    <h1 className="text-4xl font-bold text-gray-800">{player.name}</h1>
+                    <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(player.name)}</h1>
                     <p className="text-xl text-primary font-semibold">{player.position || 'Poste non spécifié'}</p>
-                    <Badge className={cn("text-base mt-2", getStatusBadgeClass(player.status))}>
-                        {player.status}
-                    </Badge>
                 </div>
             </section>
             
@@ -259,7 +251,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
             <main className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Personnelles" />
-                    <DetailItem icon={User} label="Nom complet" value={player.name} />
+                    <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
@@ -274,7 +266,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste Principal" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro de maillot" value={player.number?.toString()} />
-                    <DetailItem icon={ClipboardList} label="Entraîneur assigné" value={player.coachName} />
+                    <DetailItem icon={ClipboardList} label="Entraîneur assigné" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
                     <DetailItem icon={LogIn} label="Date d'entrée au club" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={LogOut} label="Date de sortie du club" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </div>
@@ -282,7 +274,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
                 {(player.tutorName || player.tutorCin || player.tutorPhone || player.tutorEmail) && (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
                     <SectionTitle title="Informations du Tuteur" />
-                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
                     <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
                     <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
                     <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
@@ -313,4 +305,5 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
+
 
