@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint, VenetianMask, FileDown } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -153,6 +153,20 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                 Fiche complète de {player.name}.
             </p>
             </div>
+        </div>
+        <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+                <Link href={`/dashboard/players/${player.id}/details`}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exporter en PDF
+                </Link>
+            </Button>
+            <Button asChild>
+                <Link href={`/dashboard/players/${player.id}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Modifier
+                </Link>
+            </Button>
         </div>
       </div>
       
