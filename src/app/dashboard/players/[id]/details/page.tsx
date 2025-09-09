@@ -137,50 +137,48 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-      html2canvas(cardElement, {
-        scale: 2, 
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'pt',
-          format: 'a4'
+        const originalWidth = cardElement.style.width;
+        cardElement.style.width = '800px';
+
+        html2canvas(cardElement, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const canvasAspectRatio = canvasWidth / canvasHeight;
+            const pdfAspectRatio = pdfWidth / pdfHeight;
+
+            let imgWidth = pdfWidth;
+            let imgHeight = pdfWidth / canvasAspectRatio;
+            
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = imgHeight * canvasAspectRatio;
+            }
+
+            const x = (pdfWidth - imgWidth) / 2;
+            const y = (pdfHeight - imgHeight) / 2;
+
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
+        }).finally(() => {
+            cardElement.style.width = originalWidth;
+            setLoadingPdf(false);
         });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        
-        const pdfAspectRatio = pdfWidth / pdfHeight;
-        const canvasAspectRatio = canvasWidth / canvasHeight;
-
-        let imgWidth = pdfWidth;
-        let imgHeight = pdfHeight;
-        let x = 0;
-        let y = 0;
-
-        // If canvas is wider than PDF aspect ratio, fit to width
-        if (canvasAspectRatio > pdfAspectRatio) {
-            imgWidth = pdfWidth;
-            imgHeight = imgWidth / canvasAspectRatio;
-            y = (pdfHeight - imgHeight) / 2; // Center vertically
-        } else { // Fit to height
-            imgHeight = pdfHeight;
-            imgWidth = imgHeight * canvasAspectRatio;
-            x = (pdfWidth - imgWidth) / 2; // Center horizontally
-        }
-
-        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-        pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
-      }).finally(() => {
-        setLoadingPdf(false);
-      });
     } else {
-      console.error("Element to print not found.");
-      setLoadingPdf(false);
+        console.error("Element to print not found.");
+        setLoadingPdf(false);
     }
   };
 
@@ -312,3 +310,4 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
+
