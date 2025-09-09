@@ -168,7 +168,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
                     <p className="text-lg font-semibold text-primary">{player.position || "Poste non spécifié"}</p>
                 </div>
 
-                 <div className="w-full grid grid-cols-2 gap-4 text-sm mt-4">
+                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
                     <div className="flex items-center gap-2">
                         <Shirt className="h-5 w-5 text-primary/80"/>
                         <div>
