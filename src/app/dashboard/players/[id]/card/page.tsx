@@ -109,7 +109,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
   if (loading || loadingUser) {
     return (
-      <div className="flex justify-center items-center h-screen bg-muted/40">
+      <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -127,8 +127,8 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
 
   return (
-    <div className="min-h-screen grid place-items-center">
-      <div className="w-full max-w-sm p-4 space-y-4">
+    <div className="min-h-screen grid place-items-center p-4">
+      <div className="w-full max-w-sm space-y-4">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -168,7 +168,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
                     <p className="text-lg font-semibold text-primary">{player.position || "Poste non spécifié"}</p>
                 </div>
 
-                 <div className="w-full grid grid-cols-1 gap-4 text-sm mt-4">
+                 <div className="w-full grid grid-cols-2 gap-4 text-sm mt-4">
                     <div className="flex items-center gap-2">
                         <Shirt className="h-5 w-5 text-primary/80"/>
                         <div>
