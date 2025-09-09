@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2 } from "lucide-react";
+import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
@@ -283,11 +283,23 @@ export default function CoachesPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <Link href={`/dashboard/coaches/${coach.id}`}>
-                                    <DropdownMenuItem className="cursor-pointer">Voir les détails</DropdownMenuItem>
+                                  <Link href={`/dashboard/coaches/${coach.id}`} passHref>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Voir les détails
+                                    </DropdownMenuItem>
                                   </Link>
-                                  <Link href={`/dashboard/coaches/${coach.id}/edit`}>
-                                    <DropdownMenuItem className="cursor-pointer">Modifier</DropdownMenuItem>
+                                  <Link href={`/dashboard/coaches/${coach.id}/edit`} passHref>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
+                                  </Link>
+                                   <Link href={`/dashboard/coaches/${coach.id}/details`} passHref>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <FileDown className="mr-2 h-4 w-4" />
+                                        Exporter la fiche
+                                    </DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
@@ -322,7 +334,7 @@ export default function CoachesPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Cette action est irréversible. L'entraîneur "{coachToDelete?.name}" sera définitivement supprimé de la base de données.
+                  Cette action est irréversible. L'entraîneur "{toTitleCase(coachToDelete?.name || '')}" sera définitivement supprimé de la base de données.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -339,5 +351,3 @@ export default function CoachesPage() {
     </>
   );
 }
-
-    
