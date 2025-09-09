@@ -51,8 +51,8 @@ const getBadgeClass = (status?: Salary['status']) => {
 
 
 export default function SalaryDetailPage({ params }: { params: { id: string } }) {
+  const { id: salaryId } = React.use(params);
   const router = useRouter();
-  const salaryId = params.id;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);
