@@ -14,14 +14,6 @@ const reports = [
         href: "/dashboard/reports/registration-form",
         cta: "Ouvrir la fiche",
         disabled: false,
-    },
-    {
-        title: "Cartes des joueurs",
-        description: "Générez un PDF avec les cartes de tous les joueurs inscrits.",
-        icon: Users,
-        href: "/dashboard/reports/player-cards",
-        cta: "Générer le PDF",
-        disabled: false,
     }
 ];
 
