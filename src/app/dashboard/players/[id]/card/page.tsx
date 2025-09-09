@@ -32,7 +32,7 @@ interface Player {
 
 export default function PlayerCardPdfPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id: playerId } = params;
+  const playerId = params.id;
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
