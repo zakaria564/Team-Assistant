@@ -120,7 +120,7 @@ export default function EventsPage() {
 
   const getEventTitle = (event: Event) => {
     const teamName = event.team.replace(/^Club\s/i, '');
-    if (event.type.includes("Match")) {
+    if (event.type.includes("Match") || event.type.includes("Tournoi")) {
       return `${teamName} vs ${event.opponent}`;
     }
     return `${event.type} ${teamName}`;
@@ -228,11 +228,9 @@ export default function EventsPage() {
                     selectedEvents.map(event => (
                          <Card key={event.id} className="bg-muted/30 group">
                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center justify-between">
-                                    <span>{getEventTitle(event)}</span>
-                                    <span className={cn(`text-sm font-medium px-2 py-1 rounded-md`, getEventBadgeClass(event.type))}>
-                                        {event.type}
-                                    </span>
+                                <CardDescription className={cn(`font-medium`, getEventBadgeClass(event.type))}>{event.type}</CardDescription>
+                                <CardTitle className="text-lg pt-1">
+                                    {getEventTitle(event)}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm">
@@ -317,3 +315,5 @@ export default function EventsPage() {
     </>
   );
 }
+
+    
