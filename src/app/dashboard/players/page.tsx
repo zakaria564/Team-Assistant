@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
@@ -296,8 +296,14 @@ export default function PlayersPage() {
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <Link href={`/dashboard/players/${player.id}`} passHref>
                                   <DropdownMenuItem className="cursor-pointer">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Voir les détails
+                                  </DropdownMenuItem>
+                                </Link>
+                                <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                  <DropdownMenuItem className="cursor-pointer">
                                     <Pencil className="mr-2 h-4 w-4" />
-                                    Modifier / Voir détails
+                                    Modifier
                                   </DropdownMenuItem>
                                 </Link>
                                 <Link href={`/dashboard/players/${player.id}/details`} passHref>
