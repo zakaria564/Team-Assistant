@@ -122,7 +122,11 @@ export default function RegistrationFormPage() {
                     {loadingClub || loadingUser ? (
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
                     ) : (
-                        <CardTitle className="text-2xl font-bold uppercase">FICHE D'INSCRIPTION - {clubName}</CardTitle>
+                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-2xl font-bold uppercase">
+                            <span>FICHE D'INSCRIPTION</span>
+                            <span className="hidden sm:inline">-</span>
+                            <span>{clubName}</span>
+                        </CardTitle>
                     )}
                     <p className="font-semibold">Saison sportive : ........................</p>
                 </CardHeader>
