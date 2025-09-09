@@ -152,6 +152,7 @@ export default function PlayerCardsPage() {
                                     <AvatarFallback className="text-3xl">{player.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <h3 className="text-2xl font-bold">{player.name}</h3>
+                                <p className="text-base font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
                             </div>
                             <footer className="w-full space-y-2 text-lg">
                                 <div className="flex justify-between items-center text-left">
