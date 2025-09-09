@@ -150,20 +150,28 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
         });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-
-        let imgWidth = pdfWidth - 40;
-        let imgHeight = imgWidth / ratio;
         
-        if (imgHeight > pdf.internal.pageSize.getHeight() - 40) {
-            imgHeight = pdf.internal.pageSize.getHeight() - 40;
-            imgWidth = imgHeight * ratio;
-        }
+        const pdfAspectRatio = pdfWidth / pdfHeight;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
 
-        const x = (pdfWidth - imgWidth) / 2;
-        const y = 20;
+        let imgWidth = pdfWidth;
+        let imgHeight = pdfHeight;
+        let x = 0;
+        let y = 0;
+
+        // If canvas is wider than PDF aspect ratio, fit to width
+        if (canvasAspectRatio > pdfAspectRatio) {
+            imgWidth = pdfWidth;
+            imgHeight = imgWidth / canvasAspectRatio;
+            y = (pdfHeight - imgHeight) / 2; // Center vertically
+        } else { // Fit to height
+            imgHeight = pdfHeight;
+            imgWidth = imgHeight * canvasAspectRatio;
+            x = (pdfWidth - imgWidth) / 2; // Center horizontally
+        }
 
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
         pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
@@ -304,6 +312,3 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
-
-
-
