@@ -110,7 +110,7 @@ export default function PlayerCardsPage() {
 
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
-      <div className="w-full max-w-5xl space-y-4">
+      <div className="w-full max-w-7xl space-y-4">
         <div className="flex justify-between items-center print:hidden">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -136,7 +136,7 @@ export default function PlayerCardsPage() {
             </div>
         ) : players.length > 0 ? (
             <div id="printable-cards" className="p-2 bg-white">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {players.map(player => (
                     <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
                         <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-4 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
