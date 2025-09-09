@@ -67,6 +67,10 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
     }
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
 
 export default function PlayersPage() {
   const [user, loadingUser] = useAuthState(auth);
@@ -161,7 +165,7 @@ export default function PlayersPage() {
       setPlayers(players.filter(p => p.id !== playerToDelete.id));
       toast({
         title: "Joueur supprimé",
-        description: `${playerToDelete.name} a été retiré du club.`,
+        description: `${toTitleCase(playerToDelete.name)} a été retiré du club.`,
       });
     } catch (error) {
        toast({
@@ -255,7 +259,7 @@ export default function PlayersPage() {
                                     <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                    <span className="font-medium">{player.name}</span>
+                                    <span className="font-medium">{toTitleCase(player.name)}</span>
                                     <span className="text-muted-foreground text-sm md:hidden">{player.category}</span>
                                 </div>
                             </div>
@@ -345,7 +349,7 @@ export default function PlayersPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Cette action est irréversible. Le joueur "{playerToDelete?.name}" sera définitivement supprimé de la base de données.
+              Cette action est irréversible. Le joueur "{toTitleCase(playerToDelete?.name || '')}" sera définitivement supprimé de la base de données.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -362,3 +366,5 @@ export default function PlayersPage() {
     </>
   );
 }
+
+    

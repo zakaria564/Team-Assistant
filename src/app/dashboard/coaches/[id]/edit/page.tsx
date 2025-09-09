@@ -27,6 +27,11 @@ interface Coach {
   documents?: { name: string; url: string; validityDate?: string }[];
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export default function EditCoachPage({ params }: { params: { id: string } }) {
   const { id: coachId } = React.use(params);
   const router = useRouter();
@@ -70,7 +75,7 @@ export default function EditCoachPage({ params }: { params: { id: string } }) {
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Modifier l'entraîneur</h1>
             <p className="text-muted-foreground">
-              Mettez à jour les informations de {loading ? "..." : coach?.name}.
+              Mettez à jour les informations de {loading ? "..." : toTitleCase(coach?.name || '')}.
             </p>
         </div>
       </div>
@@ -94,3 +99,5 @@ export default function EditCoachPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

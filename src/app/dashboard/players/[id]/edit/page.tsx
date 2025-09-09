@@ -34,6 +34,11 @@ interface Player {
   documents?: { name: string; url: string; validityDate?: string }[];
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const { id: playerId } = React.use(params);
   const router = useRouter();
@@ -77,7 +82,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Modifier le joueur</h1>
             <p className="text-muted-foreground">
-              Mettez à jour les informations de {loading ? "..." : player?.name}.
+              Mettez à jour les informations de {loading ? "..." : toTitleCase(player?.name || '')}.
             </p>
         </div>
       </div>
@@ -99,3 +104,5 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

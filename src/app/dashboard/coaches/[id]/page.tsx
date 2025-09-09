@@ -67,6 +67,10 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
     }
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
 
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
   const { id: coachId } = React.use(params);
@@ -130,7 +134,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             <div>
             <h1 className="text-3xl font-bold tracking-tight">Détails de l'Entraîneur</h1>
             <p className="text-muted-foreground">
-                Fiche complète de {coach.name}.
+                Fiche complète de {toTitleCase(coach.name)}.
             </p>
             </div>
         </div>
@@ -152,7 +156,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                             <AvatarFallback className="text-5xl">{coachInitial}</AvatarFallback>
                         </Avatar>
                         <div className="text-center">
-                            <h2 className="text-2xl font-bold">{coach.name}</h2>
+                            <h2 className="text-2xl font-bold">{toTitleCase(coach.name)}</h2>
                         </div>
                     </div>
                 </CardContent>
@@ -224,3 +228,5 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    

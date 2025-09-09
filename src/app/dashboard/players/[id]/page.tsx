@@ -78,6 +78,10 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
     }
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
 
 export default function PlayerDetailPage({ params }: { params: { id: string } }) {
   const { id: playerId } = React.use(params);
@@ -150,10 +154,16 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
             <div>
             <h1 className="text-3xl font-bold tracking-tight">Détails du Joueur</h1>
             <p className="text-muted-foreground">
-                Fiche complète de {player.name}.
+                Fiche complète de {toTitleCase(player.name)}.
             </p>
             </div>
         </div>
+        <Button asChild className="w-full md:w-auto">
+          <Link href={`/dashboard/players/${playerId}/edit`}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Modifier
+          </Link>
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -166,7 +176,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                             <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
                         </Avatar>
                         <div className="text-center">
-                            <h2 className="text-2xl font-bold">{player.name}</h2>
+                            <h2 className="text-2xl font-bold">{toTitleCase(player.name)}</h2>
                             <Badge className={cn("text-base mt-2", getStatusBadgeClass(player.status))}>
                                 {player.status}
                             </Badge>
@@ -182,7 +192,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
-                    <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName} />
+                    <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy') : undefined} />
                     <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy') : undefined} />
                 </CardContent>
@@ -194,7 +204,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <CardTitle>Informations Personnelles</CardTitle>
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={User} label="Nom complet" value={player.name} />
+                    <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
@@ -209,7 +219,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <CardTitle>Informations du Tuteur</CardTitle>
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
                     <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
                     <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
                     <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
@@ -252,3 +262,5 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    

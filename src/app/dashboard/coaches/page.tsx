@@ -60,6 +60,11 @@ const getStatusBadgeClass = (status?: CoachStatus) => {
     }
 }
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export default function CoachesPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [coaches, setCoaches] = useState<Coach[]>([]);
@@ -153,7 +158,7 @@ export default function CoachesPage() {
       setCoaches(coaches.filter(p => p.id !== coachToDelete.id));
       toast({
         title: "Entraîneur supprimé",
-        description: `${coachToDelete.name} a été retiré du club.`,
+        description: `${toTitleCase(coachToDelete.name)} a été retiré du club.`,
       });
     } catch (error) {
        toast({
@@ -240,7 +245,7 @@ export default function CoachesPage() {
                                       <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{coach.name}</span>
+                                        <span className="font-medium">{toTitleCase(coach.name)}</span>
                                         <span className="text-muted-foreground text-sm md:hidden">{coach.specialty}</span>
                                     </div>
                                 </div>
@@ -334,3 +339,5 @@ export default function CoachesPage() {
     </>
   );
 }
+
+    
