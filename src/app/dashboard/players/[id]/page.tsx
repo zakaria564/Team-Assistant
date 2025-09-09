@@ -154,20 +154,6 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
             </p>
             </div>
         </div>
-        <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
-                <Link href={`/dashboard/players/${player.id}/details`}>
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Exporter en PDF
-                </Link>
-            </Button>
-            <Button asChild>
-                <Link href={`/dashboard/players/${player.id}/edit`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Modifier
-                </Link>
-            </Button>
-        </div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
