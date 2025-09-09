@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { db, auth } from "@/lib/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 interface Player {
   id: string;
@@ -33,7 +34,7 @@ const toTitleCase = (str: string) => {
 export default function PlayerCardsPage() {
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [groupedPlayers, setGroupedPlayers] = useState<Record<string, Player[]>>({});
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
@@ -49,7 +50,24 @@ export default function PlayerCardsPage() {
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
         const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-        setPlayers(playersData);
+        
+        const grouped = playersData.reduce((acc, player) => {
+            const category = player.category || 'Sans catégorie';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(player);
+            return acc;
+        }, {} as Record<string, Player[]>);
+
+        // Sort categories
+        const sortedCategories = Object.keys(grouped).sort();
+        const sortedGroupedPlayers: Record<string, Player[]> = {};
+        for (const category of sortedCategories) {
+            sortedGroupedPlayers[category] = grouped[category];
+        }
+
+        setGroupedPlayers(sortedGroupedPlayers);
 
         const clubDocRef = doc(db, "clubs", user.uid);
         const clubDoc = await getDoc(clubDocRef);
@@ -115,6 +133,8 @@ export default function PlayerCardsPage() {
     }
   };
 
+  const hasPlayers = Object.keys(groupedPlayers).length > 0;
+
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
       <div className="w-full max-w-7xl space-y-4">
@@ -122,7 +142,7 @@ export default function PlayerCardsPage() {
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
           </Button>
-          <Button onClick={handleDownloadPdf} disabled={loadingPdf || loading || players.length === 0}>
+          <Button onClick={handleDownloadPdf} disabled={loadingPdf || loading || !hasPlayers}>
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -141,36 +161,41 @@ export default function PlayerCardsPage() {
             <div className="flex justify-center items-center py-20">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
-        ) : players.length > 0 ? (
-            <div id="printable-cards" className="p-2 bg-white">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {players.map(player => (
-                    <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
-                        <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-2 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
-                            <header className="w-full">
-                                <div className="flex items-center justify-center gap-1">
-                                    <Trophy className="h-4 w-4 text-primary" />
-                                    <h2 className="font-bold text-sm text-primary">{clubName}</h2>
-                                </div>
-                            </header>
-                            <div className="flex flex-col items-center gap-1 my-auto">
-                            <Avatar className="h-16 w-16 border-2 border-primary">
-                                    <AvatarImage src={player.photoUrl} alt={player.name} />
-                                    <AvatarFallback className="text-xl">{player.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <h3 className="text-sm font-bold">{toTitleCase(player.name)}</h3>
-                                <p className="text-xs font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
-                            </div>
-                            <footer className="w-full space-y-1 text-xs">
-                                <div className="flex justify-between items-center text-left">
-                                    <span className="font-semibold text-primary">{player.category}</span>
-                                    <span className="font-bold text-base text-black/80">#{player.number}</span>
-                                </div>
-                            </footer>
-                        </Card>
-                    </Link>
+        ) : hasPlayers ? (
+            <div id="printable-cards" className="p-2 bg-white space-y-8">
+                {Object.entries(groupedPlayers).map(([category, players]) => (
+                    <div key={category} className="break-after-page">
+                        <h2 className="text-xl font-bold mb-4 text-black">{category}</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {players.map(player => (
+                            <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
+                                <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-2 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
+                                    <header className="w-full">
+                                        <div className="flex items-center justify-center gap-1">
+                                            <Trophy className="h-4 w-4 text-primary" />
+                                            <h2 className="font-bold text-sm text-primary">{clubName}</h2>
+                                        </div>
+                                    </header>
+                                    <div className="flex flex-col items-center gap-1 my-auto">
+                                    <Avatar className="h-16 w-16 border-2 border-primary">
+                                            <AvatarImage src={player.photoUrl} alt={player.name} />
+                                            <AvatarFallback className="text-xl">{player.name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <h3 className="text-sm font-bold">{toTitleCase(player.name)}</h3>
+                                        <p className="text-xs font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
+                                    </div>
+                                    <footer className="w-full space-y-1 text-xs">
+                                        <div className="flex justify-between items-center text-left">
+                                            <span className="font-semibold text-primary">{player.category}</span>
+                                            <span className="font-bold text-base text-black/80">#{player.number}</span>
+                                        </div>
+                                    </footer>
+                                </Card>
+                            </Link>
+                        ))}
+                        </div>
+                    </div>
                 ))}
-                </div>
             </div>
         ) : (
             <Card>
@@ -188,6 +213,9 @@ export default function PlayerCardsPage() {
                 }
                 .print\\:hidden {
                     display: none;
+                }
+                .break-after-page {
+                    page-break-after: always;
                 }
             }
             .break-inside-avoid {
