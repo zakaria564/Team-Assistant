@@ -4,17 +4,19 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { Separator } from "@/components/ui/separator";
 
 type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
@@ -48,7 +50,7 @@ const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.
     <Icon className="h-5 w-5 text-muted-foreground mt-1" />
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium">
+      <div className="text-base font-medium text-gray-800">
         {href ? (
           <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
             {value || children}
@@ -60,6 +62,11 @@ const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.
     </div>
   </div>
 );
+
+const SectionTitle = ({ title }: { title: string }) => (
+    <h2 className="text-lg font-semibold text-gray-800 border-b-2 border-primary/20 pb-2 mb-4 col-span-full">{title}</h2>
+);
+
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
     switch (status) {
@@ -74,17 +81,26 @@ const getStatusBadgeClass = (status?: PlayerStatus) => {
 export default function PlayerDetailsPdfPage({ params }: { params: { id: string } }) {
   const { id: playerId } = React.use(params);
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
+  const [clubName, setClubName] = useState("Votre Club");
 
   useEffect(() => {
     if (!playerId) return;
 
-    const fetchPlayer = async () => {
+    const fetchPlayerAndClub = async () => {
+      if (!user && !loadingUser) {
+        setLoading(false);
+        return;
+      }
+      if (!user) return;
+
       setLoading(true);
       try {
+        // Fetch Player
         const playerRef = doc(db, "players", playerId as string);
         const playerSnap = await getDoc(playerRef);
 
@@ -98,12 +114,19 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
               playerData.coachName = coachSnap.data().name;
             }
           }
-          
           setPlayer(playerData);
         } else {
           console.log("No such document!");
           router.push("/dashboard/players");
         }
+        
+        // Fetch Club Name
+        const clubDocRef = doc(db, "clubs", user.uid);
+        const clubDoc = await getDoc(clubDocRef);
+        if (clubDoc.exists() && clubDoc.data().clubName) {
+          setClubName(clubDoc.data().clubName);
+        }
+
       } catch (error) {
         console.error("Error fetching player:", error);
         router.push("/dashboard/players");
@@ -112,8 +135,8 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
       }
     };
 
-    fetchPlayer();
-  }, [playerId, router]);
+    fetchPlayerAndClub();
+  }, [playerId, user, loadingUser, router]);
   
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
@@ -132,7 +155,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
         });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         const ratio = canvasWidth / canvasHeight;
@@ -140,8 +162,8 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
         let imgWidth = pdfWidth - 40;
         let imgHeight = imgWidth / ratio;
         
-        if (imgHeight > pdfHeight - 40) {
-            imgHeight = pdfHeight - 40;
+        if (imgHeight > pdf.internal.pageSize.getHeight() - 40) {
+            imgHeight = pdf.internal.pageSize.getHeight() - 40;
             imgWidth = imgHeight * ratio;
         }
 
@@ -160,7 +182,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
   };
 
 
-  if (loading) {
+  if (loading || loadingUser) {
     return (
       <div className="flex justify-center items-center h-screen bg-muted/40">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -201,64 +223,71 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
           </Button>
         </div>
 
-        <div id="printable-details" className="bg-white p-6 sm:p-8 rounded-lg shadow-sm">
-            <header className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b">
-                 <Avatar className="h-32 w-32 border-4 border-primary">
+        <div id="printable-details" className="bg-white p-6 sm:p-8 rounded-lg shadow-sm text-gray-900">
+            {/* Header */}
+            <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
+                 <div className="flex items-center gap-4">
+                    <Trophy className="h-10 w-10 text-primary" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-primary">{clubName}</h1>
+                        <p className="text-muted-foreground">Fiche d'information du joueur</p>
+                    </div>
+                </div>
+                <div className="text-left sm:text-right mt-4 sm:mt-0">
+                    <p className="text-sm">Généré le: {format(new Date(), 'dd/MM/yyyy')}</p>
+                </div>
+            </header>
+            
+            {/* Player Info Header */}
+            <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
+                 <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
                     <AvatarImage src={player.photoUrl} alt={player.name} />
                     <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
                 </Avatar>
                 <div className="text-center sm:text-left">
-                    <h1 className="text-3xl font-bold text-gray-900">{player.name}</h1>
+                    <h1 className="text-4xl font-bold text-gray-800">{player.name}</h1>
+                    <p className="text-xl text-primary font-semibold">{player.position || 'Poste non spécifié'}</p>
                     <Badge className={cn("text-base mt-2", getStatusBadgeClass(player.status))}>
                         {player.status}
                     </Badge>
                 </div>
-            </header>
+            </section>
+            
+            <Separator className="my-6" />
 
-            <main className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
-                <div className="md:col-span-1 space-y-6">
-                    <Card className="shadow-none border-gray-200">
-                        <CardHeader>
-                            <CardTitle className="text-xl">Informations Sportives</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <DetailItem icon={Shield} label="Catégorie" value={player.category} />
-                            <DetailItem icon={Star} label="Poste" value={player.position} />
-                            <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
-                            <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName} />
-                            <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy') : undefined} />
-                            <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy') : undefined} />
-                        </CardContent>
-                    </Card>
+            {/* Main Content */}
+            <main className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <SectionTitle title="Informations Personnelles" />
+                    <DetailItem icon={User} label="Nom complet" value={player.name} />
+                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
+                    <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
+                    <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
+                    <DetailItem icon={Home} label="Adresse" value={player.address} />
+                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                    <DetailItem icon={Mail} label="Email" value={player.email}/>
                 </div>
-                <div className="md:col-span-2 space-y-6">
-                    <Card className="shadow-none border-gray-200">
-                        <CardHeader>
-                            <CardTitle className="text-xl">Informations Personnelles</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 columns-1 sm:columns-2">
-                            <DetailItem icon={User} label="Nom complet" value={player.name} />
-                            <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
-                            <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
-                            <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                            <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                            <DetailItem icon={Home} label="Adresse" value={player.address} />
-                            <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
-                            <DetailItem icon={Mail} label="Email" value={player.email}/>
-                        </CardContent>
-                    </Card>
-                     <Card className="shadow-none border-gray-200 break-inside-avoid-page">
-                        <CardHeader>
-                            <CardTitle className="text-xl">Informations du Tuteur</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 columns-1 sm:columns-2">
-                            <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
-                            <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
-                            <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
-                            <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
-                        </CardContent>
-                    </Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
+                    <SectionTitle title="Informations Sportives" />
+                    <DetailItem icon={Shield} label="Catégorie" value={player.category} />
+                    <DetailItem icon={Star} label="Poste Principal" value={player.position} />
+                    <DetailItem icon={Shirt} label="Numéro de maillot" value={player.number?.toString()} />
+                    <DetailItem icon={ClipboardList} label="Entraîneur assigné" value={player.coachName} />
+                    <DetailItem icon={LogIn} label="Date d'entrée au club" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={LogOut} label="Date de sortie du club" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </div>
+                
+                {(player.tutorName || player.tutorCin || player.tutorPhone || player.tutorEmail) && (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
+                    <SectionTitle title="Informations du Tuteur" />
+                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                    <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
+                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
+                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
+                  </div>
+                )}
             </main>
         </div>
       </div>
@@ -267,18 +296,21 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
             @media print {
                 body {
                     background-color: #fff !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
                 }
                 .print\\:hidden {
                     display: none;
+                }
+                 .break-before-page {
+                    page-break-before: always;
                 }
             }
             .break-inside-avoid {
                 break-inside: avoid;
             }
-            .break-inside-avoid-page {
-                break-inside: avoid-page;
-            }
         `}</style>
     </div>
   );
 }
+
