@@ -23,6 +23,13 @@ interface Player {
   position?: string;
 }
 
+// Helper function to format name to Title Case
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+
 export default function PlayerCardsPage() {
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -147,17 +154,17 @@ export default function PlayerCardsPage() {
                                 </div>
                             </header>
                             <div className="flex flex-col items-center gap-1 my-auto">
-                            <Avatar className="h-20 w-20 border-2 border-primary">
+                            <Avatar className="h-16 w-16 border-2 border-primary">
                                     <AvatarImage src={player.photoUrl} alt={player.name} />
-                                    <AvatarFallback className="text-2xl">{player.name?.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback className="text-xl">{player.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <h3 className="text-base font-bold">{player.name}</h3>
+                                <h3 className="text-sm font-bold">{toTitleCase(player.name)}</h3>
                                 <p className="text-xs font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
                             </div>
-                            <footer className="w-full space-y-1 text-sm">
+                            <footer className="w-full space-y-1 text-xs">
                                 <div className="flex justify-between items-center text-left">
                                     <span className="font-semibold text-primary">{player.category}</span>
-                                    <span className="font-bold text-lg text-black/80">#{player.number}</span>
+                                    <span className="font-bold text-base text-black/80">#{player.number}</span>
                                 </div>
                             </footer>
                         </Card>
