@@ -198,7 +198,6 @@ export default function Dashboard() {
                       <TableHead>Type</TableHead>
                       <TableHead>Équipe</TableHead>
                       <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
-                      <TableHead className="hidden md:table-cell">Lieu</TableHead>
                       <TableHead className="hidden lg:table-cell">Date</TableHead>
                       <TableHead className="hidden lg:table-cell">Heure</TableHead>
                     </TableRow>
@@ -221,14 +220,13 @@ export default function Dashboard() {
                             <div className="text-sm text-muted-foreground md:hidden">{event.opponent}</div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
-                          <TableCell className="hidden md:table-cell">{event.location}</TableCell>
                           <TableCell className="hidden lg:table-cell">{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
                           <TableCell className="hidden lg:table-cell">{format(event.date, "HH:mm", { locale: fr })}</TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
                           Aucun événement à venir.
                         </TableCell>
                       </TableRow>
