@@ -142,19 +142,6 @@ export default function PlayerCardsPage() {
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
           </Button>
-          <Button onClick={handleDownloadPdf} disabled={loadingPdf || loading || !hasPlayers}>
-            {loadingPdf ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Télécharger en PDF
-              </>
-            )}
-          </Button>
         </div>
 
         {loading ? (
@@ -181,7 +168,7 @@ export default function PlayerCardsPage() {
                                             <AvatarImage src={player.photoUrl} alt={player.name} />
                                             <AvatarFallback className="text-xl">{player.name?.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className="text-sm font-bold">{toTitleCase(player.name)}</h3>
+                                        <h3 className="text-base font-bold">{toTitleCase(player.name)}</h3>
                                         <p className="text-xs font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
                                     </div>
                                     <footer className="w-full space-y-1 text-xs">
