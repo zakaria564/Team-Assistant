@@ -117,7 +117,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
   
   if (!player) {
      return (
-      <div className="flex justify-center items-center h-screen bg-muted/40">
+      <div className="flex justify-center items-center h-screen">
         <p>Joueur non trouvé.</p>
       </div>
     );
@@ -127,8 +127,8 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
 
   return (
-    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
-      <div className="w-full max-w-md space-y-4">
+    <div className="p-4 sm:p-8 flex flex-col items-center min-h-screen">
+      <div className="w-full max-w-lg space-y-4">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -168,7 +168,7 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
                     <p className="text-lg font-semibold text-primary">{player.position || "Poste non spécifié"}</p>
                 </div>
 
-                 <div className="w-full grid grid-cols-2 gap-4 text-sm mt-4">
+                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
                     <div className="flex items-center gap-2">
                         <Shirt className="h-5 w-5 text-primary/80"/>
                         <div>
