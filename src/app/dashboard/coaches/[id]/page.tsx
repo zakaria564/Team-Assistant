@@ -138,12 +138,6 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             </p>
             </div>
         </div>
-        <Button asChild className="w-full md:w-auto">
-          <Link href={`/dashboard/coaches/${coachId}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Modifier
-          </Link>
-        </Button>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -228,5 +222,3 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
-
-    
