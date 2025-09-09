@@ -94,8 +94,8 @@ export default function RegistrationFormPage() {
 
 
   return (
-    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
-        <div className="w-full max-w-4xl space-y-4">
+    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
+        <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -117,32 +117,32 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
             
-            <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
-                 <CardHeader className="text-center space-y-4">
+            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
+                 <CardHeader className="text-center space-y-4 p-4 md:p-6">
                     {loadingClub || loadingUser ? (
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
                     ) : (
-                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-2xl font-bold uppercase">
+                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase">
                             <span>FICHE D'INSCRIPTION</span>
                             <span className="hidden sm:inline">-</span>
                             <span>{clubName}</span>
                         </CardTitle>
                     )}
-                    <p className="font-semibold">Saison sportive : ........................</p>
+                    <p className="font-semibold text-sm md:text-base">Saison sportive : ........................</p>
                 </CardHeader>
-                <CardContent className="p-6 space-y-8">
+                <CardContent className="p-4 md:p-6 space-y-6">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
-                        <div className="space-y-4 text-base">
+                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
+                        <div className="space-y-4 text-sm md:text-base">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Date et Lieu de naissance : .........................................................................................................................</p>
-                             <div className="grid grid-cols-2">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <p>Nationalité : .................................................................</p>
                                 <p>Sexe : ..........................................................................</p>
                             </div>
                             <p>N° CIN (si applicable) : ...........................................................................................................................</p>
                             <p>Adresse : ......................................................................................................................................................</p>
-                             <div className="grid grid-cols-2">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <p>Téléphone : ......................................................................</p>
                                 <p>Adresse e-mail : ................................................................</p>
                              </div>
@@ -150,12 +150,12 @@ export default function RegistrationFormPage() {
                     </div>
 
                      <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
-                        <div className="space-y-4 text-base">
+                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
+                        <div className="space-y-4 text-sm md:text-base">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Lien de parenté : (Père / Mère / Tuteur) : ..................................................................................................</p>
                             <p>N° de CIN : ........................................................................................................................................................</p>
-                            <div className="grid grid-cols-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <p>Téléphone : ......................................................................</p>
                                 <p>Adresse e-mail : ................................................................</p>
                             </div>
@@ -163,8 +163,8 @@ export default function RegistrationFormPage() {
                     </div>
                     
                      <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
-                        <div className="space-y-4 text-sm">
+                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
+                        <div className="space-y-4 text-xs md:text-sm">
                             <p>
                                 Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. 
                                 J'autorise mon enfant, ......................................................................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
@@ -204,3 +204,4 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
+
