@@ -32,7 +32,7 @@ interface Player {
 
 export default function PlayerCardPdfPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id: playerId } = React.use(params);
+  const { id: playerId } = params;
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
@@ -127,8 +127,8 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
 
 
   return (
-    <div className="bg-background p-4">
-      <div className="w-full max-w-sm mx-auto space-y-4">
+    <div className="bg-background">
+      <div className="w-full max-w-sm mx-auto space-y-4 py-4 px-2">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour

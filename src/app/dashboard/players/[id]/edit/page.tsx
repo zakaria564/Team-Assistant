@@ -36,7 +36,7 @@ interface Player {
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id: playerId } = React.use(params);
+  const { id: playerId } = params;
   
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);

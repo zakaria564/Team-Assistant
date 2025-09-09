@@ -22,7 +22,7 @@ interface Salary {
 
 export default function EditSalaryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id: salaryId } = React.use(params);
+  const { id: salaryId } = params;
   
   const [salary, setSalary] = useState<Salary | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -60,7 +61,7 @@ const getResultLabel = (scoreTeam?: number, scoreOpponent?: number) => {
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id: eventId } = React.use(params);
+  const { id: eventId } = params;
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
