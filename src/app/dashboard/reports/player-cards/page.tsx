@@ -139,25 +139,25 @@ export default function PlayerCardsPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {players.map(player => (
                     <Link href={`/dashboard/players/${player.id}/card`} key={player.id} className="no-underline">
-                        <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-4 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
+                        <Card className="h-full aspect-[5.4/8.6] border-2 border-primary/50 bg-gray-50 flex flex-col items-center justify-between p-2 text-center text-black shadow-lg break-inside-avoid hover:shadow-xl hover:border-primary transition-all">
                             <header className="w-full">
-                                <div className="flex items-center justify-center gap-2">
-                                    <Trophy className="h-6 w-6 text-primary" />
-                                    <h2 className="font-bold text-lg text-primary">{clubName}</h2>
+                                <div className="flex items-center justify-center gap-1">
+                                    <Trophy className="h-4 w-4 text-primary" />
+                                    <h2 className="font-bold text-sm text-primary">{clubName}</h2>
                                 </div>
                             </header>
-                            <div className="flex flex-col items-center gap-2 my-auto">
-                            <Avatar className="h-28 w-28 border-4 border-primary">
+                            <div className="flex flex-col items-center gap-1 my-auto">
+                            <Avatar className="h-20 w-20 border-2 border-primary">
                                     <AvatarImage src={player.photoUrl} alt={player.name} />
-                                    <AvatarFallback className="text-3xl">{player.name?.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback className="text-2xl">{player.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <h3 className="text-2xl font-bold">{player.name}</h3>
-                                <p className="text-base font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
+                                <h3 className="text-base font-bold">{player.name}</h3>
+                                <p className="text-xs font-semibold text-primary -mt-1">{player.position || 'N/A'}</p>
                             </div>
-                            <footer className="w-full space-y-2 text-lg">
+                            <footer className="w-full space-y-1 text-sm">
                                 <div className="flex justify-between items-center text-left">
                                     <span className="font-semibold text-primary">{player.category}</span>
-                                    <span className="font-bold text-2xl text-black/80">#{player.number}</span>
+                                    <span className="font-bold text-lg text-black/80">#{player.number}</span>
                                 </div>
                             </footer>
                         </Card>
