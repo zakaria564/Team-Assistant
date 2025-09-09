@@ -193,8 +193,8 @@ export default function Dashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Équipe</TableHead>
                       <TableHead>Type</TableHead>
+                      <TableHead>Équipe</TableHead>
                       <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
                       <TableHead className="hidden md:table-cell">Lieu</TableHead>
                       <TableHead className="hidden lg:table-cell">Date</TableHead>
@@ -205,14 +205,14 @@ export default function Dashboard() {
                     {upcomingEvents.length > 0 ? (
                       upcomingEvents.map(event => (
                         <TableRow key={event.id}>
-                          <TableCell>
-                            <div className="font-medium">{event.team.replace(/^Club\s/i, '')}</div>
-                            <div className="text-sm text-muted-foreground md:hidden">{event.location}</div>
-                          </TableCell>
-                          <TableCell>
+                           <TableCell>
                             <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
                               {event.type}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{event.team.replace(/^Club\s/i, '')}</div>
+                            <div className="text-sm text-muted-foreground md:hidden">{event.location}</div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
                           <TableCell className="hidden md:table-cell">{event.location}</TableCell>
