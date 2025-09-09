@@ -218,7 +218,7 @@ export default function Dashboard() {
                           </TableCell>
                           <TableCell>
                             <div className="font-medium">{event.team.replace(/^Club\s/i, '')}</div>
-                            <div className="text-sm text-muted-foreground md:hidden">{event.location}</div>
+                            <div className="text-sm text-muted-foreground md:hidden">{event.opponent}</div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
                           <TableCell className="hidden md:table-cell">{event.location}</TableCell>
