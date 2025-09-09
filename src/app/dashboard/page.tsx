@@ -16,6 +16,7 @@ import { fr } from "date-fns/locale";
 import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: string;
@@ -40,6 +41,7 @@ interface ChartData {
 
 export default function Dashboard() {
   const [user, loadingUser] = useAuthState(auth);
+  const router = useRouter();
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
@@ -204,7 +206,11 @@ export default function Dashboard() {
                   <TableBody>
                     {upcomingEvents.length > 0 ? (
                       upcomingEvents.map(event => (
-                        <TableRow key={event.id}>
+                        <TableRow 
+                            key={event.id} 
+                            className="cursor-pointer"
+                            onClick={() => router.push(`/dashboard/events/${event.id}`)}
+                        >
                            <TableCell>
                             <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
                               {event.type}
