@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -225,7 +225,9 @@ export default function EventsPage() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
-                    selectedEvents.map(event => (
+                    selectedEvents.map(event => {
+                        const isPast24h = differenceInHours(new Date(), event.date) > 24;
+                        return (
                          <Card key={event.id} className="bg-muted/30 group">
                             <CardHeader>
                                 <CardDescription className={cn(`font-medium`, getEventBadgeClass(event.type))}>{event.type}</CardDescription>
@@ -263,7 +265,7 @@ export default function EventsPage() {
                                             Voir les détails
                                         </Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                    <DropdownMenuItem asChild disabled={isPast24h} className="cursor-pointer">
                                       <Link href={`/dashboard/events/${event.id}/edit`}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         Modifier
@@ -302,7 +304,8 @@ export default function EventsPage() {
                                 </DropdownMenu>
                             </CardFooter>
                         </Card>
-                    ))
+                        )
+                    })
                 ) : (
                     <div className="text-center py-10 text-muted-foreground">
                         <p>Aucun événement prévu pour cette date.</p>
@@ -315,5 +318,3 @@ export default function EventsPage() {
     </>
   );
 }
-
-    
