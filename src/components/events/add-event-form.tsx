@@ -165,9 +165,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
 
     useEffect(() => {
         if (disabled) {
-            form.disable();
-        } else {
-            form.enable();
+            form.reset(form.getValues());
         }
     }, [disabled, form]);
 
@@ -600,5 +598,3 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
         </Form>
     );
 }
-
-    
