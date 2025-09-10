@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Search, BarChart, Pencil } from "lucide-react";
+import { Loader2, Search, BarChart, Pencil, FileText } from "lucide-react";
 import Link from "next/link";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -188,8 +188,14 @@ export default function ResultsPage() {
                                 {getResultLabel(match.scoreTeam, match.scoreOpponent)}
                                 </Badge>
                            </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right space-x-2">
                              <Button asChild variant="outline" size="sm">
+                                <Link href={`/dashboard/events/${match.id}`}>
+                                    <FileText className="mr-2 h-3 w-3"/>
+                                    Détails
+                                </Link>
+                             </Button>
+                             <Button asChild variant="default" size="sm">
                                 <Link href={`/dashboard/events/${match.id}/edit`}>
                                     <Pencil className="mr-2 h-3 w-3"/>
                                     {(match.scoreTeam !== undefined && match.scoreTeam !== null) ? "Modifier" : "Ajouter"}

@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints, Pencil } from "lucide-react";
-import { format, isPast } from "date-fns";
+import { format, isPast, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -118,6 +118,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const isPastEvent = isPast(event.date);
   const showScoreAndStats = eventTypeIsMatch && isPastEvent;
   const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
+  const canEdit = differenceInHours(new Date(), event.date) <= 24;
 
 
   return (
@@ -135,6 +136,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
+         {isPastEvent && eventTypeIsMatch && canEdit && (
+            <Button asChild>
+              <Link href={`/dashboard/events/${event.id}/edit`}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Modifier le résultat
+              </Link>
+            </Button>
+          )}
       </div>
       
         <Card>
@@ -191,7 +200,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     <CardTitle>Statistiques du Match</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6">
-                    {event.scorers && event.scorers.length > 0 && (
+                    {event.scorers && event.scorers.length > 0 ? (
                         <div className="space-y-3">
                             <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs</h4>
                             <ul className="list-disc pl-5 text-sm space-y-1">
@@ -200,8 +209,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                                 ))}
                             </ul>
                         </div>
-                    )}
-                     {event.assisters && event.assisters.length > 0 && (
+                    ) : (<div></div>)}
+                     {event.assisters && event.assisters.length > 0 ? (
                         <div className="space-y-3">
                             <h4 className="font-semibold flex items-center gap-2"><Footprints className="h-5 w-5" />Passeurs</h4>
                              <ul className="list-disc pl-5 text-sm space-y-1">
@@ -210,7 +219,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                                 ))}
                             </ul>
                         </div>
-                    )}
+                    ): (<div></div>)}
                 </CardContent>
             </Card>
         )}
