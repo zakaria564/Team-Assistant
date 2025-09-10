@@ -9,7 +9,9 @@ import { db } from "@/lib/firebase";
 import { AddEventForm } from "@/components/events/add-event-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft, Loader2, Info } from "lucide-react";
+import { differenceInHours } from "date-fns";
 
 interface Event {
     id: string;
@@ -29,6 +31,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
 
    useEffect(() => {
     if (!eventId) return;
@@ -43,6 +46,11 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           const data = docSnap.data();
           // Ensure Firestore Timestamp is converted to JS Date
           const date = data.date?.toDate ? data.date.toDate() : new Date();
+          
+          if (differenceInHours(new Date(), date) > 24) {
+            setIsLocked(true);
+          }
+          
           setEvent({ 
               id: docSnap.id, 
               ...data,
@@ -88,8 +96,16 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                 <div className="flex justify-center items-center py-20">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
+            ) : isLocked ? (
+                 <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Modification verrouillée</AlertTitle>
+                    <AlertDescription>
+                        Vous ne pouvez plus modifier cet événement car il s'est terminé il y a plus de 24 heures.
+                    </AlertDescription>
+                </Alert>
             ) : event ? (
-                <AddEventForm event={event} />
+                <AddEventForm event={event} disabled={isLocked} />
             ) : (
                 <p className="p-6">Événement non trouvé.</p>
             )}
