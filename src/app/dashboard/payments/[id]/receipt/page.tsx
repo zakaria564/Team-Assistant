@@ -8,13 +8,15 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, Trophy, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 
 interface Payment {
@@ -45,6 +47,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingPdf, setLoadingPdf] = useState(false);
   
   useEffect(() => {
     if (!paymentId) return;
@@ -80,6 +83,55 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     fetchPayment();
   }, [paymentId, router]);
 
+  const handleDownloadPdf = () => {
+    setLoadingPdf(true);
+    const cardElement = document.getElementById("printable-receipt");
+    if (cardElement) {
+        const originalWidth = cardElement.style.width;
+        cardElement.style.width = '800px';
+
+        html2canvas(cardElement, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const canvasAspectRatio = canvasWidth / canvasHeight;
+
+            let imgWidth = pdfWidth;
+            let imgHeight = pdfWidth / canvasAspectRatio;
+            
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = imgHeight * canvasAspectRatio;
+            }
+
+            const x = (pdfWidth - imgWidth) / 2;
+            const y = (pdfHeight - imgHeight) / 2;
+
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
+        }).finally(() => {
+            cardElement.style.width = originalWidth;
+            setLoadingPdf(false);
+        });
+    } else {
+        console.error("Element to print not found.");
+        setLoadingPdf(false);
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -101,15 +153,28 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center">
+    <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center bg-muted/40">
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                 </Button>
+                 <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+                    {loadingPdf ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Téléchargement...
+                    </>
+                    ) : (
+                    <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Télécharger en PDF
+                    </>
+                    )}
+                </Button>
             </div>
             
-            <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
+            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
                  <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                         <div>
@@ -221,3 +286,5 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     </div>
   );
 }
+
+    
