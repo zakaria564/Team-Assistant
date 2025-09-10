@@ -5,7 +5,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Trophy, Download } from "lucide-react";
@@ -30,6 +31,12 @@ interface Payment {
   transactions: { amount: number; date: { seconds: number, nanoseconds: number }; method: string; }[];
 }
 
+interface ClubInfo {
+    name: string;
+    address: string;
+    email: string;
+}
+
 const getBadgeClass = (status?: Payment['status']) => {
      switch (status) {
         case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
@@ -44,19 +51,27 @@ const getBadgeClass = (status?: Payment['status']) => {
 export default function PaymentReceiptPage({ params }: { params: { id: string } }) {
   const { id: paymentId } = React.use(params);
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   
   const [payment, setPayment] = useState<Payment | null>(null);
+  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   
   useEffect(() => {
     if (!paymentId) return;
 
-    const fetchPayment = async () => {
+    const fetchPaymentAndClubInfo = async () => {
+      if (!user) {
+        if (!loadingUser) setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const paymentRef = doc(db, "payments", paymentId as string);
-        const paymentSnap = await getDoc(paymentRef);
+        const clubRef = doc(db, "clubs", user.uid);
+        
+        const [paymentSnap, clubSnap] = await Promise.all([getDoc(paymentRef), getDoc(clubRef)]);
 
         if (paymentSnap.exists()) {
           const paymentData = { id: paymentSnap.id, ...paymentSnap.data() } as Omit<Payment, 'playerName'>;
@@ -68,20 +83,35 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             ...paymentData,
             playerName: playerSnap.exists() ? playerSnap.data().name : "Joueur inconnu"
           });
-
         } else {
           console.log("No such payment document!");
           router.push('/dashboard/payments');
         }
+
+        if (clubSnap.exists()) {
+            const clubData = clubSnap.data();
+            setClubInfo({
+                name: clubData.clubName || "Votre Club",
+                address: clubData.address || "Adresse non configurée",
+                email: clubData.contactEmail || "Email non configuré",
+            });
+        } else {
+             setClubInfo({
+                name: "Votre Club",
+                address: "Adresse non configurée",
+                email: "Email non configuré",
+            });
+        }
+
       } catch (error) {
-        console.error("Error fetching payment details:", error);
+        console.error("Error fetching details:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPayment();
-  }, [paymentId, router]);
+    fetchPaymentAndClubInfo();
+  }, [paymentId, user, loadingUser, router]);
 
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
@@ -122,7 +152,9 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
             pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
         }).finally(() => {
-            cardElement.style.width = originalWidth;
+            if (cardElement) {
+               cardElement.style.width = originalWidth;
+            }
             setLoadingPdf(false);
         });
     } else {
@@ -132,9 +164,9 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   };
 
 
-  if (loading) {
+  if (loading || loadingUser) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-muted/40">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -153,7 +185,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center bg-muted/40">
+    <div className="min-h-screen bg-muted/40 p-4 sm:p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -174,16 +206,16 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                 </Button>
             </div>
             
-            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
-                 <CardHeader>
+            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
+                 <CardHeader className="p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                         <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <Trophy className="h-8 w-8 text-primary" />
-                                <h1 className="text-2xl font-bold">Team Assistant Club</h1>
+                            <div className="flex items-center gap-3 mb-2">
+                                <Trophy className="h-10 w-10 text-primary" />
+                                <h1 className="text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
                             </div>
-                            <p className="text-muted-foreground">123 Rue du Stade, 75000 Ville</p>
-                            <p className="text-muted-foreground">contact@team-assistant.com</p>
+                            <p className="text-muted-foreground">{clubInfo?.address}</p>
+                            <p className="text-muted-foreground">{clubInfo?.email}</p>
                         </div>
                         <div className="text-left sm:text-right mt-4 sm:mt-0">
                             <h2 className="text-3xl font-bold text-primary">REÇU DE PAIEMENT</h2>
@@ -193,14 +225,14 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                     </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                    <div className="grid sm:grid-cols-2 gap-6 mb-6">
+                    <div className="grid sm:grid-cols-2 gap-6 mb-8 p-4 bg-gray-50 rounded-lg">
                         <div className="space-y-1">
-                            <h3 className="font-semibold">Reçu pour :</h3>
-                            <p className="font-bold text-lg">{payment.playerName}</p>
+                            <h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3>
+                            <p className="font-bold text-lg text-gray-900">{payment.playerName}</p>
                         </div>
                          <div className="space-y-1">
-                            <h3 className="font-semibold">Description du paiement :</h3>
-                            <p>{payment.description}</p>
+                            <h3 className="text-sm font-semibold text-gray-600">Description du paiement :</h3>
+                            <p className="text-gray-800">{payment.description}</p>
                         </div>
                     </div>
                     
@@ -208,9 +240,9 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Date du versement</TableHead>
-                                    <TableHead>Méthode</TableHead>
-                                    <TableHead className="text-right">Montant</TableHead>
+                                    <TableHead className="text-gray-600">Date du versement</TableHead>
+                                    <TableHead className="text-gray-600">Méthode</TableHead>
+                                    <TableHead className="text-right text-gray-600">Montant</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -234,7 +266,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                     </div>
 
                     <div className="flex justify-end">
-                        <div className="w-full max-w-sm space-y-2">
+                        <div className="w-full max-w-sm space-y-3">
                              <div className="flex justify-between">
                                 <span className="text-muted-foreground">Montant total dû :</span>
                                 <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
@@ -244,14 +276,14 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                                 <span className="font-medium">{amountPaid.toFixed(2)} MAD</span>
                              </div>
                              <Separator />
-                              <div className="flex justify-between font-bold text-lg">
+                              <div className="flex justify-between font-bold text-lg text-primary">
                                 <span>Montant restant :</span>
                                 <span>{amountRemaining.toFixed(2)} MAD</span>
                               </div>
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="p-6 flex-col items-start gap-4">
+                <CardFooter className="p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold">Statut du paiement:</span>
                         <Badge className={cn("text-base", getBadgeClass(payment.status))}>
@@ -286,5 +318,3 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     </div>
   );
 }
-
-    
