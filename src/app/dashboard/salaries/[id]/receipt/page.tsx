@@ -199,7 +199,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
                 </CardFooter>
             </Card>
         </div>
-        <style jsx global>{`
+        <style jsx global>{\`
             @media print {
                 body {
                     background-color: #fff !important;
@@ -217,7 +217,9 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
                     background-color: transparent;
                 }
             }
-        `}</style>
+        \`}</style>
     </div>
   );
 }
+
+    

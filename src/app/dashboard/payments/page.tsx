@@ -315,6 +315,12 @@ export default function PaymentsPage() {
                                             </Link>
                                           </DropdownMenuItem>
                                       )}
+                                      <DropdownMenuItem asChild className="cursor-pointer">
+                                        <Link href={`/dashboard/payments/${payment.id}/receipt`}>
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Exporter le reçu
+                                        </Link>
+                                      </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem 
                                         className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
@@ -366,5 +372,7 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    
 
     
