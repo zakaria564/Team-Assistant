@@ -116,7 +116,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isPastEvent = isPast(event.date);
-  const showScoreAndStats = eventTypeIsMatch && isPastEvent;
+  const showScoreAndStats = eventTypeIsMatch && (isPastEvent || typeof event.scoreTeam === 'number');
   const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
   const canEdit = differenceInHours(new Date(), event.date) <= 24;
 
@@ -140,7 +140,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <Button asChild>
               <Link href={`/dashboard/events/${event.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Modifier le résultat
+                {typeof event.scoreTeam === 'number' ? 'Modifier le résultat' : 'Ajouter le résultat'}
               </Link>
             </Button>
           )}
