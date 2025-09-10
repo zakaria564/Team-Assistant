@@ -110,7 +110,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
             </div>
             
             <Card className="w-full max-w-4xl mx-auto print:shadow-none print:border-none">
-                 <CardHeader>
+                 <CardHeader className="p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -199,7 +199,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
                 </CardFooter>
             </Card>
         </div>
-        <style jsx global>{\`
+        <style jsx global>{`
             @media print {
                 body {
                     background-color: #fff !important;
@@ -217,9 +217,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
                     background-color: transparent;
                 }
             }
-        \`}</style>
+        `}</style>
     </div>
   );
 }
-
-    
