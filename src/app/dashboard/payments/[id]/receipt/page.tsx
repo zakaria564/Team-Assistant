@@ -135,19 +135,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const canvasAspectRatio = canvasWidth / canvasHeight;
-            
-            let finalHeight = pdfHeight;
-            let finalWidth = pdfHeight * canvasAspectRatio;
-
-            if (finalWidth > pdfWidth) {
-                finalWidth = pdfWidth;
-                finalHeight = pdfWidth / canvasAspectRatio;
-            }
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, finalWidth, finalHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
         }).finally(() => {
             if (cardElement) {
@@ -234,7 +222,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                         </div>
                     </div>
                     
-                    <div className="w-full overflow-x-auto mb-6">
+                    <div className="w-full mb-6">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -264,7 +252,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-end mt-6">
-                        <div className="w-full max-w-sm space-y-3">
+                        <div className="w-full sm:max-w-sm space-y-3">
                              <div className="flex justify-between">
                                 <span className="text-muted-foreground">Montant total dû :</span>
                                 <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
