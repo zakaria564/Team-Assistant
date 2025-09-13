@@ -96,7 +96,7 @@ export default function RegistrationFormPage() {
 
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center">
+    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
         <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -119,7 +119,7 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
             
-            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black overflow-hidden" id="printable-form">
+            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
                  <CardHeader className="text-center space-y-4 p-4 sm:p-6">
                     {loadingClub || loadingUser ? (
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
@@ -212,5 +212,3 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
-
-    
