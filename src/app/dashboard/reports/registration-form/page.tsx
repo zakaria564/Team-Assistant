@@ -92,9 +92,11 @@ export default function RegistrationFormPage() {
     }
   };
 
+  const DottedLine = () => <div className="flex-grow border-b border-dotted border-gray-400 mx-1"></div>;
+
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
+    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center">
         <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -128,52 +130,58 @@ export default function RegistrationFormPage() {
                             <span className="break-all">{clubName}</span>
                         </CardTitle>
                     )}
-                    <p className="font-semibold text-sm md:text-base">Saison sportive : ........................</p>
+                     <div className="flex items-center justify-center font-semibold text-sm md:text-base">
+                        <span className="whitespace-nowrap">Saison sportive :</span>
+                        <DottedLine />
+                    </div>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 space-y-6">
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
-                        <div className="space-y-4 text-sm md:text-base break-words">
-                            <p>Nom et Prénom : ............................................................................................................................................</p>
-                            <p>Date et Lieu de naissance : .........................................................................................................................</p>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <p>Nationalité : .................................................................</p>
-                                <p>Sexe : ..........................................................................</p>
+                        <div className="space-y-4 text-sm md:text-base">
+                            <div className="flex items-center"><span className="whitespace-nowrap">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><span className="whitespace-nowrap">Date et Lieu de naissance :</span><DottedLine /></div>
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                <div className="flex items-center"><span className="whitespace-nowrap">Nationalité :</span><DottedLine /></div>
+                                <div className="flex items-center"><span className="whitespace-nowrap">Sexe :</span><DottedLine /></div>
                             </div>
-                            <p>N° CIN (si applicable) : ...........................................................................................................................</p>
-                            <p>Adresse : ......................................................................................................................................................</p>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <p>Téléphone : ......................................................................</p>
-                                <p>Adresse e-mail : ................................................................</p>
+                            <div className="flex items-center"><span className="whitespace-nowrap">N° CIN (si applicable) :</span><DottedLine /></div>
+                            <div className="flex items-center"><span className="whitespace-nowrap">Adresse :</span><DottedLine /></div>
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                <div className="flex items-center"><span className="whitespace-nowrap">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><span className="whitespace-nowrap">Adresse e-mail :</span><DottedLine /></div>
                              </div>
                         </div>
                     </div>
 
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
-                        <div className="space-y-4 text-sm md:text-base break-words">
-                            <p>Nom et Prénom : ............................................................................................................................................</p>
-                            <p>Lien de parenté : (Père / Mère / Tuteur) : ..................................................................................................</p>
-                            <p>N° de CIN : ........................................................................................................................................................</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <p>Téléphone : ......................................................................</p>
-                                <p>Adresse e-mail : ................................................................</p>
+                        <div className="space-y-4 text-sm md:text-base">
+                            <div className="flex items-center"><span className="whitespace-nowrap">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><span className="whitespace-nowrap">Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
+                            <div className="flex items-center"><span className="whitespace-nowrap">N° de CIN :</span><DottedLine /></div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                <div className="flex items-center"><span className="whitespace-nowrap">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><span className="whitespace-nowrap">Adresse e-mail :</span><DottedLine /></div>
                             </div>
                         </div>
                     </div>
                     
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
-                        <div className="space-y-4 text-xs md:text-sm break-words">
-                            <p>
-                                Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. 
-                                J'autorise mon enfant, ......................................................................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                        <div className="space-y-4 text-xs md:text-sm">
+                            <p className="leading-relaxed">
+                                Je soussigné(e), <span className="font-semibold">[Nom du parent/tuteur]</span>, certifie que les informations ci-dessus sont exactes. 
+                                J'autorise mon enfant, <span className="font-semibold">[Nom de l'enfant]</span>, à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
                             </p>
-                            <p className="font-semibold">
+                            <p className="font-semibold leading-relaxed">
                                 Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
                             </p>
-                            <div className="pt-8">
-                                <p>Fait à ........................................................................., le ..............................................................</p>
+                            <div className="pt-8 space-y-2">
+                                <div className="flex items-center">
+                                    <span className="whitespace-nowrap">Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
+                                    <span className="whitespace-nowrap ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                                </div>
                                 <p className="pt-12 text-center">Signature du parent / tuteur (légalisée) :</p>
                             </div>
                         </div>
@@ -204,3 +212,5 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
+
+    
