@@ -150,7 +150,9 @@ export default function CoachDetailsPdfPage({ params }: { params: { id: string }
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
             pdf.save(`fiche_entraineur_${coach?.name?.replace(/ /g, "_")}.pdf`);
         }).finally(() => {
-            cardElement.style.width = originalWidth;
+            if (cardElement) {
+              cardElement.style.width = originalWidth;
+            }
             setLoadingPdf(false);
         });
     } else {

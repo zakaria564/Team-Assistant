@@ -173,7 +173,9 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
             pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
         }).finally(() => {
-            cardElement.style.width = originalWidth;
+            if (cardElement) {
+                cardElement.style.width = originalWidth;
+            }
             setLoadingPdf(false);
         });
     } else {
@@ -310,4 +312,3 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
-

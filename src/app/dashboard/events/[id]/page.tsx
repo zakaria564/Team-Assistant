@@ -116,7 +116,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isPastEvent = isPast(event.date);
-  const showScoreAndStats = eventTypeIsMatch && (isPastEvent || typeof event.scoreTeam === 'number');
+  const showScoreAndStats = eventTypeIsMatch && (typeof event.scoreTeam === 'number');
   const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
   const canEdit = differenceInHours(new Date(), event.date) <= 24;
 

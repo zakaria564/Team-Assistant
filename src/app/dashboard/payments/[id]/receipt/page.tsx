@@ -134,23 +134,8 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const canvasAspectRatio = canvasWidth / canvasHeight;
-            const pdfAspectRatio = pdfWidth / pdfHeight;
-
-            let imgWidth = pdfWidth;
-            let imgHeight = pdfWidth / canvasAspectRatio;
-
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = imgHeight * canvasAspectRatio;
-            }
             
-            const x = 0;
-            const y = 0;
-
-            pdf.addImage(imgData, 'PNG', x, y, pdfWidth, pdfHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
         }).finally(() => {
             if (cardElement) {
