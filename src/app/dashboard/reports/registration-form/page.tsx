@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ArrowLeft, Printer, Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { db, auth } from "@/lib/firebase";
@@ -45,7 +45,9 @@ export default function RegistrationFormPage() {
       }
     };
     
-    fetchClubName();
+    if (user || !loadingUser) {
+        fetchClubName();
+    }
   }, [user, loadingUser]);
 
   
@@ -54,7 +56,7 @@ export default function RegistrationFormPage() {
     const formElement = document.getElementById("printable-form");
     if (formElement) {
         html2canvas(formElement, {
-            scale: 2, // Augmente la résolution pour une meilleure qualité
+            scale: 2,
             useCORS: true
         }).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
@@ -70,7 +72,7 @@ export default function RegistrationFormPage() {
             const canvasHeight = canvas.height;
             const ratio = canvasWidth / canvasHeight;
             
-            const width = pdfWidth - 40; // Marge de 20pt de chaque côté
+            const width = pdfWidth - 40; 
             const height = width / ratio;
             
             let finalHeight = height;
@@ -125,13 +127,13 @@ export default function RegistrationFormPage() {
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
                     ) : (
                         <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase break-words">
-                            <span>FICHE D'INSCRIPTION</span>
+                            <div className="break-words">FICHE D'INSCRIPTION</div>
                             <span className="hidden sm:inline">-</span>
-                            <span className="break-all">{clubName}</span>
+                            <div className="break-all">{clubName}</div>
                         </CardTitle>
                     )}
                      <div className="flex items-center font-semibold text-sm md:text-base">
-                        <span>Saison sportive :</span>
+                        <div className="shrink-0">Saison sportive :</div>
                         <DottedLine />
                     </div>
                 </CardHeader>
@@ -139,17 +141,17 @@ export default function RegistrationFormPage() {
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center break-words"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center break-words"><span className="shrink-0">Date et Lieu de naissance :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">Nom et Prénom :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">Date et Lieu de naissance :</div><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center break-words"><span className="shrink-0">Nationalité :</span><DottedLine /></div>
-                                <div className="flex items-center break-words"><span className="shrink-0">Sexe :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Nationalité :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Sexe :</div><DottedLine /></div>
                             </div>
-                            <div className="flex items-center break-words"><span className="shrink-0">N° CIN (si applicable) :</span><DottedLine /></div>
-                            <div className="flex items-center break-words"><span className="shrink-0">Adresse :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">N° CIN (si applicable) :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">Adresse :</div><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center break-words"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center break-words"><span className="shrink-0">Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Téléphone :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Adresse e-mail :</div><DottedLine /></div>
                              </div>
                         </div>
                     </div>
@@ -157,12 +159,12 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center break-words"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center break-words"><span className="shrink-0">Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
-                            <div className="flex items-center break-words"><span className="shrink-0">N° de CIN :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">Nom et Prénom :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="shrink-0 break-words">N° de CIN :</div><DottedLine /></div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center break-words"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center break-words"><span className="shrink-0">Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Téléphone :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="shrink-0 break-words">Adresse e-mail :</div><DottedLine /></div>
                             </div>
                         </div>
                     </div>
@@ -170,11 +172,11 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
                         <div className="space-y-4 text-xs md:text-sm">
-                            <p className="leading-relaxed">
+                            <p className="leading-relaxed break-words">
                                 Je soussigné(e), <span className="font-semibold">[Nom du parent/tuteur]</span>, certifie que les informations ci-dessus sont exactes. 
                                 J'autorise mon enfant, <span className="font-semibold">[Nom de l'enfant]</span>, à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
                             </p>
-                            <p className="font-semibold leading-relaxed">
+                            <p className="font-semibold leading-relaxed break-words">
                                 Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
                             </p>
                             <div className="pt-8 space-y-2">
@@ -212,4 +214,3 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
-
