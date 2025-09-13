@@ -192,33 +192,33 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                 </Button>
             </div>
             
-            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800 overflow-x-hidden">
-                 <CardHeader className="p-6">
+            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
+                 <CardHeader className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <Trophy className="h-10 w-10 text-primary" />
-                                <h1 className="text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
                             </div>
-                            <p className="text-muted-foreground break-words">{clubInfo?.address}</p>
-                            <p className="text-muted-foreground break-words">{clubInfo?.email}</p>
+                            <p className="text-sm text-muted-foreground break-words">{clubInfo?.address}</p>
+                            <p className="text-sm text-muted-foreground break-words">{clubInfo?.email}</p>
                         </div>
                         <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0">
-                            <h2 className="text-2xl sm:text-3xl font-bold text-primary">REÇU DE PAIEMENT</h2>
-                            <p className="text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
-                            <p className="text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
+                            <h2 className="text-xl sm:text-2xl font-bold text-primary">REÇU DE PAIEMENT</h2>
+                            <p className="text-sm text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
+                            <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-6">
-                    <div className="grid sm:grid-cols-2 gap-6 mb-8 p-4 bg-gray-50 rounded-lg">
+                <CardContent className="p-4 sm:p-6">
+                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
                         <div className="space-y-1">
                             <h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3>
-                            <p className="font-bold text-lg text-gray-900">{payment.playerName}</p>
+                            <p className="font-bold text-base sm:text-lg text-gray-900">{payment.playerName}</p>
                         </div>
                          <div className="space-y-1">
                             <h3 className="text-sm font-semibold text-gray-600">Description du paiement :</h3>
-                            <p className="text-gray-800">{payment.description}</p>
+                            <p className="text-sm sm:text-base text-gray-800">{payment.description}</p>
                         </div>
                     </div>
                     
@@ -226,7 +226,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="text-gray-600">Date du versement</TableHead>
+                                    <TableHead className="text-gray-600">Date</TableHead>
                                     <TableHead className="text-gray-600">Méthode</TableHead>
                                     <TableHead className="text-right text-gray-600">Montant</TableHead>
                                 </TableRow>
@@ -235,9 +235,9 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                                 {payment.transactions?.length > 0 ? (
                                 payment.transactions.map((transaction, index) => (
                                     <TableRow key={index}>
-                                    <TableCell>{format(new Date(transaction.date.seconds * 1000), "dd/MM/yyyy", { locale: fr })}</TableCell>
-                                    <TableCell>{transaction.method}</TableCell>
-                                    <TableCell className="text-right font-medium">{transaction.amount.toFixed(2)} MAD</TableCell>
+                                    <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.date.seconds * 1000), "dd/MM/yy", { locale: fr })}</TableCell>
+                                    <TableCell className="text-xs sm:text-sm">{transaction.method}</TableCell>
+                                    <TableCell className="text-right font-medium text-xs sm:text-sm">{transaction.amount.toFixed(2)} MAD</TableCell>
                                     </TableRow>
                                 ))
                                 ) : (
@@ -252,7 +252,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                     </div>
 
                     <div className="flex flex-col items-end mt-6">
-                        <div className="w-full sm:max-w-sm space-y-3">
+                        <div className="w-full sm:max-w-xs space-y-2 text-sm">
                              <div className="flex justify-between">
                                 <span className="text-muted-foreground">Montant total dû :</span>
                                 <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
@@ -262,17 +262,17 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                                 <span className="font-medium">{amountPaid.toFixed(2)} MAD</span>
                              </div>
                              <Separator />
-                              <div className="flex justify-between font-bold text-lg text-primary">
+                              <div className="flex justify-between font-bold text-base text-primary">
                                 <span>Montant restant :</span>
                                 <span>{amountRemaining.toFixed(2)} MAD</span>
                               </div>
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
+                <CardFooter className="p-4 sm:p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
                     <div className="flex items-center gap-2">
-                        <span className="font-semibold">Statut du paiement:</span>
-                        <Badge className={cn("text-base", getBadgeClass(payment.status))}>
+                        <span className="font-semibold text-sm sm:text-base">Statut du paiement:</span>
+                        <Badge className={cn("text-sm sm:text-base", getBadgeClass(payment.status))}>
                             {payment.status}
                         </Badge>
                     </div>
