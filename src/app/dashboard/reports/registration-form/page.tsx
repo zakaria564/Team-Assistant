@@ -117,23 +117,23 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
             
-            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
-                 <CardHeader className="text-center space-y-4 p-4 md:p-6">
+            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black overflow-hidden" id="printable-form">
+                 <CardHeader className="text-center space-y-4 p-4 sm:p-6">
                     {loadingClub || loadingUser ? (
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
                     ) : (
-                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase">
+                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase break-words">
                             <span>FICHE D'INSCRIPTION</span>
                             <span className="hidden sm:inline">-</span>
-                            <span>{clubName}</span>
+                            <span className="break-all">{clubName}</span>
                         </CardTitle>
                     )}
                     <p className="font-semibold text-sm md:text-base">Saison sportive : ........................</p>
                 </CardHeader>
-                <CardContent className="p-4 md:p-6 space-y-6">
+                <CardContent className="p-4 sm:p-6 space-y-6">
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
-                        <div className="space-y-4 text-sm md:text-base">
+                        <div className="space-y-4 text-sm md:text-base break-words">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Date et Lieu de naissance : .........................................................................................................................</p>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -151,7 +151,7 @@ export default function RegistrationFormPage() {
 
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
-                        <div className="space-y-4 text-sm md:text-base">
+                        <div className="space-y-4 text-sm md:text-base break-words">
                             <p>Nom et Prénom : ............................................................................................................................................</p>
                             <p>Lien de parenté : (Père / Mère / Tuteur) : ..................................................................................................</p>
                             <p>N° de CIN : ........................................................................................................................................................</p>
@@ -164,7 +164,7 @@ export default function RegistrationFormPage() {
                     
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
-                        <div className="space-y-4 text-xs md:text-sm">
+                        <div className="space-y-4 text-xs md:text-sm break-words">
                             <p>
                                 Je soussigné(e), ......................................................................................................................., certifie que les informations ci-dessus sont exactes. 
                                 J'autorise mon enfant, ......................................................................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
@@ -204,4 +204,3 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
-
