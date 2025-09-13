@@ -7,7 +7,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Download, Trophy, User, Shirt, Shield, Star, Cake, Flag, Phone, Mail, Home, Fingerprint } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
