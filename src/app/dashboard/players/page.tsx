@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from "react";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -316,14 +317,6 @@ export default function PlayersPage() {
                                       Exporter la fiche
                                   </DropdownMenuItem>
                                 </Link>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                  onSelect={() => setPlayerToDelete(player)}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Supprimer
-                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -366,5 +359,3 @@ export default function PlayersPage() {
     </>
   );
 }
-
-    
