@@ -171,7 +171,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div className="min-h-screen bg-muted/40 p-4 sm:p-8 flex flex-col items-center">
+    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -304,5 +304,3 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     </div>
   );
 }
-
-    
