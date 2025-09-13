@@ -131,7 +131,7 @@ export default function RegistrationFormPage() {
                         </CardTitle>
                     )}
                      <div className="flex items-center justify-center font-semibold text-sm md:text-base">
-                        <span className="whitespace-nowrap">Saison sportive :</span>
+                        <span>Saison sportive :</span>
                         <DottedLine />
                     </div>
                 </CardHeader>
@@ -139,17 +139,17 @@ export default function RegistrationFormPage() {
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span className="whitespace-nowrap">Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center"><span className="whitespace-nowrap">Date et Lieu de naissance :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>Date et Lieu de naissance :</span><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="whitespace-nowrap">Nationalité :</span><DottedLine /></div>
-                                <div className="flex items-center"><span className="whitespace-nowrap">Sexe :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Nationalité :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Sexe :</span><DottedLine /></div>
                             </div>
-                            <div className="flex items-center"><span className="whitespace-nowrap">N° CIN (si applicable) :</span><DottedLine /></div>
-                            <div className="flex items-center"><span className="whitespace-nowrap">Adresse :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>N° CIN (si applicable) :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>Adresse :</span><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="whitespace-nowrap">Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center"><span className="whitespace-nowrap">Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Adresse e-mail :</span><DottedLine /></div>
                              </div>
                         </div>
                     </div>
@@ -157,12 +157,12 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span className="whitespace-nowrap">Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center"><span className="whitespace-nowrap">Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
-                            <div className="flex items-center"><span className="whitespace-nowrap">N° de CIN :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
+                            <div className="flex items-center"><span>N° de CIN :</span><DottedLine /></div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="whitespace-nowrap">Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center"><span className="whitespace-nowrap">Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><span>Adresse e-mail :</span><DottedLine /></div>
                             </div>
                         </div>
                     </div>
@@ -179,8 +179,8 @@ export default function RegistrationFormPage() {
                             </p>
                             <div className="pt-8 space-y-2">
                                 <div className="flex items-center">
-                                    <span className="whitespace-nowrap">Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
-                                    <span className="whitespace-nowrap ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                                    <span>Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
+                                    <span className="ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
                                 </div>
                                 <p className="pt-12 text-center">Signature du parent / tuteur (légalisée) :</p>
                             </div>
