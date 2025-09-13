@@ -1,8 +1,7 @@
 
 "use client"
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -171,118 +170,118 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
   const amountRemaining = payment.totalAmount - amountPaid;
 
   return (
-    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center">
-        <div className="w-full max-w-4xl space-y-4">
-            <div className="flex justify-between items-center print:hidden">
-                <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-                </Button>
-                 <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
-                    {loadingPdf ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Téléchargement...
-                    </>
-                    ) : (
-                    <>
-                        <Download className="mr-2 h-4 w-4" />
-                        Télécharger en PDF
-                    </>
-                    )}
-                </Button>
-            </div>
-            
-            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
-                 <CardHeader className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <Trophy className="h-10 w-10 text-primary" />
-                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
-                            </div>
-                            <p className="text-sm text-muted-foreground break-words">{clubInfo?.address}</p>
-                            <p className="text-sm text-muted-foreground break-words">{clubInfo?.email}</p>
-                        </div>
-                        <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0">
-                            <h2 className="text-xl sm:text-2xl font-bold text-primary">REÇU DE PAIEMENT</h2>
-                            <p className="text-sm text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
-                            <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
-                        <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3>
-                            <p className="font-bold text-base sm:text-lg text-gray-900">{payment.playerName}</p>
-                        </div>
-                         <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-gray-600">Description du paiement :</h3>
-                            <p className="text-sm sm:text-base text-gray-800">{payment.description}</p>
-                        </div>
-                    </div>
-                    
-                    <div className="w-full mb-6">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-gray-600">Date</TableHead>
-                                    <TableHead className="text-gray-600">Méthode</TableHead>
-                                    <TableHead className="text-right text-gray-600">Montant</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {payment.transactions?.length > 0 ? (
-                                payment.transactions.map((transaction, index) => (
-                                    <TableRow key={index}>
-                                    <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.date.seconds * 1000), "dd/MM/yy", { locale: fr })}</TableCell>
-                                    <TableCell className="text-xs sm:text-sm">{transaction.method}</TableCell>
-                                    <TableCell className="text-right font-medium text-xs sm:text-sm">{transaction.amount.toFixed(2)} MAD</TableCell>
-                                    </TableRow>
-                                ))
-                                ) : (
-                                <TableRow>
-                                    <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
-                                    Aucun versement enregistré.
-                                    </TableCell>
-                                </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    <div className="flex flex-col items-end mt-6">
-                        <div className="w-full sm:max-w-xs space-y-2 text-sm">
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Montant total dû :</span>
-                                <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
-                             </div>
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Total payé :</span>
-                                <span className="font-medium">{amountPaid.toFixed(2)} MAD</span>
-                             </div>
-                             <Separator />
-                              <div className="flex justify-between font-bold text-base text-primary">
-                                <span>Montant restant :</span>
-                                <span>{amountRemaining.toFixed(2)} MAD</span>
-                              </div>
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter className="p-4 sm:p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
-                    <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm sm:text-base">Statut du paiement:</span>
-                        <Badge className={cn("text-sm sm:text-base", getBadgeClass(payment.status))}>
-                            {payment.status}
-                        </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                        Merci pour votre paiement. Ce reçu est une confirmation des versements enregistrés à ce jour.
-                    </p>
-                </CardFooter>
-            </Card>
+    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center">
+      <div className="w-full max-w-4xl space-y-4">
+        <div className="flex justify-between items-center print:hidden">
+          <Button variant="outline" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+          </Button>
+          <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+            {loadingPdf ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Téléchargement...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Télécharger en PDF
+              </>
+            )}
+          </Button>
         </div>
-        <style jsx global>{`
+
+        <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800 overflow-x-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Trophy className="h-10 w-10 text-primary" />
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
+                </div>
+                <p className="text-sm text-muted-foreground break-words">{clubInfo?.address}</p>
+                <p className="text-sm text-muted-foreground break-words">{clubInfo?.email}</p>
+              </div>
+              <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-primary">REÇU DE PAIEMENT</h2>
+                <p className="text-sm text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
+                <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3>
+                <p className="font-bold text-base sm:text-lg text-gray-900">{payment.playerName}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-600">Description du paiement :</h3>
+                <p className="text-sm sm:text-base text-gray-800">{payment.description}</p>
+              </div>
+            </div>
+
+            <div className="w-full mb-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-gray-600">Date</TableHead>
+                    <TableHead className="text-gray-600">Méthode</TableHead>
+                    <TableHead className="text-right text-gray-600">Montant</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payment.transactions?.length > 0 ? (
+                    payment.transactions.map((transaction, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.date.seconds * 1000), "dd/MM/yy", { locale: fr })}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{transaction.method}</TableCell>
+                        <TableCell className="text-right font-medium text-xs sm:text-sm">{transaction.amount.toFixed(2)} MAD</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                        Aucun versement enregistré.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex flex-col items-end mt-6">
+              <div className="w-full sm:max-w-xs space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Montant total dû :</span>
+                  <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total payé :</span>
+                  <span className="font-medium">{amountPaid.toFixed(2)} MAD</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-bold text-base text-primary">
+                  <span>Montant restant :</span>
+                  <span>{amountRemaining.toFixed(2)} MAD</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="p-4 sm:p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm sm:text-base">Statut du paiement:</span>
+              <Badge className={cn("text-sm sm:text-base", getBadgeClass(payment.status))}>
+                {payment.status}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Merci pour votre paiement. Ce reçu est une confirmation des versements enregistrés à ce jour.
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+      <style jsx global>{`
             @media print {
                 body {
                     background-color: #fff !important;

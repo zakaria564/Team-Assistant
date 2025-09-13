@@ -1,8 +1,7 @@
 
 "use client"
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -171,7 +170,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
   const amountRemaining = salary.totalAmount - amountPaid;
 
   return (
-    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center">
+    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -222,7 +221,7 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
                         </div>
                     </div>
                     
-                    <div className="w-full mb-6">
+                    <div className="w-full mb-6 overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -304,5 +303,3 @@ export default function SalaryReceiptPage({ params }: { params: { id: string } }
     </div>
   );
 }
-
-    

@@ -275,5 +275,3 @@ export default function CoachDetailsPdfPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-    

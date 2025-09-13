@@ -1,8 +1,7 @@
 
 "use client";
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -99,7 +98,3 @@ export default function EditCoachPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-
-    
-
-    
