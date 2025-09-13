@@ -220,7 +220,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
             ) : (
               <>
                 <FileDown className="mr-2 h-4 w-4" />
-                Télécharger en PDF
+                Télécharger
               </>
             )}
           </Button>

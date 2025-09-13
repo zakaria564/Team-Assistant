@@ -185,7 +185,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             ) : (
               <>
                 <Download className="mr-2 h-4 w-4" />
-                Télécharger en PDF
+                Télécharger
               </>
             )}
           </Button>
