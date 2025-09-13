@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link"
@@ -59,7 +60,7 @@ export default function SignupPage() {
             </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignUp}>
+          <form onSubmit={handleSignUp} autoComplete="off">
             <div className="grid gap-4">
               <div className="grid gap-2">
                   <Label htmlFor="full-name">Nom complet</Label>
@@ -69,6 +70,7 @@ export default function SignupPage() {
                     required 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    autoComplete="new-password"
                   />
               </div>
               <div className="grid gap-2">
@@ -80,6 +82,7 @@ export default function SignupPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="new-password"
                   />
               </div>
               <div className="grid gap-2">
@@ -90,6 +93,7 @@ export default function SignupPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
                   />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
