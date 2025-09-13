@@ -96,7 +96,7 @@ export default function RegistrationFormPage() {
 
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
+    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
         <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -119,7 +119,7 @@ export default function RegistrationFormPage() {
                 </div>
             </div>
             
-            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
+            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black overflow-x-hidden" id="printable-form">
                  <CardHeader className="text-center space-y-4 p-4 sm:p-6">
                     {loadingClub || loadingUser ? (
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
@@ -130,7 +130,7 @@ export default function RegistrationFormPage() {
                             <span className="break-all">{clubName}</span>
                         </CardTitle>
                     )}
-                     <div className="flex items-center justify-center font-semibold text-sm md:text-base">
+                     <div className="flex items-center font-semibold text-sm md:text-base">
                         <span>Saison sportive :</span>
                         <DottedLine />
                     </div>
@@ -139,17 +139,17 @@ export default function RegistrationFormPage() {
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span>Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center"><span>Date et Lieu de naissance :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">Date et Lieu de naissance :</span><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span>Nationalité :</span><DottedLine /></div>
-                                <div className="flex items-center"><span>Sexe :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Nationalité :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Sexe :</span><DottedLine /></div>
                             </div>
-                            <div className="flex items-center"><span>N° CIN (si applicable) :</span><DottedLine /></div>
-                            <div className="flex items-center"><span>Adresse :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">N° CIN (si applicable) :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">Adresse :</span><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span>Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center"><span>Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Adresse e-mail :</span><DottedLine /></div>
                              </div>
                         </div>
                     </div>
@@ -157,12 +157,12 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span>Nom et Prénom :</span><DottedLine /></div>
-                            <div className="flex items-center"><span>Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
-                            <div className="flex items-center"><span>N° de CIN :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">Lien de parenté (Père / Mère / Tuteur) :</span><DottedLine /></div>
+                            <div className="flex items-center break-words"><span className="shrink-0">N° de CIN :</span><DottedLine /></div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span>Téléphone :</span><DottedLine /></div>
-                                <div className="flex items-center"><span>Adresse e-mail :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center break-words"><span className="shrink-0">Adresse e-mail :</span><DottedLine /></div>
                             </div>
                         </div>
                     </div>
@@ -212,3 +212,4 @@ export default function RegistrationFormPage() {
     </div>
   );
 }
+
