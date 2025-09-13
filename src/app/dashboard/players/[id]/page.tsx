@@ -121,7 +121,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
     };
 
     fetchPlayer();
-  }, [playerId]);
+  }, [playerId, router]);
 
   if (loading) {
     return (
@@ -170,9 +170,6 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                         </Avatar>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold">{toTitleCase(player.name)}</h2>
-                            <Badge className={cn("text-base mt-2", getStatusBadgeClass(player.status))}>
-                                {player.status}
-                            </Badge>
                         </div>
                     </div>
                 </CardContent>
@@ -182,6 +179,11 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <CardTitle>Informations Sportives</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    <DetailItem icon={Activity} label="Statut">
+                        <Badge className={cn("text-base", getStatusBadgeClass(player.status))}>
+                            {player.status}
+                        </Badge>
+                    </DetailItem>
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
