@@ -251,7 +251,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                         </Table>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row justify-end mt-6">
+                    <div className="flex flex-col items-end mt-6">
                         <div className="w-full sm:max-w-sm space-y-3">
                              <div className="flex justify-between">
                                 <span className="text-muted-foreground">Montant total dû :</span>
