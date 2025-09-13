@@ -127,13 +127,13 @@ export default function RegistrationFormPage() {
                         <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
                     ) : (
                         <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase break-words">
-                            <div className="break-words">FICHE D'INSCRIPTION</div>
+                            <span className="break-words">FICHE D'INSCRIPTION</span>
                             <span className="hidden sm:inline">-</span>
-                            <div className="break-all">{clubName}</div>
+                            <span className="break-all">{clubName}</span>
                         </CardTitle>
                     )}
                      <div className="flex items-center font-semibold text-sm md:text-base">
-                        <div className="shrink-0">Saison sportive :</div>
+                        <span className="shrink-0">Saison sportive :</span>
                         <DottedLine />
                     </div>
                 </CardHeader>
@@ -141,17 +141,17 @@ export default function RegistrationFormPage() {
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><div className="shrink-0 break-words">Nom et Prénom :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="shrink-0 break-words">Date et Lieu de naissance :</div><DottedLine /></div>
+                            <div className="flex items-center"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">Date et Lieu de naissance :</div><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="shrink-0 break-words">Nationalité :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="shrink-0 break-words">Sexe :</div><DottedLine /></div>
+                                <div className="flex items-center"><span className="shrink-0">Nationalité :</span><DottedLine /></div>
+                                <div className="flex items-center"><span className="shrink-0">Sexe :</span><DottedLine /></div>
                             </div>
-                            <div className="flex items-center"><div className="shrink-0 break-words">N° CIN (si applicable) :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="shrink-0 break-words">Adresse :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">N° CIN (si applicable) :</div><DottedLine /></div>
+                            <div className="flex items-center"><span className="shrink-0">Adresse :</span><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="shrink-0 break-words">Téléphone :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="shrink-0 break-words">Adresse e-mail :</div><DottedLine /></div>
+                                <div className="flex items-center"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
                              </div>
                         </div>
                     </div>
@@ -159,12 +159,12 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><div className="shrink-0 break-words">Nom et Prénom :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="shrink-0 break-words">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="shrink-0 break-words">N° de CIN :</div><DottedLine /></div>
+                            <div className="flex items-center"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">N° de CIN :</div><DottedLine /></div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="shrink-0 break-words">Téléphone :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="shrink-0 break-words">Adresse e-mail :</div><DottedLine /></div>
+                                <div className="flex items-center"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
                             </div>
                         </div>
                     </div>
