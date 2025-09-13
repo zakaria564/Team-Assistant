@@ -135,6 +135,18 @@ export default function PlayersPage() {
     });
   }, [players, searchTerm, searchCategory]);
   
+  const groupedPlayers = useMemo(() => {
+    return filteredPlayers.reduce((acc, player) => {
+      const category = player.category || 'Sans catégorie';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(player);
+      return acc;
+    }, {} as Record<string, Player[]>);
+  }, [filteredPlayers]);
+
+
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
     try {
         const playerDocRef = doc(db, "players", playerId);
@@ -182,7 +194,7 @@ export default function PlayersPage() {
 
   return (
     <>
-      <div>
+      <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Joueurs</h1>
@@ -217,132 +229,135 @@ export default function PlayersPage() {
                 </SelectContent>
             </Select>
         </div>
+        
+        {fetchError && (
+          <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Erreur de chargement des données</AlertTitle>
+              <AlertDescription>
+                Une erreur s'est produite: <code className="font-mono text-sm">{fetchError}</code>
+              </AlertDescription>
+          </Alert>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Liste des joueurs</CardTitle>
-            <CardDescription>Retrouvez ici tous les joueurs inscrits dans votre club.</CardDescription>
-          </CardHeader>
-          <CardContent>
-             {fetchError && (
-              <Alert variant="destructive" className="mb-4">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Erreur de chargement des données</AlertTitle>
-                  <AlertDescription>
-                    Une erreur s'est produite: <code className="font-mono text-sm">{fetchError}</code>
-                  </AlertDescription>
-              </Alert>
-            )}
-            <div className="w-full overflow-x-auto">
-              {loading || loadingUser ? (
-                <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Joueur</TableHead>
-                      <TableHead className="hidden md:table-cell">Catégorie</TableHead>
-                      <TableHead className="hidden lg:table-cell">Poste</TableHead>
-                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPlayers.length > 0 ? (
-                      filteredPlayers.map((player) => (
-                        <TableRow key={player.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
-                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{toTitleCase(player.name)}</span>
-                                    <span className="text-muted-foreground text-sm md:hidden">{player.category}</span>
-                                </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{player.category}</TableCell>
-                          <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
-                           <TableCell className="hidden sm:table-cell">
-                              <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                  <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
-                                      {player.status || "N/A"}
-                                  </Badge>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                      <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                      <DropdownMenuRadioGroup 
-                                          value={player.status} 
-                                          onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
-                                      >
-                                          {playerStatuses.map(status => (
-                                              <DropdownMenuRadioItem key={status} value={status}>
-                                                  {status}
-                                              </DropdownMenuRadioItem>
-                                          ))}
-                                      </DropdownMenuRadioGroup>
-                                  </DropdownMenuContent>
-                              </DropdownMenu>
-                           </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Ouvrir le menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/players/${player.id}`} passHref>
-                                  <DropdownMenuItem className="cursor-pointer">
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Voir les détails
-                                  </DropdownMenuItem>
-                                </Link>
-                                <Link href={`/dashboard/players/${player.id}/edit`} passHref>
-                                  <DropdownMenuItem className="cursor-pointer">
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Modifier
-                                  </DropdownMenuItem>
-                                </Link>
-                                <Link href={`/dashboard/players/${player.id}/details`} passHref>
-                                  <DropdownMenuItem className="cursor-pointer">
-                                      <FileDown className="mr-2 h-4 w-4" />
-                                      Exporter la fiche
-                                  </DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                  onClick={() => setPlayerToDelete(player)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Supprimer
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : !fetchError && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                          {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+        {loading || loadingUser ? (
+            <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          </CardContent>
-        </Card>
+        ) : Object.keys(groupedPlayers).length > 0 ? (
+           <div className="space-y-8">
+            {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
+                <Card key={category}>
+                    <CardHeader>
+                        <CardTitle>{category}</CardTitle>
+                        <CardDescription>
+                            {playersInCategory.length} joueur(s) dans cette catégorie.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       <div className="w-full overflow-x-auto">
+                         <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Joueur</TableHead>
+                              <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                              <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
+                                <TableRow key={player.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar>
+                                            <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                            <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{toTitleCase(player.name)}</span>
+                                            <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
+                                            {player.status || "N/A"}
+                                        </Badge>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                            <DropdownMenuRadioGroup 
+                                                value={player.status} 
+                                                onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                            >
+                                                {playerStatuses.map(status => (
+                                                    <DropdownMenuRadioItem key={status} value={status}>
+                                                        {status}
+                                                    </DropdownMenuRadioItem>
+                                                ))}
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Ouvrir le menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <Link href={`/dashboard/players/${player.id}`} passHref>
+                                        <DropdownMenuItem className="cursor-pointer">
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Voir les détails
+                                        </DropdownMenuItem>
+                                        </Link>
+                                        <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                        <DropdownMenuItem className="cursor-pointer">
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Modifier
+                                        </DropdownMenuItem>
+                                        </Link>
+                                        <Link href={`/dashboard/players/${player.id}/details`} passHref>
+                                        <DropdownMenuItem className="cursor-pointer">
+                                            <FileDown className="mr-2 h-4 w-4" />
+                                            Exporter la fiche
+                                        </DropdownMenuItem>
+                                        </Link>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                        className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                        onClick={() => setPlayerToDelete(player)}
+                                        >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                         </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+           </div>
+        ) : !fetchError && (
+             <Card>
+                <CardContent className="py-20 text-center text-muted-foreground">
+                     {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
+                </CardContent>
+            </Card>
+        )}
       </div>
 
        <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
