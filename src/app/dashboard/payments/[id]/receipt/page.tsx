@@ -135,7 +135,19 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const canvasAspectRatio = canvasWidth / canvasHeight;
+            
+            let finalHeight = pdfHeight;
+            let finalWidth = pdfHeight * canvasAspectRatio;
+
+            if (finalWidth > pdfWidth) {
+                finalWidth = pdfWidth;
+                finalHeight = pdfWidth / canvasAspectRatio;
+            }
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, finalWidth, finalHeight);
             pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
         }).finally(() => {
             if (cardElement) {
@@ -194,7 +206,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
             
             <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
                  <CardHeader className="p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <Trophy className="h-10 w-10 text-primary" />
@@ -204,7 +216,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                             <p className="text-muted-foreground">{clubInfo?.email}</p>
                         </div>
                         <div className="text-left sm:text-right mt-4 sm:mt-0">
-                            <h2 className="text-3xl font-bold text-primary">REÇU DE PAIEMENT</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-primary">REÇU DE PAIEMENT</h2>
                             <p className="text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
                             <p className="text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
                         </div>
@@ -251,7 +263,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                         </Table>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex flex-col sm:flex-row justify-end mt-6">
                         <div className="w-full max-w-sm space-y-3">
                              <div className="flex justify-between">
                                 <span className="text-muted-foreground">Montant total dû :</span>
