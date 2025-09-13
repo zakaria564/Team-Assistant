@@ -192,7 +192,7 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                 </Button>
             </div>
             
-            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
+            <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800 overflow-x-hidden">
                  <CardHeader className="p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
@@ -200,10 +200,10 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
                                 <Trophy className="h-10 w-10 text-primary" />
                                 <h1 className="text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
                             </div>
-                            <p className="text-muted-foreground">{clubInfo?.address}</p>
-                            <p className="text-muted-foreground">{clubInfo?.email}</p>
+                            <p className="text-muted-foreground break-words">{clubInfo?.address}</p>
+                            <p className="text-muted-foreground break-words">{clubInfo?.email}</p>
                         </div>
-                        <div className="text-left sm:text-right mt-4 sm:mt-0">
+                        <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0">
                             <h2 className="text-2xl sm:text-3xl font-bold text-primary">REÇU DE PAIEMENT</h2>
                             <p className="text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
                             <p className="text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
