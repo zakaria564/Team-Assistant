@@ -273,7 +273,7 @@ export default function PaymentsPage() {
                   <TableBody>
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => {
-                           const isPaid = payment.status === 'Payé';
+                           const canDelete = payment.status !== 'Payé' && payment.status !== 'Partiel';
                           return (
                             <TableRow key={payment.id}>
                               <TableCell>
@@ -307,7 +307,7 @@ export default function PaymentsPage() {
                                             Voir les détails
                                         </Link>
                                       </DropdownMenuItem>
-                                      {!isPaid && (
+                                      {payment.status !== 'Payé' && (
                                           <DropdownMenuItem asChild className="cursor-pointer">
                                             <Link href={`/dashboard/payments/${payment.id}/edit`}>
                                                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -321,7 +321,7 @@ export default function PaymentsPage() {
                                             Exporter le reçu
                                         </Link>
                                       </DropdownMenuItem>
-                                       {!isPaid && (
+                                      {canDelete && (
                                         <>
                                           <DropdownMenuSeparator />
                                           <DropdownMenuItem
@@ -376,7 +376,3 @@ export default function PaymentsPage() {
     </>
   );
 }
-
-    
-
-    

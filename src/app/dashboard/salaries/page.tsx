@@ -267,7 +267,7 @@ export default function SalariesPage() {
                   <TableBody>
                     {filteredSalaries.length > 0 ? (
                         filteredSalaries.map((salary) => {
-                          const isPaid = salary.status === 'Payé';
+                          const canDelete = salary.status !== 'Payé' && salary.status !== 'Partiel';
                           return (
                             <TableRow key={salary.id}>
                               <TableCell>
@@ -298,7 +298,7 @@ export default function SalariesPage() {
                                             Voir les détails
                                         </Link>
                                       </DropdownMenuItem>
-                                      {!isPaid && (
+                                      {salary.status !== 'Payé' && (
                                           <DropdownMenuItem asChild className="cursor-pointer">
                                             <Link href={`/dashboard/salaries/${salary.id}/edit`}>
                                                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -312,7 +312,7 @@ export default function SalariesPage() {
                                             Exporter la fiche
                                         </Link>
                                       </DropdownMenuItem>
-                                      {!isPaid && (
+                                      {canDelete && (
                                         <>
                                           <DropdownMenuSeparator />
                                           <DropdownMenuItem
