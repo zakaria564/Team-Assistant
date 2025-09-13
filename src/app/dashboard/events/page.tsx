@@ -272,9 +272,35 @@ export default function EventsPage() {
                                         Modifier
                                       </Link>
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                        onSelect={(e) => e.preventDefault()}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
                                 </DropdownMenuContent>
                                 </DropdownMenu>
                             </CardFooter>
+                             <AlertDialog>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Cette action est irréversible. L'événement sera définitivement supprimé.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteEvent(event.id)} className="bg-destructive hover:bg-destructive/90">
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                         </Card>
                         )
                     })
