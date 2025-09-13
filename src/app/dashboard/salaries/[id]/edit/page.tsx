@@ -97,3 +97,5 @@ export default function EditSalaryPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

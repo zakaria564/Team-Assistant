@@ -168,7 +168,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
             }
 
             const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
+            const y = (pdfHeight - finalHeight) / 2;
 
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
             pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
@@ -312,3 +312,5 @@ export default function PlayerDetailsPdfPage({ params }: { params: { id: string 
     </div>
   );
 }
+
+    

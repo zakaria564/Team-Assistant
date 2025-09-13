@@ -210,3 +210,5 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
     </div>
   );
 }
+
+    

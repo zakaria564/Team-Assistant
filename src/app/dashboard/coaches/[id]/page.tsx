@@ -222,3 +222,5 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    

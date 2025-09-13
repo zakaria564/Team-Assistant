@@ -304,3 +304,5 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     </div>
   );
 }
+
+    

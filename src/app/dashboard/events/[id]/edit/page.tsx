@@ -114,3 +114,5 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

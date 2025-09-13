@@ -209,3 +209,5 @@ export default function SalaryDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
