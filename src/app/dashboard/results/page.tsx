@@ -68,21 +68,18 @@ export default function ResultsPage() {
       }
       setLoading(true);
       try {
+        const matchTypes = ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi"];
         const q = query(
             collection(db, "events"), 
             where("userId", "==", user.uid),
+            where("type", "in", matchTypes),
+            where("date", "<=", new Date()),
             orderBy("date", "desc")
         );
         const querySnapshot = await getDocs(q);
         
-        const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchEvent));
+        const matchesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MatchEvent));
         
-        const matchTypes = ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi"];
-        const matchesData = eventsData.filter(event => 
-            matchTypes.includes(event.type) && 
-            new Date(event.date.seconds * 1000) <= new Date()
-        );
-
         setMatches(matchesData);
       } catch (error: any) {
         console.error("Error fetching matches: ", error);
@@ -221,3 +218,5 @@ export default function ResultsPage() {
     </>
   );
 }
+
+    
