@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db, auth } from "@/lib/firebase";
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -258,6 +258,24 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     }
 
     try {
+        if (!isEditMode) {
+            const q = query(
+                collection(db, "coaches"),
+                where("userId", "==", user.uid),
+                where("name", "==", values.name)
+            );
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                toast({
+                    variant: "destructive",
+                    title: "Nom déjà utilisé",
+                    description: "Un entraîneur avec ce nom existe déjà. Veuillez choisir un autre nom.",
+                });
+                setLoading(false);
+                return;
+            }
+        }
+
         const documentsToSave = (values.documents || [])
           .filter(doc => doc.name && doc.url) // Only save documents that have a name and a URL
           .map(doc => ({
@@ -654,5 +672,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
+
+    
 
     

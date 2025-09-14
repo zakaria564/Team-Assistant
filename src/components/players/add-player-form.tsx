@@ -313,6 +313,24 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
 
     try {
+        if (!isEditMode) {
+            const q = query(
+                collection(db, "players"),
+                where("userId", "==", user.uid),
+                where("name", "==", values.name)
+            );
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                toast({
+                    variant: "destructive",
+                    title: "Nom déjà utilisé",
+                    description: "Un joueur avec ce nom existe déjà. Veuillez choisir un autre nom.",
+                });
+                setLoading(false);
+                return;
+            }
+        }
+
         const documentsToSave = (values.documents || [])
           .filter(doc => doc.name && doc.url) // Only save documents that have a name and a URL
           .map(doc => ({
@@ -843,3 +861,5 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
+
+    
