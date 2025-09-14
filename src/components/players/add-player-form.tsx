@@ -126,6 +126,14 @@ const documentTypes = [
     "Autre"
 ];
 
+const normalizeString = (str: string) => {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '');
+};
+
 export function AddPlayerForm(props: AddPlayerFormProps) {
   const { player } = props;
   const [user] = useAuthState(auth);
@@ -314,17 +322,16 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
     try {
         if (!isEditMode) {
-            const q = query(
-                collection(db, "players"),
-                where("userId", "==", user.uid),
-                where("name", "==", values.name)
-            );
+            const normalizedNewName = normalizeString(values.name);
+            const q = query(collection(db, "players"), where("userId", "==", user.uid));
             const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
+            const isDuplicate = querySnapshot.docs.some(doc => normalizeString(doc.data().name) === normalizedNewName);
+
+            if (isDuplicate) {
                 toast({
                     variant: "destructive",
                     title: "Nom déjà utilisé",
-                    description: "Un joueur avec ce nom existe déjà. Veuillez choisir un autre nom.",
+                    description: "Un joueur avec un nom similaire existe déjà. Veuillez choisir un autre nom.",
                 });
                 setLoading(false);
                 return;
@@ -861,5 +868,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
+
+    
 
     

@@ -109,6 +109,14 @@ const documentTypes = [
     "Autre"
 ];
 
+const normalizeString = (str: string) => {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '');
+};
+
 export function AddCoachForm({ coach }: AddCoachFormProps) {
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
@@ -259,17 +267,16 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
     try {
         if (!isEditMode) {
-            const q = query(
-                collection(db, "coaches"),
-                where("userId", "==", user.uid),
-                where("name", "==", values.name)
-            );
+            const normalizedNewName = normalizeString(values.name);
+            const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
             const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
+            const isDuplicate = querySnapshot.docs.some(doc => normalizeString(doc.data().name) === normalizedNewName);
+
+            if (isDuplicate) {
                 toast({
                     variant: "destructive",
                     title: "Nom déjà utilisé",
-                    description: "Un entraîneur avec ce nom existe déjà. Veuillez choisir un autre nom.",
+                    description: "Un entraîneur avec un nom similaire existe déjà. Veuillez choisir un autre nom.",
                 });
                 setLoading(false);
                 return;
@@ -672,6 +679,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
+
+    
 
     
 
