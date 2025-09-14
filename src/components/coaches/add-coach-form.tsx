@@ -112,10 +112,11 @@ const documentTypes = [
 const normalizeString = (str: string | null | undefined) => {
     if (!str) return '';
     return str
+        .trim()
+        .replace(/\s+/g, ' ')
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, '');
+        .replace(/[\u0300-\u036f]/g, "");
 };
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {
@@ -680,11 +681,3 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
-
-    
-
-    
-
-    
-
-    
