@@ -126,7 +126,8 @@ const documentTypes = [
     "Autre"
 ];
 
-const normalizeString = (str: string) => {
+const normalizeString = (str: string | null | undefined) => {
+    if (!str) return '';
     return str
         .toLowerCase()
         .normalize("NFD")
@@ -868,6 +869,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
+
+    
 
     
 
