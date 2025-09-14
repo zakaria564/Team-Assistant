@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
-import { format, isSameDay, differenceInHours, isToday } from "date-fns";
+import { format, isSameDay, differenceInHours, isToday, compareAsc } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, query, onSnapshot, doc, deleteDoc, where, orderBy } from "firebase/firestore";
+import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -70,8 +70,7 @@ export default function EventsPage() {
     setLoading(true);
     const q = query(
         collection(db, "events"), 
-        where("userId", "==", user.uid),
-        orderBy("date", "asc")
+        where("userId", "==", user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -81,6 +80,9 @@ export default function EventsPage() {
         date: doc.data().date.toDate()
       } as Event));
       
+      // Sort events by date on the client side
+      eventsData.sort((a, b) => compareAsc(a.date, b.date));
+      
       setAllEvents(eventsData);
       setLoading(false);
     }, (error) => {
@@ -88,7 +90,7 @@ export default function EventsPage() {
       toast({
         variant: "destructive",
         title: "Erreur de chargement",
-        description: "Impossible de charger les événements. Vérifiez les index Firestore.",
+        description: "Impossible de charger les événements. Vérifiez les permissions Firestore.",
       });
       setLoading(false);
     });
@@ -100,7 +102,6 @@ export default function EventsPage() {
     if (date) {
       const filteredEvents = allEvents
         .filter((event) => isSameDay(event.date, date));
-        // No need to sort here as they are already sorted by the query
       setSelectedEvents(filteredEvents);
     } else {
       setSelectedEvents([]);

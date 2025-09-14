@@ -9,9 +9,9 @@ import { Users, DollarSign, Activity, ArrowUpRight, Loader2, ClipboardList, Aler
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { collection, query, where, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { format, subDays, startOfDay, isAfter } from "date-fns";
+import { format, startOfDay, compareAsc } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PlayersByCategoryChart } from "@/components/dashboard/players-by-category-chart";
 import { cn } from "@/lib/utils";
@@ -49,6 +49,7 @@ export default function Dashboard() {
   const [playersByCategory, setPlayersByCategory] = useState<ChartData[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [eventsError, setEventsError] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -112,24 +113,28 @@ export default function Dashboard() {
             return;
         }
         setLoadingEvents(true);
+        setEventsError(false);
         try {
-            const today = startOfDay(new Date());
             const eventsQuery = query(
                 collection(db, "events"), 
-                where("userId", "==", user.uid),
-                where("date", ">=", today),
-                orderBy("date", "asc"), 
-                limit(5)
+                where("userId", "==", user.uid)
             );
             const querySnapshot = await getDocs(eventsQuery);
+            const today = startOfDay(new Date());
+
             const eventsData = querySnapshot.docs.map(doc => ({ 
                 id: doc.id,
                 ...doc.data(),
                 date: doc.data().date.toDate() 
-            } as Event));
-            setUpcomingEvents(eventsData);
+            } as Event))
+            .filter(event => event.date >= today);
+            
+            eventsData.sort((a, b) => compareAsc(a.date, b.date));
+            
+            setUpcomingEvents(eventsData.slice(0, 5));
         } catch (error) {
             console.error("Error fetching upcoming events: ", error);
+            setEventsError(true);
         } finally {
             setLoadingEvents(false);
         }
@@ -200,6 +205,14 @@ export default function Dashboard() {
                  <div className="flex items-center justify-center h-[200px]">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
+            ) : eventsError ? (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Erreur de chargement</AlertTitle>
+                  <AlertDescription>
+                    Impossible de charger les événements à venir pour le moment.
+                  </AlertDescription>
+                </Alert>
             ) : upcomingEvents.length > 0 ? (
                 <Table>
                 <TableHeader>
