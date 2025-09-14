@@ -229,7 +229,11 @@ export default function Dashboard() {
                 </TableHeader>
                 <TableBody>
                     {upcomingEvents.map(event => (
-                        <TableRow key={event.id}>
+                        <TableRow 
+                          key={event.id}
+                          onClick={() => router.push(`/dashboard/events/${event.id}`)}
+                          className="cursor-pointer"
+                        >
                             <TableCell>
                                 <div className="font-medium">{event.type}</div>
                                 <div className="hidden text-sm text-muted-foreground md:inline">
