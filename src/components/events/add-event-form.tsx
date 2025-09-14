@@ -220,12 +220,15 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
             const dataToSave: any = {
                 userId: user.uid,
                 type: values.type,
-                team: teamValue,
-                category: values.category,
                 date: combinedDate,
                 location: values.location,
             };
             
+            if (!isEditMode) {
+                dataToSave.team = teamValue;
+                dataToSave.category = values.category;
+            }
+
             if (eventTypeIsMatch) {
                 dataToSave.opponent = values.opponent || null;
                  if(isPastEvent) {
@@ -241,9 +244,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
 
             if(isEditMode && event) {
                 const eventDocRef = doc(db, "events", event.id);
-                // In edit mode, we don't update team 
-                const { team, ...restOfData } = dataToSave;
-                await updateDoc(eventDocRef, restOfData);
+                await updateDoc(eventDocRef, dataToSave);
                 toast({
                     title: "Événement modifié !",
                     description: `L'événement a été mis à jour avec succès.`
