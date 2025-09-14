@@ -98,120 +98,122 @@ export default function RegistrationFormPage() {
 
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
-        <div className="w-full max-w-2xl space-y-4">
-            <div className="flex justify-between items-center print:hidden">
-                <Button variant="outline" size="sm" onClick={() => router.back()}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Retour</span>
-                </Button>
-                <div className="flex gap-2">
-                    <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm">
-                        {loadingPdf ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Téléchargement...
-                            </>
-                        ) : (
-                             <>
-                                <Download className="mr-2 h-4 w-4" />
-                                Télécharger
-                             </>
-                        )}
+    <div className="overflow-x-hidden">
+        <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
+            <div className="w-full max-w-2xl space-y-4">
+                <div className="flex justify-between items-center print:hidden">
+                    <Button variant="outline" size="sm" onClick={() => router.back()}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Retour</span>
                     </Button>
+                    <div className="flex gap-2">
+                        <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm">
+                            {loadingPdf ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Téléchargement...
+                                </>
+                            ) : (
+                                <>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Télécharger
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
-            </div>
-            
-            <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black overflow-x-hidden" id="printable-form">
-                 <CardHeader className="text-center space-y-4 p-4 sm:p-6">
-                    {loadingClub || loadingUser ? (
-                        <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
-                    ) : (
-                        <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase break-words">
-                            <span className="break-words">FICHE D'INSCRIPTION</span>
-                            <span className="hidden sm:inline">-</span>
-                            <span className="break-all">{clubName}</span>
-                        </CardTitle>
-                    )}
-                     <div className="flex items-center font-semibold text-sm md:text-base">
-                        <span className="shrink-0">Saison sportive :</span>
-                        <DottedLine />
-                    </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 space-y-6">
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
-                        <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="break-words shrink-0">Date et Lieu de naissance :</div><DottedLine /></div>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="break-words shrink-0">Nationalité :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="break-words shrink-0">Sexe :</div><DottedLine /></div>
-                            </div>
-                            <div className="flex items-center"><div className="break-words shrink-0">N° CIN (si applicable) :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="break-words shrink-0">Adresse :</div><DottedLine /></div>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
-                             </div>
+                
+                <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
+                    <CardHeader className="text-center space-y-4 p-4 sm:p-6">
+                        {loadingClub || loadingUser ? (
+                            <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
+                        ) : (
+                            <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase">
+                                <span className="break-words">FICHE D'INSCRIPTION</span>
+                                <span className="hidden sm:inline">-</span>
+                                <span className="break-all">{clubName}</span>
+                            </CardTitle>
+                        )}
+                        <div className="flex items-center font-semibold text-sm md:text-base">
+                            <span className="shrink-0">Saison sportive :</span>
+                            <DottedLine />
                         </div>
-                    </div>
-
-                     <div className="space-y-4">
-                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
-                        <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="break-words shrink-0">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
-                            <div className="flex items-center"><div className="break-words shrink-0">N° de CIN :</div><DottedLine /></div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
-                                <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                     <div className="space-y-4">
-                        <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
-                        <div className="space-y-4 text-xs md:text-sm">
-                            <p className="leading-relaxed break-words">
-                                Je soussigné(e), ...................................., certifie que les informations ci-dessus sont exactes. 
-                                J'autorise mon enfant, ...................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
-                            </p>
-                            <p className="font-semibold leading-relaxed break-words">
-                                Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
-                            </p>
-                            <div className="pt-8 space-y-2">
-                                <div className="flex items-center">
-                                    <span>Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
-                                    <span className="ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6 space-y-6">
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
+                            <div className="space-y-4 text-sm md:text-base">
+                                <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Date et Lieu de naissance :</div><DottedLine /></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                    <div className="flex items-center"><div className="break-words shrink-0">Nationalité :</div><DottedLine /></div>
+                                    <div className="flex items-center"><div className="break-words shrink-0">Sexe :</div><DottedLine /></div>
                                 </div>
-                                <p className="pt-12 text-center">Signature du parent / tuteur (légalisée) :</p>
+                                <div className="flex items-center"><div className="break-words shrink-0">N° CIN (si applicable) :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Adresse :</div><DottedLine /></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                    <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
+                                    <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
+                            <div className="space-y-4 text-sm md:text-base">
+                                <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">N° de CIN :</div><DottedLine /></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                    <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
+                                    <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
+                            <div className="space-y-4 text-xs md:text-sm">
+                                <p className="leading-relaxed break-words">
+                                    Je soussigné(e), ...................................., certifie que les informations ci-dessus sont exactes. 
+                                    J'autorise mon enfant, ...................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                                </p>
+                                <p className="font-semibold leading-relaxed break-words">
+                                    Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
+                                </p>
+                                <div className="pt-8 space-y-2">
+                                    <div className="flex items-center">
+                                        <span>Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
+                                        <span className="ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                                    </div>
+                                    <p className="pt-12 text-center">Signature du parent / tuteur (légalisée) :</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <style jsx global>{`
+                @media print {
+                    body {
+                        background-color: #fff !important;
+                    }
+                    .print\\:hidden {
+                        display: none;
+                    }
+                    .print\\:shadow-none {
+                        box-shadow: none;
+                    }
+                    .print\\:border-none {
+                        border: none;
+                    }
+                    @page {
+                        size: A4;
+                        margin: 20mm;
+                    }
+                }
+            `}</style>
         </div>
-        <style jsx global>{`
-            @media print {
-                body {
-                    background-color: #fff !important;
-                }
-                .print\\:hidden {
-                    display: none;
-                }
-                .print\\:shadow-none {
-                    box-shadow: none;
-                }
-                .print\\:border-none {
-                    border: none;
-                }
-                 @page {
-                    size: A4;
-                    margin: 20mm;
-                }
-            }
-        `}</style>
     </div>
   );
 }
