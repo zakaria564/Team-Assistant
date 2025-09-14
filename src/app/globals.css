@@ -87,6 +87,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  @media (max-width: 768px) {
+    body {
+      @apply select-none;
+    }
+    input, textarea {
+      @apply select-text;
+    }
+  }
 }
 
 @layer components {
