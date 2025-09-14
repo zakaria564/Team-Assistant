@@ -305,7 +305,7 @@ export default function EventsPage() {
                     })
                 ) : (
                     <div className="text-center py-10 text-muted-foreground">
-                        <p>Aucun événement prévu pour cette date.</p>
+                        <p>{date && isToday(date) ? "Aucun événement prévu pour aujourd'hui." : "Aucun événement prévu pour cette date."}</p>
                     </div>
                 )}
             </CardContent>
