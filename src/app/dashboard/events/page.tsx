@@ -33,7 +33,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -56,6 +55,7 @@ export default function EventsPage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -134,10 +134,10 @@ export default function EventsPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async () => {
+    if (!eventToDelete) return;
     try {
-      await deleteDoc(doc(db, "events", eventId));
-      // No need to manually filter `allEvents` as `onSnapshot` will trigger an update
+      await deleteDoc(doc(db, "events", eventToDelete.id));
       toast({
         title: "Événement supprimé",
         description: `L'événement a été retiré du calendrier.`,
@@ -149,11 +149,14 @@ export default function EventsPage() {
         description: "Impossible de supprimer l'événement.",
       });
       console.error("Error deleting event: ", error);
+    } finally {
+        setEventToDelete(null);
     }
   };
 
 
   return (
+    <>
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -226,79 +229,61 @@ export default function EventsPage() {
                     selectedEvents.map(event => {
                         const isPast24h = differenceInHours(new Date(), event.date) > 24;
                         return (
-                          <AlertDialog key={event.id}>
-                            <Card className="bg-muted/30 group">
-                                <CardHeader>
-                                    <CardDescription className={cn(`font-medium`, getEventBadgeClass(event.type))}>{event.type}</CardDescription>
-                                    <CardTitle className="text-lg pt-1">
-                                        {getEventTitle(event)}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Clock className="h-4 w-4" />
-                                        <span>{format(event.date, "HH:mm", { locale: fr })}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <MapPin className="h-4 w-4" />
-                                        <span>{event.location}</span>
-                                    </div>
-                                     <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Users className="h-4 w-4" />
-                                        <span>{event.category}</span>
-                                    </div>
-                                </CardContent>
-                                <CardFooter className="flex justify-end">
-                                    <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Ouvrir le menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem asChild className="cursor-pointer">
-                                            <Link href={`/dashboard/events/${event.id}`}>
-                                                <FileText className="mr-2 h-4 w-4" />
-                                                Voir les détails
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild disabled={isPast24h} className="cursor-pointer">
-                                          <Link href={`/dashboard/events/${event.id}/edit`}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Modifier
+                          <Card key={event.id} className="bg-muted/30 group">
+                              <CardHeader>
+                                  <CardDescription className={cn(`font-medium`, getEventBadgeClass(event.type))}>{event.type}</CardDescription>
+                                  <CardTitle className="text-lg pt-1">
+                                      {getEventTitle(event)}
+                                  </CardTitle>
+                              </CardHeader>
+                              <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm">
+                                  <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Clock className="h-4 w-4" />
+                                      <span>{format(event.date, "HH:mm", { locale: fr })}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-muted-foreground">
+                                      <MapPin className="h-4 w-4" />
+                                      <span>{event.location}</span>
+                                  </div>
+                                   <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Users className="h-4 w-4" />
+                                      <span>{event.category}</span>
+                                  </div>
+                              </CardContent>
+                              <CardFooter className="flex justify-end">
+                                  <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <span className="sr-only">Ouvrir le menu</span>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                      <DropdownMenuItem asChild className="cursor-pointer">
+                                          <Link href={`/dashboard/events/${event.id}`}>
+                                              <FileText className="mr-2 h-4 w-4" />
+                                              Voir les détails
                                           </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <AlertDialogTrigger asChild>
-                                          <DropdownMenuItem
-                                            className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                            onSelect={(e) => e.preventDefault()}
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                          </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                    </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </CardFooter>
-                            </Card>
-                            <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                Cette action est irréversible. L'événement sera définitivement supprimé.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteEvent(event.id)} className="bg-destructive hover:bg-destructive/90">
-                                Supprimer
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem asChild disabled={isPast24h} className="cursor-pointer">
+                                        <Link href={`/dashboard/events/${event.id}/edit`}>
+                                          <Pencil className="mr-2 h-4 w-4" />
+                                          Modifier
+                                        </Link>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                          className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                          onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Supprimer
+                                      </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </CardFooter>
+                          </Card>
                         )
                     })
                 ) : (
@@ -310,9 +295,24 @@ export default function EventsPage() {
         </Card>
       </div>
     </div>
+     <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
+        <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet événement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+            Cette action est irréversible. L'événement sera définitivement supprimé.
+            </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive hover:bg-destructive/90">
+            Supprimer
+            </AlertDialogAction>
+        </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
-
-    
 
     
