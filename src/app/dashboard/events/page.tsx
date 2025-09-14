@@ -217,7 +217,7 @@ export default function EventsPage() {
         <Card>
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">
-                    {date ? (isToday(date) ? "Match d'aujourd'hui" : format(date, "d MMMM yyyy", { locale: fr })) : "Sélectionnez une date"}
+                    {date ? (isToday(date) ? "Événements d'aujourd'hui" : format(date, "d MMMM yyyy", { locale: fr })) : "Sélectionnez une date"}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
