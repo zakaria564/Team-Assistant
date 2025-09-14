@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, DollarSign, Activity, ArrowUpRight, Loader2, ClipboardList } from "lucide-react";
+import { Users, DollarSign, Activity, ArrowUpRight, Loader2, ClipboardList, AlertTriangle } from "lucide-react";
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -17,16 +17,8 @@ import { PlayersByCategoryChart } from "@/components/dashboard/players-by-catego
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface Event {
-  id: string;
-  type: "Match" | "Entraînement";
-  team: string;
-  category: string;
-  opponent?: string;
-  date: Date;
-  location: string;
-}
 
 interface Player {
     id: string;
@@ -42,8 +34,6 @@ interface ChartData {
 export default function Dashboard() {
   const [user, loadingUser] = useAuthState(auth);
   const router = useRouter();
-  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
   const [playerCount, setPlayerCount] = useState(0);
   const [coachCount, setCoachCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -53,34 +43,14 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       if (!user) {
         if (!loadingUser) {
-          setLoadingEvents(false);
           setLoadingStats(false);
         }
         return;
       };
 
-      setLoadingEvents(true);
       setLoadingStats(true);
 
       try {
-        // Fetch upcoming events for the current user
-        const today = startOfDay(new Date());
-        const eventsQuery = query(
-          collection(db, "events"),
-          where("userId", "==", user.uid),
-          where("date", ">=", today),
-          orderBy("date", "asc"),
-          limit(5)
-        );
-        const eventsSnapshot = await getDocs(eventsQuery);
-        const eventsData = eventsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().date.toDate(),
-        } as Event));
-        
-        setUpcomingEvents(eventsData);
-
         // Fetch players data for stats for the current user
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
@@ -120,7 +90,6 @@ export default function Dashboard() {
         console.error("Error fetching dashboard data: ", error);
         // Optionally show a toast message here
       } finally {
-        setLoadingEvents(false);
         setLoadingStats(false);
       }
     };
@@ -184,55 +153,13 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="w-full overflow-x-auto">
-              {loadingEvents || loadingUser ? (
-                <div className="flex items-center justify-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Équipe</TableHead>
-                      <TableHead className="hidden sm:table-cell">Adversaire</TableHead>
-                      <TableHead className="hidden lg:table-cell">Date</TableHead>
-                      <TableHead className="hidden lg:table-cell">Heure</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {upcomingEvents.length > 0 ? (
-                      upcomingEvents.map(event => (
-                        <TableRow 
-                            key={event.id} 
-                            className="cursor-pointer"
-                            onClick={() => router.push(`/dashboard/events/${event.id}`)}
-                        >
-                           <TableCell>
-                            <Badge variant="secondary" className={cn('whitespace-nowrap', event.type.includes('Match') ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent-foreground')}>
-                              {event.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium">{event.team.replace(/^Club\s/i, '')}</div>
-                            <div className="text-sm text-muted-foreground md:hidden">{event.opponent}</div>
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">{event.type.includes('Match') ? event.opponent : "N/A"}</TableCell>
-                          <TableCell className="hidden lg:table-cell">{format(event.date, "dd/MM/yyyy", { locale: fr })}</TableCell>
-                          <TableCell className="hidden lg:table-cell">{format(event.date, "HH:mm", { locale: fr })}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                          Aucun événement à venir.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Fonctionnalité temporairement désactivée</AlertTitle>
+              <AlertDescription>
+                La section des événements à venir est en cours de maintenance en raison d'un problème de base de données. Veuillez consulter la page Événements en attendant.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>
