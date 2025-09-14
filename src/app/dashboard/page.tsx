@@ -31,6 +31,15 @@ interface ChartData {
     fill: string;
 }
 
+interface Event {
+  id: string;
+  type: string;
+  team: string;
+  category: string;
+  opponent?: string;
+  date: Date;
+}
+
 export default function Dashboard() {
   const [user, loadingUser] = useAuthState(auth);
   const router = useRouter();
@@ -38,12 +47,15 @@ export default function Dashboard() {
   const [coachCount, setCoachCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
   const [playersByCategory, setPlayersByCategory] = useState<ChartData[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) {
         if (!loadingUser) {
           setLoadingStats(false);
+          setLoadingEvents(false);
         }
         return;
       };
@@ -93,8 +105,39 @@ export default function Dashboard() {
         setLoadingStats(false);
       }
     };
+    
+    const fetchUpcomingEvents = async () => {
+        if (!user) {
+            if (!loadingUser) setLoadingEvents(false);
+            return;
+        }
+        setLoadingEvents(true);
+        try {
+            const today = startOfDay(new Date());
+            const eventsQuery = query(
+                collection(db, "events"), 
+                where("userId", "==", user.uid),
+                where("date", ">=", today),
+                orderBy("date", "asc"), 
+                limit(5)
+            );
+            const querySnapshot = await getDocs(eventsQuery);
+            const eventsData = querySnapshot.docs.map(doc => ({ 
+                id: doc.id,
+                ...doc.data(),
+                date: doc.data().date.toDate() 
+            } as Event));
+            setUpcomingEvents(eventsData);
+        } catch (error) {
+            console.error("Error fetching upcoming events: ", error);
+        } finally {
+            setLoadingEvents(false);
+        }
+    };
+
 
     fetchDashboardData();
+    fetchUpcomingEvents();
   }, [user, loadingUser]);
 
   return (
@@ -153,13 +196,49 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Fonctionnalité temporairement désactivée</AlertTitle>
-              <AlertDescription>
-                La section des événements à venir est en cours de maintenance en raison d'un problème de base de données. Veuillez consulter la page Événements en attendant.
-              </AlertDescription>
-            </Alert>
+            {loadingEvents ? (
+                 <div className="flex items-center justify-center h-[200px]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : upcomingEvents.length > 0 ? (
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Événement</TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                        Date
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                        Heure
+                    </TableHead>
+                    <TableHead className="text-right">Catégorie</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {upcomingEvents.map(event => (
+                        <TableRow key={event.id}>
+                            <TableCell>
+                                <div className="font-medium">{event.type}</div>
+                                <div className="hidden text-sm text-muted-foreground md:inline">
+                                {event.opponent ? `${event.team} vs ${event.opponent}` : event.team}
+                                </div>
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                                {format(event.date, "dd MMMM yyyy", { locale: fr })}
+                            </TableCell>
+                             <TableCell className="hidden md:table-cell">
+                                {format(event.date, "HH:mm")}
+                            </TableCell>
+                            <TableCell className="text-right">{event.category}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            ) : (
+                <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                    Aucun événement à venir.
+                </div>
+            )}
           </CardContent>
         </Card>
       </div>
