@@ -101,11 +101,12 @@ export default function RegistrationFormPage() {
     <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
         <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
-                <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+                <Button variant="outline" size="sm" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Retour</span>
                 </Button>
                 <div className="flex gap-2">
-                    <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+                    <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm">
                         {loadingPdf ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -141,16 +142,16 @@ export default function RegistrationFormPage() {
                     <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">I. INFORMATIONS DU JOUEUR</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
                             <div className="flex items-center"><div className="break-words shrink-0">Date et Lieu de naissance :</div><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="shrink-0">Nationalité :</span><DottedLine /></div>
-                                <div className="flex items-center"><span className="shrink-0">Sexe :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Nationalité :</div><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Sexe :</div><DottedLine /></div>
                             </div>
                             <div className="flex items-center"><div className="break-words shrink-0">N° CIN (si applicable) :</div><DottedLine /></div>
-                            <div className="flex items-center"><span className="shrink-0">Adresse :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">Adresse :</div><DottedLine /></div>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
                                 <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
                              </div>
                         </div>
@@ -159,11 +160,11 @@ export default function RegistrationFormPage() {
                      <div className="space-y-4">
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">II. INFORMATIONS DU PARENT / TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                         <div className="space-y-4 text-sm md:text-base">
-                            <div className="flex items-center"><span className="shrink-0">Nom et Prénom :</span><DottedLine /></div>
+                            <div className="flex items-center"><div className="break-words shrink-0">Nom et Prénom :</div><DottedLine /></div>
                             <div className="flex items-center"><div className="break-words shrink-0">Lien de parenté (Père / Mère / Tuteur) :</div><DottedLine /></div>
                             <div className="flex items-center"><div className="break-words shrink-0">N° de CIN :</div><DottedLine /></div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="flex items-center"><span className="shrink-0">Téléphone :</span><DottedLine /></div>
+                                <div className="flex items-center"><div className="break-words shrink-0">Téléphone :</div><DottedLine /></div>
                                 <div className="flex items-center"><div className="break-words shrink-0">Adresse e-mail :</div><DottedLine /></div>
                             </div>
                         </div>
