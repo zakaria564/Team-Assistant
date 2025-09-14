@@ -10,7 +10,7 @@ import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHoriz
 import Link from "next/link";
 import { format, isSameDay, differenceInHours, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, query, onSnapshot, doc, deleteDoc, where, orderBy } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -70,7 +70,8 @@ export default function EventsPage() {
     setLoading(true);
     const q = query(
         collection(db, "events"), 
-        where("userId", "==", user.uid)
+        where("userId", "==", user.uid),
+        orderBy("date", "asc")
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -80,10 +81,7 @@ export default function EventsPage() {
         date: doc.data().date.toDate()
       } as Event));
       
-      // Sort events by date on the client side
-      const sortedEvents = eventsData.sort((a, b) => a.date.getTime() - b.date.getTime());
-      
-      setAllEvents(sortedEvents);
+      setAllEvents(eventsData);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching events:", error);
@@ -101,8 +99,8 @@ export default function EventsPage() {
   useEffect(() => {
     if (date) {
       const filteredEvents = allEvents
-        .filter((event) => isSameDay(event.date, date))
-        .sort((a, b) => a.date.getTime() - b.date.getTime());
+        .filter((event) => isSameDay(event.date, date));
+        // No need to sort here as they are already sorted by the query
       setSelectedEvents(filteredEvents);
     } else {
       setSelectedEvents([]);
@@ -314,5 +312,7 @@ export default function EventsPage() {
     </div>
   );
 }
+
+    
 
     
