@@ -156,7 +156,6 @@ export default function EventsPage() {
 
 
   return (
-    <>
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -313,7 +312,6 @@ export default function EventsPage() {
         </Card>
       </div>
     </div>
-    </>
   );
 }
 
