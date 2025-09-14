@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
-import { format, isSameDay, differenceInHours } from "date-fns";
+import { format, isSameDay, differenceInHours, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -217,7 +217,7 @@ export default function EventsPage() {
         <Card>
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">
-                    {date ? format(date, "d MMMM yyyy", { locale: fr }) : "Sélectionnez une date"}
+                    {date ? (isToday(date) ? "Match d'aujourd'hui" : format(date, "d MMMM yyyy", { locale: fr })) : "Sélectionnez une date"}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -316,3 +316,5 @@ export default function EventsPage() {
     </>
   );
 }
+
+    
