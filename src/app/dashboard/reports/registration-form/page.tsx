@@ -173,8 +173,8 @@ export default function RegistrationFormPage() {
                         <h3 className="font-bold text-base md:text-lg border-b pb-2 border-black/20">III. AUTORISATION ET DÉCLARATION</h3>
                         <div className="space-y-4 text-xs md:text-sm">
                             <p className="leading-relaxed break-words">
-                                Je soussigné(e), <span className="font-semibold">[Nom du parent/tuteur]</span>, certifie que les informations ci-dessus sont exactes. 
-                                J'autorise mon enfant, <span className="font-semibold">[Nom de l'enfant]</span>, à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                                Je soussigné(e), ...................................., certifie que les informations ci-dessus sont exactes. 
+                                J'autorise mon enfant, ...................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
                             </p>
                             <p className="font-semibold leading-relaxed break-words">
                                 Je prends également connaissance que cette fiche, une fois remplie et signée, devra être légalisée auprès de la commune urbaine pour être valide.
