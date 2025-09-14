@@ -67,7 +67,8 @@ export default function Dashboard() {
         const today = startOfDay(new Date());
         const eventsQuery = query(
           collection(db, "events"),
-          where("userId", "==", user.uid)
+          where("userId", "==", user.uid),
+          orderBy("date", "asc")
         );
         const eventsSnapshot = await getDocs(eventsQuery);
         const eventsData = eventsSnapshot.docs.map(doc => ({
@@ -78,7 +79,6 @@ export default function Dashboard() {
         
         const futureEvents = eventsData
           .filter(event => isAfter(event.date, today))
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
           .slice(0, 5);
 
         setUpcomingEvents(futureEvents);
