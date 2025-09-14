@@ -67,7 +67,10 @@ export default function Dashboard() {
         const today = startOfDay(new Date());
         const eventsQuery = query(
           collection(db, "events"),
-          where("userId", "==", user.uid)
+          where("userId", "==", user.uid),
+          where("date", ">=", today),
+          orderBy("date", "asc"),
+          limit(5)
         );
         const eventsSnapshot = await getDocs(eventsQuery);
         const eventsData = eventsSnapshot.docs.map(doc => ({
@@ -76,12 +79,7 @@ export default function Dashboard() {
           date: doc.data().date.toDate(),
         } as Event));
         
-        const futureEvents = eventsData
-          .filter(event => isAfter(event.date, today))
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-          .slice(0, 5);
-
-        setUpcomingEvents(futureEvents);
+        setUpcomingEvents(eventsData);
 
         // Fetch players data for stats for the current user
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
