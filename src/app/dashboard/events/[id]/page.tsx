@@ -129,9 +129,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <span className="sr-only">Retour</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Détails de l'événement</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {eventTypeIsMatch ? "Détails du match" : "Détails de l'événement"}
+              </h1>
               <p className="text-muted-foreground">
-                  Consultez les informations de l'événement.
+                  {eventTypeIsMatch ? "Consultez les informations du match." : "Consultez les informations de l'événement."}
               </p>
             </div>
         </div>
@@ -217,5 +219,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    
 
     
