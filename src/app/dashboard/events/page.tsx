@@ -277,7 +277,7 @@ export default function EventsPage() {
                                       </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
-                                          disabled={isFinishedWithScore}
+                                          disabled={isFinishedWithScore || isPast24h}
                                           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                           onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
                                         >
