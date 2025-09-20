@@ -135,14 +135,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
-         {isPastEvent && eventTypeIsMatch && (
-            <Button asChild>
-              <Link href={`/dashboard/events/${event.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                {typeof event.scoreTeam === 'number' ? 'Modifier le résultat' : 'Ajouter le résultat'}
-              </Link>
-            </Button>
-          )}
       </div>
       
         <Card>
