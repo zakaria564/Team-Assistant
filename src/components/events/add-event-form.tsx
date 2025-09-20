@@ -237,8 +237,13 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                   
                   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Joueur inconnu';
                   
-                  dataToSave.scorers = (values.scorers || []).map(s => ({...s, playerName: getPlayerName(s.playerId)}));
-                  dataToSave.assisters = (values.assisters || []).map(a => ({...a, playerName: getPlayerName(a.playerId)}));
+                  dataToSave.scorers = (values.scorers || [])
+                    .filter(s => s.playerId && s.goals > 0)
+                    .map(s => ({...s, playerName: getPlayerName(s.playerId)}));
+                    
+                  dataToSave.assisters = (values.assisters || [])
+                    .filter(a => a.playerId && a.assists > 0)
+                    .map(a => ({...a, playerName: getPlayerName(a.playerId)}));
                 }
             }
 
@@ -599,3 +604,5 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
         </Form>
     );
 }
+
+    

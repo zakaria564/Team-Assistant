@@ -135,7 +135,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
         </div>
-         {isPastEvent && eventTypeIsMatch && canEdit && (
+         {isPastEvent && eventTypeIsMatch && (
             <Button asChild>
               <Link href={`/dashboard/events/${event.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
@@ -225,3 +225,5 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    
