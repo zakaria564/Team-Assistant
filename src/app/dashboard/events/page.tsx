@@ -269,7 +269,7 @@ export default function EventsPage() {
                                               Voir les détails
                                           </Link>
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem asChild disabled={eventIsPast} className="cursor-pointer">
+                                      <DropdownMenuItem asChild disabled={isFinishedWithScore} className="cursor-pointer">
                                         <Link href={`/dashboard/events/${event.id}/edit`}>
                                           <Pencil className="mr-2 h-4 w-4" />
                                           Modifier
@@ -277,7 +277,7 @@ export default function EventsPage() {
                                       </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
-                                          disabled={eventIsPast}
+                                          disabled={isFinishedWithScore}
                                           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                           onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
                                         >
