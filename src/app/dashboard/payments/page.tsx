@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
@@ -35,12 +35,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 interface Payment {
   id: string;
   playerId: string;
   playerName?: string;
+  playerPhotoUrl?: string;
   totalAmount: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
@@ -48,6 +51,13 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
+}
+
+interface PlayerPayments {
+    playerId: string;
+    playerName: string;
+    playerPhotoUrl?: string;
+    payments: Payment[];
 }
 
 
@@ -59,6 +69,7 @@ export default function PaymentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("playerName");
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -70,9 +81,9 @@ export default function PaymentsPage() {
       try {
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
-        const playersMap = new Map<string, string>();
+        const playersMap = new Map<string, {name: string, photoUrl?: string}>();
         playersSnapshot.forEach(doc => {
-            playersMap.set(doc.id, doc.data().name);
+            playersMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
         });
 
         const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
@@ -98,7 +109,8 @@ export default function PaymentsPage() {
                 return { 
                     id: doc.id, 
                     ...data,
-                    playerName: playersMap.get(data.playerId) || "Joueur inconnu",
+                    playerName: playersMap.get(data.playerId)?.name || "Joueur inconnu",
+                    playerPhotoUrl: playersMap.get(data.playerId)?.photoUrl,
                     amountPaid,
                     amountRemaining,
                     totalAmount,
@@ -126,15 +138,33 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [user, loadingUser, toast]);
 
-  const filteredPayments = useMemo(() => {
-    if (!searchTerm) return payments;
-    const lowercasedSearchTerm = searchTerm.toLowerCase();
+  const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
+    const grouped: { [key: string]: PlayerPayments } = {};
 
-    return payments.filter(payment => {
-        const valueToSearch = (searchCategory === 'playerName' ? payment.playerName : payment.status) || '';
-        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
+    payments.forEach(payment => {
+        if (!grouped[payment.playerId]) {
+            grouped[payment.playerId] = {
+                playerId: payment.playerId,
+                playerName: payment.playerName || "Joueur inconnu",
+                playerPhotoUrl: payment.playerPhotoUrl,
+                payments: []
+            };
+        }
+        grouped[payment.playerId].payments.push(payment);
     });
-  }, [payments, searchTerm, searchCategory]);
+
+    let result = Object.values(grouped);
+
+    if (searchTerm) {
+        const lowercasedSearchTerm = searchTerm.toLowerCase();
+        result = result.filter(playerGroup => 
+            playerGroup.playerName.toLowerCase().includes(lowercasedSearchTerm)
+        );
+    }
+
+    return result.sort((a, b) => a.playerName.localeCompare(b.playerName));
+
+  }, [payments, searchTerm]);
 
 
   const confirmDeletePayment = async () => {
@@ -170,7 +200,9 @@ export default function PaymentsPage() {
   
   const handleExport = () => {
     const csvHeader = "Joueur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
-    const csvRows = filteredPayments.map(p => {
+    const allPaymentsToExport = groupedAndFilteredPayments.flatMap(group => group.payments);
+    
+    const csvRows = allPaymentsToExport.map(p => {
       const row = [
         `"${p.playerName}"`,
         `"${p.description}"`,
@@ -224,123 +256,132 @@ export default function PaymentsPage() {
             <div className="relative w-full md:max-w-sm">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
-                    placeholder="Rechercher..."
+                    placeholder="Rechercher un joueur..."
                     className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Select value={searchCategory} onValueChange={setSearchCategory}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Critère" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="playerName">Nom du joueur</SelectItem>
-                    <SelectItem value="status">Statut</SelectItem>
-                </SelectContent>
-            </Select>
         </div>
 
 
         <Card>
           <CardHeader>
             <CardTitle>Suivi des paiements</CardTitle>
-            <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
+            <CardDescription>Liste des cotisations regroupées par joueur.</CardDescription>
           </CardHeader>
           <CardContent>
             {loading || loadingUser ? (
               <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : (
-              <div className="w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Joueur</TableHead>
-                      <TableHead className="hidden md:table-cell">Montant Total</TableHead>
-                      <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
-                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPayments.length > 0 ? (
-                        filteredPayments.map((payment) => {
-                          const canDelete = payment.transactions.length === 0;
-                          return (
-                            <TableRow key={payment.id}>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{payment.playerName}</span>
-                                    <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
+            ) : groupedAndFilteredPayments.length > 0 ? (
+                <div className="space-y-2">
+                    {groupedAndFilteredPayments.map((playerGroup) => (
+                        <Collapsible 
+                            key={playerGroup.playerId} 
+                            className="border rounded-lg"
+                            open={openCollapsibles[playerGroup.playerId] || false}
+                            onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [playerGroup.playerId]: isOpen}))}
+                        >
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center gap-4">
+                                     <Avatar>
+                                        <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
+                                        <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium">{playerGroup.playerName}</span>
+                                    <Badge variant="secondary">{playerGroup.payments.length} paiement(s)</Badge>
                                 </div>
-                              </TableCell>
-                              <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                              <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
-                              <TableCell className="hidden sm:table-cell">
-                                <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
-                                      {payment.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Ouvrir le menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuItem asChild className="cursor-pointer">
-                                        <Link href={`/dashboard/payments/${payment.id}`}>
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            Voir les détails
-                                        </Link>
-                                      </DropdownMenuItem>
-                                      {payment.status !== 'Payé' && (
-                                          <DropdownMenuItem asChild className="cursor-pointer">
-                                            <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                <PlusCircle className="mr-2 h-4 w-4" />
-                                                Ajouter un versement
-                                            </Link>
-                                          </DropdownMenuItem>
-                                      )}
-                                       <DropdownMenuItem asChild className="cursor-pointer">
-                                        <Link href={`/dashboard/payments/${payment.id}/receipt`}>
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Exporter le reçu
-                                        </Link>
-                                      </DropdownMenuItem>
-                                      {canDelete && (
-                                        <>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem
-                                            className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                            onClick={() => setPaymentToDelete(payment)}
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                          </DropdownMenuItem>
-                                        </>
-                                      )}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })
-                    ) : (
-                      <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                             {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
-                          </TableCell>
-                        </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                                {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="w-full overflow-x-auto p-2">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead className="hidden md:table-cell">Montant</TableHead>
+                                        <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {playerGroup.payments.map((payment) => {
+                                            const canDelete = payment.transactions.length === 0;
+                                            return (
+                                                <TableRow key={payment.id}>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium">{payment.description}</span>
+                                                            <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
+                                                    <TableCell className="hidden sm:table-cell">
+                                                        <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
+                                                            {payment.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Ouvrir le menu</span>
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                                <Link href={`/dashboard/payments/${payment.id}`}>
+                                                                    <FileText className="mr-2 h-4 w-4" />
+                                                                    Voir les détails
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            {payment.status !== 'Payé' && (
+                                                                <DropdownMenuItem asChild className="cursor-pointer">
+                                                                    <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                                                        Ajouter un versement
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                                <Link href={`/dashboard/payments/${payment.id}/receipt`}>
+                                                                    <Download className="mr-2 h-4 w-4" />
+                                                                    Exporter le reçu
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            {canDelete && (
+                                                                <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                                    onClick={() => setPaymentToDelete(payment)}
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Supprimer
+                                                                </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                    </Table>
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-muted-foreground py-10">
+                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé."}
+                </div>
             )}
           </CardContent>
         </Card>
@@ -368,3 +409,5 @@ export default function PaymentsPage() {
     </>
   );
 }
+
+    
