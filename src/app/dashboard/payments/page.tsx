@@ -5,64 +5,40 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel,
-  DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-interface Player {
-  id: string;
-  name: string;
-}
+type PaymentStatus = 'Payé' | 'Partiel' | 'En attente' | 'En retard';
 
-interface Payment {
-  id: string;
+interface AggregatedPayment {
   playerId: string;
-  playerName?: string;
-  totalAmount: number;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  createdAt: { seconds: number, nanoseconds: number };
-  description: string;
-  transactions: { amount: number; date: any; method: string; }[];
-  amountPaid: number;
-  amountRemaining: number;
+  playerName: string;
+  playerPhotoUrl?: string;
+  totalAmountDue: number;
+  totalAmountPaid: number;
+  totalAmountRemaining: number;
+  overallStatus: PaymentStatus;
 }
-
 
 export default function PaymentsPage() {
   const [user, loadingUser] = useAuthState(auth);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<AggregatedPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchCategory, setSearchCategory] = useState("playerName");
-  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -74,48 +50,56 @@ export default function PaymentsPage() {
       try {
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
-        const playersMap = new Map<string, string>();
+        const playersMap = new Map<string, { name: string, photoUrl?: string }>();
         playersSnapshot.forEach(doc => {
-            playersMap.set(doc.id, doc.data().name);
+            playersMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
         });
 
         const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
         const paymentsSnapshot = await getDocs(paymentsQuery);
-        const paymentsData = paymentsSnapshot.docs
-            .map(doc => {
-                const data = doc.data() as any;
-                 // Skip payments for players who no longer exist
-                if (!playersMap.has(data.playerId)) {
-                    return null;
-                }
-
-                const transactions = data.transactions || [];
-                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-                const totalAmount = data.totalAmount || 0;
-                const amountRemaining = totalAmount - amountPaid;
-                
-                let status = data.status;
-                if (amountRemaining <= 0) {
-                status = 'Payé';
-                }
-                
-                return { 
-                    id: doc.id, 
-                    ...data,
-                    playerName: playersMap.get(data.playerId) || "Joueur inconnu",
-                    amountPaid,
-                    amountRemaining,
-                    totalAmount,
-                    transactions,
-                    status // Use the corrected status
-                } as Payment;
-            })
-            .filter((p): p is Payment => p !== null); // Filter out null values
         
-        // Sort payments by creation date on the client side
-        const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+        const aggregatedData: { [key: string]: AggregatedPayment } = {};
 
-        setPayments(sortedPayments);
+        paymentsSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const playerInfo = playersMap.get(data.playerId);
+
+            if (!playerInfo) return; // Skip payments for players not found
+
+            if (!aggregatedData[data.playerId]) {
+                aggregatedData[data.playerId] = {
+                    playerId: data.playerId,
+                    playerName: playerInfo.name,
+                    playerPhotoUrl: playerInfo.photoUrl,
+                    totalAmountDue: 0,
+                    totalAmountPaid: 0,
+                    totalAmountRemaining: 0,
+                    overallStatus: 'Payé',
+                };
+            }
+
+            const playerAgg = aggregatedData[data.playerId];
+            const amountPaid = (data.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
+            
+            playerAgg.totalAmountDue += data.totalAmount || 0;
+            playerAgg.totalAmountPaid += amountPaid;
+        });
+
+        const finalPaymentsData = Object.values(aggregatedData).map(p => {
+            p.totalAmountRemaining = p.totalAmountDue - p.totalAmountPaid;
+
+            if (p.totalAmountRemaining <= 0) {
+                p.overallStatus = 'Payé';
+            } else if (p.totalAmountPaid > 0) {
+                p.overallStatus = 'Partiel';
+            } else {
+                 p.overallStatus = 'En attente';
+                 // A more complex logic could be added here to determine 'En retard' status
+            }
+            return p;
+        });
+
+        setPayments(finalPaymentsData);
 
       } catch (error: any) {
         console.error("Error fetching payments: ", error);
@@ -137,35 +121,11 @@ export default function PaymentsPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
 
     return payments.filter(payment => {
-        const valueToSearch = (searchCategory === 'playerName' ? payment.playerName : payment.status) || '';
-        return valueToSearch.toLowerCase().includes(lowercasedSearchTerm);
+        return payment.playerName.toLowerCase().includes(lowercasedSearchTerm);
     });
-  }, [payments, searchTerm, searchCategory]);
+  }, [payments, searchTerm]);
 
-
-  const confirmDeletePayment = async () => {
-    if (!paymentToDelete) return;
-
-    try {
-      await deleteDoc(doc(db, "payments", paymentToDelete.id));
-      setPayments(payments.filter(p => p.id !== paymentToDelete.id));
-      toast({
-        title: "Paiement supprimé",
-        description: `Le paiement a été supprimé avec succès.`,
-      });
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le paiement.",
-      });
-      console.error("Error deleting payment: ", error);
-    } finally {
-        setPaymentToDelete(null);
-    }
-  };
-
-  const getBadgeClass = (status: Payment['status']) => {
+  const getBadgeClass = (status: PaymentStatus) => {
      switch (status) {
         case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
         case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
@@ -176,16 +136,14 @@ export default function PaymentsPage() {
   }
   
   const handleExport = () => {
-    const csvHeader = "Joueur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
+    const csvHeader = "Joueur;Montant Total Dû;Montant Total Payé;Montant Restant;Statut Global\n";
     const csvRows = filteredPayments.map(p => {
       const row = [
         `"${p.playerName}"`,
-        `"${p.description}"`,
-        p.totalAmount.toFixed(2),
-        p.amountPaid.toFixed(2),
-        p.amountRemaining.toFixed(2),
-        p.status,
-        format(new Date(p.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr })
+        p.totalAmountDue.toFixed(2),
+        p.totalAmountPaid.toFixed(2),
+        p.totalAmountRemaining.toFixed(2),
+        p.overallStatus,
       ].join(';');
       return row;
     }).join('\n');
@@ -197,7 +155,7 @@ export default function PaymentsPage() {
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", `export_paiements_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute("download", `export_paiements_joueurs_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -231,27 +189,18 @@ export default function PaymentsPage() {
             <div className="relative w-full md:max-w-sm">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
-                    placeholder="Rechercher..."
+                    placeholder="Rechercher par nom de joueur..."
                     className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Select value={searchCategory} onValueChange={setSearchCategory}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Critère" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="playerName">Nom du Joueur</SelectItem>
-                    <SelectItem value="status">Statut</SelectItem>
-                </SelectContent>
-            </Select>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Suivi des paiements</CardTitle>
-            <CardDescription>Liste des dernières transactions et statuts de paiement.</CardDescription>
+            <CardTitle>Suivi des paiements par joueur</CardTitle>
+            <CardDescription>Liste des statuts de paiement globaux pour chaque joueur.</CardDescription>
           </CardHeader>
           <CardContent>
             {loading || loadingUser ? (
@@ -264,85 +213,51 @@ export default function PaymentsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Joueur</TableHead>
-                      <TableHead className="hidden md:table-cell">Montant Total</TableHead>
+                      <TableHead className="hidden md:table-cell">Montant Dû</TableHead>
                       <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
-                      <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                      <TableHead className="hidden sm:table-cell">Statut Global</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredPayments.length > 0 ? (
-                        filteredPayments.map((payment) => {
-                           const canDelete = payment.status !== 'Payé' && payment.status !== 'Partiel';
-                          return (
-                            <TableRow key={payment.id}>
+                        filteredPayments.map((payment) => (
+                            <TableRow key={payment.playerId} className="cursor-pointer" onClick={() => router.push(`/dashboard/players/${payment.playerId}`)}>
                               <TableCell>
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{payment.playerName}</span>
-                                    <span className="text-muted-foreground text-sm md:hidden">
-                                      {payment.amountPaid.toFixed(2)} MAD / {payment.totalAmount.toFixed(2)} MAD
-                                    </span>
+                                <div className="flex items-center gap-3">
+                                   <Avatar>
+                                      <AvatarImage src={payment.playerPhotoUrl} alt={payment.playerName} />
+                                      <AvatarFallback>{payment.playerName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">{payment.playerName}</span>
+                                        <span className="text-muted-foreground text-sm md:hidden">
+                                        {payment.totalAmountPaid.toFixed(2)} / {payment.totalAmountDue.toFixed(2)} MAD
+                                        </span>
+                                    </div>
                                 </div>
                               </TableCell>
-                              <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} MAD</TableCell>
-                              <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} MAD</TableCell>
+                              <TableCell className="hidden md:table-cell">{payment.totalAmountDue.toFixed(2)} MAD</TableCell>
+                              <TableCell className="hidden md:table-cell">{payment.totalAmountPaid.toFixed(2)} MAD</TableCell>
                               <TableCell className="hidden sm:table-cell">
-                                <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
-                                  {payment.status}
+                                <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.overallStatus))}>
+                                  {payment.overallStatus}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Ouvrir le menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuItem asChild className="cursor-pointer">
-                                        <Link href={`/dashboard/payments/${payment.id}`}>
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            Voir les détails
-                                        </Link>
-                                      </DropdownMenuItem>
-                                      {payment.status !== 'Payé' && (
-                                          <DropdownMenuItem asChild className="cursor-pointer">
-                                            <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                <PlusCircle className="mr-2 h-4 w-4" />
-                                                Ajouter un versement
-                                            </Link>
-                                          </DropdownMenuItem>
-                                      )}
-                                      <DropdownMenuItem asChild className="cursor-pointer">
-                                        <Link href={`/dashboard/payments/${payment.id}/receipt`}>
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Exporter le reçu
-                                        </Link>
-                                      </DropdownMenuItem>
-                                      {canDelete && (
-                                        <>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem
-                                            className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                            onClick={() => setPaymentToDelete(payment)}
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                          </DropdownMenuItem>
-                                        </>
-                                      )}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
+                                <Button asChild variant="outline" size="sm">
+                                  <Link href={`/dashboard/players/${payment.playerId}`} onClick={e => e.stopPropagation()}>
+                                      <User className="mr-2 h-4 w-4" />
+                                      Voir Profil
+                                  </Link>
+                                </Button>
                               </TableCell>
                             </TableRow>
-                          )
-                        })
+                          ))
                     ) : (
                       <TableRow>
                           <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                            {searchTerm ? "Aucun paiement ne correspond à votre recherche." : "Aucun paiement trouvé."}
+                            {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé."}
                           </TableCell>
                         </TableRow>
                     )}
@@ -353,26 +268,6 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
       </div>
-
-      <AlertDialog open={!!paymentToDelete} onOpenChange={(isOpen) => !isOpen && setPaymentToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce paiement ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Le paiement pour "{paymentToDelete?.description}" sera définitivement supprimé.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDeletePayment}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
