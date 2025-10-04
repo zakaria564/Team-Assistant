@@ -314,7 +314,7 @@ export default function PaymentsPage() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                      <Badge className={cn("whitespace-nowrap", getBadgeClass(playerGroup.currentMonthStatus))}>
-                                        {playerGroup.currentMonthStatus === 'N/A' ? `Mois en cours: N/A` : `Mois en cours: ${playerGroup.currentMonthStatus}`}
+                                        {playerGroup.currentMonthStatus}
                                      </Badge>
                                      {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                                 </div>
@@ -433,6 +433,8 @@ export default function PaymentsPage() {
     </>
   );
 }
+    
+
     
 
     
