@@ -53,12 +53,31 @@ interface Payment {
   amountRemaining: number;
 }
 
+type PaymentStatus = Payment['status'];
+
 interface PlayerPayments {
     playerId: string;
     playerName: string;
     playerPhotoUrl?: string;
     payments: Payment[];
+    currentMonthStatus?: PaymentStatus | 'N/A';
 }
+
+const normalizeString = (str: string) => {
+    if (!str) return '';
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+};
+
+const getBadgeClass = (status?: PaymentStatus | 'N/A') => {
+     switch (status) {
+        case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
+        case 'N/A': return 'bg-gray-100 text-gray-800 border-gray-300';
+        default: return '';
+    }
+};
 
 
 export default function PaymentsPage() {
@@ -101,7 +120,7 @@ export default function PaymentsPage() {
                 const totalAmount = data.totalAmount || 0;
                 const amountRemaining = totalAmount - amountPaid;
                 
-                let status = data.status;
+                let status: PaymentStatus = data.status;
                 if (amountRemaining <= 0) {
                   status = 'Payé';
                 }
@@ -140,6 +159,8 @@ export default function PaymentsPage() {
 
   const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
     const grouped: { [key: string]: PlayerPayments } = {};
+    const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+    const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
 
     payments.forEach(payment => {
         if (!grouped[payment.playerId]) {
@@ -147,10 +168,16 @@ export default function PaymentsPage() {
                 playerId: payment.playerId,
                 playerName: payment.playerName || "Joueur inconnu",
                 playerPhotoUrl: payment.playerPhotoUrl,
-                payments: []
+                payments: [],
+                currentMonthStatus: 'N/A'
             };
         }
         grouped[payment.playerId].payments.push(payment);
+        
+        const normalizedPaymentDesc = normalizeString(payment.description);
+        if(normalizedPaymentDesc === normalizedCurrentMonthDesc) {
+            grouped[payment.playerId].currentMonthStatus = payment.status;
+        }
     });
 
     let result = Object.values(grouped);
@@ -187,16 +214,6 @@ export default function PaymentsPage() {
         setPaymentToDelete(null);
     }
   };
-
-  const getBadgeClass = (status: Payment['status']) => {
-     switch (status) {
-        case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
-        default: return '';
-    }
-  }
   
   const handleExport = () => {
     const csvHeader = "Joueur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
@@ -290,10 +307,17 @@ export default function PaymentsPage() {
                                         <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
                                         <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <span className="font-medium">{playerGroup.playerName}</span>
-                                    <Badge variant="secondary">{playerGroup.payments.length} paiement(s)</Badge>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="font-medium">{playerGroup.playerName}</span>
+                                        <Badge variant="secondary" className="w-fit mt-1 sm:mt-0">{playerGroup.payments.length} paiement(s)</Badge>
+                                    </div>
                                 </div>
-                                {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                                <div className="flex items-center gap-4">
+                                     <Badge className={cn("whitespace-nowrap", getBadgeClass(playerGroup.currentMonthStatus))}>
+                                        {playerGroup.currentMonthStatus === 'N/A' ? `Mois en cours: N/A` : `Mois en cours: ${playerGroup.currentMonthStatus}`}
+                                     </Badge>
+                                     {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                                </div>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <div className="w-full overflow-x-auto p-2">
@@ -409,5 +433,6 @@ export default function PaymentsPage() {
     </>
   );
 }
+    
 
     
