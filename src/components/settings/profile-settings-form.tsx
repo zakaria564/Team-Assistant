@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -26,6 +27,7 @@ export function ProfileSettingsForm() {
   const [user, loadingUser, errorUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const router = useRouter();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,11 +65,7 @@ export function ProfileSettingsForm() {
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
         
-        form.reset({
-            name: user.displayName || "",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
-        });
+        router.refresh();
 
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: error.message });
