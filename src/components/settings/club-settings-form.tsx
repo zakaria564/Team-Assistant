@@ -56,14 +56,10 @@ export function ClubSettingsForm() {
             const docSnap = await getDoc(clubDocRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (!data.logoUrl) {
-                    data.logoUrl = "https://image.noelshack.com/fichiers/2025/44/1/1761583201-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg";
-                }
                 form.reset(data);
             } else {
                 const defaultData = {
                     contactEmail: user.email || "",
-                    logoUrl: "https://image.noelshack.com/fichiers/2025/44/1/1761583201-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg",
                 };
                 form.reset(defaultData);
             }
@@ -168,6 +164,19 @@ export function ClubSettingsForm() {
                             )}
                         />
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="logoUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>URL du logo</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''}/>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control}
                         name="address"
