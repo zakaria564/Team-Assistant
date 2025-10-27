@@ -73,11 +73,11 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         description: z.string().min(3, "La description est requise."),
         
         newTransactionAmount: z.coerce.number().optional().refine(val => {
-            if (val === undefined) return true;
-            const maxAmount = amountRemainingBeforeNew !== undefined ? amountRemainingBeforeNew : Infinity;
+            if (val === undefined || val === null) return true;
+             const maxAmount = amountRemainingBeforeNew !== undefined ? amountRemainingBeforeNew : form.getValues('totalAmount');
             return val <= maxAmount;
         }, {
-            message: `Le versement ne peut pas dépasser le montant restant de ${amountRemainingBeforeNew?.toFixed(2)} MAD.`
+            message: `Le versement ne peut pas dépasser le montant restant.`
         }),
         newTransactionMethod: z.string().optional(),
     
@@ -260,6 +260,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         }
     }
     
+    const calculatedAmountRemaining = isEditMode ? amountRemainingBeforeNew : watchTotalAmount;
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
@@ -361,7 +363,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder="0.00" 
+                                    placeholder={calculatedAmountRemaining?.toFixed(2) || '0.00'}
                                     {...field}
                                     value={field.value === undefined ? '' : field.value}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
