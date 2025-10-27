@@ -24,7 +24,7 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 
 export function UserNav() {
@@ -34,29 +34,26 @@ export function UserNav() {
   const [loadingClub, setLoadingClub] = useState(true);
 
   useEffect(() => {
-    const fetchClubLogo = async () => {
-      if (!user) {
-        setLoadingClub(false);
-        return;
+    if (!user) {
+      setLoadingClub(false);
+      return;
+    }
+      
+    setLoadingClub(true);
+    const clubDocRef = doc(db, "clubs", user.uid);
+    const unsubscribe = onSnapshot(clubDocRef, (doc) => {
+      if (doc.exists() && doc.data().logoUrl) {
+        setClubLogoUrl(doc.data().logoUrl);
+      } else {
+        setClubLogoUrl(null);
       }
-        
-      setLoadingClub(true);
-      try {
-        const clubDocRef = doc(db, "clubs", user.uid);
-        const clubDoc = await getDoc(clubDocRef);
-        if (clubDoc.exists() && clubDoc.data().logoUrl) {
-          setClubLogoUrl(clubDoc.data().logoUrl);
-        } else {
-          setClubLogoUrl(null);
-        }
-      } catch (error) {
+      setLoadingClub(false);
+    }, (error) => {
         console.error("Error fetching club logo:", error);
-      } finally {
         setLoadingClub(false);
-      }
-    };
+    });
 
-    fetchClubLogo();
+    return () => unsubscribe();
   }, [user]);
 
   const handleLogout = () => {
@@ -75,14 +72,13 @@ export function UserNav() {
   }
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
-  const displayImageUrl = clubLogoUrl || user?.photoURL;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={displayImageUrl || undefined} alt={user?.displayName || 'User profile picture'} />
+            <AvatarImage src={clubLogoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

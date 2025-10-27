@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   email: z.string().email("Veuillez entrer une adresse email valide."),
-  photoURL: z.string().url("Veuillez entrer une URL d'image valide.").or(z.literal('')).optional(),
 });
 
 export function ProfileSettingsForm() {
@@ -34,7 +33,6 @@ export function ProfileSettingsForm() {
     defaultValues: {
         name: "",
         email: "",
-        photoURL: "",
     },
   });
 
@@ -43,7 +41,6 @@ export function ProfileSettingsForm() {
       form.reset({
         name: user.displayName || "",
         email: user.email || "",
-        photoURL: user.photoURL || "",
       });
     }
   }, [user, form]);
@@ -60,7 +57,6 @@ export function ProfileSettingsForm() {
     try {
         await updateProfile(user, { 
             displayName: values.name,
-            photoURL: values.photoURL || "",
         });
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
@@ -75,7 +71,6 @@ export function ProfileSettingsForm() {
   };
   
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
-  const photoUrlValue = form.watch("photoURL");
 
   return (
     <Card>
@@ -86,30 +81,6 @@ export function ProfileSettingsForm() {
       <CardContent>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <Avatar className="h-20 w-20">
-                        <AvatarImage key={photoUrlValue} src={photoUrlValue || undefined} alt={user?.displayName || ""} />
-                        <AvatarFallback className="text-2xl">{userInitial}</AvatarFallback>
-                    </Avatar>
-                     <FormField
-                        control={form.control}
-                        name="photoURL"
-                        render={({ field }) => (
-                            <FormItem className="flex-1 w-full">
-                            <FormLabel>URL de votre photo de profil</FormLabel>
-                            <FormControl>
-                                <Input 
-                                    type="text"
-                                    placeholder="https://exemple.com/photo.jpg"
-                                    {...field}
-                                    value={field.value || ""}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
                  <FormField
                     control={form.control}
                     name="name"
