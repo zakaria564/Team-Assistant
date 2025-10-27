@@ -146,7 +146,7 @@ export function ClubSettingsForm() {
                             <FormItem>
                             <FormLabel>URL du logo de votre club</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value ?? ""} />
+                                <Input type="password" placeholder="https://exemple.com/logo.png" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
