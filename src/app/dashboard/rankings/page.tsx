@@ -93,8 +93,11 @@ export default function RankingsPage() {
 
                 // 2. Process the data
                 let localClubName = "Votre Club";
-                if (clubDoc.exists() && clubDoc.data().clubName) {
-                    localClubName = clubDoc.data().clubName;
+                let clubLogoUrl: string | undefined;
+                if (clubDoc.exists()) {
+                    const clubData = clubDoc.data();
+                    if(clubData.clubName) localClubName = clubData.clubName;
+                    if(clubData.logoUrl) clubLogoUrl = clubData.logoUrl;
                 }
                 setClubName(localClubName);
                 
@@ -105,7 +108,7 @@ export default function RankingsPage() {
 
                 // 3. Initialize all teams from opponents and club name
                 const allTeamsMap = new Map<string, Opponent | { name: string, logoUrl?: string }>();
-                allTeamsMap.set(localClubName, { name: localClubName, logoUrl: clubDoc.data()?.logoUrl });
+                allTeamsMap.set(localClubName, { name: localClubName, logoUrl: clubLogoUrl });
                 opponents.forEach(o => allTeamsMap.set(o.name, o));
 
                 const initializeTeam = (teamName: string) => {
@@ -236,7 +239,7 @@ export default function RankingsPage() {
                                     <TableRow>
                                         <TableHead className="text-center">Pos</TableHead>
                                         <TableHead>Équipe</TableHead>
-                                        <TableHead className="text-center">Pts</TableHead>
+                                        <TableHead className="font-bold text-center">Pts</TableHead>
                                         <TableHead className="text-center">J</TableHead>
                                         <TableHead className="text-center">G</TableHead>
                                         <TableHead className="text-center">N</TableHead>
@@ -281,5 +284,7 @@ export default function RankingsPage() {
             </Card>
         </div>
     );
+
+    
 
     
