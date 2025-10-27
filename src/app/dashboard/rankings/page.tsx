@@ -91,21 +91,24 @@ export default function RankingsPage() {
                     getDocs(eventsQuery)
                 ]);
 
-                // 2. Process team data
+                // 2. Process team data into a reliable map
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 let localClubName = "Votre Club";
-
+                
+                // Add user's club to the map first
                 if (clubDoc.exists()) {
                     const clubData = clubDoc.data();
                     if(clubData.clubName) {
                         localClubName = clubData.clubName;
                     }
+                    // Ensure the club name from DB is used as key
                     allTeamsMap.set(localClubName, { logoUrl: clubData.logoUrl });
                 } else {
-                     allTeamsMap.set(localClubName, { logoUrl: undefined });
+                    allTeamsMap.set(localClubName, { logoUrl: undefined });
                 }
                 setClubName(localClubName);
-                
+
+                // Add opponents to the map
                 opponentsSnapshot.docs.forEach(doc => {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
@@ -115,12 +118,13 @@ export default function RankingsPage() {
 
                 const teamStats: { [key: string]: TeamStats } = {};
 
+                // Helper to initialize team stats from our reliable map
                 const initializeTeam = (teamName: string) => {
                     if (!teamStats[teamName]) {
                         const teamData = allTeamsMap.get(teamName);
                         teamStats[teamName] = {
                             name: teamName,
-                            logoUrl: teamData?.logoUrl,
+                            logoUrl: teamData?.logoUrl, // Use logo from the map
                             played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0
                         };
                     }
@@ -129,10 +133,12 @@ export default function RankingsPage() {
                 // 3. Calculate stats from events
                 events.forEach(event => {
                     if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
-                        return;
+                        return; // Skip events without a final score
                     }
                     
                     const { teamHome, teamAway, scoreHome, scoreAway } = event;
+                    
+                    if (!teamHome || !teamAway) return;
 
                     initializeTeam(teamHome);
                     initializeTeam(teamAway);
@@ -287,3 +293,5 @@ export default function RankingsPage() {
         </div>
     );
 }
+
+    
