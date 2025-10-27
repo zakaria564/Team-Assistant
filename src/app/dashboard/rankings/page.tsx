@@ -81,9 +81,13 @@ export default function RankingsPage() {
     }, [user, loadingUser]);
 
      useEffect(() => {
-        if (!user || !selectedCategory) {
-            setRankings([]);
-            setLoading(false);
+        if (!user || !selectedCategory || !clubName || opponents.length === 0) {
+            if (selectedCategory) {
+              setLoading(true);
+            } else {
+              setRankings([]);
+              setLoading(false);
+            }
             return;
         }
 
@@ -114,12 +118,12 @@ export default function RankingsPage() {
                 }
             };
             
-            initializeTeam(clubName); // Ensure the user's club is always in the stats
-            opponents.forEach(o => initializeTeam(o.name)); // Pre-populate with known opponents
+            initializeTeam(clubName); 
+            opponents.forEach(o => initializeTeam(o.name)); 
 
             events.forEach(event => {
                 if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
-                    return; // Skip unfinished matches
+                    return; 
                 }
                 
                 const { teamHome, teamAway, scoreHome, scoreAway } = event;
@@ -127,7 +131,6 @@ export default function RankingsPage() {
                 initializeTeam(teamHome);
                 initializeTeam(teamAway);
 
-                // Update stats for both teams
                 teamStats[teamHome].played++;
                 teamStats[teamAway].played++;
                 teamStats[teamHome].goalsFor += scoreHome;
@@ -135,15 +138,15 @@ export default function RankingsPage() {
                 teamStats[teamAway].goalsFor += scoreAway;
                 teamStats[teamAway].goalsAgainst += scoreHome;
 
-                if (scoreHome > scoreAway) { // Home team wins
+                if (scoreHome > scoreAway) {
                     teamStats[teamHome].wins++;
                     teamStats[teamHome].points += 3;
                     teamStats[teamAway].losses++;
-                } else if (scoreAway > scoreHome) { // Away team wins
+                } else if (scoreAway > scoreHome) {
                     teamStats[teamAway].wins++;
                     teamStats[teamAway].points += 3;
                     teamStats[teamHome].losses++;
-                } else { // Draw
+                } else {
                     teamStats[teamHome].draws++;
                     teamStats[teamHome].points += 1;
                     teamStats[teamAway].draws++;
