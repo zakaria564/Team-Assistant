@@ -38,13 +38,26 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
   </div>
 );
 
-const getResultBadgeClass = (scoreHome?: number, scoreAway?: number) => {
-    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number') {
+const getResultBadgeClass = (scoreHome?: number, scoreAway?: number, teamName?: string, homeTeam?: string, awayTeam?: string) => {
+    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number' || !teamName || !homeTeam || !awayTeam) {
       return "bg-gray-100 text-gray-800 border-gray-300";
     }
-    if (scoreHome > scoreAway) return "bg-green-100 text-green-800 border-green-300";
-    if (scoreHome < scoreAway) return "bg-red-100 text-red-800 border-red-300";
-    return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    if (scoreHome === scoreAway) return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    
+    if (homeTeam !== teamName && awayTeam !== teamName) { // Neutral match
+        return "bg-gray-100 text-gray-800 border-gray-300";
+    }
+
+    const isHomeTeam = teamName === homeTeam;
+    let won: boolean;
+
+    if (isHomeTeam) {
+        won = scoreHome > scoreAway;
+    } else {
+        won = scoreAway > scoreHome;
+    }
+
+    return won ? "bg-green-100 text-green-800 border-green-300" : "bg-red-100 text-red-800 border-red-300";
 };
   
 const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: string, homeTeam?: string, awayTeam?: string) => {
@@ -58,12 +71,15 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
     }
     
     const isHomeTeam = teamName === homeTeam;
+    let won: boolean;
 
     if (isHomeTeam) {
-        return scoreHome > scoreAway ? "Victoire" : "Défaite";
+        won = scoreHome > scoreAway;
     } else { // is away team
-        return scoreAway > scoreHome ? "Victoire" : "Défaite";
+        won = scoreAway > scoreHome;
     }
+    
+    return won ? "Victoire" : "Défaite";
 };
 
 export default function EventDetailPage() {
@@ -199,7 +215,7 @@ export default function EventDetailPage() {
                             <p className="text-sm text-muted-foreground">{event.teamAway}</p>
                             <p className="text-4xl font-bold">{event.scoreAway ?? '-'}</p>
                         </div>
-                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreHome, event.scoreAway))}>
+                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway))}>
                            {getResultLabel(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway)}
                         </Badge>
                     </div>
@@ -239,5 +255,3 @@ export default function EventDetailPage() {
     </div>
   );
 }
-
-    
