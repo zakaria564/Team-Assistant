@@ -35,20 +35,23 @@ export function UserNav() {
 
   useEffect(() => {
     const fetchClubLogo = async () => {
-      if (user) {
-        setLoadingClub(true);
-        try {
-          const clubDocRef = doc(db, "clubs", user.uid);
-          const clubDoc = await getDoc(clubDocRef);
-          if (clubDoc.exists() && clubDoc.data().logoUrl) {
-            setClubLogoUrl(clubDoc.data().logoUrl);
-          }
-        } catch (error) {
-          console.error("Error fetching club logo:", error);
-        } finally {
-          setLoadingClub(false);
+      if (!user) {
+        setLoadingClub(false);
+        return;
+      }
+        
+      setLoadingClub(true);
+      try {
+        const clubDocRef = doc(db, "clubs", user.uid);
+        const clubDoc = await getDoc(clubDocRef);
+        if (clubDoc.exists() && clubDoc.data().logoUrl) {
+          setClubLogoUrl(clubDoc.data().logoUrl);
+        } else {
+          setClubLogoUrl(null);
         }
-      } else {
+      } catch (error) {
+        console.error("Error fetching club logo:", error);
+      } finally {
         setLoadingClub(false);
       }
     };
@@ -68,7 +71,7 @@ export function UserNav() {
   }
 
   if (!user) {
-    return null; // Don't render anything if there's no user and we are on the client
+    return null;
   }
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";

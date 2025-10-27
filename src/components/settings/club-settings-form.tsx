@@ -16,6 +16,7 @@ import { db, auth } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
@@ -30,6 +31,7 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,7 +47,7 @@ export function ClubSettingsForm() {
   useEffect(() => {
     const fetchClubData = async () => {
         if (!user) {
-            setLoadingData(false);
+            if (!loadingUser) setLoadingData(false);
             return;
         }
         setLoadingData(true);
@@ -55,7 +57,6 @@ export function ClubSettingsForm() {
             if (docSnap.exists()) {
                 form.reset(docSnap.data());
             } else {
-                // If user has an email, pre-fill the contact email
                 if (user.email) {
                     form.setValue('contactEmail', user.email);
                 }
@@ -72,9 +73,7 @@ export function ClubSettingsForm() {
         }
     };
 
-    if(!loadingUser) {
-       fetchClubData();
-    }
+    fetchClubData();
   }, [user, loadingUser, form, toast]);
 
 
@@ -91,6 +90,7 @@ export function ClubSettingsForm() {
             userId: user.uid,
         }, { merge: true });
         toast({ title: "Informations du club enregistrées", description: "Les données de votre club ont été mises à jour." });
+        router.refresh();
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les informations." });
     } finally {
@@ -138,7 +138,7 @@ export function ClubSettingsForm() {
                             <FormItem>
                             <FormLabel>URL du logo du club</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/logo.png" {...field} />
+                                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
