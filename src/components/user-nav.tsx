@@ -72,13 +72,14 @@ export function UserNav() {
   }
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
+  const displayImageUrl = clubLogoUrl || user?.photoURL;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage key={clubLogoUrl || user?.photoURL} src={clubLogoUrl || user?.photoURL || undefined} alt={user?.displayName || 'User profile picture'} />
+            <AvatarImage src={displayImageUrl || undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>
