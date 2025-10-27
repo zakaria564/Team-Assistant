@@ -100,23 +100,22 @@ export default function RankingsPage() {
             const querySnapshot = await getDocs(eventsQuery);
             const events = querySnapshot.docs.map(doc => doc.data() as Event);
 
-            const allTeams = [clubName, ...opponents.map(o => o.name)];
             const teamStats: { [key: string]: TeamStats } = {};
+            const allOpponentsMap = new Map(opponents.map(o => [o.name, o]));
 
-            const allTeamsWithLogos = [
-                { name: clubName, logoUrl: '' }, // Assuming club has no logo field for now
-                ...opponents
-            ];
+            const initializeTeam = (teamName: string) => {
+                if (!teamStats[teamName]) {
+                    const opponentData = allOpponentsMap.get(teamName);
+                    teamStats[teamName] = { 
+                        name: teamName, 
+                        logoUrl: opponentData?.logoUrl,
+                        played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
+                    };
+                }
+            };
             
-            allTeams.forEach(teamName => {
-                const teamData = allTeamsWithLogos.find(t => t.name === teamName);
-                teamStats[teamName] = { 
-                    name: teamName, 
-                    logoUrl: teamData?.logoUrl,
-                    played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
-                };
-            });
-
+            initializeTeam(clubName); // Ensure the user's club is always in the stats
+            opponents.forEach(o => initializeTeam(o.name)); // Pre-populate with known opponents
 
             events.forEach(event => {
                 if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
@@ -125,7 +124,8 @@ export default function RankingsPage() {
                 
                 const { teamHome, teamAway, scoreHome, scoreAway } = event;
 
-                if (!teamStats[teamHome] || !teamStats[teamAway]) return;
+                initializeTeam(teamHome);
+                initializeTeam(teamAway);
 
                 // Update stats for both teams
                 teamStats[teamHome].played++;
