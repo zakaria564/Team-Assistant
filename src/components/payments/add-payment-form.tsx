@@ -63,29 +63,24 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const amountAlreadyPaid = isEditMode 
       ? (payment.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
-    
-    const amountRemainingBeforeNew = isEditMode
-        ? (payment.totalAmount || 0) - amountAlreadyPaid
-        : undefined;
-
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
         totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
         description: z.string().min(3, "La description est requise."),
-        
-        newTransactionAmount: z.coerce.number().optional().refine(val => {
-            if (val === undefined || val === null) return true;
-            const maxAmount = amountRemainingBeforeNew !== undefined ? amountRemainingBeforeNew : form.getValues('totalAmount');
-            return val <= maxAmount;
-        }, {
-            message: `Le versement ne peut pas dépasser le montant restant.`
-        }),
+        newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
-
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
+    }).superRefine((data, ctx) => {
+        const amountRemaining = (isEditMode ? (payment.totalAmount - amountAlreadyPaid) : data.totalAmount);
+        if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["newTransactionAmount"],
+                message: `Le versement ne peut pas dépasser le montant restant de ${amountRemaining.toFixed(2)} MAD.`,
+            });
+        }
     });
-
 
     const defaultDescription = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
 
@@ -112,19 +107,19 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchTotalAmount = form.watch("totalAmount");
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
-    const amountRemaining = watchTotalAmount - newTotalPaid;
+    const amountRemainingOnTotal = watchTotalAmount - newTotalPaid;
 
     useEffect(() => {
         if (watchTotalAmount > 0) {
-            if (amountRemaining <= 0) {
+            if (amountRemainingOnTotal <= 0) {
                 form.setValue("status", "Payé");
-            } else if (newTotalPaid > 0 && amountRemaining > 0) {
+            } else if (newTotalPaid > 0 && amountRemainingOnTotal > 0) {
                 form.setValue("status", "Partiel");
             } else if (newTotalPaid === 0) {
                  form.setValue("status", "En attente");
             }
         }
-    }, [amountRemaining, newTotalPaid, watchTotalAmount, form]);
+    }, [amountRemainingOnTotal, newTotalPaid, watchTotalAmount, form]);
 
 
     useEffect(() => {
@@ -264,7 +259,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         }
     }
     
-    const calculatedAmountRemaining = isEditMode ? amountRemainingBeforeNew : watchTotalAmount;
+    const amountRemainingForPlaceholder = isEditMode ? (payment.totalAmount - amountAlreadyPaid) : watchTotalAmount;
 
     return (
         <Form {...form}>
@@ -353,7 +348,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {amountRemaining > 0 && (
+                {amountRemainingOnTotal > 0 && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -367,7 +362,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder={calculatedAmountRemaining?.toFixed(2) || '0.00'}
+                                    placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
                                     {...field}
                                     value={field.value === undefined ? '' : field.value}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
@@ -411,7 +406,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           <FormItem>
                               <FormLabel>Montant restant</FormLabel>
                               <FormControl>
-                                  <Input type="text" value={`${amountRemaining.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
+                                  <Input type="text" value={`${amountRemainingOnTotal.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
                               </FormControl>
                           </FormItem>
                       </div>
@@ -454,7 +449,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
 
     
