@@ -60,7 +60,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailsPdfPage({ params }: { params: { id: string } }) {
-  const { id: coachId } = React.use(params);
+  const { id: coachId } = params;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

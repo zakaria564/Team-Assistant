@@ -20,7 +20,7 @@ interface Payment {
 }
 
 export default function EditPaymentPage({ params }: { params: { id: string } }) {
-  const { id: paymentId } = React.use(params);
+  const { id: paymentId } = params;
   const router = useRouter();
   
   const [payment, setPayment] = useState<Payment | null>(null);

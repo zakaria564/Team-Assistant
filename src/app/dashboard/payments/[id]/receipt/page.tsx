@@ -48,7 +48,7 @@ const getBadgeClass = (status?: Payment['status']) => {
 
 
 export default function PaymentReceiptPage({ params }: { params: { id: string } }) {
-  const { id: paymentId } = React.use(params);
+  const { id: paymentId } = params;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

@@ -30,7 +30,7 @@ interface Player {
 }
 
 export default function PlayerCardPdfPage({ params }: { params: { id: string } }) {
-  const { id: playerId } = React.use(params);
+  const { id: playerId } = params;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);

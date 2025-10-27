@@ -25,7 +25,7 @@ interface Event {
 }
 
 export default function EditEventPage({ params }: { params: { id: string } }) {
-  const { id: eventId } = React.use(params);
+  const { id: eventId } = params;
   const router = useRouter();
   
   const [event, setEvent] = useState<Event | null>(null);

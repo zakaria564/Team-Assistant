@@ -72,7 +72,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  const { id: coachId } = React.use(params);
+  const { id: coachId } = params;
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);

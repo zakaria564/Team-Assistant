@@ -67,7 +67,7 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
 };
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { id: eventId } = React.use(params);
+  const { id: eventId } = params;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

@@ -48,7 +48,7 @@ const getBadgeClass = (status?: Salary['status']) => {
 
 
 export default function SalaryReceiptPage({ params }: { params: { id: string } }) {
-  const { id: salaryId } = React.use(params);
+  const { id: salaryId } = params;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
