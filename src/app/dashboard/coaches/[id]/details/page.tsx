@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -59,8 +59,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function CoachDetailsPdfPage({ params }: { params: { id: string } }) {
-  const { id: coachId } = params;
+export default function CoachDetailsPdfPage() {
+  const params = useParams();
+  const coachId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -275,3 +276,5 @@ export default function CoachDetailsPdfPage({ params }: { params: { id: string }
     </div>
   );
 }
+
+    

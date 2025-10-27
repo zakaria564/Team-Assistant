@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -47,8 +47,9 @@ const getBadgeClass = (status?: Payment['status']) => {
 }
 
 
-export default function PaymentReceiptPage({ params }: { params: { id: string } }) {
-  const { id: paymentId } = params;
+export default function PaymentReceiptPage() {
+  const params = useParams();
+  const paymentId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -303,3 +304,5 @@ export default function PaymentReceiptPage({ params }: { params: { id: string } 
     </div>
   );
 }
+
+    

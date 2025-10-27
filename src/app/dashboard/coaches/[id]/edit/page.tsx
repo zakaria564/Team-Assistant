@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddCoachForm } from "@/components/coaches/add-coach-form";
@@ -31,8 +31,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function EditCoachPage({ params }: { params: { id: string } }) {
-  const { id: coachId } = params;
+export default function EditCoachPage() {
+  const params = useParams();
+  const coachId = params.id;
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);
@@ -98,3 +99,5 @@ export default function EditCoachPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

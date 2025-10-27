@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AddEventForm } from "@/components/events/add-event-form";
@@ -24,8 +24,9 @@ interface Event {
     scoreAway?: number;
 }
 
-export default function EditEventPage({ params }: { params: { id: string } }) {
-  const { id: eventId } = params;
+export default function EditEventPage() {
+  const params = useParams();
+  const eventId = params.id;
   const router = useRouter();
   
   const [event, setEvent] = useState<Event | null>(null);
@@ -116,3 +117,5 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

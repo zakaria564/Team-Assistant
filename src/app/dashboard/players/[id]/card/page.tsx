@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -29,8 +29,9 @@ interface Player {
   address?: string;
 }
 
-export default function PlayerCardPdfPage({ params }: { params: { id: string } }) {
-  const { id: playerId } = params;
+export default function PlayerCardPdfPage() {
+  const params = useParams();
+  const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -209,3 +210,5 @@ export default function PlayerCardPdfPage({ params }: { params: { id: string } }
     </div>
   );
 }
+
+    

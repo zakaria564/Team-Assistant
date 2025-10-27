@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,9 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
     return "En attente";
 };
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { id: eventId } = params;
+export default function EventDetailPage() {
+  const params = useParams();
+  const eventId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -238,3 +239,5 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    

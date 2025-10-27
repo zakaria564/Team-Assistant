@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -82,8 +82,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function PlayerDetailPage({ params }: { params: { id: string } }) {
-  const { id: playerId } = params;
+export default function PlayerDetailPage() {
+  const params = useParams();
+  const playerId = params.id;
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);
@@ -257,3 +258,5 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
