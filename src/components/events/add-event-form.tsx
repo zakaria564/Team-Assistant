@@ -89,10 +89,10 @@ interface EventData {
 
 interface AddEventFormProps {
     event?: EventData;
-    disabled?: boolean;
+    scoreEntryOnly?: boolean;
 }
 
-export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
+export function AddEventForm({ event, scoreEntryOnly = false }: AddEventFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -170,20 +170,11 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
         }
     }, [event, isEditMode, form]);
 
-    useEffect(() => {
-        if (disabled) {
-            form.reset(form.getValues());
-        }
-    }, [disabled, form]);
-
-
     const eventType = form.watch("type");
-    const eventDate = form.watch("date");
     const eventCategory = form.watch("category");
     
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
-    const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
-    const showScoreFields = isEditMode && eventTypeIsMatch && isPastEvent;
+    const showScoreFields = isEditMode && eventTypeIsMatch && scoreEntryOnly;
 
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -233,7 +224,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
             if (eventTypeIsMatch) {
                 dataToSave.teamHome = values.teamHome || null;
                 dataToSave.teamAway = values.teamAway || null;
-                 if(isPastEvent) {
+                 if(scoreEntryOnly) {
                   dataToSave.scoreHome = values.scoreHome ?? null;
                   dataToSave.scoreAway = values.scoreAway ?? null;
                   
@@ -288,7 +279,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Type d'événement</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={scoreEntryOnly}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner un type d'événement" />
@@ -310,7 +301,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Catégorie</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={disabled || isEditMode}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={scoreEntryOnly || isEditMode}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner une catégorie" />
@@ -335,7 +326,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à Domicile</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={scoreEntryOnly}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
                                         <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
@@ -349,7 +340,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à l'Extérieur</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={scoreEntryOnly}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
                                         <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
@@ -373,7 +364,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                     <Button
                                     variant={"outline"}
                                     className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                    disabled={disabled}
+                                    disabled={scoreEntryOnly}
                                     >
                                     {field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisir une date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -381,7 +372,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                 </FormControl>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus disabled={disabled}/>
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus disabled={scoreEntryOnly}/>
                                 </PopoverContent>
                             </Popover>
                             <FormMessage />
@@ -395,7 +386,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                             <FormItem>
                             <FormLabel>Heure</FormLabel>
                             <FormControl>
-                                <Input type="time" {...field} disabled={disabled} />
+                                <Input type="time" {...field} disabled={scoreEntryOnly} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -410,7 +401,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} disabled={disabled} />
+                            <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} disabled={scoreEntryOnly} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -429,7 +420,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Score {form.getValues("teamHome")}</FormLabel>
                                     <FormControl>
-                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} disabled={disabled} />
+                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -442,7 +433,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Score {form.getValues("teamAway")}</FormLabel>
                                     <FormControl>
-                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} disabled={disabled}/>
+                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -457,7 +448,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         <div className="space-y-4">
                              <div className="mb-2 flex items-center justify-between">
                                 <Label>Buteurs</Label>
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })} disabled={disabled}>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
                                 </Button>
                             </div>
@@ -469,7 +460,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`scorers.${index}.playerId`}
                                             render={({ field }) => (
                                               <FormItem className="flex-1">
-                                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
                                                     <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                                                 </Select>
@@ -482,12 +473,12 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`scorers.${index}.goals`}
                                             render={({ field }) => (
                                               <FormItem>
-                                               <FormControl><Input type="number" placeholder="Buts" className="w-24" {...field} disabled={disabled} /></FormControl>
+                                               <FormControl><Input type="number" placeholder="Buts" className="w-24" {...field} /></FormControl>
                                                <FormMessage />
                                                </FormItem>
                                             )}
                                         />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)} disabled={disabled}>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
@@ -500,7 +491,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         <div className="space-y-4">
                              <div className="mb-2 flex items-center justify-between">
                                 <Label>Passeurs</Label>
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })} disabled={disabled}>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
                                 </Button>
                             </div>
@@ -512,7 +503,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`assisters.${index}.playerId`}
                                             render={({ field }) => (
                                                 <FormItem className="flex-1">
-                                                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
+                                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                       <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
                                                       <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                                                   </Select>
@@ -525,12 +516,12 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`assisters.${index}.assists`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                  <FormControl><Input type="number" placeholder="Passes" className="w-24" {...field} disabled={disabled} /></FormControl>
+                                                  <FormControl><Input type="number" placeholder="Passes" className="w-24" {...field} /></FormControl>
                                                   <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)} disabled={disabled}>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
@@ -542,7 +533,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                 )}
 
 
-                <Button type="submit" disabled={loading || disabled} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full">
                     {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) 
                     : isEditMode ? "Enregistrer les modifications" : "Ajouter l'événement"}
                 </Button>

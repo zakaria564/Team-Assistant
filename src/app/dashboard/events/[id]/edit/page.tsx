@@ -31,6 +31,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
+  const [scoreEntryOnly, setScoreEntryOnly] = useState(false);
 
    useEffect(() => {
     if (!eventId) return;
@@ -45,8 +46,14 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           const data = docSnap.data();
           const date = data.date?.toDate ? data.date.toDate() : new Date();
           
-          if (isPast(date) && typeof data.scoreHome === 'number') {
+          const eventIsPast = isPast(date);
+          const scoreExists = typeof data.scoreHome === 'number';
+
+          if (eventIsPast && scoreExists) {
             setIsLocked(true);
+          }
+          if (eventIsPast && !scoreExists) {
+            setScoreEntryOnly(true);
           }
           
           setEvent({ 
@@ -78,16 +85,20 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier l'événement</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {scoreEntryOnly ? "Ajouter le score final" : "Modifier l'événement"}
+            </h1>
             <p className="text-muted-foreground">
-              Mettez à jour les informations de l'événement.
+              {scoreEntryOnly ? "Enregistrez le résultat et les statistiques du match." : "Mettez à jour les informations de l'événement."}
             </p>
         </div>
       </div>
       <Card>
         <CardHeader>
             <CardTitle>Détails de l'événement</CardTitle>
-            <CardDescription>Modifiez les champs ci-dessous et enregistrez.</CardDescription>
+            <CardDescription>
+              {scoreEntryOnly ? "Seuls les champs de score sont modifiables." : "Modifiez les champs ci-dessous et enregistrez."}
+            </CardDescription>
         </CardHeader>
         <CardContent>
             {loading ? (
@@ -103,7 +114,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     </AlertDescription>
                 </Alert>
             ) : event ? (
-                <AddEventForm event={event} disabled={isLocked} />
+                <AddEventForm event={event} scoreEntryOnly={scoreEntryOnly} />
             ) : (
                 <p className="p-6">Événement non trouvé.</p>
             )}
