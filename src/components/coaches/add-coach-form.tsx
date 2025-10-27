@@ -33,6 +33,7 @@ const documentSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
+  photoUrl: z.string().url("URL invalide").optional().or(z.literal('')),
   category: z.string({ required_error: "La catégorie est requise."}),
   status: z.enum(coachStatuses),
   phone: z.string().optional(),
@@ -125,7 +126,6 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(coach?.photoUrl || null);
   const { toast } = useToast();
   const router = useRouter();
   const isEditMode = !!coach;
@@ -134,6 +134,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      photoUrl: "",
       category: "",
       status: "Actif",
       phone: "",
@@ -148,6 +149,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     }
   });
 
+  const photoDataUrl = form.watch('photoUrl');
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "documents",
@@ -157,6 +160,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     if (coach) {
         form.reset({
             ...coach,
+            photoUrl: coach.photoUrl || "",
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
             nationality: coach.nationality || "",
@@ -233,20 +237,22 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setPhotoDataUrl(dataUrl);
+        form.setValue('photoUrl', dataUrl);
 
         const stream = video.srcObject as MediaStream;
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
         }
-        videoRef.current.srcObject = null;
+        if(videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
       }
     }
   };
 
 
   const retakePicture = () => {
-    setPhotoDataUrl(null);
+    form.setValue('photoUrl', '');
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -257,11 +263,11 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
     setLoading(true);
 
-    if (!photoDataUrl) {
+    if (!values.photoUrl) {
         toast({
             variant: "destructive",
             title: "Photo manquante",
-            description: "Veuillez prendre une photo avant de continuer.",
+            description: "Veuillez prendre une photo ou fournir une URL avant de continuer.",
         });
         setLoading(false);
         return;
@@ -296,12 +302,11 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         const dataToSave = {
             ...values,
             userId: user.uid,
-            photoUrl: photoDataUrl,
             specialty: values.specialty || '',
             documents: documentsToSave,
         };
 
-        if (isEditMode) {
+        if (isEditMode && coach) {
             const coachDocRef = doc(db, "coaches", coach.id);
             await updateDoc(coachDocRef, dataToSave);
             toast({
@@ -383,6 +388,19 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             </Button>
                         )}
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="photoUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Ou coller l'URL de la photo</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://exemple.com/photo.jpg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                 </div>
 
                 <Separator />

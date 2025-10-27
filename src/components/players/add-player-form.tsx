@@ -34,6 +34,7 @@ const documentSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
+  photoUrl: z.string().url("URL invalide").optional().or(z.literal('')),
   gender: z.enum(["Masculin", "Féminin"], { required_error: "Le genre est requis." }),
   category: z.string().min(1, "La catégorie est requise."),
   status: z.enum(playerStatuses),
@@ -143,7 +144,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(player?.photoUrl || null);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const { toast } = useToast();
   const router = useRouter();
@@ -153,6 +153,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      photoUrl: "",
       gender: "Masculin",
       category: "",
       status: "Actif",
@@ -175,6 +176,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
   });
 
+  const photoDataUrl = form.watch('photoUrl');
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "documents",
@@ -185,6 +188,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
       form.reset({
         ...player,
         coachId: player.coachId || "",
+        photoUrl: player.photoUrl || "",
         birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
         entryDate: player.entryDate ? player.entryDate.split('T')[0] : '',
         exitDate: player.exitDate ? player.exitDate.split('T')[0] : '',
@@ -288,7 +292,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setPhotoDataUrl(dataUrl);
+        form.setValue('photoUrl', dataUrl);
 
         const stream = video.srcObject as MediaStream;
         if (stream) {
@@ -302,7 +306,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
   };
 
   const retakePicture = () => {
-    setPhotoDataUrl(null);
+    form.setValue('photoUrl', '');
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -312,11 +316,11 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     }
     setLoading(true);
 
-    if (!photoDataUrl) {
+    if (!values.photoUrl) {
         toast({
             variant: "destructive",
             title: "Photo manquante",
-            description: "Veuillez prendre une photo avant de continuer.",
+            description: "Veuillez prendre une photo ou fournir une URL avant de continuer.",
         });
         setLoading(false);
         return;
@@ -352,7 +356,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             ...values,
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
-            photoUrl: photoDataUrl,
             documents: documentsToSave,
         };
 
@@ -436,6 +439,19 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             </Button>
                         )}
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="photoUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Ou coller l'URL de la photo</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://exemple.com/photo.jpg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                 </div>
 
                 <Separator />
