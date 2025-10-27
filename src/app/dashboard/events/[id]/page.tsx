@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
@@ -12,6 +12,7 @@ import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface Event {
   id: string;
@@ -51,6 +52,11 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
         return "En attente";
     }
     if (scoreHome === scoreAway) return "Match Nul";
+
+    if (homeTeam !== teamName && awayTeam !== teamName) { // Match between two other teams
+      return "Terminé";
+    }
+
     if (teamName === homeTeam) {
         return scoreHome > scoreAway ? "Victoire" : "Défaite";
     }
@@ -63,6 +69,7 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const { id: eventId } = React.use(params);
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,11 +78,19 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     if (!eventId) return;
 
-    const fetchEvent = async () => {
+    const fetchEventAndClub = async () => {
+      if (!user && !loadingUser) {
+        setLoading(false);
+        return;
+      }
+      if(!user) return;
+
       setLoading(true);
       try {
         const eventRef = doc(db, "events", eventId as string);
-        const eventSnap = await getDoc(eventRef);
+        const clubRef = doc(db, "clubs", user.uid);
+        
+        const [eventSnap, clubSnap] = await Promise.all([getDoc(eventRef), getDoc(clubRef)]);
 
         if (eventSnap.exists()) {
            const data = eventSnap.data();
@@ -89,6 +104,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           console.log("No such event document!");
           router.push('/dashboard/events');
         }
+
+        if (clubSnap.exists() && clubSnap.data().clubName) {
+            setClubName(clubSnap.data().clubName);
+        }
+
       } catch (error) {
         console.error("Error fetching event details:", error);
       } finally {
@@ -96,10 +116,10 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       }
     };
 
-    fetchEvent();
-  }, [eventId, router]);
+    fetchEventAndClub();
+  }, [eventId, user, loadingUser, router]);
 
-  if (loading) {
+  if (loading || loadingUser) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -155,7 +175,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   <DetailItem icon={Calendar} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
                   <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
                   <DetailItem icon={Users} label="Catégorie" value={event.category} />
-                   {event.location && eventTypeIsMatch && (
+                   {event.location && (
                      <DetailItem icon={MapPin} label="Lieu" value={event.location} />
                    )}
                </div>
