@@ -101,7 +101,6 @@ export default function RankingsPage() {
                     if(clubData.clubName) {
                         localClubName = clubData.clubName;
                     }
-                    // Ensure the club name from DB is used as key
                     allTeamsMap.set(localClubName, { logoUrl: clubData.logoUrl });
                 } else {
                     allTeamsMap.set(localClubName, { logoUrl: undefined });
@@ -249,11 +248,11 @@ export default function RankingsPage() {
                                         <TableHead>Équipe</TableHead>
                                         <TableHead className="font-bold text-center">Pts</TableHead>
                                         <TableHead className="text-center">J</TableHead>
-                                        <TableHead className="text-center">G</TableHead>
-                                        <TableHead className="text-center">N</TableHead>
-                                        <TableHead className="text-center">P</TableHead>
-                                        <TableHead className="text-center">BP</TableHead>
-                                        <TableHead className="text-center">BC</TableHead>
+                                        <TableHead className="text-center hidden sm:table-cell">G</TableHead>
+                                        <TableHead className="text-center hidden sm:table-cell">N</TableHead>
+                                        <TableHead className="text-center hidden sm:table-cell">P</TableHead>
+                                        <TableHead className="text-center hidden md:table-cell">BP</TableHead>
+                                        <TableHead className="text-center hidden md:table-cell">BC</TableHead>
                                         <TableHead className="text-center">Diff</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -272,11 +271,11 @@ export default function RankingsPage() {
                                             </TableCell>
                                             <TableCell className="font-bold text-center">{team.points}</TableCell>
                                             <TableCell className="text-center">{team.played}</TableCell>
-                                            <TableCell className="text-center">{team.wins}</TableCell>
-                                            <TableCell className="text-center">{team.draws}</TableCell>
-                                            <TableCell className="text-center">{team.losses}</TableCell>
-                                            <TableCell className="text-center">{team.goalsFor}</TableCell>
-                                            <TableCell className="text-center">{team.goalsAgainst}</TableCell>
+                                            <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
+                                            <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
+                                            <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
+                                            <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
+                                            <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
                                             <TableCell className="text-center">{team.goalDifference}</TableCell>
                                         </TableRow>
                                     ))}
@@ -293,5 +292,3 @@ export default function RankingsPage() {
         </div>
     );
 }
-
-    
