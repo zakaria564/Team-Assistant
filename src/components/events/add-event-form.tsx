@@ -412,33 +412,33 @@ export function AddEventForm({ event, scoreEntryOnly = false }: AddEventFormProp
                   <>
                     <div className="space-y-4 rounded-md border p-4">
                         <h4 className="font-medium">Résultat du Match</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="scoreHome"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Score <span className="font-bold">{form.getValues("teamHome")}</span></FormLabel>
-                                    <FormControl>
-                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="scoreAway"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Score <span className="font-bold">{form.getValues("teamAway")}</span></FormLabel>
-                                    <FormControl>
-                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                        <div className="grid grid-cols-2 gap-4 items-end">
+                            <FormItem>
+                                <FormLabel>Score <span className="font-bold">{form.getValues("teamHome")}</span></FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="scoreHome"
+                                    render={({ field }) => (
+                                        <FormControl>
+                                            <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                        </FormControl>
+                                    )}
+                                />
+                                <FormMessage />
+                            </FormItem>
+                             <FormItem>
+                                <FormLabel>Score <span className="font-bold">{form.getValues("teamAway")}</span></FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="scoreAway"
+                                    render={({ field }) => (
+                                         <FormControl>
+                                            <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                        </FormControl>
+                                    )}
+                                />
+                               <FormMessage />
+                             </FormItem>
                         </div>
                     </div>
 
