@@ -198,6 +198,16 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         }
         setLoading(true);
 
+        const newTransactionAmount = values.newTransactionAmount || 0;
+        const totalAmount = values.totalAmount;
+        
+        if (amountAlreadyPaid + newTransactionAmount > totalAmount) {
+            form.setError("newTransactionAmount", { message: "Le paiement total ne peut pas dépasser le montant dû." });
+            setLoading(false);
+            return;
+        }
+
+
         const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
             ? {
                 amount: values.newTransactionAmount,
@@ -300,7 +310,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} readOnly className="bg-muted"/>
+                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} readOnly={!isEditMode} className={isEditMode ? "" : "bg-muted"}/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -451,5 +461,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
 
     
