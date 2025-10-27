@@ -418,7 +418,7 @@ export function AddEventForm({ event, scoreEntryOnly = false }: AddEventFormProp
                                 name="scoreHome"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {form.getValues("teamHome")}</FormLabel>
+                                    <FormLabel>Score <span className="font-bold">{form.getValues("teamHome")}</span></FormLabel>
                                     <FormControl>
                                     <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
@@ -431,7 +431,7 @@ export function AddEventForm({ event, scoreEntryOnly = false }: AddEventFormProp
                                 name="scoreAway"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {form.getValues("teamAway")}</FormLabel>
+                                    <FormLabel>Score <span className="font-bold">{form.getValues("teamAway")}</span></FormLabel>
                                     <FormControl>
                                     <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                     </FormControl>
