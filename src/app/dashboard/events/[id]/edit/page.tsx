@@ -31,7 +31,6 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
-  const [scoreEntryOnly, setScoreEntryOnly] = useState(false);
 
    useEffect(() => {
     if (!eventId) return;
@@ -47,14 +46,9 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           const date = data.date?.toDate ? data.date.toDate() : new Date();
           
           const eventIsPast = isPast(date);
-          const scoreExists = typeof data.scoreHome === 'number';
-          const isMatch = data.type?.includes("Match") || data.type?.includes("Tournoi");
 
-          if (eventIsPast && scoreExists) {
+          if (eventIsPast) {
             setIsLocked(true);
-          }
-          if (eventIsPast && !scoreExists && isMatch) {
-            setScoreEntryOnly(true);
           }
           
           setEvent({ 
@@ -86,11 +80,9 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {scoreEntryOnly ? "Ajouter le score final" : "Modifier l'événement"}
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">Modifier l'événement</h1>
             <p className="text-muted-foreground">
-              {scoreEntryOnly ? "Enregistrez le résultat et les statistiques du match." : "Mettez à jour les informations de l'événement."}
+              Mettez à jour les informations de l'événement.
             </p>
         </div>
       </div>
@@ -98,7 +90,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
         <CardHeader>
             <CardTitle>Détails de l'événement</CardTitle>
             <CardDescription>
-              {scoreEntryOnly ? "Seuls les champs de score sont modifiables." : "Modifiez les champs ci-dessous et enregistrez."}
+              Modifiez les champs ci-dessous et enregistrez.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -107,15 +99,15 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : isLocked ? (
-                 <Alert>
+                 <Alert variant="destructive">
                     <Info className="h-4 w-4" />
                     <AlertTitle>Modification verrouillée</AlertTitle>
                     <AlertDescription>
-                        Vous ne pouvez plus modifier cet événement car le score final a déjà été enregistré.
+                        Vous ne pouvez plus modifier un événement qui est déjà passé. Seul l'ajout du score est possible depuis la page des événements.
                     </AlertDescription>
                 </Alert>
             ) : event ? (
-                <AddEventForm event={event} scoreEntryOnly={scoreEntryOnly} />
+                <AddEventForm event={event} />
             ) : (
                 <p className="p-6">Événement non trouvé.</p>
             )}

@@ -34,7 +34,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { AddScoreForm } from "@/components/events/add-score-form";
 
 interface Event {
     id: string;
@@ -58,6 +60,7 @@ export default function EventsPage() {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [eventForScore, setEventForScore] = useState<Event | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -230,8 +233,8 @@ export default function EventsPage() {
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => {
                         const isFinishedWithScore = isPast(event.date) && typeof event.scoreHome === 'number';
-                        const canAddScore = isPast(event.date) && typeof event.scoreHome !== 'number' && event.type.includes('Match');
-                        const isFuture = !isPast(event.date);
+                        const canAddScore = isPast(event.date) && typeof event.scoreHome !== 'number' && (event.type.includes('Match') || event.type.includes('Tournoi'));
+                        const canModify = !isPast(event.date);
 
                         return (
                           <Card key={event.id} className="bg-muted/30 group">
@@ -273,12 +276,20 @@ export default function EventsPage() {
                                               Voir les détails
                                           </Link>
                                       </DropdownMenuItem>
-                                       <DropdownMenuItem asChild disabled={isFinishedWithScore} className="cursor-pointer">
-                                            <Link href={`/dashboard/events/${event.id}/edit`}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                <span>{canAddScore ? "Ajouter le score final" : "Modifier"}</span>
-                                            </Link>
-                                        </DropdownMenuItem>
+                                      {canModify && (
+                                        <DropdownMenuItem asChild className="cursor-pointer">
+                                              <Link href={`/dashboard/events/${event.id}/edit`}>
+                                                  <Pencil className="mr-2 h-4 w-4" />
+                                                  <span>Modifier</span>
+                                              </Link>
+                                          </DropdownMenuItem>
+                                      )}
+                                      {canAddScore && (
+                                          <DropdownMenuItem className="cursor-pointer" onSelect={() => setEventForScore(event)}>
+                                              <Pencil className="mr-2 h-4 w-4" />
+                                              <span>Ajouter le score final</span>
+                                          </DropdownMenuItem>
+                                      )}
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
                                           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -318,6 +329,20 @@ export default function EventsPage() {
         </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+
+    <Dialog open={!!eventForScore} onOpenChange={(isOpen) => !isOpen && setEventForScore(null)}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Ajouter le score final</DialogTitle>
+                <DialogDescription>
+                    Enregistrez le résultat et les statistiques du match.
+                </DialogDescription>
+            </DialogHeader>
+            {eventForScore && (
+                <AddScoreForm event={eventForScore} onFinished={() => setEventForScore(null)} />
+            )}
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
