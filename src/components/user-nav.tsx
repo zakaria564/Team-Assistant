@@ -101,7 +101,7 @@ export function UserNav() {
            <Link href="/dashboard/settings" passHref>
             <DropdownMenuItem className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
-              <span>Profil</span>
+              <span>Profil & Club</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

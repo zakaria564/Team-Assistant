@@ -60,7 +60,7 @@ export function ProfileSettingsForm() {
     try {
         await updateProfile(user, { 
             displayName: values.name,
-            photoURL: values.photoURL || null,
+            photoURL: values.photoURL || "",
         });
 
         toast({ title: "Profil mis à jour", description: "Vos informations ont été mises à jour avec succès." });
@@ -80,8 +80,8 @@ export function ProfileSettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profil</CardTitle>
-        <CardDescription>Mettez à jour les informations de votre profil.</CardDescription>
+        <CardTitle>Profil Administrateur</CardTitle>
+        <CardDescription>Mettez à jour vos informations personnelles.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -96,7 +96,7 @@ export function ProfileSettingsForm() {
                         name="photoURL"
                         render={({ field }) => (
                             <FormItem className="flex-1 w-full">
-                            <FormLabel>URL de la photo de profil</FormLabel>
+                            <FormLabel>URL de votre photo de profil</FormLabel>
                             <FormControl>
                                 <Input 
                                     type="text"

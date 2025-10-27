@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
   logoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
-  contactEmail: z.string().email("Veuillez entrer une adresse email valide."),
+  contactEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   clubPhone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -73,7 +73,9 @@ export function ClubSettingsForm() {
         }
     };
 
-    fetchClubData();
+    if (user || !loadingUser) {
+        fetchClubData();
+    }
   }, [user, loadingUser, form, toast]);
 
 
@@ -102,7 +104,7 @@ export function ClubSettingsForm() {
     <Card>
       <CardHeader>
         <CardTitle>Informations du Club</CardTitle>
-        <CardDescription>Gérez les informations publiques de votre club.</CardDescription>
+        <CardDescription>Gérez les informations publiques de votre club. Le nom et le logo de votre club apparaîtront dans toute l'application.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -123,7 +125,7 @@ export function ClubSettingsForm() {
                         name="clubName"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Nom du club</FormLabel>
+                            <FormLabel>Nom de votre club</FormLabel>
                             <FormControl>
                                 <Input placeholder="Nom de votre club" {...field} />
                             </FormControl>
@@ -136,7 +138,7 @@ export function ClubSettingsForm() {
                         name="logoUrl"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>URL du logo du club</FormLabel>
+                            <FormLabel>URL du logo de votre club</FormLabel>
                             <FormControl>
                                 <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value ?? ""} />
                             </FormControl>
@@ -152,7 +154,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>Email de contact</FormLabel>
                                 <FormControl>
-                                    <Input type="email" placeholder="contact@club.com" {...field} />
+                                    <Input type="email" placeholder="contact@club.com" {...field} value={field.value ?? ""}/>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -165,7 +167,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>Téléphone du club</FormLabel>
                                 <FormControl>
-                                    <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} />
+                                    <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -179,7 +181,7 @@ export function ClubSettingsForm() {
                             <FormItem>
                             <FormLabel>Adresse</FormLabel>
                             <FormControl>
-                                <Textarea placeholder="Adresse complète du siège ou du stade" {...field} />
+                                <Textarea placeholder="Adresse complète du siège ou du stade" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
