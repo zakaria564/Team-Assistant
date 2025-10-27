@@ -160,7 +160,7 @@ export default function OpponentsPage() {
                                 <AvatarImage src={opponent.logoUrl} alt={opponent.name} />
                                 <AvatarFallback>{opponent.name?.charAt(0)}</AvatarFallback>
                               </Avatar>
-                              <span>{toTitleCase(opponent.name)}</span>
+                              <span className="break-all">{toTitleCase(opponent.name)}</span>
                            </div>
                           </TableCell>
                          <TableCell className="text-right">
