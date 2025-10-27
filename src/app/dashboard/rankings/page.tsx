@@ -48,18 +48,26 @@ const playerCategories = [
     "Seniors", "Seniors F", "U19", "U18", "U17", "U17 F", "U16", "U15", "U15 F", "U14", "U13", "U13 F", "U12", "U11", "U11 F", "U10", "U9", "U8", "U7", "Vétérans", "École de foot"
 ];
 
+const competitionTypes = [
+    "Match de Championnat",
+    "Match de Coupe",
+    "Tournoi"
+];
+
+
 export default function RankingsPage() {
     const [user, loadingUser] = useAuthState(auth);
     const router = useRouter();
     const [rankings, setRankings] = useState<TeamStats[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
+    const [clubName, setClubName] = useState("Votre Club");
 
     useEffect(() => {
-        if (!user || !selectedCategory) {
+        if (!user || !selectedCategory || !selectedCompetition) {
             setRankings([]);
-            if(selectedCategory) setLoading(true);
-            else setLoading(false);
+            setLoading(false);
             return;
         }
 
@@ -73,7 +81,7 @@ export default function RankingsPage() {
                 const eventsQuery = query(
                     collection(db, "events"),
                     where("userId", "==", user.uid),
-                    where("type", "==", "Match de Championnat"),
+                    where("type", "==", selectedCompetition),
                     where("category", "==", selectedCategory)
                 );
 
@@ -84,10 +92,11 @@ export default function RankingsPage() {
                 ]);
 
                 // 2. Process the data
-                let clubName = "Votre Club";
+                let localClubName = "Votre Club";
                 if (clubDoc.exists() && clubDoc.data().clubName) {
-                    clubName = clubDoc.data().clubName;
+                    localClubName = clubDoc.data().clubName;
                 }
+                setClubName(localClubName);
                 
                 const opponents = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
@@ -96,7 +105,7 @@ export default function RankingsPage() {
 
                 // 3. Initialize all teams from opponents and club name
                 const allTeamsMap = new Map<string, Opponent | { name: string, logoUrl?: string }>();
-                allTeamsMap.set(clubName, { name: clubName, logoUrl: clubDoc.data()?.logoUrl });
+                allTeamsMap.set(localClubName, { name: localClubName, logoUrl: clubDoc.data()?.logoUrl });
                 opponents.forEach(o => allTeamsMap.set(o.name, o));
 
                 const initializeTeam = (teamName: string) => {
@@ -110,10 +119,6 @@ export default function RankingsPage() {
                     }
                 };
                 
-                // Initialize from the map first
-                allTeamsMap.forEach((_, name) => initializeTeam(name));
-
-
                 // 4. Calculate stats from events
                 events.forEach(event => {
                     if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
@@ -172,7 +177,7 @@ export default function RankingsPage() {
 
         fetchRankings();
 
-    }, [user, selectedCategory]);
+    }, [user, selectedCategory, selectedCompetition]);
 
     return (
         <div className="space-y-6">
@@ -185,7 +190,7 @@ export default function RankingsPage() {
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Classement</h1>
                         <p className="text-muted-foreground">
-                            Consultez le classement du championnat par catégorie.
+                            Consultez le classement par compétition et par catégorie.
                         </p>
                     </div>
                 </div>
@@ -193,20 +198,32 @@ export default function RankingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Classement du Championnat</CardTitle>
-                    <CardDescription>Sélectionnez une catégorie pour afficher le classement.</CardDescription>
+                    <CardTitle>Classement - {selectedCompetition}</CardTitle>
+                    <CardDescription>Sélectionnez une compétition et une catégorie pour afficher le classement.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Select onValueChange={setSelectedCategory} value={selectedCategory}>
-                        <SelectTrigger className="w-full md:w-[280px]">
-                            <SelectValue placeholder="Sélectionner une catégorie" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <Select onValueChange={setSelectedCompetition} value={selectedCompetition}>
+                            <SelectTrigger className="w-full md:w-[280px]">
+                                <SelectValue placeholder="Sélectionner une compétition" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {competitionTypes.map(comp => (
+                                    <SelectItem key={comp} value={comp}>{comp}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select onValueChange={setSelectedCategory} value={selectedCategory}>
+                            <SelectTrigger className="w-full md:w-[280px]">
+                                <SelectValue placeholder="Sélectionner une catégorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {playerCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     
                     {loading ? (
                         <div className="flex justify-center items-center py-20">
@@ -231,7 +248,7 @@ export default function RankingsPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {rankings.map((team, index) => (
-                                        <TableRow key={team.name} className={team.name === "Wac" ? "bg-primary/10" : ""}>
+                                        <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
                                             <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2 font-medium">
@@ -257,11 +274,12 @@ export default function RankingsPage() {
                         </div>
                     ) : (
                         <div className="text-center text-muted-foreground py-20">
-                            <p>{selectedCategory ? "Aucune donnée de match trouvée pour cette catégorie." : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
+                            <p>{selectedCategory ? `Aucune donnée de match trouvée pour "${selectedCompetition}" dans la catégorie "${selectedCategory}".` : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
                         </div>
                     )}
                 </CardContent>
             </Card>
         </div>
     );
+
     
