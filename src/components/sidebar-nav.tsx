@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FileText, Sparkles, Calendar, Settings, ClipboardList, CreditCard, Wallet, BarChart, Trophy } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Sparkles, Calendar, Settings, ClipboardList, CreditCard, Wallet, BarChart, Trophy, ListOrdered } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/players", label: "Joueurs", icon: Users },
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
+  { href: "/dashboard/rankings", label: "Classement", icon: ListOrdered },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
@@ -42,3 +43,5 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     </nav>
   );
 }
+
+    

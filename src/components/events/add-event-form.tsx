@@ -109,7 +109,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
             category: "",
             date: new Date(),
             time: "15:00",
-            location: "",
+            location: "Domicile",
             opponent: "",
             scoreTeam: undefined,
             scoreOpponent: undefined,
@@ -175,6 +175,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
     const eventCategory = form.watch("category");
     
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
+    const eventTypeIsChampionship = eventType === "Match de Championnat";
     const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
     const showScoreFields = isEditMode && eventTypeIsMatch && isPastEvent;
 
@@ -419,18 +420,30 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         )}
                     />
                 </div>
-                 <FormField
+
+                <FormField
                     control={form.control}
                     name="location"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: Domicile, Stade Municipal, Extérieur..." {...field} disabled={disabled} />
-                        </FormControl>
-                         <FormDescription>
-                            Indiquez si le match est à domicile, à l'extérieur ou le nom du stade.
-                        </FormDescription>
+                            {eventTypeIsChampionship ? (
+                                <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner un lieu" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Domicile">Domicile</SelectItem>
+                                        <SelectItem value="Extérieur">Extérieur</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <FormControl>
+                                    <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} disabled={disabled} />
+                                </FormControl>
+                            )}
                         <FormMessage />
                         </FormItem>
                     )}
