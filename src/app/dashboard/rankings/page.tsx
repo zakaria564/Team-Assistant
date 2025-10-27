@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -52,124 +52,127 @@ export default function RankingsPage() {
     const [user, loadingUser] = useAuthState(auth);
     const router = useRouter();
     const [rankings, setRankings] = useState<TeamStats[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
-    const [clubName, setClubName] = useState("Votre Club");
-    const [opponents, setOpponents] = useState<Opponent[]>([]);
 
     useEffect(() => {
-        if (!user) {
-            if (!loadingUser) setLoading(false);
-            return;
-        }
-
-        const fetchInitialData = async () => {
-            const clubDocRef = doc(db, "clubs", user.uid);
-            const clubDoc = await getDoc(clubDocRef);
-            if (clubDoc.exists() && clubDoc.data().clubName) {
-                setClubName(clubDoc.data().clubName);
-            }
-
-            const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
-            const opponentsSnapshot = await getDocs(opponentsQuery);
-            const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
-            setOpponents(opponentsData);
-        };
-        
-        fetchInitialData();
-
-    }, [user, loadingUser]);
-
-     useEffect(() => {
-        if (!user || !selectedCategory || !clubName || opponents.length === 0) {
-            if (selectedCategory) {
-              setLoading(true);
-            } else {
-              setRankings([]);
-              setLoading(false);
-            }
+        if (!user || !selectedCategory) {
+            setRankings([]);
+            if(selectedCategory) setLoading(true);
+            else setLoading(false);
             return;
         }
 
         const fetchRankings = async () => {
             setLoading(true);
 
-            const eventsQuery = query(
-                collection(db, "events"),
-                where("userId", "==", user.uid),
-                where("type", "==", "Match de Championnat"),
-                where("category", "==", selectedCategory)
-            );
+            try {
+                // 1. Fetch all necessary data in parallel
+                const clubDocRef = doc(db, "clubs", user.uid);
+                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+                const eventsQuery = query(
+                    collection(db, "events"),
+                    where("userId", "==", user.uid),
+                    where("type", "==", "Match de Championnat"),
+                    where("category", "==", selectedCategory)
+                );
 
-            const querySnapshot = await getDocs(eventsQuery);
-            const events = querySnapshot.docs.map(doc => doc.data() as Event);
+                const [clubDoc, opponentsSnapshot, eventsSnapshot] = await Promise.all([
+                    getDoc(clubDocRef),
+                    getDocs(opponentsQuery),
+                    getDocs(eventsQuery)
+                ]);
 
-            const teamStats: { [key: string]: TeamStats } = {};
-            const allOpponentsMap = new Map(opponents.map(o => [o.name, o]));
-
-            const initializeTeam = (teamName: string) => {
-                if (!teamStats[teamName]) {
-                    const opponentData = allOpponentsMap.get(teamName);
-                    teamStats[teamName] = { 
-                        name: teamName, 
-                        logoUrl: opponentData?.logoUrl,
-                        played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
-                    };
-                }
-            };
-            
-            initializeTeam(clubName); 
-            opponents.forEach(o => initializeTeam(o.name)); 
-
-            events.forEach(event => {
-                if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
-                    return; 
+                // 2. Process the data
+                let clubName = "Votre Club";
+                if (clubDoc.exists() && clubDoc.data().clubName) {
+                    clubName = clubDoc.data().clubName;
                 }
                 
-                const { teamHome, teamAway, scoreHome, scoreAway } = event;
+                const opponents = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
+                const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
 
-                initializeTeam(teamHome);
-                initializeTeam(teamAway);
+                const teamStats: { [key: string]: TeamStats } = {};
 
-                teamStats[teamHome].played++;
-                teamStats[teamAway].played++;
-                teamStats[teamHome].goalsFor += scoreHome;
-                teamStats[teamHome].goalsAgainst += scoreAway;
-                teamStats[teamAway].goalsFor += scoreAway;
-                teamStats[teamAway].goalsAgainst += scoreHome;
+                // 3. Initialize all teams from opponents and club name
+                const allTeamsMap = new Map<string, Opponent | { name: string, logoUrl?: string }>();
+                allTeamsMap.set(clubName, { name: clubName, logoUrl: clubDoc.data()?.logoUrl });
+                opponents.forEach(o => allTeamsMap.set(o.name, o));
 
-                if (scoreHome > scoreAway) {
-                    teamStats[teamHome].wins++;
-                    teamStats[teamHome].points += 3;
-                    teamStats[teamAway].losses++;
-                } else if (scoreAway > scoreHome) {
-                    teamStats[teamAway].wins++;
-                    teamStats[teamAway].points += 3;
-                    teamStats[teamHome].losses++;
-                } else {
-                    teamStats[teamHome].draws++;
-                    teamStats[teamHome].points += 1;
-                    teamStats[teamAway].draws++;
-                    teamStats[teamAway].points += 1;
-                }
-            });
+                const initializeTeam = (teamName: string) => {
+                    if (!teamStats[teamName]) {
+                        const teamData = allTeamsMap.get(teamName);
+                        teamStats[teamName] = {
+                            name: teamName,
+                            logoUrl: teamData?.logoUrl,
+                            played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0
+                        };
+                    }
+                };
+                
+                // Initialize from the map first
+                allTeamsMap.forEach((_, name) => initializeTeam(name));
 
-            const rankedTeams = Object.values(teamStats).map(team => ({
-                ...team,
-                goalDifference: team.goalsFor - team.goalsAgainst,
-            })).sort((a, b) => {
-                if (b.points !== a.points) return b.points - a.points;
-                if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-                return b.goalsFor - a.goalsFor;
-            });
 
-            setRankings(rankedTeams);
-            setLoading(false);
+                // 4. Calculate stats from events
+                events.forEach(event => {
+                    if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
+                        return;
+                    }
+                    
+                    const { teamHome, teamAway, scoreHome, scoreAway } = event;
+
+                    // Dynamically initialize teams found in matches if they weren't in the initial list
+                    initializeTeam(teamHome);
+                    initializeTeam(teamAway);
+
+                    teamStats[teamHome].played++;
+                    teamStats[teamAway].played++;
+                    teamStats[teamHome].goalsFor += scoreHome;
+                    teamStats[teamHome].goalsAgainst += scoreAway;
+                    teamStats[teamAway].goalsFor += scoreAway;
+                    teamStats[teamAway].goalsAgainst += scoreHome;
+
+                    if (scoreHome > scoreAway) {
+                        teamStats[teamHome].wins++;
+                        teamStats[teamHome].points += 3;
+                        teamStats[teamAway].losses++;
+                    } else if (scoreAway > scoreHome) {
+                        teamStats[teamAway].wins++;
+                        teamStats[teamAway].points += 3;
+                        teamStats[teamHome].losses++;
+                    } else {
+                        teamStats[teamHome].draws++;
+                        teamStats[teamHome].points += 1;
+                        teamStats[teamAway].draws++;
+                        teamStats[teamAway].points += 1;
+                    }
+                });
+
+                // 5. Sort and set the final rankings
+                const rankedTeams = Object.values(teamStats).map(team => ({
+                    ...team,
+                    goalDifference: team.goalsFor - team.goalsAgainst,
+                })).sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                    return b.goalsFor - a.goalsFor;
+                });
+                
+                // Filter out teams that haven't played any matches
+                const finalRankings = rankedTeams.filter(team => team.played > 0);
+
+                setRankings(finalRankings);
+            } catch (error) {
+                console.error("Error fetching ranking data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
-        
+
         fetchRankings();
 
-    }, [user, selectedCategory, clubName, opponents]);
+    }, [user, selectedCategory]);
 
     return (
         <div className="space-y-6">
@@ -228,7 +231,7 @@ export default function RankingsPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {rankings.map((team, index) => (
-                                        <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                                        <TableRow key={team.name} className={team.name === "Wac" ? "bg-primary/10" : ""}>
                                             <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2 font-medium">
@@ -261,5 +264,4 @@ export default function RankingsPage() {
             </Card>
         </div>
     );
-}
     
