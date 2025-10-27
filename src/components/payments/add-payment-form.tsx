@@ -74,19 +74,16 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
         description: z.string().min(3, "La description est requise."),
         
-        newTransactionAmount: z.coerce.number().optional(),
+        newTransactionAmount: z.coerce.number().optional().refine(val => {
+            if (val === undefined) return true;
+            const maxAmount = amountRemainingBeforeNew !== undefined ? amountRemainingBeforeNew : Infinity;
+            return val <= maxAmount;
+        }, {
+            message: `Le versement ne peut pas dépasser le montant restant de ${amountRemainingBeforeNew?.toFixed(2)} MAD.`
+        }),
         newTransactionMethod: z.string().optional(),
 
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
-    }).refine(data => {
-        if (amountRemainingBeforeNew === undefined) { // Create mode
-            return data.newTransactionAmount === undefined || data.newTransactionAmount <= data.totalAmount;
-        }
-        // Edit mode
-        return data.newTransactionAmount === undefined || data.newTransactionAmount <= amountRemainingBeforeNew;
-    }, {
-        message: "Le versement ne peut pas dépasser le montant restant.",
-        path: ["newTransactionAmount"],
     });
 
 
@@ -94,6 +91,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        mode: "onChange",
         defaultValues: isEditMode ? {
             playerId: payment.playerId,
             totalAmount: payment.totalAmount,
