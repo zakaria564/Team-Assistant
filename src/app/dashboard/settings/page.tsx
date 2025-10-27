@@ -4,6 +4,7 @@
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { ClubSettingsForm } from "@/components/settings/club-settings-form";
 import { AppearanceSettings } from "@/components/settings/appearance-settings";
+import { SecuritySettingsForm } from "@/components/settings/security-settings-form";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import {
@@ -107,6 +108,7 @@ export default function SettingsPage() {
       <div className="space-y-8 max-w-4xl">
         <ProfileSettingsForm />
         <ClubSettingsForm />
+        <SecuritySettingsForm />
         <AppearanceSettings />
       </div>
     </div>
