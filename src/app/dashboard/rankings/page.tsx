@@ -63,6 +63,7 @@ export default function RankingsPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
     const [clubName, setClubName] = useState("Votre Club");
+    const [clubLogoUrl, setClubLogoUrl] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (!user || !selectedCategory || !selectedCompetition) {
@@ -93,9 +94,9 @@ export default function RankingsPage() {
 
                 // 2. Process team data into a reliable map
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
-                let localClubName = "Votre Club";
                 
                 // Add user's club to the map first
+                let localClubName = "Votre Club";
                 if (clubDoc.exists()) {
                     const clubData = clubDoc.data();
                     if(clubData.clubName) {
@@ -112,7 +113,7 @@ export default function RankingsPage() {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
                 });
-
+                
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
 
                 const teamStats: { [key: string]: TeamStats } = {};
@@ -240,48 +241,81 @@ export default function RankingsPage() {
                             <Loader2 className="h-10 w-10 animate-spin text-primary" />
                         </div>
                     ) : selectedCategory && rankings.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-center">Pos</TableHead>
-                                        <TableHead>Équipe</TableHead>
-                                        <TableHead className="font-bold text-center">Pts</TableHead>
-                                        <TableHead className="text-center">J</TableHead>
-                                        <TableHead className="text-center hidden sm:table-cell">G</TableHead>
-                                        <TableHead className="text-center hidden sm:table-cell">N</TableHead>
-                                        <TableHead className="text-center hidden sm:table-cell">P</TableHead>
-                                        <TableHead className="text-center hidden md:table-cell">BP</TableHead>
-                                        <TableHead className="text-center hidden md:table-cell">BC</TableHead>
-                                        <TableHead className="text-center">Diff</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {rankings.map((team, index) => (
-                                        <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
-                                            <TableCell className="font-bold text-center">{index + 1}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2 font-medium">
-                                                     <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={team.logoUrl} alt={team.name} />
-                                                        <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span>{team.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-bold text-center">{team.points}</TableCell>
-                                            <TableCell className="text-center">{team.played}</TableCell>
-                                            <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
-                                            <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
-                                            <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
-                                            <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
-                                            <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
-                                            <TableCell className="text-center">{team.goalDifference}</TableCell>
+                       <>
+                           {/* Mobile View */}
+                            <div className="sm:hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[40px] text-center">Pos</TableHead>
+                                            <TableHead>Équipe</TableHead>
+                                            <TableHead className="text-right">Pts</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {rankings.map((team, index) => (
+                                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 font-medium">
+                                                        <Avatar className="h-6 w-6">
+                                                            <AvatarImage src={team.logoUrl} alt={team.name} />
+                                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span>{team.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-bold text-right">{team.points}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                           
+                            {/* Desktop View */}
+                            <div className="hidden sm:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="text-center">Pos</TableHead>
+                                            <TableHead>Équipe</TableHead>
+                                            <TableHead className="font-bold text-center">Pts</TableHead>
+                                            <TableHead className="text-center">J</TableHead>
+                                            <TableHead className="text-center hidden sm:table-cell">G</TableHead>
+                                            <TableHead className="text-center hidden sm:table-cell">N</TableHead>
+                                            <TableHead className="text-center hidden sm:table-cell">P</TableHead>
+                                            <TableHead className="text-center hidden md:table-cell">BP</TableHead>
+                                            <TableHead className="text-center hidden md:table-cell">BC</TableHead>
+                                            <TableHead className="text-center">Diff</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {rankings.map((team, index) => (
+                                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 font-medium">
+                                                         <Avatar className="h-6 w-6">
+                                                            <AvatarImage src={team.logoUrl} alt={team.name} />
+                                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span>{team.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-bold text-center">{team.points}</TableCell>
+                                                <TableCell className="text-center">{team.played}</TableCell>
+                                                <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
+                                                <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
+                                                <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
+                                                <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
+                                                <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
+                                                <TableCell className="text-center">{team.goalDifference}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                       </>
                     ) : (
                         <div className="text-center text-muted-foreground py-20">
                             <p>{selectedCategory ? `Aucune donnée de match trouvée pour "${selectedCompetition}" dans la catégorie "${selectedCategory}".` : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
