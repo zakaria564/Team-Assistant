@@ -10,18 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
-import { differenceInHours } from "date-fns";
+import { isPast } from "date-fns";
 
 interface Event {
     id: string;
     type: any;
-    team: string;
     category: string;
-    opponent?: string;
     date: Date;
-    location: string;
-    scoreTeam?: number;
-    scoreOpponent?: number;
+    location?: string;
+    teamHome?: string;
+    teamAway?: string;
+    scoreHome?: number;
+    scoreAway?: number;
 }
 
 export default function EditEventPage({ params }: { params: { id: string } }) {
@@ -43,10 +43,9 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // Ensure Firestore Timestamp is converted to JS Date
           const date = data.date?.toDate ? data.date.toDate() : new Date();
           
-          if (differenceInHours(new Date(), date) > 24) {
+          if (isPast(date) && typeof data.scoreHome === 'number') {
             setIsLocked(true);
           }
           
@@ -100,7 +99,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     <Info className="h-4 w-4" />
                     <AlertTitle>Modification verrouillée</AlertTitle>
                     <AlertDescription>
-                        Vous ne pouvez plus modifier cet événement car il s'est terminé il y a plus de 24 heures.
+                        Vous ne pouvez plus modifier cet événement car le score final a déjà été enregistré.
                     </AlertDescription>
                 </Alert>
             ) : event ? (

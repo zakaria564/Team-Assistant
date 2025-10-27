@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -35,15 +35,7 @@ interface Opponent {
 }
 
 const eventTypes = [
-    "Match de Championnat",
-    "Match Amical",
-    "Match de Coupe",
-    "Tournoi",
-    "Entraînement",
-    "Stage",
-    "Détection",
-    "Réunion",
-    "Événement Spécial"
+    "Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi", "Entraînement", "Stage", "Détection", "Réunion", "Événement Spécial"
 ] as const;
 
 const formSchema = z.object({
@@ -51,10 +43,11 @@ const formSchema = z.object({
   category: z.string({ required_error: "La catégorie est requise." }),
   date: z.date({ required_error: "La date est requise."}),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
-  location: z.string().min(2, "Le lieu est requis."),
-  opponent: z.string().optional(),
-  scoreTeam: z.coerce.number().optional(),
-  scoreOpponent: z.coerce.number().optional(),
+  location: z.string().optional(),
+  teamHome: z.string().optional(),
+  teamAway: z.string().optional(),
+  scoreHome: z.coerce.number().optional(),
+  scoreAway: z.coerce.number().optional(),
   scorers: z.array(z.object({
       playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
       playerName: z.string().optional(),
@@ -67,13 +60,14 @@ const formSchema = z.object({
   })).optional(),
 }).refine(data => {
     if (data.type.includes("Match") || data.type.includes("Tournoi")) {
-        return !!data.opponent && data.opponent.length > 1;
+        return !!data.teamHome && data.teamHome.length > 1 && !!data.teamAway && data.teamAway.length > 1;
     }
     return true;
 }, {
-    message: "L'adversaire est requis pour un match ou un tournoi.",
-    path: ["opponent"],
+    message: "Les deux équipes sont requises pour un match.",
+    path: ["teamHome"], // Show error on the first of the two fields
 });
+
 
 const playerCategories = [
     "Seniors", "Seniors F", "U19", "U18", "U17", "U17 F", "U16", "U15", "U15 F", "U14", "U13", "U13 F", "U12", "U11", "U11 F", "U10", "U9", "U8", "U7", "Vétérans", "École de foot"
@@ -82,13 +76,13 @@ const playerCategories = [
 interface EventData {
   id: string;
   type: typeof eventTypes[number];
-  team: string;
   category: string;
-  opponent?: string;
   date: Date;
-  location: string;
-  scoreTeam?: number;
-  scoreOpponent?: number;
+  location?: string;
+  teamHome?: string;
+  teamAway?: string;
+  scoreHome?: number;
+  scoreAway?: number;
   scorers?: { playerId: string, playerName: string, goals: number }[];
   assisters?: { playerId: string, playerName: string, assists: number }[];
 }
@@ -102,9 +96,8 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [clubName, setClubName] = useState("");
+    const [allTeams, setAllTeams] = useState<string[]>([]);
     const [players, setPlayers] = useState<Player[]>([]);
-    const [opponents, setOpponents] = useState<Opponent[]>([]);
     const router = useRouter();
     const isEditMode = !!event;
 
@@ -115,10 +108,11 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
             category: "",
             date: new Date(),
             time: "15:00",
-            location: "Domicile",
-            opponent: "",
-            scoreTeam: undefined,
-            scoreOpponent: undefined,
+            location: "",
+            teamHome: "",
+            teamAway: "",
+            scoreHome: undefined,
+            scoreAway: undefined,
             scorers: [],
             assisters: [],
         }
@@ -138,20 +132,18 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
         const fetchInitialData = async () => {
             if (!user) return;
             try {
-                // Fetch Club Name
                 const clubDocRef = doc(db, "clubs", user.uid);
-                const clubDoc = await getDoc(clubDocRef);
+                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+                
+                const [clubDoc, opponentsSnapshot] = await Promise.all([getDoc(clubDocRef), getDocs(opponentsQuery)]);
+                
+                let clubName = "Votre Club";
                 if (clubDoc.exists() && clubDoc.data().clubName) {
-                    setClubName(clubDoc.data().clubName);
-                } else {
-                    setClubName("Votre Club");
+                    clubName = clubDoc.data().clubName;
                 }
 
-                // Fetch Opponents
-                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
-                const opponentsSnapshot = await getDocs(opponentsQuery);
-                const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
-                setOpponents(opponentsData);
+                const opponentsData = opponentsSnapshot.docs.map(doc => doc.data().name as string);
+                setAllTeams([clubName, ...opponentsData.sort()]);
 
             } catch (error) {
                 console.error("Error fetching initial data: ", error);
@@ -167,10 +159,11 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                 category: event.category,
                 date: new Date(event.date),
                 time: format(new Date(event.date), "HH:mm"),
-                location: event.location,
-                opponent: event.opponent || "",
-                scoreTeam: event.scoreTeam ?? undefined,
-                scoreOpponent: event.scoreOpponent ?? undefined,
+                location: event.location || "",
+                teamHome: event.teamHome || "",
+                teamAway: event.teamAway || "",
+                scoreHome: event.scoreHome ?? undefined,
+                scoreAway: event.scoreAway ?? undefined,
                 scorers: event.scorers || [],
                 assisters: event.assisters || [],
             });
@@ -189,7 +182,6 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
     const eventCategory = form.watch("category");
     
     const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
-    const eventTypeIsChampionship = eventType === "Match de Championnat";
     const isPastEvent = eventDate ? isPast(eventDate) || isToday(eventDate) : false;
     const showScoreFields = isEditMode && eventTypeIsMatch && isPastEvent;
 
@@ -230,25 +222,20 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
             const combinedDate = new Date(values.date);
             combinedDate.setHours(hours, minutes, 0, 0);
             
-            const teamValue = `${clubName} - ${values.category}`;
-
             const dataToSave: any = {
                 userId: user.uid,
                 type: values.type,
                 date: combinedDate,
-                location: values.location,
+                category: values.category,
+                location: values.location || null,
             };
-            
-            if (!isEditMode) {
-                dataToSave.team = teamValue;
-                dataToSave.category = values.category;
-            }
 
             if (eventTypeIsMatch) {
-                dataToSave.opponent = values.opponent || null;
+                dataToSave.teamHome = values.teamHome || null;
+                dataToSave.teamAway = values.teamAway || null;
                  if(isPastEvent) {
-                  dataToSave.scoreTeam = values.scoreTeam ?? null;
-                  dataToSave.scoreOpponent = values.scoreOpponent ?? null;
+                  dataToSave.scoreHome = values.scoreHome ?? null;
+                  dataToSave.scoreAway = values.scoreAway ?? null;
                   
                   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Joueur inconnu';
                   
@@ -301,11 +288,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Type d'événement</FormLabel>
-                        <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value}
-                            disabled={disabled}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner un type d'événement" />
@@ -321,71 +304,60 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         </FormItem>
                     )}
                 />
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormItem>
-                        <FormLabel>Club</FormLabel>
-                        <FormControl>
-                            <Input value={clubName.replace(/^Club\s/i, '')} disabled />
-                        </FormControl>
-                    </FormItem>
-
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Catégorie</FormLabel>
-                                {isEditMode ? (
-                                    <FormControl>
-                                        <Input value={field.value} disabled />
-                                    </FormControl>
-                                ) : (
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner une catégorie" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {playerCategories.map(cat => (
-                                                <SelectItem key={cat} value={cat}>
-                                                    {cat}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-
-                {eventTypeIsMatch && (
-                     <FormField
-                        control={form.control}
-                        name="opponent"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Adversaire</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                 <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Catégorie</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={disabled || isEditMode}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un adversaire" />
+                                        <SelectValue placeholder="Sélectionner une catégorie" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {opponents.map(op => (
-                                        <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                    {playerCategories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                        </FormItem>
+                    )}
+                />
+
+                {eventTypeIsMatch && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="teamHome"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Équipe à Domicile</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
+                                        <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="teamAway"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Équipe à l'Extérieur</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
+                                        <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -400,29 +372,16 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                 <FormControl>
                                     <Button
                                     variant={"outline"}
-                                    className={cn(
-                                        "pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                    )}
+                                    className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                                     disabled={disabled}
                                     >
-                                    {field.value ? (
-                                        format(field.value, "PPP", { locale: fr })
-                                    ) : (
-                                        <span>Choisir une date</span>
-                                    )}
+                                    {field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisir une date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                     </Button>
                                 </FormControl>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    initialFocus
-                                    disabled={disabled}
-                                />
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus disabled={disabled}/>
                                 </PopoverContent>
                             </Popover>
                             <FormMessage />
@@ -450,23 +409,9 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
-                            {eventTypeIsChampionship ? (
-                                <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner un lieu" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Domicile">Domicile</SelectItem>
-                                        <SelectItem value="Extérieur">Extérieur</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            ) : (
-                                <FormControl>
-                                    <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} disabled={disabled} />
-                                </FormControl>
-                            )}
+                        <FormControl>
+                            <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} disabled={disabled} />
+                        </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -479,19 +424,12 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="scoreTeam"
+                                name="scoreHome"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {clubName.replace(/^Club\s/i, '')}</FormLabel>
+                                    <FormLabel>Score {form.getValues("teamHome")}</FormLabel>
                                     <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      placeholder="-" 
-                                      {...field} 
-                                      value={field.value ?? ''}
-                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                      disabled={disabled}
-                                    />
+                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} disabled={disabled} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -499,19 +437,12 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                             />
                              <FormField
                                 control={form.control}
-                                name="scoreOpponent"
+                                name="scoreAway"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Score {event?.opponent}</FormLabel>
+                                    <FormLabel>Score {form.getValues("teamAway")}</FormLabel>
                                     <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      placeholder="-" 
-                                      {...field} 
-                                      value={field.value ?? ''}
-                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                      disabled={disabled}
-                                    />
+                                    <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} disabled={disabled}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -539,14 +470,8 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             render={({ field }) => (
                                               <FormItem className="flex-1">
                                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Choisir un joueur" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                    </SelectContent>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
+                                                    <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                                                 </Select>
                                                 <FormMessage />
                                                </FormItem>
@@ -557,9 +482,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`scorers.${index}.goals`}
                                             render={({ field }) => (
                                               <FormItem>
-                                               <FormControl>
-                                                  <Input type="number" placeholder="Buts" className="w-24" {...field} disabled={disabled} />
-                                               </FormControl>
+                                               <FormControl><Input type="number" placeholder="Buts" className="w-24" {...field} disabled={disabled} /></FormControl>
                                                <FormMessage />
                                                </FormItem>
                                             )}
@@ -590,14 +513,8 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             render={({ field }) => (
                                                 <FormItem className="flex-1">
                                                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
-                                                      <FormControl>
-                                                          <SelectTrigger>
-                                                              <SelectValue placeholder="Choisir un joueur" />
-                                                          </SelectTrigger>
-                                                      </FormControl>
-                                                      <SelectContent>
-                                                          {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                      </SelectContent>
+                                                      <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
+                                                      <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                                                   </Select>
                                                   <FormMessage />
                                                 </FormItem>
@@ -608,9 +525,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                             name={`assisters.${index}.assists`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                  <FormControl>
-                                                    <Input type="number" placeholder="Passes" className="w-24" {...field} disabled={disabled} />
-                                                  </FormControl>
+                                                  <FormControl><Input type="number" placeholder="Passes" className="w-24" {...field} disabled={disabled} /></FormControl>
                                                   <FormMessage />
                                                 </FormItem>
                                             )}
@@ -622,23 +537,16 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                                 ))}
                             </div>
                         </div>
-
                     </div>
                   </>
                 )}
 
 
                 <Button type="submit" disabled={loading || disabled} className="w-full">
-                    {loading ? (
-                        <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enregistrement...
-                        </>
-                    ) : isEditMode ? "Enregistrer les modifications" : "Ajouter l'événement"}
+                    {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) 
+                    : isEditMode ? "Enregistrer les modifications" : "Ajouter l'événement"}
                 </Button>
             </form>
         </Form>
     );
 }
-
-    

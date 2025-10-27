@@ -7,24 +7,22 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints, Pencil } from "lucide-react";
-import { format, isPast, differenceInHours } from "date-fns";
+import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
+import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-
 
 interface Event {
   id: string;
   type: string;
-  team: string;
   category: string;
-  opponent?: string;
   date: Date;
-  location: string;
-  scoreTeam?: number;
-  scoreOpponent?: number;
+  location?: string;
+  teamHome?: string;
+  teamAway?: string;
+  scoreHome?: number;
+  scoreAway?: number;
   scorers?: { playerId: string, playerName: string, goals: number }[];
   assisters?: { playerId: string, playerName: string, assists: number }[];
 }
@@ -39,24 +37,28 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
   </div>
 );
 
-const getResultBadgeClass = (scoreTeam?: number, scoreOpponent?: number) => {
-    if (typeof scoreTeam !== 'number' || typeof scoreOpponent !== 'number') {
+const getResultBadgeClass = (scoreHome?: number, scoreAway?: number) => {
+    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number') {
       return "bg-gray-100 text-gray-800 border-gray-300";
     }
-    if (scoreTeam > scoreOpponent) return "bg-green-100 text-green-800 border-green-300";
-    if (scoreTeam < scoreOpponent) return "bg-red-100 text-red-800 border-red-300";
+    if (scoreHome > scoreAway) return "bg-green-100 text-green-800 border-green-300";
+    if (scoreHome < scoreAway) return "bg-red-100 text-red-800 border-red-300";
     return "bg-yellow-100 text-yellow-800 border-yellow-300";
 };
   
-const getResultLabel = (scoreTeam?: number, scoreOpponent?: number) => {
-    if (typeof scoreTeam !== 'number' || typeof scoreOpponent !== 'number') {
+const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: string, homeTeam?: string, awayTeam?: string) => {
+    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number' || !teamName || !homeTeam || !awayTeam) {
         return "En attente";
     }
-    if (scoreTeam > scoreOpponent) return "Victoire";
-    if (scoreTeam < scoreOpponent) return "Défaite";
-    return "Match Nul";
+    if (scoreHome === scoreAway) return "Match Nul";
+    if (teamName === homeTeam) {
+        return scoreHome > scoreAway ? "Victoire" : "Défaite";
+    }
+    if (teamName === awayTeam) {
+        return scoreAway > scoreHome ? "Victoire" : "Défaite";
+    }
+    return "En attente";
 };
-
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const { id: eventId } = React.use(params);
@@ -64,6 +66,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [clubName, setClubName] = useState("Votre Club");
 
   useEffect(() => {
     if (!eventId) return;
@@ -114,10 +117,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   }
   
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
-  const isPastEvent = isPast(event.date);
-  const showScoreAndStats = eventTypeIsMatch && (typeof event.scoreTeam === 'number');
-  const clubName = event.team.split(' - ')[0].replace(/^Club\s/i, '');
-  const canEdit = differenceInHours(new Date(), event.date) <= 24;
+  const showScoreAndStats = eventTypeIsMatch && (typeof event.scoreHome === 'number');
+  const eventTitle = eventTypeIsMatch ? `${event.teamHome} vs ${event.teamAway}` : `${event.type} - ${event.category}`;
 
 
   return (
@@ -143,9 +144,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl">
                     <Trophy />
-                    <span>
-                      {eventTypeIsMatch ? `${clubName} (${event.category}) vs ${event.opponent}` : `${event.type} - ${clubName} (${event.category})`}
-                    </span>
+                    <span>{eventTitle}</span>
                 </CardTitle>
                 <CardDescription>
                    {event.type}
@@ -155,10 +154,10 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <DetailItem icon={Calendar} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
                   <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
-                  <DetailItem icon={MapPin} label="Lieu" value={event.location} />
-                  <DetailItem icon={Users} label="Club" value={clubName} />
                   <DetailItem icon={Users} label="Catégorie" value={event.category} />
-                  {eventTypeIsMatch && <DetailItem icon={Users} label="Adversaire" value={event.opponent} />}
+                   {event.location && eventTypeIsMatch && (
+                     <DetailItem icon={MapPin} label="Lieu" value={event.location} />
+                   )}
                </div>
             </CardContent>
         </Card>
@@ -171,16 +170,16 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 <CardContent>
                     <div className="flex items-center justify-between gap-6">
                         <div className="text-center">
-                            <p className="text-sm text-muted-foreground">{clubName}</p>
-                            <p className="text-4xl font-bold">{event.scoreTeam ?? '-'}</p>
+                            <p className="text-sm text-muted-foreground">{event.teamHome}</p>
+                            <p className="text-4xl font-bold">{event.scoreHome ?? '-'}</p>
                         </div>
                          <div className="text-2xl font-bold text-muted-foreground">vs</div>
                         <div className="text-center">
-                            <p className="text-sm text-muted-foreground">{event.opponent}</p>
-                            <p className="text-4xl font-bold">{event.scoreOpponent ?? '-'}</p>
+                            <p className="text-sm text-muted-foreground">{event.teamAway}</p>
+                            <p className="text-4xl font-bold">{event.scoreAway ?? '-'}</p>
                         </div>
-                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreTeam, event.scoreOpponent))}>
-                          {getResultLabel(event.scoreTeam, event.scoreOpponent)}
+                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreHome, event.scoreAway))}>
+                           {getResultLabel(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway)}
                         </Badge>
                     </div>
                 </CardContent>
@@ -219,7 +218,3 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
-
-    
-
-    

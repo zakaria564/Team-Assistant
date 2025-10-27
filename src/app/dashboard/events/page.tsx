@@ -39,12 +39,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 interface Event {
     id: string;
     type: string;
-    team: string;
     category: string;
-    opponent?: string;
     date: Date;
-    location: string;
-    scoreTeam?: number;
+    location?: string;
+    teamHome?: string;
+    teamAway?: string;
+    scoreHome?: number;
+    scoreAway?: number;
 }
 
 export default function EventsPage() {
@@ -81,7 +82,6 @@ export default function EventsPage() {
         date: doc.data().date.toDate()
       } as Event));
       
-      // Sort events by date on the client side
       eventsData.sort((a, b) => compareAsc(a.date, b.date));
       
       setAllEvents(eventsData);
@@ -120,11 +120,11 @@ export default function EventsPage() {
   };
 
   const getEventTitle = (event: Event) => {
-    const teamName = event.team.replace(/^Club\s/i, '');
-    if (event.type.includes("Match") || event.type.includes("Tournoi")) {
-      return `${teamName} vs ${event.opponent}`;
+    const isMatch = event.type.includes("Match") || event.type.includes("Tournoi");
+    if (isMatch) {
+      return `${event.teamHome} vs ${event.teamAway}`;
     }
-    return `${event.type} ${teamName}`;
+    return `${event.type} - ${event.category}`;
   };
 
   const getEventBadgeClass = (type: string) => {
@@ -186,7 +186,7 @@ export default function EventsPage() {
           <CardContent className="p-0 md:p-2">
             {isClient ? (
                 <Calendar
-                    key={allEvents.length} // Force re-render when events change for modifiers
+                    key={allEvents.length} 
                     mode="single"
                     selected={date}
                     onSelect={setDate}
@@ -229,8 +229,7 @@ export default function EventsPage() {
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => {
-                        const eventIsPast = isPast(event.date);
-                        const isFinishedWithScore = eventIsPast && typeof event.scoreTeam === 'number';
+                        const isFinishedWithScore = isPast(event.date) && typeof event.scoreHome === 'number';
                         return (
                           <Card key={event.id} className="bg-muted/30 group">
                               <CardHeader>
@@ -244,10 +243,12 @@ export default function EventsPage() {
                                       <Clock className="h-4 w-4" />
                                       <span>{format(event.date, "HH:mm", { locale: fr })}</span>
                                   </div>
-                                  <div className="flex items-center gap-2 text-muted-foreground">
-                                      <MapPin className="h-4 w-4" />
-                                      <span>{event.location}</span>
-                                  </div>
+                                  {event.location && 
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{event.location}</span>
+                                    </div>
+                                  }
                                    <div className="flex items-center gap-2 text-muted-foreground">
                                       <Users className="h-4 w-4" />
                                       <span>{event.category}</span>
@@ -279,6 +280,7 @@ export default function EventsPage() {
                                       <DropdownMenuItem
                                           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                           onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
+                                          disabled={isPast(event.date)}
                                         >
                                           <Trash2 className="mr-2 h-4 w-4" />
                                           Supprimer

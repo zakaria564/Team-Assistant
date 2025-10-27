@@ -7,10 +7,11 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trophy, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 
 interface TeamStats {
@@ -29,13 +30,12 @@ interface TeamStats {
 interface Event {
     id: string;
     type: string;
-    team: string;
+    teamHome: string;
+    teamAway: string;
     category: string;
-    opponent?: string;
     date: { seconds: number, nanoseconds: number };
-    location: string;
-    scoreTeam?: number;
-    scoreOpponent?: number;
+    scoreHome?: number;
+    scoreAway?: number;
 }
 
 interface Opponent {
@@ -43,7 +43,6 @@ interface Opponent {
   name: string;
   logoUrl?: string;
 }
-
 
 const playerCategories = [
     "Seniors", "Seniors F", "U19", "U18", "U17", "U17 F", "U16", "U15", "U15 F", "U14", "U13", "U13 F", "U12", "U11", "U11 F", "U10", "U9", "U8", "U7", "Vétérans", "École de foot"
@@ -65,14 +64,12 @@ export default function RankingsPage() {
         }
 
         const fetchInitialData = async () => {
-             // Fetch Club Name
             const clubDocRef = doc(db, "clubs", user.uid);
             const clubDoc = await getDoc(clubDocRef);
             if (clubDoc.exists() && clubDoc.data().clubName) {
                 setClubName(clubDoc.data().clubName);
             }
 
-            // Fetch Opponents
             const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
             const opponentsSnapshot = await getDocs(opponentsQuery);
             const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
@@ -84,14 +81,13 @@ export default function RankingsPage() {
     }, [user, loadingUser]);
 
      useEffect(() => {
-        if (!user) return;
+        if (!user || !selectedCategory) {
+            setRankings([]);
+            setLoading(false);
+            return;
+        }
 
         const fetchRankings = async () => {
-            if (!selectedCategory) {
-                setRankings([]);
-                setLoading(false);
-                return;
-            }
             setLoading(true);
 
             const eventsQuery = query(
@@ -104,54 +100,54 @@ export default function RankingsPage() {
             const querySnapshot = await getDocs(eventsQuery);
             const events = querySnapshot.docs.map(doc => doc.data() as Event);
 
+            const allTeams = [clubName, ...opponents.map(o => o.name)];
             const teamStats: { [key: string]: TeamStats } = {};
-            const opponentsMap = new Map(opponents.map(o => [o.name, o]));
 
+            const allTeamsWithLogos = [
+                { name: clubName, logoUrl: '' }, // Assuming club has no logo field for now
+                ...opponents
+            ];
+            
+            allTeams.forEach(teamName => {
+                const teamData = allTeamsWithLogos.find(t => t.name === teamName);
+                teamStats[teamName] = { 
+                    name: teamName, 
+                    logoUrl: teamData?.logoUrl,
+                    played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
+                };
+            });
 
-            teamStats[clubName] = { name: clubName, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
 
             events.forEach(event => {
-                if (typeof event.scoreTeam !== 'number' || typeof event.scoreOpponent !== 'number') {
+                if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
                     return; // Skip unfinished matches
                 }
                 
-                const opponentName = event.opponent!;
-                if (!teamStats[opponentName]) {
-                    const opponentData = opponentsMap.get(opponentName);
-                    teamStats[opponentName] = { 
-                        name: opponentName, 
-                        logoUrl: opponentData?.logoUrl,
-                        played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
-                    };
-                }
+                const { teamHome, teamAway, scoreHome, scoreAway } = event;
 
-                const isHomeMatch = event.location === 'Domicile';
-                const clubScore = event.scoreTeam;
-                const opponentScore = event.scoreOpponent;
+                if (!teamStats[teamHome] || !teamStats[teamAway]) return;
 
-                // Club's perspective
-                teamStats[clubName].played++;
-                teamStats[clubName].goalsFor += clubScore;
-                teamStats[clubName].goalsAgainst += opponentScore;
+                // Update stats for both teams
+                teamStats[teamHome].played++;
+                teamStats[teamAway].played++;
+                teamStats[teamHome].goalsFor += scoreHome;
+                teamStats[teamHome].goalsAgainst += scoreAway;
+                teamStats[teamAway].goalsFor += scoreAway;
+                teamStats[teamAway].goalsAgainst += scoreHome;
 
-                // Opponent's perspective
-                teamStats[opponentName].played++;
-                teamStats[opponentName].goalsFor += opponentScore;
-                teamStats[opponentName].goalsAgainst += clubScore;
-
-                if (clubScore > opponentScore) {
-                    teamStats[clubName].wins++;
-                    teamStats[clubName].points += 3;
-                    teamStats[opponentName].losses++;
-                } else if (clubScore < opponentScore) {
-                    teamStats[clubName].losses++;
-                    teamStats[opponentName].wins++;
-                    teamStats[opponentName].points += 3;
-                } else {
-                    teamStats[clubName].draws++;
-                    teamStats[clubName].points += 1;
-                    teamStats[opponentName].draws++;
-                    teamStats[opponentName].points += 1;
+                if (scoreHome > scoreAway) { // Home team wins
+                    teamStats[teamHome].wins++;
+                    teamStats[teamHome].points += 3;
+                    teamStats[teamAway].losses++;
+                } else if (scoreAway > scoreHome) { // Away team wins
+                    teamStats[teamAway].wins++;
+                    teamStats[teamAway].points += 3;
+                    teamStats[teamHome].losses++;
+                } else { // Draw
+                    teamStats[teamHome].draws++;
+                    teamStats[teamHome].points += 1;
+                    teamStats[teamAway].draws++;
+                    teamStats[teamAway].points += 1;
                 }
             });
 
@@ -159,12 +155,8 @@ export default function RankingsPage() {
                 ...team,
                 goalDifference: team.goalsFor - team.goalsAgainst,
             })).sort((a, b) => {
-                if (b.points !== a.points) {
-                    return b.points - a.points;
-                }
-                if (b.goalDifference !== a.goalDifference) {
-                    return b.goalDifference - a.goalDifference;
-                }
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
                 return b.goalsFor - a.goalsFor;
             });
 
@@ -235,7 +227,15 @@ export default function RankingsPage() {
                                     {rankings.map((team, index) => (
                                         <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
                                             <TableCell className="font-bold text-center">{index + 1}</TableCell>
-                                            <TableCell className="font-medium">{team.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2 font-medium">
+                                                     <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={team.logoUrl} alt={team.name} />
+                                                        <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span>{team.name}</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="font-bold text-center">{team.points}</TableCell>
                                             <TableCell className="text-center">{team.played}</TableCell>
                                             <TableCell className="text-center">{team.wins}</TableCell>
@@ -251,7 +251,7 @@ export default function RankingsPage() {
                         </div>
                     ) : (
                         <div className="text-center text-muted-foreground py-20">
-                            <p>{selectedCategory ? "Aucun match de championnat trouvé pour cette catégorie." : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
+                            <p>{selectedCategory ? "Aucune donnée de match trouvée pour cette catégorie." : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
                         </div>
                     )}
                 </CardContent>
