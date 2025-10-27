@@ -56,14 +56,14 @@ const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: strin
     if (homeTeam !== teamName && awayTeam !== teamName) { // Match between two other teams
       return "Terminé";
     }
+    
+    const isHomeTeam = teamName === homeTeam;
 
-    if (teamName === homeTeam) {
+    if (isHomeTeam) {
         return scoreHome > scoreAway ? "Victoire" : "Défaite";
-    }
-    if (teamName === awayTeam) {
+    } else { // is away team
         return scoreAway > scoreHome ? "Victoire" : "Défaite";
     }
-    return "En attente";
 };
 
 export default function EventDetailPage() {
