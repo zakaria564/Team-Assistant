@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -31,6 +31,7 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [isLogoUrlVisible, setIsLogoUrlVisible] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -122,19 +123,41 @@ export function ClubSettingsForm() {
         ) : (
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                        control={form.control}
-                        name="clubName"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Nom de votre club</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nom de votre club" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="flex items-center gap-4">
+                        <FormField
+                            control={form.control}
+                            name="clubName"
+                            render={({ field }) => (
+                                <FormItem className="flex-1">
+                                <FormLabel>Nom de votre club</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Nom de votre club" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <Button type="button" variant="outline" size="sm" onClick={() => setIsLogoUrlVisible(!isLogoUrlVisible)} className="self-end">
+                            {isLogoUrlVisible ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+                            {isLogoUrlVisible ? 'Masquer' : 'Gérer le logo'}
+                        </Button>
+                    </div>
+
+                    {isLogoUrlVisible && (
+                        <FormField
+                            control={form.control}
+                            name="logoUrl"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>URL du logo de votre club</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
                     
                     <div className="grid sm:grid-cols-2 gap-4">
                         <FormField
@@ -164,19 +187,6 @@ export function ClubSettingsForm() {
                             )}
                         />
                     </div>
-                     <FormField
-                        control={form.control}
-                        name="logoUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>URL du logo</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''}/>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                     <FormField
                         control={form.control}
                         name="address"
