@@ -230,6 +230,9 @@ export default function EventsPage() {
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => {
                         const isFinishedWithScore = isPast(event.date) && typeof event.scoreHome === 'number';
+                        const canAddScore = isPast(event.date) && typeof event.scoreHome !== 'number' && event.type.includes('Match');
+                        const isFuture = !isPast(event.date);
+
                         return (
                           <Card key={event.id} className="bg-muted/30 group">
                               <CardHeader>
@@ -270,12 +273,12 @@ export default function EventsPage() {
                                               Voir les détails
                                           </Link>
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem asChild disabled={isFinishedWithScore} className="cursor-pointer">
-                                        <Link href={`/dashboard/events/${event.id}/edit`}>
-                                          <Pencil className="mr-2 h-4 w-4" />
-                                          Modifier
-                                        </Link>
-                                      </DropdownMenuItem>
+                                       <DropdownMenuItem asChild disabled={isFinishedWithScore} className="cursor-pointer">
+                                            <Link href={`/dashboard/events/${event.id}/edit`}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                <span>{canAddScore ? "Ajouter le score final" : "Modifier"}</span>
+                                            </Link>
+                                        </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
                                           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
