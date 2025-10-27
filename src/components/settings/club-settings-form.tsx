@@ -139,19 +139,7 @@ export function ClubSettingsForm() {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="logoUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>URL du logo de votre club</FormLabel>
-                            <FormControl>
-                                <Input type="password" placeholder="https://exemple.com/logo.png" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    
                     <div className="grid sm:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
