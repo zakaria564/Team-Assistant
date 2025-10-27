@@ -18,31 +18,50 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
+import { doc, getDoc } from "firebase/firestore";
 
 
 export function UserNav() {
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
-  const [clientLoaded, setClientLoaded] = useState(false);
+  const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
+  const [loadingClub, setLoadingClub] = useState(true);
 
   useEffect(() => {
-    // This hook ensures that the component has mounted on the client
-    // before we try to render any user-specific information.
-    setClientLoaded(true);
-  }, []);
+    const fetchClubLogo = async () => {
+      if (user) {
+        setLoadingClub(true);
+        try {
+          const clubDocRef = doc(db, "clubs", user.uid);
+          const clubDoc = await getDoc(clubDocRef);
+          if (clubDoc.exists() && clubDoc.data().logoUrl) {
+            setClubLogoUrl(clubDoc.data().logoUrl);
+          }
+        } catch (error) {
+          console.error("Error fetching club logo:", error);
+        } finally {
+          setLoadingClub(false);
+        }
+      } else {
+        setLoadingClub(false);
+      }
+    };
+
+    fetchClubLogo();
+  }, [user]);
 
   const handleLogout = () => {
     signOut(auth);
     router.push("/");
   };
 
-  if (loading || !clientLoaded) {
+  if (loading || loadingClub) {
     return (
        <Skeleton className="h-8 w-8 rounded-full" />
     )
@@ -59,7 +78,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage key={user?.photoURL} src={user?.photoURL || undefined} alt={user?.displayName || 'User profile picture'} />
+            <AvatarImage key={clubLogoUrl || user?.photoURL} src={clubLogoUrl || user?.photoURL || undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

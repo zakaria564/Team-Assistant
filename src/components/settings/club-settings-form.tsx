@@ -19,6 +19,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
+  logoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   contactEmail: z.string().email("Veuillez entrer une adresse email valide."),
   clubPhone: z.string().optional(),
   address: z.string().optional(),
@@ -34,6 +35,7 @@ export function ClubSettingsForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
         clubName: "",
+        logoUrl: "",
         contactEmail: "",
         clubPhone: "",
         address: ""
@@ -124,6 +126,19 @@ export function ClubSettingsForm() {
                             <FormLabel>Nom du club</FormLabel>
                             <FormControl>
                                 <Input placeholder="Nom de votre club" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="logoUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>URL du logo du club</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://exemple.com/logo.png" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
