@@ -331,7 +331,6 @@ export default function SalariesPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {coachGroup.salaries.map((salary) => {
-                                            const canDelete = salary.transactions.length === 0;
                                             return (
                                                 <TableRow key={salary.id}>
                                                     <TableCell>
@@ -376,18 +375,14 @@ export default function SalariesPage() {
                                                                     Exporter la fiche
                                                                 </Link>
                                                             </DropdownMenuItem>
-                                                            {canDelete && (
-                                                                <>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem
-                                                                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                                    onClick={() => setSalaryToDelete(salary)}
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Supprimer
-                                                                </DropdownMenuItem>
-                                                                </>
-                                                            )}
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                                onClick={() => setSalaryToDelete(salary)}
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Supprimer
+                                                            </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>
