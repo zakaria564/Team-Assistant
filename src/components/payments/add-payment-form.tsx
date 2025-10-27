@@ -25,24 +25,6 @@ interface Player {
   name: string;
 }
 
-const transactionSchema = z.object({
-  amount: z.coerce.number().min(0, "Le montant ne peut pas être négatif."),
-  date: z.date(),
-  method: z.string().min(1, "La méthode est requise."),
-});
-
-const formSchema = z.object({
-  playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-  totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
-  description: z.string().min(3, "La description est requise."),
-  
-  newTransactionAmount: z.coerce.number().optional(),
-  newTransactionMethod: z.string().optional(),
-
-  status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
-});
-
-
 interface PaymentData {
     id: string;
     playerId: string;
@@ -81,6 +63,23 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const amountAlreadyPaid = isEditMode 
       ? (payment.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
+    
+    const amountRemainingBeforeNew = (payment?.totalAmount || 0) - amountAlreadyPaid;
+
+    const formSchema = z.object({
+        playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
+        description: z.string().min(3, "La description est requise."),
+        
+        newTransactionAmount: z.coerce.number().optional().refine(
+            (val) => !isEditMode || val === undefined || val <= amountRemainingBeforeNew,
+            { message: "Le versement ne peut pas dépasser le montant restant." }
+        ),
+        newTransactionMethod: z.string().optional(),
+
+        status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
+    });
+
 
     const defaultDescription = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
 
@@ -461,7 +460,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
 
     

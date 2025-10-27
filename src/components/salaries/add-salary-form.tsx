@@ -25,18 +25,6 @@ interface Coach {
   name: string;
 }
 
-const formSchema = z.object({
-  coachId: z.string({ required_error: "L'entraîneur est requis." }).min(1, "L'entraîneur est requis."),
-  totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
-  description: z.string().min(3, "La description est requise."),
-  
-  newTransactionAmount: z.coerce.number().optional(),
-  newTransactionMethod: z.string().optional(),
-
-  status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
-});
-
-
 interface SalaryData {
     id: string;
     coachId: string;
@@ -74,6 +62,22 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const amountAlreadyPaid = isEditMode 
       ? (salary.transactions || []).reduce((acc, t) => acc + t.amount, 0)
       : 0;
+
+    const amountRemainingBeforeNew = (salary?.totalAmount || 0) - amountAlreadyPaid;
+
+    const formSchema = z.object({
+        coachId: z.string({ required_error: "L'entraîneur est requis." }).min(1, "L'entraîneur est requis."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
+        description: z.string().min(3, "La description est requise."),
+        
+        newTransactionAmount: z.coerce.number().optional().refine(
+            (val) => !isEditMode || val === undefined || val <= amountRemainingBeforeNew,
+            { message: "Le versement ne peut pas dépasser le montant restant." }
+        ),
+        newTransactionMethod: z.string().optional(),
+    
+        status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
+    });
 
     const defaultDescription = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
 
@@ -453,6 +457,5 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
-
 
     
