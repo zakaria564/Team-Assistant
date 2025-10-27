@@ -55,11 +55,17 @@ export function ClubSettingsForm() {
             const clubDocRef = doc(db, "clubs", user.uid);
             const docSnap = await getDoc(clubDocRef);
             if (docSnap.exists()) {
-                form.reset(docSnap.data());
-            } else {
-                if (user.email) {
-                    form.setValue('contactEmail', user.email);
+                const data = docSnap.data();
+                if (!data.logoUrl) {
+                    data.logoUrl = "https://image.noelshack.com/fichiers/2025/44/1/1761583201-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg";
                 }
+                form.reset(data);
+            } else {
+                const defaultData = {
+                    contactEmail: user.email || "",
+                    logoUrl: "https://image.noelshack.com/fichiers/2025/44/1/1761583201-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg",
+                };
+                form.reset(defaultData);
             }
         } catch (error) {
             console.error("Error fetching club data: ", error);
