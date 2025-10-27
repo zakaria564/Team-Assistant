@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +11,7 @@ const links = [
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/rankings", label: "Classement", icon: ListOrdered },
+  { href: "/dashboard/results", label: "Résultats", icon: Trophy },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
