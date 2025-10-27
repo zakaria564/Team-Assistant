@@ -67,7 +67,7 @@ export default function RankingsPage() {
     useEffect(() => {
         if (!user || !selectedCategory || !selectedCompetition) {
             setRankings([]);
-            setLoading(false);
+            if (user) setLoading(false);
             return;
         }
 
@@ -91,25 +91,29 @@ export default function RankingsPage() {
                     getDocs(eventsQuery)
                 ]);
 
-                // 2. Process the data
+                // 2. Process team data
+                const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 let localClubName = "Votre Club";
-                let clubLogoUrl: string | undefined;
+
                 if (clubDoc.exists()) {
                     const clubData = clubDoc.data();
-                    if(clubData.clubName) localClubName = clubData.clubName;
-                    if(clubData.logoUrl) clubLogoUrl = clubData.logoUrl;
+                    if(clubData.clubName) {
+                        localClubName = clubData.clubName;
+                    }
+                    allTeamsMap.set(localClubName, { logoUrl: clubData.logoUrl });
+                } else {
+                     allTeamsMap.set(localClubName, { logoUrl: undefined });
                 }
                 setClubName(localClubName);
                 
-                const opponents = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
+                opponentsSnapshot.docs.forEach(doc => {
+                    const opponent = doc.data() as Opponent;
+                    allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
+                });
+
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
 
                 const teamStats: { [key: string]: TeamStats } = {};
-
-                // 3. Initialize all teams from opponents and club name
-                const allTeamsMap = new Map<string, Opponent | { name: string, logoUrl?: string }>();
-                allTeamsMap.set(localClubName, { name: localClubName, logoUrl: clubLogoUrl });
-                opponents.forEach(o => allTeamsMap.set(o.name, o));
 
                 const initializeTeam = (teamName: string) => {
                     if (!teamStats[teamName]) {
@@ -122,7 +126,7 @@ export default function RankingsPage() {
                     }
                 };
                 
-                // 4. Calculate stats from events
+                // 3. Calculate stats from events
                 events.forEach(event => {
                     if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
                         return;
@@ -130,7 +134,6 @@ export default function RankingsPage() {
                     
                     const { teamHome, teamAway, scoreHome, scoreAway } = event;
 
-                    // Dynamically initialize teams found in matches if they weren't in the initial list
                     initializeTeam(teamHome);
                     initializeTeam(teamAway);
 
@@ -157,7 +160,7 @@ export default function RankingsPage() {
                     }
                 });
 
-                // 5. Sort and set the final rankings
+                // 4. Sort and set the final rankings
                 const rankedTeams = Object.values(teamStats).map(team => ({
                     ...team,
                     goalDifference: team.goalsFor - team.goalsAgainst,
@@ -167,7 +170,6 @@ export default function RankingsPage() {
                     return b.goalsFor - a.goalsFor;
                 });
                 
-                // Filter out teams that haven't played any matches
                 const finalRankings = rankedTeams.filter(team => team.played > 0);
 
                 setRankings(finalRankings);
@@ -228,7 +230,7 @@ export default function RankingsPage() {
                         </Select>
                     </div>
                     
-                    {loading ? (
+                    {loading || loadingUser ? (
                         <div className="flex justify-center items-center py-20">
                             <Loader2 className="h-10 w-10 animate-spin text-primary" />
                         </div>
@@ -284,7 +286,4 @@ export default function RankingsPage() {
             </Card>
         </div>
     );
-
-    
-
-    
+}
