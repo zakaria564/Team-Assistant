@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 interface TeamStats {
@@ -55,19 +56,109 @@ const competitionTypes = [
 ];
 
 
+const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName: string }) => {
+    if (rankings.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-20">
+                <p>Aucune donnée de match trouvée pour cette sélection.</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            {/* Mobile View */}
+            <div className="sm:hidden">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[40px] text-center">Pos</TableHead>
+                            <TableHead>Équipe</TableHead>
+                            <TableHead className="text-center">J</TableHead>
+                            <TableHead className="text-right">Pts</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {rankings.map((team, index) => (
+                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2 font-medium">
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarImage src={team.logoUrl} alt={team.name} />
+                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{team.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-center">{team.played}</TableCell>
+                                <TableCell className="font-bold text-right">{team.points}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+           
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="text-center">Pos</TableHead>
+                            <TableHead>Équipe</TableHead>
+                            <TableHead className="font-bold text-center">Pts</TableHead>
+                            <TableHead className="text-center">J</TableHead>
+                            <TableHead className="text-center hidden sm:table-cell">G</TableHead>
+                            <TableHead className="text-center hidden sm:table-cell">N</TableHead>
+                            <TableHead className="text-center hidden sm:table-cell">P</TableHead>
+                            <TableHead className="text-center hidden md:table-cell">BP</TableHead>
+                            <TableHead className="text-center hidden md:table-cell">BC</TableHead>
+                            <TableHead className="text-center">Diff</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {rankings.map((team, index) => (
+                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2 font-medium">
+                                         <Avatar className="h-6 w-6">
+                                            <AvatarImage src={team.logoUrl} alt={team.name} />
+                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{team.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="font-bold text-center">{team.points}</TableCell>
+                                <TableCell className="text-center">{team.played}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
+                                <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
+                                <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
+                                <TableCell className="text-center">{team.goalDifference}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+       </>
+    );
+};
+
+
 export default function RankingsPage() {
     const [user, loadingUser] = useAuthState(auth);
     const router = useRouter();
-    const [rankings, setRankings] = useState<TeamStats[]>([]);
+    const [rankings, setRankings] = useState<{ general: TeamStats[], home: TeamStats[], away: TeamStats[] }>({ general: [], home: [], away: [] });
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
     const [clubName, setClubName] = useState("Votre Club");
-    const [clubLogoUrl, setClubLogoUrl] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (!user || !selectedCategory || !selectedCompetition) {
-            setRankings([]);
+            setRankings({ general: [], home: [], away: [] });
             if (user) setLoading(false);
             return;
         }
@@ -76,7 +167,6 @@ export default function RankingsPage() {
             setLoading(true);
 
             try {
-                // 1. Fetch all necessary data in parallel
                 const clubDocRef = doc(db, "clubs", user.uid);
                 const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
                 const eventsQuery = query(
@@ -92,23 +182,18 @@ export default function RankingsPage() {
                     getDocs(eventsQuery)
                 ]);
 
-                // 2. Process team data into a reliable map
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 
-                // Add user's club to the map first
                 let localClubName = "Votre Club";
                 if (clubDoc.exists()) {
                     const clubData = clubDoc.data();
-                    if(clubData.clubName) {
-                        localClubName = clubData.clubName;
-                    }
+                    if(clubData.clubName) localClubName = clubData.clubName;
                     allTeamsMap.set(localClubName, { logoUrl: clubData.logoUrl });
                 } else {
                     allTeamsMap.set(localClubName, { logoUrl: undefined });
                 }
                 setClubName(localClubName);
 
-                // Add opponents to the map
                 opponentsSnapshot.docs.forEach(doc => {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
@@ -116,69 +201,97 @@ export default function RankingsPage() {
                 
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
 
-                const teamStats: { [key: string]: TeamStats } = {};
+                const generalStats: { [key: string]: TeamStats } = {};
+                const homeStats: { [key: string]: TeamStats } = {};
+                const awayStats: { [key: string]: TeamStats } = {};
 
-                // Helper to initialize team stats from our reliable map
-                const initializeTeam = (teamName: string) => {
-                    if (!teamStats[teamName]) {
+                const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
+                    if (!statsObject[teamName]) {
                         const teamData = allTeamsMap.get(teamName);
-                        teamStats[teamName] = {
+                        statsObject[teamName] = {
                             name: teamName,
-                            logoUrl: teamData?.logoUrl, // Use logo from the map
+                            logoUrl: teamData?.logoUrl,
                             played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0
                         };
                     }
                 };
                 
-                // 3. Calculate stats from events
                 events.forEach(event => {
-                    if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') {
-                        return; // Skip events without a final score
-                    }
+                    if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') return;
                     
                     const { teamHome, teamAway, scoreHome, scoreAway } = event;
-                    
                     if (!teamHome || !teamAway) return;
 
-                    initializeTeam(teamHome);
-                    initializeTeam(teamAway);
+                    // Initialize teams in all stat objects
+                    [generalStats, homeStats, awayStats].forEach(stats => {
+                        initializeTeam(teamHome, stats);
+                        initializeTeam(teamAway, stats);
+                    });
 
-                    teamStats[teamHome].played++;
-                    teamStats[teamAway].played++;
-                    teamStats[teamHome].goalsFor += scoreHome;
-                    teamStats[teamHome].goalsAgainst += scoreAway;
-                    teamStats[teamAway].goalsFor += scoreAway;
-                    teamStats[teamAway].goalsAgainst += scoreHome;
+                    // --- General Stats ---
+                    generalStats[teamHome].played++;
+                    generalStats[teamAway].played++;
+                    generalStats[teamHome].goalsFor += scoreHome;
+                    generalStats[teamHome].goalsAgainst += scoreAway;
+                    generalStats[teamAway].goalsFor += scoreAway;
+                    generalStats[teamAway].goalsAgainst += scoreHome;
+                    
+                    // --- Home Stats ---
+                    homeStats[teamHome].played++;
+                    homeStats[teamHome].goalsFor += scoreHome;
+                    homeStats[teamHome].goalsAgainst += scoreAway;
 
+                    // --- Away Stats ---
+                    awayStats[teamAway].played++;
+                    awayStats[teamAway].goalsFor += scoreAway;
+                    awayStats[teamAway].goalsAgainst += scoreHome;
+
+                    // --- Points Logic ---
                     if (scoreHome > scoreAway) {
-                        teamStats[teamHome].wins++;
-                        teamStats[teamHome].points += 3;
-                        teamStats[teamAway].losses++;
+                        generalStats[teamHome].wins++;
+                        generalStats[teamHome].points += 3;
+                        generalStats[teamAway].losses++;
+
+                        homeStats[teamHome].wins++;
+                        homeStats[teamHome].points += 3;
+                        awayStats[teamAway].losses++;
                     } else if (scoreAway > scoreHome) {
-                        teamStats[teamAway].wins++;
-                        teamStats[teamAway].points += 3;
-                        teamStats[teamHome].losses++;
+                        generalStats[teamAway].wins++;
+                        generalStats[teamAway].points += 3;
+                        generalStats[teamHome].losses++;
+
+                        awayStats[teamAway].wins++;
+                        awayStats[teamAway].points += 3;
+                        homeStats[teamHome].losses++;
                     } else {
-                        teamStats[teamHome].draws++;
-                        teamStats[teamHome].points += 1;
-                        teamStats[teamAway].draws++;
-                        teamStats[teamAway].points += 1;
+                        generalStats[teamHome].draws++;
+                        generalStats[teamHome].points += 1;
+                        generalStats[teamAway].draws++;
+                        generalStats[teamAway].points += 1;
+                        
+                        homeStats[teamHome].draws++;
+                        homeStats[teamHome].points += 1;
+                        awayStats[teamAway].draws++;
+                        awayStats[teamAway].points += 1;
                     }
                 });
 
-                // 4. Sort and set the final rankings
-                const rankedTeams = Object.values(teamStats).map(team => ({
-                    ...team,
-                    goalDifference: team.goalsFor - team.goalsAgainst,
-                })).sort((a, b) => {
-                    if (b.points !== a.points) return b.points - a.points;
-                    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-                    return b.goalsFor - a.goalsFor;
-                });
+                const sortAndFilter = (stats: { [key: string]: TeamStats }): TeamStats[] => {
+                     return Object.values(stats)
+                        .map(team => ({...team, goalDifference: team.goalsFor - team.goalsAgainst }))
+                        .filter(team => team.played > 0)
+                        .sort((a, b) => {
+                            if (b.points !== a.points) return b.points - a.points;
+                            if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                            return b.goalsFor - a.goalsFor;
+                        });
+                }
                 
-                const finalRankings = rankedTeams.filter(team => team.played > 0);
-
-                setRankings(finalRankings);
+                setRankings({
+                    general: sortAndFilter(generalStats),
+                    home: sortAndFilter(homeStats),
+                    away: sortAndFilter(awayStats)
+                });
             } catch (error) {
                 console.error("Error fetching ranking data:", error);
             } finally {
@@ -240,87 +353,26 @@ export default function RankingsPage() {
                         <div className="flex justify-center items-center py-20">
                             <Loader2 className="h-10 w-10 animate-spin text-primary" />
                         </div>
-                    ) : selectedCategory && rankings.length > 0 ? (
-                       <>
-                           {/* Mobile View */}
-                            <div className="sm:hidden">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[40px] text-center">Pos</TableHead>
-                                            <TableHead>Équipe</TableHead>
-                                            <TableHead className="text-center">J</TableHead>
-                                            <TableHead className="text-right">Pts</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {rankings.map((team, index) => (
-                                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
-                                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2 font-medium">
-                                                        <Avatar className="h-6 w-6">
-                                                            <AvatarImage src={team.logoUrl} alt={team.name} />
-                                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span>{team.name}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">{team.played}</TableCell>
-                                                <TableCell className="font-bold text-right">{team.points}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                           
-                            {/* Desktop View */}
-                            <div className="hidden sm:block">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="text-center">Pos</TableHead>
-                                            <TableHead>Équipe</TableHead>
-                                            <TableHead className="font-bold text-center">Pts</TableHead>
-                                            <TableHead className="text-center">J</TableHead>
-                                            <TableHead className="text-center hidden sm:table-cell">G</TableHead>
-                                            <TableHead className="text-center hidden sm:table-cell">N</TableHead>
-                                            <TableHead className="text-center hidden sm:table-cell">P</TableHead>
-                                            <TableHead className="text-center hidden md:table-cell">BP</TableHead>
-                                            <TableHead className="text-center hidden md:table-cell">BC</TableHead>
-                                            <TableHead className="text-center">Diff</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {rankings.map((team, index) => (
-                                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
-                                                <TableCell className="font-bold text-center">{index + 1}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2 font-medium">
-                                                         <Avatar className="h-6 w-6">
-                                                            <AvatarImage src={team.logoUrl} alt={team.name} />
-                                                            <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span>{team.name}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="font-bold text-center">{team.points}</TableCell>
-                                                <TableCell className="text-center">{team.played}</TableCell>
-                                                <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
-                                                <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
-                                                <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
-                                                <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
-                                                <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
-                                                <TableCell className="text-center">{team.goalDifference}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                       </>
+                    ) : selectedCategory ? (
+                       <Tabs defaultValue="general" className="w-full">
+                           <TabsList className="grid w-full grid-cols-3">
+                               <TabsTrigger value="general">Général</TabsTrigger>
+                               <TabsTrigger value="home">Domicile</TabsTrigger>
+                               <TabsTrigger value="away">Extérieur</TabsTrigger>
+                           </TabsList>
+                           <TabsContent value="general">
+                               <RankingTable rankings={rankings.general} clubName={clubName} />
+                           </TabsContent>
+                           <TabsContent value="home">
+                               <RankingTable rankings={rankings.home} clubName={clubName} />
+                           </TabsContent>
+                           <TabsContent value="away">
+                               <RankingTable rankings={rankings.away} clubName={clubName} />
+                           </TabsContent>
+                       </Tabs>
                     ) : (
                         <div className="text-center text-muted-foreground py-20">
-                            <p>{selectedCategory ? `Aucune donnée de match trouvée pour "${selectedCompetition}" dans la catégorie "${selectedCategory}".` : "Veuillez sélectionner une catégorie pour voir le classement."}</p>
+                            <p>Veuillez sélectionner une catégorie pour voir le classement.</p>
                         </div>
                     )}
                 </CardContent>
