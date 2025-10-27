@@ -109,12 +109,12 @@ export default function OpponentsPage() {
   return (
     <>
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Adversaires</h1>
             <p className="text-muted-foreground">Gérez les équipes adverses.</p>
           </div>
-          <Button onClick={handleAdd}>
+          <Button onClick={handleAdd} className="w-full md:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter un adversaire
           </Button>
