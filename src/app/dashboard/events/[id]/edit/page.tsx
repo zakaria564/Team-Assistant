@@ -48,11 +48,12 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           
           const eventIsPast = isPast(date);
           const scoreExists = typeof data.scoreHome === 'number';
+          const isMatch = data.type?.includes("Match") || data.type?.includes("Tournoi");
 
           if (eventIsPast && scoreExists) {
             setIsLocked(true);
           }
-          if (eventIsPast && !scoreExists) {
+          if (eventIsPast && !scoreExists && isMatch) {
             setScoreEntryOnly(true);
           }
           
