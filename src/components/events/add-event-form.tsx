@@ -29,6 +29,11 @@ interface Player {
     category: string;
 }
 
+interface Opponent {
+    id: string;
+    name: string;
+}
+
 const eventTypes = [
     "Match de Championnat",
     "Match Amical",
@@ -99,6 +104,7 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
     const [loading, setLoading] = useState(false);
     const [clubName, setClubName] = useState("");
     const [players, setPlayers] = useState<Player[]>([]);
+    const [opponents, setOpponents] = useState<Opponent[]>([]);
     const router = useRouter();
     const isEditMode = !!event;
 
@@ -129,21 +135,29 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
 
     
     useEffect(() => {
-        const fetchClubName = async () => {
+        const fetchInitialData = async () => {
             if (!user) return;
             try {
+                // Fetch Club Name
                 const clubDocRef = doc(db, "clubs", user.uid);
-                const docSnap = await getDoc(clubDocRef);
-                if (docSnap.exists() && docSnap.data().clubName) {
-                    setClubName(docSnap.data().clubName);
+                const clubDoc = await getDoc(clubDocRef);
+                if (clubDoc.exists() && clubDoc.data().clubName) {
+                    setClubName(clubDoc.data().clubName);
                 } else {
                     setClubName("Votre Club");
                 }
+
+                // Fetch Opponents
+                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+                const opponentsSnapshot = await getDocs(opponentsQuery);
+                const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
+                setOpponents(opponentsData);
+
             } catch (error) {
-                console.error("Error fetching club name: ", error);
+                console.error("Error fetching initial data: ", error);
             }
         };
-        fetchClubName();
+        fetchInitialData();
     }, [user]);
 
     useEffect(() => {
@@ -356,9 +370,18 @@ export function AddEventForm({ event, disabled = false }: AddEventFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Adversaire</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nom de l'équipe adverse" {...field} value={field.value || ''} disabled={disabled} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={disabled}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un adversaire" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {opponents.map(op => (
+                                        <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                             </FormItem>
                         )}

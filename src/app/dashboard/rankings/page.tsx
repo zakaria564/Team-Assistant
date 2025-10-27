@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 
 interface TeamStats {
     name: string;
+    logoUrl?: string;
     played: number;
     wins: number;
     draws: number;
@@ -37,6 +38,13 @@ interface Event {
     scoreOpponent?: number;
 }
 
+interface Opponent {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}
+
+
 const playerCategories = [
     "Seniors", "Seniors F", "U19", "U18", "U17", "U17 F", "U16", "U15", "U15 F", "U14", "U13", "U13 F", "U12", "U11", "U11 F", "U10", "U9", "U8", "U7", "Vétérans", "École de foot"
 ];
@@ -48,6 +56,7 @@ export default function RankingsPage() {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [clubName, setClubName] = useState("Votre Club");
+    const [opponents, setOpponents] = useState<Opponent[]>([]);
 
     useEffect(() => {
         if (!user) {
@@ -55,13 +64,27 @@ export default function RankingsPage() {
             return;
         }
 
-        const fetchClubName = async () => {
+        const fetchInitialData = async () => {
+             // Fetch Club Name
             const clubDocRef = doc(db, "clubs", user.uid);
             const clubDoc = await getDoc(clubDocRef);
             if (clubDoc.exists() && clubDoc.data().clubName) {
                 setClubName(clubDoc.data().clubName);
             }
+
+            // Fetch Opponents
+            const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+            const opponentsSnapshot = await getDocs(opponentsQuery);
+            const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
+            setOpponents(opponentsData);
         };
+        
+        fetchInitialData();
+
+    }, [user, loadingUser]);
+
+     useEffect(() => {
+        if (!user) return;
 
         const fetchRankings = async () => {
             if (!selectedCategory) {
@@ -82,9 +105,10 @@ export default function RankingsPage() {
             const events = querySnapshot.docs.map(doc => doc.data() as Event);
 
             const teamStats: { [key: string]: TeamStats } = {};
+            const opponentsMap = new Map(opponents.map(o => [o.name, o]));
 
-            const clubTeamName = `${clubName} - ${selectedCategory}`;
-            teamStats[clubTeamName] = { name: clubName, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
+
+            teamStats[clubName] = { name: clubName, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
 
             events.forEach(event => {
                 if (typeof event.scoreTeam !== 'number' || typeof event.scoreOpponent !== 'number') {
@@ -93,30 +117,39 @@ export default function RankingsPage() {
                 
                 const opponentName = event.opponent!;
                 if (!teamStats[opponentName]) {
-                    teamStats[opponentName] = { name: opponentName, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 };
+                    const opponentData = opponentsMap.get(opponentName);
+                    teamStats[opponentName] = { 
+                        name: opponentName, 
+                        logoUrl: opponentData?.logoUrl,
+                        played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 
+                    };
                 }
 
+                const isHomeMatch = event.location === 'Domicile';
+                const clubScore = event.scoreTeam;
+                const opponentScore = event.scoreOpponent;
+
                 // Club's perspective
-                teamStats[clubTeamName].played++;
-                teamStats[clubTeamName].goalsFor += event.scoreTeam;
-                teamStats[clubTeamName].goalsAgainst += event.scoreOpponent;
+                teamStats[clubName].played++;
+                teamStats[clubName].goalsFor += clubScore;
+                teamStats[clubName].goalsAgainst += opponentScore;
 
                 // Opponent's perspective
                 teamStats[opponentName].played++;
-                teamStats[opponentName].goalsFor += event.scoreOpponent;
-                teamStats[opponentName].goalsAgainst += event.scoreTeam;
+                teamStats[opponentName].goalsFor += opponentScore;
+                teamStats[opponentName].goalsAgainst += clubScore;
 
-                if (event.scoreTeam > event.scoreOpponent) {
-                    teamStats[clubTeamName].wins++;
-                    teamStats[clubTeamName].points += 3;
+                if (clubScore > opponentScore) {
+                    teamStats[clubName].wins++;
+                    teamStats[clubName].points += 3;
                     teamStats[opponentName].losses++;
-                } else if (event.scoreTeam < event.scoreOpponent) {
-                    teamStats[clubTeamName].losses++;
+                } else if (clubScore < opponentScore) {
+                    teamStats[clubName].losses++;
                     teamStats[opponentName].wins++;
                     teamStats[opponentName].points += 3;
                 } else {
-                    teamStats[clubTeamName].draws++;
-                    teamStats[clubTeamName].points += 1;
+                    teamStats[clubName].draws++;
+                    teamStats[clubName].points += 1;
                     teamStats[opponentName].draws++;
                     teamStats[opponentName].points += 1;
                 }
@@ -139,10 +172,9 @@ export default function RankingsPage() {
             setLoading(false);
         };
         
-        fetchClubName();
         fetchRankings();
 
-    }, [user, loadingUser, selectedCategory, clubName]);
+    }, [user, selectedCategory, clubName, opponents]);
 
     return (
         <div className="space-y-6">

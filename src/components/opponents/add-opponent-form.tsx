@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -15,11 +16,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom de l'équipe doit contenir au moins 2 caractères."),
+  logoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
 });
 
 interface OpponentData {
     id: string;
     name: string;
+    logoUrl?: string;
 }
 
 interface AddOpponentFormProps {
@@ -46,14 +49,15 @@ export function AddOpponentForm({ opponent, onFinished }: AddOpponentFormProps) 
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      logoUrl: "",
     }
   });
   
   useEffect(() => {
     if (opponent) {
-        form.reset({ name: opponent.name });
+        form.reset({ name: opponent.name, logoUrl: opponent.logoUrl || '' });
     } else {
-        form.reset({ name: "" });
+        form.reset({ name: "", logoUrl: "" });
     }
   }, [opponent, form]);
 
@@ -85,6 +89,7 @@ export function AddOpponentForm({ opponent, onFinished }: AddOpponentFormProps) 
 
         const dataToSave = {
             name: values.name,
+            logoUrl: values.logoUrl,
             userId: user.uid,
         };
 
@@ -131,6 +136,19 @@ export function AddOpponentForm({ opponent, onFinished }: AddOpponentFormProps) 
               <FormLabel>Nom de l'équipe adverse</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: AS Victoire" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="logoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL du logo</FormLabel>
+              <FormControl>
+                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''}/>
               </FormControl>
               <FormMessage />
             </FormItem>

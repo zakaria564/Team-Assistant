@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,10 +30,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AddOpponentForm } from "@/components/opponents/add-opponent-form";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Opponent {
   id: string;
   name: string;
+  logoUrl?: string;
 }
 
 const toTitleCase = (str: string) => {
@@ -151,7 +154,15 @@ export default function OpponentsPage() {
                   {opponents.length > 0 ? (
                     opponents.map((opponent) => (
                       <TableRow key={opponent.id}>
-                         <TableCell className="font-medium">{toTitleCase(opponent.name)}</TableCell>
+                         <TableCell className="font-medium">
+                           <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage src={opponent.logoUrl} alt={opponent.name} />
+                                <AvatarFallback>{opponent.name?.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <span>{toTitleCase(opponent.name)}</span>
+                           </div>
+                          </TableCell>
                          <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
