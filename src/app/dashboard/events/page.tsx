@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
-import { format, isSameDay, isToday, compareAsc, isPast } from "date-fns";
+import { format, isSameDay, isToday, compareAsc, isPast, differenceInHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -232,9 +232,13 @@ export default function EventsPage() {
                     </div>
                 ) : date && selectedEvents.length > 0 ? (
                     selectedEvents.map(event => {
-                        const isFinishedWithScore = isPast(event.date) && typeof event.scoreHome === 'number';
-                        const canAddScore = isPast(event.date) && typeof event.scoreHome !== 'number' && (event.type.includes('Match') || event.type.includes('Tournoi'));
-                        const canModify = !isPast(event.date);
+                        const eventIsPast = isPast(event.date);
+                        const hasScore = typeof event.scoreHome === 'number';
+                        const canAddScore = eventIsPast && !hasScore && (event.type.includes('Match') || event.type.includes('Tournoi'));
+                        const canModify = !eventIsPast;
+                        const hoursSinceEvent = eventIsPast ? differenceInHours(new Date(), event.date) : 0;
+                        const canDelete = !hasScore && hoursSinceEvent < 24;
+
 
                         return (
                           <Card key={event.id} className="bg-muted/30 group">
@@ -292,8 +296,9 @@ export default function EventsPage() {
                                       )}
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
-                                          className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                          onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
+                                          className={cn("cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10", !canDelete && "cursor-not-allowed text-muted-foreground focus:text-muted-foreground focus:bg-transparent")}
+                                          onSelect={(e) => { if (canDelete) { e.preventDefault(); setEventToDelete(event); } }}
+                                          disabled={!canDelete}
                                         >
                                           <Trash2 className="mr-2 h-4 w-4" />
                                           Supprimer
