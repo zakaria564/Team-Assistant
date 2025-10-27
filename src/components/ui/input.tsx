@@ -4,6 +4,13 @@ import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
+    const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+      // Désactive le changement de valeur au scroll sur les inputs de type number
+      if (type === "number") {
+        e.currentTarget.blur();
+      }
+    };
+    
     return (
       <input
         type={type}
@@ -12,6 +19,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onWheel={handleWheel}
         {...props}
       />
     )
