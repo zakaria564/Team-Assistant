@@ -249,6 +249,7 @@ export default function RankingsPage() {
                                         <TableRow>
                                             <TableHead className="w-[40px] text-center">Pos</TableHead>
                                             <TableHead>Équipe</TableHead>
+                                            <TableHead className="text-center">J</TableHead>
                                             <TableHead className="text-right">Pts</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -265,6 +266,7 @@ export default function RankingsPage() {
                                                         <span>{team.name}</span>
                                                     </div>
                                                 </TableCell>
+                                                <TableCell className="text-center">{team.played}</TableCell>
                                                 <TableCell className="font-bold text-right">{team.points}</TableCell>
                                             </TableRow>
                                         ))}
