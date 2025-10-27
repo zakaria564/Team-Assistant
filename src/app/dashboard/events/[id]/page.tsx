@@ -38,53 +38,38 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
   </div>
 );
 
-const getResultBadgeClass = (scoreHome?: number, scoreAway?: number, teamName?: string, homeTeam?: string, awayTeam?: string) => {
-    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number' || !teamName || !homeTeam || !awayTeam) {
-      return "bg-gray-100 text-gray-800 border-gray-300";
+const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: string, homeTeam?: string, awayTeam?: string) => {
+    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number' || !clubName || !homeTeam || !awayTeam) {
+        return { label: "En attente", className: "bg-gray-100 text-gray-800 border-gray-300" };
     }
-    if (scoreHome === scoreAway) return "bg-yellow-100 text-yellow-800 border-yellow-300";
+
+    if (scoreHome === scoreAway) {
+        return { label: "Match Nul", className: "bg-yellow-100 text-yellow-800 border-yellow-300" };
+    }
     
-    if (homeTeam !== teamName && awayTeam !== teamName) { // Neutral match
-        return "bg-gray-100 text-gray-800 border-gray-300";
+    // Check if the user's club is involved in the match
+    const isUserClubInvolved = clubName === homeTeam || clubName === awayTeam;
+    if (!isUserClubInvolved) {
+        return { label: "Terminé", className: "bg-gray-100 text-gray-800 border-gray-300" };
     }
 
-    const isHomeTeam = teamName === homeTeam;
-    let won: boolean;
-
-    if (isHomeTeam) {
+    let won;
+    if (clubName === homeTeam) {
         won = scoreHome > scoreAway;
+    } else { // clubName is awayTeam
+        won = scoreAway > scoreHome;
+    }
+
+    if (won) {
+        return { label: "Victoire", className: "bg-green-100 text-green-800 border-green-300" };
     } else {
-        won = scoreAway > scoreHome;
+        return { label: "Défaite", className: "bg-red-100 text-red-800 border-red-300" };
     }
-
-    return won ? "bg-green-100 text-green-800 border-green-300" : "bg-red-100 text-red-800 border-red-300";
-};
-  
-const getResultLabel = (scoreHome?: number, scoreAway?: number, teamName?: string, homeTeam?: string, awayTeam?: string) => {
-    if (typeof scoreHome !== 'number' || typeof scoreAway !== 'number' || !teamName || !homeTeam || !awayTeam) {
-        return "En attente";
-    }
-    if (scoreHome === scoreAway) return "Match Nul";
-
-    if (homeTeam !== teamName && awayTeam !== teamName) { // Match between two other teams
-      return "Terminé";
-    }
-    
-    const isHomeTeam = teamName === homeTeam;
-    let won: boolean;
-
-    if (isHomeTeam) {
-        won = scoreHome > scoreAway;
-    } else { // is away team
-        won = scoreAway > scoreHome;
-    }
-    
-    return won ? "Victoire" : "Défaite";
 };
 
 export default function EventDetailPage() {
   const params = useParams();
-  const eventId = params.id;
+  const eventId = params.id as string;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -104,7 +89,7 @@ export default function EventDetailPage() {
 
       setLoading(true);
       try {
-        const eventRef = doc(db, "events", eventId as string);
+        const eventRef = doc(db, "events", eventId);
         const clubRef = doc(db, "clubs", user.uid);
         
         const [eventSnap, clubSnap] = await Promise.all([getDoc(eventRef), getDoc(clubRef)]);
@@ -156,6 +141,8 @@ export default function EventDetailPage() {
   const eventTypeIsMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const showScoreAndStats = eventTypeIsMatch && (typeof event.scoreHome === 'number');
   const eventTitle = eventTypeIsMatch ? `${event.teamHome} vs ${event.teamAway}` : `${event.type} - ${event.category}`;
+  
+  const resultStyles = getResultStyles(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway);
 
 
   return (
@@ -215,8 +202,8 @@ export default function EventDetailPage() {
                             <p className="text-sm text-muted-foreground">{event.teamAway}</p>
                             <p className="text-4xl font-bold">{event.scoreAway ?? '-'}</p>
                         </div>
-                        <Badge className={cn("ml-auto text-base", getResultBadgeClass(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway))}>
-                           {getResultLabel(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway)}
+                        <Badge className={cn("ml-auto text-base", resultStyles.className)}>
+                           {resultStyles.label}
                         </Badge>
                     </div>
                 </CardContent>
