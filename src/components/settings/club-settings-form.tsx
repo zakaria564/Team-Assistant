@@ -17,6 +17,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
