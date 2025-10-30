@@ -110,7 +110,7 @@ export function ClubSettingsForm() {
     <Card>
       <CardHeader>
         <CardTitle>Informations du Club</CardTitle>
-        <CardDescription>Gérez les informations publiques et la sécurité de votre club.</CardDescription>
+        <CardDescription>Gérez les informations publiques de votre club et le mot de passe d'accès aux paramètres.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -196,7 +196,7 @@ export function ClubSettingsForm() {
                     />
                     
                     <div className="space-y-2 pt-4">
-                        <Label>Sécurité des paramètres</Label>
+                        <Label htmlFor="settingsPassword">Mot de passe des paramètres</Label>
                         <div className="relative">
                             <FormField
                                 control={form.control}
@@ -205,6 +205,7 @@ export function ClubSettingsForm() {
                                     <FormItem>
                                     <FormControl>
                                         <Input 
+                                          id="settingsPassword"
                                           type={isPasswordVisible ? "text" : "password"} 
                                           placeholder="Mot de passe pour la page Paramètres" 
                                           {...field} 
@@ -225,7 +226,9 @@ export function ClubSettingsForm() {
                                 {isPasswordVisible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
                             </Button>
                         </div>
-                         <p className="text-xs text-muted-foreground">Laissez ce champ vide si vous ne souhaitez pas de mot de passe pour les paramètres.</p>
+                         <p className="text-xs text-muted-foreground">
+                            Créez un mot de passe unique pour protéger l'accès à cette page. Laissez vide pour ne pas en avoir.
+                         </p>
                     </div>
 
                     <Button type="submit" disabled={loading} className="!mt-6">
