@@ -29,7 +29,6 @@ import { Info } from "lucide-react";
 export default function SettingsPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [isVerified, setIsVerified] = useState(false);
-  const [showVerification, setShowVerification] = useState(true);
   const [password, setPassword] = useState("");
   const [storedPassword, setStoredPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,10 +45,10 @@ export default function SettingsPage() {
         const docSnap = await getDoc(clubDocRef);
         if (docSnap.exists() && docSnap.data().settingsPassword) {
           setStoredPassword(docSnap.data().settingsPassword);
+          setIsVerified(false);
         } else {
           // If no password is set, grant access directly
           setIsVerified(true);
-          setShowVerification(false);
         }
       } catch (error) {
         console.error("Error fetching settings password:", error);
@@ -71,7 +70,6 @@ export default function SettingsPage() {
   const handleVerification = () => {
     if (password === storedPassword) {
       setIsVerified(true);
-      setShowVerification(false);
     } else {
       toast({
         variant: "destructive",
@@ -90,14 +88,14 @@ export default function SettingsPage() {
     );
   }
 
-  if (!isVerified && storedPassword) {
+  if (!isVerified) {
     return (
-      <Dialog open={showVerification} onOpenChange={setShowVerification}>
+      <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-[425px]" hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle>Vérification requise</DialogTitle>
             <DialogDescription>
-              Pour votre sécurité, veuillez entrer le mot de passe des paramètres.
+              Pour votre sécurité, veuillez entrer le mot de passe des paramètres pour continuer.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
