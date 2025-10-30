@@ -90,7 +90,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (!isVerified) {
+  if (!isVerified && storedPassword) {
     return (
       <Dialog open={showVerification} onOpenChange={setShowVerification}>
         <DialogContent className="sm:max-w-[425px]" hideCloseButton={true}>
@@ -111,6 +111,7 @@ export default function SettingsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="col-span-3"
+                onKeyDown={(e) => { if (e.key === 'Enter') handleVerification() }}
               />
             </div>
           </div>
