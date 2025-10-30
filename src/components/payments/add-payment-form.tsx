@@ -72,7 +72,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         newTransactionMethod: z.string().optional(),
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
-        const amountRemaining = (isEditMode ? (payment.totalAmount - amountAlreadyPaid) : data.totalAmount);
+        const amountRemaining = isEditMode ? payment.totalAmount - amountAlreadyPaid : data.totalAmount;
         if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,

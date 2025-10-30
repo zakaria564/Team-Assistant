@@ -17,7 +17,6 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
-import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
@@ -25,7 +24,6 @@ const formSchema = z.object({
   contactEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   clubPhone: z.string().optional(),
   address: z.string().optional(),
-  settingsPassword: z.string().optional(),
 });
 
 export function ClubSettingsForm() {
@@ -33,7 +31,6 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -44,7 +41,6 @@ export function ClubSettingsForm() {
         contactEmail: "",
         clubPhone: "",
         address: "",
-        settingsPassword: "",
     }
   });
 
@@ -110,7 +106,7 @@ export function ClubSettingsForm() {
     <Card>
       <CardHeader>
         <CardTitle>Informations du Club</CardTitle>
-        <CardDescription>Gérez les informations publiques de votre club et le mot de passe d'accès aux paramètres.</CardDescription>
+        <CardDescription>Gérez les informations publiques de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -194,42 +190,6 @@ export function ClubSettingsForm() {
                             </FormItem>
                         )}
                     />
-                    
-                    <div className="space-y-2 pt-4">
-                        <Label htmlFor="settingsPassword">Mot de passe des paramètres</Label>
-                        <div className="relative">
-                            <FormField
-                                control={form.control}
-                                name="settingsPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormControl>
-                                        <Input 
-                                          id="settingsPassword"
-                                          type={isPasswordVisible ? "text" : "password"} 
-                                          placeholder="Mot de passe pour la page Paramètres" 
-                                          {...field} 
-                                          value={field.value ?? ""} 
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon" 
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-                                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                            >
-                                {isPasswordVisible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
-                            </Button>
-                        </div>
-                         <p className="text-xs text-muted-foreground">
-                            Créez un mot de passe unique pour protéger l'accès à cette page. Laissez vide pour ne pas en avoir.
-                         </p>
-                    </div>
 
                     <Button type="submit" disabled={loading} className="!mt-6">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
