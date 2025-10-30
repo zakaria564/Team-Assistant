@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -24,6 +24,7 @@ const formSchema = z.object({
   contactEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   clubPhone: z.string().optional(),
   address: z.string().optional(),
+  settingsPassword: z.string().optional(),
 });
 
 export function ClubSettingsForm() {
@@ -32,6 +33,7 @@ export function ClubSettingsForm() {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [isLogoUrlVisible, setIsLogoUrlVisible] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,7 +43,8 @@ export function ClubSettingsForm() {
         logoUrl: "",
         contactEmail: "",
         clubPhone: "",
-        address: ""
+        address: "",
+        settingsPassword: "",
     }
   });
 
@@ -107,7 +110,7 @@ export function ClubSettingsForm() {
     <Card>
       <CardHeader>
         <CardTitle>Informations du Club</CardTitle>
-        <CardDescription>Gérez les informations publiques de votre club. Le nom et le logo de votre club apparaîtront dans toute l'application.</CardDescription>
+        <CardDescription>Gérez les informations publiques et la sécurité de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -200,7 +203,41 @@ export function ClubSettingsForm() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" disabled={loading}>
+                    
+                    <div className="space-y-2 pt-4">
+                        <Label>Sécurité des paramètres</Label>
+                        <div className="relative">
+                            <FormField
+                                control={form.control}
+                                name="settingsPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormControl>
+                                        <Input 
+                                          type={isPasswordVisible ? "text" : "password"} 
+                                          placeholder="Mot de passe pour la page Paramètres" 
+                                          {...field} 
+                                          value={field.value ?? ""} 
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                            >
+                                {isPasswordVisible ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+                            </Button>
+                        </div>
+                         <p className="text-xs text-muted-foreground">Laissez ce champ vide si vous ne souhaitez pas de mot de passe pour les paramètres.</p>
+                    </div>
+
+                    <Button type="submit" disabled={loading} className="!mt-6">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Enregistrer les informations
                     </Button>
