@@ -37,13 +37,22 @@ import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+
+interface Player {
+    id: string;
+    name: string;
+    photoUrl?: string;
+    gender: 'Masculin' | 'Féminin';
+}
 
 interface Payment {
   id: string;
   playerId: string;
   playerName?: string;
   playerPhotoUrl?: string;
+  playerGender?: 'Masculin' | 'Féminin';
   totalAmount: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
   createdAt: { seconds: number, nanoseconds: number };
@@ -59,6 +68,7 @@ interface PlayerPayments {
     playerId: string;
     playerName: string;
     playerPhotoUrl?: string;
+    playerGender: 'Masculin' | 'Féminin';
     payments: Payment[];
     currentMonthStatus?: PaymentStatus | 'N/A';
 }
@@ -86,7 +96,6 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchCategory, setSearchCategory] = useState("playerName");
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
@@ -100,9 +109,9 @@ export default function PaymentsPage() {
       try {
         const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
         const playersSnapshot = await getDocs(playersQuery);
-        const playersMap = new Map<string, {name: string, photoUrl?: string}>();
+        const playersMap = new Map<string, Player>();
         playersSnapshot.forEach(doc => {
-            playersMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
+            playersMap.set(doc.id, { id: doc.id, ...doc.data() } as Player);
         });
 
         const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
@@ -110,8 +119,9 @@ export default function PaymentsPage() {
         const paymentsData = paymentsSnapshot.docs
             .map(doc => {
                 const data = doc.data() as any;
+                const player = playersMap.get(data.playerId);
                 
-                if (!playersMap.has(data.playerId)) {
+                if (!player) {
                     return null;
                 }
 
@@ -128,8 +138,9 @@ export default function PaymentsPage() {
                 return { 
                     id: doc.id, 
                     ...data,
-                    playerName: playersMap.get(data.playerId)?.name || "Joueur inconnu",
-                    playerPhotoUrl: playersMap.get(data.playerId)?.photoUrl,
+                    playerName: player.name,
+                    playerPhotoUrl: player.photoUrl,
+                    playerGender: player.gender || 'Masculin',
                     amountPaid,
                     amountRemaining,
                     totalAmount,
@@ -168,6 +179,7 @@ export default function PaymentsPage() {
                 playerId: payment.playerId,
                 playerName: payment.playerName || "Joueur inconnu",
                 playerPhotoUrl: payment.playerPhotoUrl,
+                playerGender: payment.playerGender || 'Masculin',
                 payments: [],
                 currentMonthStatus: 'N/A'
             };
@@ -192,6 +204,19 @@ export default function PaymentsPage() {
     return result.sort((a, b) => a.playerName.localeCompare(b.playerName));
 
   }, [payments, searchTerm]);
+
+  const { malePayments, femalePayments } = useMemo(() => {
+    const male: PlayerPayments[] = [];
+    const female: PlayerPayments[] = [];
+    groupedAndFilteredPayments.forEach(group => {
+      if (group.playerGender === "Féminin") {
+        female.push(group);
+      } else {
+        male.push(group);
+      }
+    });
+    return { malePayments: male, femalePayments: female };
+  }, [groupedAndFilteredPayments]);
 
 
   const confirmDeletePayment = async () => {
@@ -247,6 +272,128 @@ export default function PaymentsPage() {
     }
   };
 
+  const renderPaymentGroups = (groups: PlayerPayments[]) => {
+     if (groups.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-10">
+                {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé dans cette section."}
+            </div>
+        )
+    }
+
+    return (
+       <div className="space-y-2">
+          {groups.map((playerGroup) => (
+              <Collapsible 
+                  key={playerGroup.playerId} 
+                  className="border rounded-lg"
+                  open={openCollapsibles[playerGroup.playerId] || false}
+                  onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [playerGroup.playerId]: isOpen}))}
+              >
+                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                            <Avatar>
+                              <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
+                              <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                              <span className="font-medium">{playerGroup.playerName}</span>
+                              <Badge variant="secondary" className="w-fit mt-1 sm:mt-0">{playerGroup.payments.length} paiement(s)</Badge>
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                            <Badge className={cn("whitespace-nowrap", getBadgeClass(playerGroup.currentMonthStatus))}>
+                              {playerGroup.currentMonthStatus}
+                            </Badge>
+                            {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                      </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                      <div className="w-full overflow-x-auto p-2">
+                      <Table>
+                          <TableHeader>
+                              <TableRow>
+                              <TableHead>Description</TableHead>
+                              <TableHead className="hidden md:table-cell">Montant</TableHead>
+                              <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                              </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                              {playerGroup.payments.map((payment) => {
+                                  const canDelete = payment.transactions.length === 0;
+                                  return (
+                                      <TableRow key={payment.id}>
+                                          <TableCell>
+                                              <div className="flex flex-col">
+                                                  <span className="font-medium">{payment.description}</span>
+                                                  <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
+                                              </div>
+                                          </TableCell>
+                                          <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
+                                          <TableCell className="hidden sm:table-cell">
+                                              <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
+                                                  {payment.status}
+                                              </Badge>
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                              <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                                      <span className="sr-only">Ouvrir le menu</span>
+                                                      <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent align="end">
+                                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                                      <Link href={`/dashboard/payments/${payment.id}`}>
+                                                          <FileText className="mr-2 h-4 w-4" />
+                                                          Voir les détails
+                                                      </Link>
+                                                  </DropdownMenuItem>
+                                                  {payment.status !== 'Payé' && (
+                                                      <DropdownMenuItem asChild className="cursor-pointer">
+                                                          <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                                              <PlusCircle className="mr-2 h-4 w-4" />
+                                                              Ajouter un versement
+                                                          </Link>
+                                                      </DropdownMenuItem>
+                                                  )}
+                                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                                      <Link href={`/dashboard/payments/${payment.id}/receipt`}>
+                                                          <Download className="mr-2 h-4 w-4" />
+                                                          Exporter le reçu
+                                                      </Link>
+                                                  </DropdownMenuItem>
+                                                  {canDelete && (
+                                                      <>
+                                                      <DropdownMenuSeparator />
+                                                      <DropdownMenuItem
+                                                          className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                          onClick={() => setPaymentToDelete(payment)}
+                                                      >
+                                                          <Trash2 className="mr-2 h-4 w-4" />
+                                                          Supprimer
+                                                      </DropdownMenuItem>
+                                                      </>
+                                                  )}
+                                                  </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </TableCell>
+                                      </TableRow>
+                                  )
+                              })}
+                          </TableBody>
+                          </Table>
+                      </div>
+                  </CollapsibleContent>
+              </Collapsible>
+          ))}
+      </div>
+    )
+  }
+
   return (
     <>
       <div>
@@ -293,115 +440,18 @@ export default function PaymentsPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : groupedAndFilteredPayments.length > 0 ? (
-                <div className="space-y-2">
-                    {groupedAndFilteredPayments.map((playerGroup) => (
-                        <Collapsible 
-                            key={playerGroup.playerId} 
-                            className="border rounded-lg"
-                            open={openCollapsibles[playerGroup.playerId] || false}
-                            onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [playerGroup.playerId]: isOpen}))}
-                        >
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                                <div className="flex items-center gap-4">
-                                     <Avatar>
-                                        <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
-                                        <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                                        <span className="font-medium">{playerGroup.playerName}</span>
-                                        <Badge variant="secondary" className="w-fit mt-1 sm:mt-0">{playerGroup.payments.length} paiement(s)</Badge>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                     <Badge className={cn("whitespace-nowrap", getBadgeClass(playerGroup.currentMonthStatus))}>
-                                        {playerGroup.currentMonthStatus}
-                                     </Badge>
-                                     {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                                </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <div className="w-full overflow-x-auto p-2">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="hidden md:table-cell">Montant</TableHead>
-                                        <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {playerGroup.payments.map((payment) => {
-                                            const canDelete = payment.transactions.length === 0;
-                                            return (
-                                                <TableRow key={payment.id}>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-medium">{payment.description}</span>
-                                                            <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
-                                                    <TableCell className="hidden sm:table-cell">
-                                                        <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
-                                                            {payment.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Ouvrir le menu</span>
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                                <Link href={`/dashboard/payments/${payment.id}`}>
-                                                                    <FileText className="mr-2 h-4 w-4" />
-                                                                    Voir les détails
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            {payment.status !== 'Payé' && (
-                                                                <DropdownMenuItem asChild className="cursor-pointer">
-                                                                    <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                                        <PlusCircle className="mr-2 h-4 w-4" />
-                                                                        Ajouter un versement
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                                <Link href={`/dashboard/payments/${payment.id}/receipt`}>
-                                                                    <Download className="mr-2 h-4 w-4" />
-                                                                    Exporter le reçu
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            {canDelete && (
-                                                                <>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem
-                                                                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                                    onClick={() => setPaymentToDelete(payment)}
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Supprimer
-                                                                </DropdownMenuItem>
-                                                                </>
-                                                            )}
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    </Table>
-                                </div>
-                            </CollapsibleContent>
-                        </Collapsible>
-                    ))}
-                </div>
+                 <Tabs defaultValue="male">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="male">Masculin ({malePayments.length})</TabsTrigger>
+                        <TabsTrigger value="female">Féminin ({femalePayments.length})</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="male" className="mt-4">
+                        {renderPaymentGroups(malePayments)}
+                    </TabsContent>
+                    <TabsContent value="female" className="mt-4">
+                        {renderPaymentGroups(femalePayments)}
+                    </TabsContent>
+                </Tabs>
             ) : (
                 <div className="text-center text-muted-foreground py-10">
                     {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé."}
@@ -433,6 +483,8 @@ export default function PaymentsPage() {
     </>
   );
 }
+    
+
     
 
     
