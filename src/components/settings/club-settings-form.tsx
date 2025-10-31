@@ -56,7 +56,13 @@ export function ClubSettingsForm() {
             const docSnap = await getDoc(clubDocRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                form.reset(data);
+                form.reset({
+                  clubName: data.clubName || "",
+                  logoUrl: data.logoUrl || "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
+                  contactEmail: data.contactEmail || user.email || "",
+                  clubPhone: data.clubPhone || "",
+                  address: data.address || "",
+                });
             } else {
                 const defaultData = {
                     contactEmail: user.email || "",

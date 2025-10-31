@@ -32,6 +32,7 @@ export function UserNav() {
   const router = useRouter();
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
+  const defaultLogoUrl = "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg";
 
   useEffect(() => {
     if (!user) {
@@ -47,11 +48,12 @@ export function UserNav() {
       if (doc.exists() && doc.data().logoUrl) {
         setClubLogoUrl(doc.data().logoUrl);
       } else {
-        setClubLogoUrl(null);
+        setClubLogoUrl(defaultLogoUrl);
       }
       setLoadingClub(false);
     }, (error) => {
         console.error("Error fetching club logo:", error);
+        setClubLogoUrl(defaultLogoUrl);
         setLoadingClub(false);
     });
 
@@ -112,4 +114,3 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
-
