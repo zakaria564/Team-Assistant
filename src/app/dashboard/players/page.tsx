@@ -83,7 +83,7 @@ export default function PlayersPage() {
   const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -147,6 +147,15 @@ export default function PlayersPage() {
       return acc;
     }, {} as Record<string, Player[]>);
   }, [filteredPlayers]);
+  
+  useEffect(() => {
+    // Open all categories by default when the component loads or groups change
+    const initialOpenState = Object.keys(groupedPlayers).reduce((acc, category) => {
+      acc[category] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setOpenCategories(initialOpenState);
+  }, [groupedPlayers]);
 
 
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
@@ -192,6 +201,10 @@ export default function PlayersPage() {
     } finally {
         setPlayerToDelete(null);
     }
+  };
+
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
   };
 
   return (
@@ -254,35 +267,29 @@ export default function PlayersPage() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : Object.keys(groupedPlayers).length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
-                        <Collapsible 
-                            key={category} 
-                            className="border rounded-lg"
-                            open={openCollapsibles[category] || false}
-                            onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [category]: isOpen}))}
-                        >
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-t-lg">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                                    <h3 className="text-lg font-semibold">{category}</h3>
-                                    <Badge variant="secondary">{playersInCategory.length} joueur(s)</Badge>
-                                </div>
-                                {openCollapsibles[category] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <div className="w-full overflow-x-auto p-2">
-                                <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                    <TableHead>Joueur</TableHead>
-                                    <TableHead className="hidden lg:table-cell">Poste</TableHead>
-                                    <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
-                                        <TableRow key={player.id}>
+                <div className="w-full overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Joueur</TableHead>
+                                <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                                <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
+                            <React.Fragment key={category}>
+                                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                    <TableCell colSpan={4} className="font-bold cursor-pointer" onClick={() => toggleCategory(category)}>
+                                        <div className="flex items-center gap-2">
+                                            {openCategories[category] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                            {category} ({playersInCategory.length})
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                                {openCategories[category] && playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map(player => (
+                                    <TableRow key={player.id}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
@@ -357,14 +364,12 @@ export default function PlayersPage() {
                                             </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
-                                </Table>
-                                </div>
-                            </CollapsibleContent>
-                        </Collapsible>
-                    ))}
+                                    </TableRow>
+                                ))}
+                            </React.Fragment>
+                        ))}
+                        </TableBody>
+                    </Table>
                 </div>
                 ) : !fetchError && (
                     <div className="py-20 text-center text-muted-foreground">
@@ -397,3 +402,5 @@ export default function PlayersPage() {
     </>
   );
 }
+
+    
