@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
@@ -82,6 +83,7 @@ export default function PlayersPage() {
   const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -239,125 +241,138 @@ export default function PlayersPage() {
               </AlertDescription>
           </Alert>
         )}
-
-        {loading || loadingUser ? (
-            <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        ) : Object.keys(groupedPlayers).length > 0 ? (
-           <div className="space-y-8">
-            {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
-                <Card key={category}>
-                    <CardHeader>
-                        <CardTitle>{category}</CardTitle>
-                        <CardDescription>
-                            {playersInCategory.length} joueur(s) dans cette catégorie.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       <div className="w-full overflow-x-auto">
-                         <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Joueur</TableHead>
-                              <TableHead className="hidden lg:table-cell">Poste</TableHead>
-                              <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
-                                <TableRow key={player.id}>
-                                <TableCell>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar>
-                                            <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
-                                            <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{toTitleCase(player.name)}</span>
-                                            <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
-                                <TableCell className="hidden sm:table-cell">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                        <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
-                                            {player.status || "N/A"}
-                                        </Badge>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                            <DropdownMenuRadioGroup 
-                                                value={player.status} 
-                                                onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
-                                            >
-                                                {playerStatuses.map(status => (
-                                                    <DropdownMenuRadioItem key={status} value={status}>
-                                                        {status}
-                                                    </DropdownMenuRadioItem>
-                                                ))}
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Ouvrir le menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <Link href={`/dashboard/players/${player.id}`} passHref>
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            Voir les détails
-                                        </DropdownMenuItem>
-                                        </Link>
-                                        <Link href={`/dashboard/players/${player.id}/edit`} passHref>
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Modifier
-                                        </DropdownMenuItem>
-                                        </Link>
-                                        <Link href={`/dashboard/players/${player.id}/details`} passHref>
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            <FileDown className="mr-2 h-4 w-4" />
-                                            Exporter la fiche
-                                        </DropdownMenuItem>
-                                        </Link>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                        className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                        onClick={() => setPlayerToDelete(player)}
-                                        >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Supprimer
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                         </Table>
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-           </div>
-        ) : !fetchError && (
-             <Card>
-                <CardContent className="py-20 text-center text-muted-foreground">
-                     {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
-                </CardContent>
-            </Card>
-        )}
+        <Card>
+            <CardHeader>
+                <CardTitle>Liste des Joueurs</CardTitle>
+                <CardDescription>
+                    Retrouvez ici tous les joueurs du club, regroupés par catégorie.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading || loadingUser ? (
+                    <div className="flex justify-center items-center py-20">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : Object.keys(groupedPlayers).length > 0 ? (
+                <div className="space-y-2">
+                    {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
+                        <Collapsible 
+                            key={category} 
+                            className="border rounded-lg"
+                            open={openCollapsibles[category] || false}
+                            onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [category]: isOpen}))}
+                        >
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-t-lg">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                                    <h3 className="text-lg font-semibold">{category}</h3>
+                                    <Badge variant="secondary">{playersInCategory.length} joueur(s)</Badge>
+                                </div>
+                                {openCollapsibles[category] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="w-full overflow-x-auto p-2">
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead>Joueur</TableHead>
+                                    <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
+                                        <TableRow key={player.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{toTitleCase(player.name)}</span>
+                                                    <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
+                                                    {player.status || "N/A"}
+                                                </Badge>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                                    <DropdownMenuRadioGroup 
+                                                        value={player.status} 
+                                                        onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                                    >
+                                                        {playerStatuses.map(status => (
+                                                            <DropdownMenuRadioItem key={status} value={status}>
+                                                                {status}
+                                                            </DropdownMenuRadioItem>
+                                                        ))}
+                                                    </DropdownMenuRadioGroup>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Ouvrir le menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <Link href={`/dashboard/players/${player.id}`} passHref>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <FileText className="mr-2 h-4 w-4" />
+                                                    Voir les détails
+                                                </DropdownMenuItem>
+                                                </Link>
+                                                <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Modifier
+                                                </DropdownMenuItem>
+                                                </Link>
+                                                <Link href={`/dashboard/players/${player.id}/details`} passHref>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <FileDown className="mr-2 h-4 w-4" />
+                                                    Exporter la fiche
+                                                </DropdownMenuItem>
+                                                </Link>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                onClick={() => setPlayerToDelete(player)}
+                                                >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Supprimer
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table>
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ))}
+                </div>
+                ) : !fetchError && (
+                    <div className="py-20 text-center text-muted-foreground">
+                        {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
       </div>
 
        <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
@@ -383,4 +398,3 @@ export default function PlayersPage() {
   );
 }
 
-    
