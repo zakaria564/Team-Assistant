@@ -108,7 +108,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchTotalAmount = form.watch("totalAmount");
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
-    const amountRemainingOnTotal = (parseFloat(watchTotalAmount as any) || 0) - newTotalPaid;
+    const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
 
     useEffect(() => {
         if (watchTotalAmount > 0) {
@@ -241,7 +241,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         }
     }
     
-    const amountRemainingForPlaceholder = isEditMode ? (payment.totalAmount - amountAlreadyPaid) : (parseFloat(watchTotalAmount as any) || 0);
+    const amountRemainingForPlaceholder = isEditMode ? (payment.totalAmount - amountAlreadyPaid) : (watchTotalAmount || 0);
 
     return (
         <Form {...form}>
@@ -294,7 +294,12 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   <FormItem>
                       <FormLabel>Montant total (MAD)</FormLabel>
                       <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                        <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={e => field.onChange(e.target.valueAsNumber)}
+                        />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
