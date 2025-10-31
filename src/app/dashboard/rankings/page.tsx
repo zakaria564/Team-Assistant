@@ -224,8 +224,8 @@ export default function RankingsPage() {
 
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
-                        const originalName = teamName.replace(" (F)", "");
-                        const teamData = allTeamsMap.get(originalName);
+                        const baseName = teamName.replace(" (F)", "");
+                        const teamData = allTeamsMap.get(baseName);
                         statsObject[teamName] = {
                             name: teamName,
                             logoUrl: teamData?.logoUrl,
@@ -398,3 +398,5 @@ export default function RankingsPage() {
         </div>
     );
 }
+
+    
