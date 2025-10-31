@@ -107,6 +107,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
     });
 
     const selectedCategory = form.watch("category");
+    const teamHome = form.watch("teamHome");
+    const teamAway = form.watch("teamAway");
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -133,13 +135,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
 
     useEffect(() => {
         const isFeminineCategory = selectedCategory?.includes(" F");
-        
         const userClubTeamName = isFeminineCategory ? `${clubName} (F)` : clubName;
-        
         const opponentTeams = opponents.map(op => isFeminineCategory ? `${op} (F)` : op);
 
         setAvailableTeams([userClubTeamName, ...opponentTeams].sort());
-
     }, [selectedCategory, clubName, opponents]);
 
 
@@ -214,6 +213,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     }
     
+    const availableTeamsForHome = availableTeams.filter(team => team !== teamAway);
+    const availableTeamsForAway = availableTeams.filter(team => team !== teamHome);
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
@@ -272,7 +274,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     <FormLabel>Équipe à Domicile</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
-                                        <SelectContent>{availableTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeamsForHome.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
@@ -286,7 +288,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     <FormLabel>Équipe à l'Extérieur</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
-                                        <SelectContent>{availableTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeamsForAway.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
