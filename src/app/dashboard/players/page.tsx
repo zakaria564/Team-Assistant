@@ -149,13 +149,12 @@ export default function PlayersPage() {
   }, [filteredPlayers]);
   
   useEffect(() => {
-    // Open all categories by default when the component loads or groups change
     const initialOpenState = Object.keys(groupedPlayers).reduce((acc, category) => {
       acc[category] = true;
       return acc;
     }, {} as Record<string, boolean>);
     setOpenCategories(initialOpenState);
-  }, [groupedPlayers]);
+  }, []);
 
 
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
@@ -254,130 +253,137 @@ export default function PlayersPage() {
               </AlertDescription>
           </Alert>
         )}
-        <Card>
-            <CardHeader>
-                <CardTitle>Liste des Joueurs</CardTitle>
-                <CardDescription>
-                    Retrouvez ici tous les joueurs du club, regroupés par catégorie.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {loading || loadingUser ? (
-                    <div className="flex justify-center items-center py-20">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                ) : Object.keys(groupedPlayers).length > 0 ? (
-                <div className="w-full overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Joueur</TableHead>
-                                <TableHead className="hidden lg:table-cell">Poste</TableHead>
-                                <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
-                            <React.Fragment key={category}>
-                                <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                    <TableCell colSpan={4} className="font-bold cursor-pointer" onClick={() => toggleCategory(category)}>
-                                        <div className="flex items-center gap-2">
-                                            {openCategories[category] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                            {category} ({playersInCategory.length})
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                                {openCategories[category] && playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map(player => (
-                                    <TableRow key={player.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar>
-                                                    <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
-                                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{toTitleCase(player.name)}</span>
-                                                    <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+        
+        {loading || loadingUser ? (
+            <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        ) : Object.keys(groupedPlayers).length > 0 ? (
+        <div className="space-y-4">
+            {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
+                <Collapsible 
+                    key={category} 
+                    className="border rounded-lg"
+                    open={openCategories[category] || false}
+                    onOpenChange={() => toggleCategory(category)}
+                >
+                    <Card>
+                        <CollapsibleTrigger asChild>
+                             <CardHeader className="flex flex-row items-center justify-between cursor-pointer">
+                                <div>
+                                    <CardTitle>{category}</CardTitle>
+                                    <CardDescription>{playersInCategory.length} joueur(s) dans cette catégorie.</CardDescription>
+                                </div>
+                                <Button variant="ghost" size="sm">
+                                    {openCategories[category] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                </Button>
+                            </CardHeader>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Joueur</TableHead>
+                                            <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                                            <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                    {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map(player => (
+                                        <TableRow key={player.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar>
+                                                        <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                                        <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{toTitleCase(player.name)}</span>
+                                                        <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
-                                        <TableCell className="hidden sm:table-cell">
-                                            <DropdownMenu>
+                                            </TableCell>
+                                            <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                    <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
+                                                        {player.status || "N/A"}
+                                                    </Badge>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                                        <DropdownMenuRadioGroup 
+                                                            value={player.status} 
+                                                            onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                                        >
+                                                            {playerStatuses.map(status => (
+                                                                <DropdownMenuRadioItem key={status} value={status}>
+                                                                    {status}
+                                                                </DropdownMenuRadioItem>
+                                                            ))}
+                                                        </DropdownMenuRadioGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
-                                                    {player.status || "N/A"}
-                                                </Badge>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Ouvrir le menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                                    <DropdownMenuRadioGroup 
-                                                        value={player.status} 
-                                                        onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <Link href={`/dashboard/players/${player.id}`} passHref>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <FileText className="mr-2 h-4 w-4" />
+                                                        Voir les détails
+                                                    </DropdownMenuItem>
+                                                    </Link>
+                                                    <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                        Modifier
+                                                    </DropdownMenuItem>
+                                                    </Link>
+                                                    <Link href={`/dashboard/players/${player.id}/details`} passHref>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <FileDown className="mr-2 h-4 w-4" />
+                                                        Exporter la fiche
+                                                    </DropdownMenuItem>
+                                                    </Link>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                    onClick={() => setPlayerToDelete(player)}
                                                     >
-                                                        {playerStatuses.map(status => (
-                                                            <DropdownMenuRadioItem key={status} value={status}>
-                                                                {status}
-                                                            </DropdownMenuRadioItem>
-                                                        ))}
-                                                    </DropdownMenuRadioGroup>
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Supprimer
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Ouvrir le menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <Link href={`/dashboard/players/${player.id}`} passHref>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <FileText className="mr-2 h-4 w-4" />
-                                                    Voir les détails
-                                                </DropdownMenuItem>
-                                                </Link>
-                                                <Link href={`/dashboard/players/${player.id}/edit`} passHref>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <Pencil className="mr-2 h-4 w-4" />
-                                                    Modifier
-                                                </DropdownMenuItem>
-                                                </Link>
-                                                <Link href={`/dashboard/players/${player.id}/details`} passHref>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <FileDown className="mr-2 h-4 w-4" />
-                                                    Exporter la fiche
-                                                </DropdownMenuItem>
-                                                </Link>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                onClick={() => setPlayerToDelete(player)}
-                                                >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Supprimer
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </React.Fragment>
-                        ))}
-                        </TableBody>
-                    </Table>
-                </div>
-                ) : !fetchError && (
-                    <div className="py-20 text-center text-muted-foreground">
-                        {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </CollapsibleContent>
+                    </Card>
+                </Collapsible>
+            ))}
+        </div>
+        ) : !fetchError && (
+            <Card>
+                <CardContent className="py-20 text-center text-muted-foreground">
+                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
+                </CardContent>
+            </Card>
+        )}
       </div>
 
        <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
@@ -402,5 +408,3 @@ export default function PlayersPage() {
     </>
   );
 }
-
-    
