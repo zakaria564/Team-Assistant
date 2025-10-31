@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -36,7 +37,7 @@ export function ClubSettingsForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
         clubName: "",
-        logoUrl: "",
+        logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
         contactEmail: "",
         clubPhone: "",
         address: "",
@@ -59,6 +60,7 @@ export function ClubSettingsForm() {
             } else {
                 const defaultData = {
                     contactEmail: user.email || "",
+                    logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
                 };
                 form.reset(defaultData);
             }
