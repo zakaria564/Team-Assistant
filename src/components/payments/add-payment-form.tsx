@@ -43,6 +43,7 @@ const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
 const normalizeString = (str: string) => {
+    if (!str) return '';
     return str
         .toLowerCase()
         .normalize("NFD") // Decompose accented characters
@@ -123,27 +124,51 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
 
     useEffect(() => {
-        const fetchAllPlayers = async () => {
+        const fetchPlayersAndPayments = async () => {
             if (!user) return;
             setLoadingPlayers(true);
              try {
-                const q = query(collection(db, "players"), where("userId", "==", user.uid));
-                const querySnapshot = await getDocs(q);
-                const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-                setPlayers(playersData.sort((a, b) => a.name.localeCompare(b.name)));
+                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+                const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
+                
+                const [playersSnapshot, paymentsSnapshot] = await Promise.all([
+                    getDocs(playersQuery),
+                    getDocs(paymentsQuery)
+                ]);
+
+                const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
+
+                if (isEditMode) {
+                    setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
+                } else {
+                    const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
+                    const paidPlayerIds = new Set<string>();
+
+                    paymentsSnapshot.forEach(doc => {
+                        const paymentData = doc.data();
+                        const normalizedPaymentDesc = normalizeString(paymentData.description);
+                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && paymentData.status === 'Payé'){
+                            paidPlayerIds.add(paymentData.playerId);
+                        }
+                    });
+                    
+                    const availablePlayers = allPlayers.filter(p => !paidPlayerIds.has(p.id));
+                    setPlayers(availablePlayers.sort((a,b) => a.name.localeCompare(b.name)));
+                }
+
             } catch(e) {
-                 console.error("Error fetching players: ", e);
+                 console.error("Error fetching data: ", e);
                  toast({
                     variant: "destructive",
                     title: "Erreur de chargement",
-                    description: "Impossible de charger les joueurs.",
+                    description: "Impossible de charger les données nécessaires.",
                 });
             } finally {
                 setLoadingPlayers(false);
             }
         }
-        fetchAllPlayers();
-    }, [user, toast]);
+        fetchPlayersAndPayments();
+    }, [user, toast, isEditMode, defaultDescription]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -231,7 +256,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             </FormControl>
                             <SelectContent>
                             {players.length === 0 && !loadingPlayers ? (
-                                <SelectItem value="no-player" disabled>Aucun joueur trouvé</SelectItem>
+                                <SelectItem value="no-player" disabled>Aucun joueur à facturer pour ce mois-ci.</SelectItem>
                             ) : (
                                 players.map(player => (
                                     <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
@@ -402,7 +427,3 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
-
-    
