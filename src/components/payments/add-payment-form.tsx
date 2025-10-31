@@ -108,7 +108,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchTotalAmount = form.watch("totalAmount");
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
-    const amountRemainingOnTotal = watchTotalAmount - newTotalPaid;
+    const amountRemainingOnTotal = (parseFloat(watchTotalAmount as any) || 0) - newTotalPaid;
 
     useEffect(() => {
         if (watchTotalAmount > 0) {
@@ -147,7 +147,11 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     paymentsSnapshot.forEach(doc => {
                         const paymentData = doc.data();
                         const normalizedPaymentDesc = normalizeString(paymentData.description);
-                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && paymentData.status === 'Payé'){
+                         const amountPaid = (paymentData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
+                        const totalAmount = paymentData.totalAmount || 0;
+                        const isPaid = amountPaid >= totalAmount;
+
+                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && isPaid){
                             paidPlayerIds.add(paymentData.playerId);
                         }
                     });
@@ -237,7 +241,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         }
     }
     
-    const amountRemainingForPlaceholder = isEditMode ? (payment.totalAmount - amountAlreadyPaid) : watchTotalAmount;
+    const amountRemainingForPlaceholder = isEditMode ? (payment.totalAmount - amountAlreadyPaid) : (parseFloat(watchTotalAmount as any) || 0);
 
     return (
         <Form {...form}>
