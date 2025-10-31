@@ -42,7 +42,7 @@ interface AddPaymentFormProps {
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
-const normalizeString = (str: string) => {
+const normalizeString = (str: string | null | undefined): string => {
     if (!str) return '';
     return str
         .toLowerCase()
@@ -67,7 +67,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
@@ -298,7 +298,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             type="number"
                             step="0.01"
                             {...field}
-                            onChange={e => field.onChange(e.target.valueAsNumber)}
+                            onChange={e => field.onChange(e.target.valueAsNumber || 0)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -436,3 +436,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
