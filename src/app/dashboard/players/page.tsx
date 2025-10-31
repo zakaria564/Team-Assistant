@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
@@ -47,6 +48,7 @@ type PlayerStatus = typeof playerStatuses[number];
 interface Player {
   id: string;
   name: string;
+  gender: "Masculin" | "Féminin";
   category: string;
   status: PlayerStatus;
   number: number;
@@ -74,6 +76,127 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
+const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void }) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+         <Collapsible 
+            key={category} 
+            className="border rounded-lg"
+            open={isOpen}
+            onOpenChange={setIsOpen}
+        >
+            <Card>
+                <CollapsibleTrigger asChild>
+                     <CardHeader className="flex flex-row items-center justify-between cursor-pointer">
+                        <div>
+                            <CardTitle>{category}</CardTitle>
+                            <CardDescription>{players.length} joueur(s) dans cette catégorie.</CardDescription>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </Button>
+                    </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Joueur</TableHead>
+                                    <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Statut</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {players.sort((a, b) => a.name.localeCompare(b.name)).map(player => (
+                                <TableRow key={player.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <Avatar>
+                                                <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                                <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{toTitleCase(player.name)}</span>
+                                                <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                            <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
+                                                {player.status || "N/A"}
+                                            </Badge>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                                <DropdownMenuRadioGroup 
+                                                    value={player.status} 
+                                                    onValueChange={(newStatus) => onUpdateStatus(player.id, newStatus as PlayerStatus)}
+                                                >
+                                                    {playerStatuses.map(status => (
+                                                        <DropdownMenuRadioItem key={status} value={status}>
+                                                            {status}
+                                                        </DropdownMenuRadioItem>
+                                                    ))}
+                                                </DropdownMenuRadioGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <span className="sr-only">Ouvrir le menu</span>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <Link href={`/dashboard/players/${player.id}`} passHref>
+                                            <DropdownMenuItem className="cursor-pointer">
+                                                <FileText className="mr-2 h-4 w-4" />
+                                                Voir les détails
+                                            </DropdownMenuItem>
+                                            </Link>
+                                            <Link href={`/dashboard/players/${player.id}/edit`} passHref>
+                                            <DropdownMenuItem className="cursor-pointer">
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier
+                                            </DropdownMenuItem>
+                                            </Link>
+                                            <Link href={`/dashboard/players/${player.id}/details`} passHref>
+                                            <DropdownMenuItem className="cursor-pointer">
+                                                <FileDown className="mr-2 h-4 w-4" />
+                                                Exporter la fiche
+                                            </DropdownMenuItem>
+                                            </Link>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                            className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                            onClick={() => onDeletePlayer(player)}
+                                            >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Supprimer
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </CollapsibleContent>
+            </Card>
+        </Collapsible>
+    )
+}
+
 export default function PlayersPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -83,7 +206,6 @@ export default function PlayersPage() {
   const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -113,7 +235,7 @@ export default function PlayersPage() {
 
     fetchPlayers();
   }, [user, loadingUser, toast]);
-  
+
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
     const lowercasedSearchTerm = searchTerm.toLowerCase();
@@ -137,8 +259,22 @@ export default function PlayersPage() {
     });
   }, [players, searchTerm, searchCategory]);
   
-  const groupedPlayers = useMemo(() => {
-    return filteredPlayers.reduce((acc, player) => {
+  const { malePlayers, femalePlayers } = useMemo(() => {
+    const male: Player[] = [];
+    const female: Player[] = [];
+    filteredPlayers.forEach(player => {
+        if (player.gender === "Féminin") {
+            female.push(player);
+        } else {
+            male.push(player);
+        }
+    });
+    return { malePlayers: male, femalePlayers: female };
+  }, [filteredPlayers]);
+
+
+  const groupedMalePlayers = useMemo(() => {
+    return malePlayers.reduce((acc, player) => {
       const category = player.category || 'Sans catégorie';
       if (!acc[category]) {
         acc[category] = [];
@@ -146,15 +282,18 @@ export default function PlayersPage() {
       acc[category].push(player);
       return acc;
     }, {} as Record<string, Player[]>);
-  }, [filteredPlayers]);
-  
-  useEffect(() => {
-    const initialOpenState = Object.keys(groupedPlayers).reduce((acc, category) => {
-      acc[category] = true;
+  }, [malePlayers]);
+
+  const groupedFemalePlayers = useMemo(() => {
+    return femalePlayers.reduce((acc, player) => {
+      const category = player.category || 'Sans catégorie';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(player);
       return acc;
-    }, {} as Record<string, boolean>);
-    setOpenCategories(initialOpenState);
-  }, []);
+    }, {} as Record<string, Player[]>);
+  }, [femalePlayers]);
 
 
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
@@ -202,9 +341,30 @@ export default function PlayersPage() {
     }
   };
 
-  const toggleCategory = (category: string) => {
-    setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
-  };
+  const renderPlayerGroups = (groupedData: Record<string, Player[]>) => {
+    if (Object.keys(groupedData).length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-20 text-center text-muted-foreground">
+                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé dans cette section."}
+                </CardContent>
+            </Card>
+        )
+    }
+    return (
+        <div className="space-y-4">
+            {Object.entries(groupedData).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
+                <PlayerCategoryGroup
+                    key={category}
+                    category={category}
+                    players={playersInCategory}
+                    onUpdateStatus={handleUpdateStatus}
+                    onDeletePlayer={setPlayerToDelete}
+                />
+            ))}
+        </div>
+    )
+  }
 
   return (
     <>
@@ -258,131 +418,19 @@ export default function PlayersPage() {
             <div className="flex justify-center items-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-        ) : Object.keys(groupedPlayers).length > 0 ? (
-        <div className="space-y-4">
-            {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
-                <Collapsible 
-                    key={category} 
-                    className="border rounded-lg"
-                    open={openCategories[category] || false}
-                    onOpenChange={() => toggleCategory(category)}
-                >
-                    <Card>
-                        <CollapsibleTrigger asChild>
-                             <CardHeader className="flex flex-row items-center justify-between cursor-pointer">
-                                <div>
-                                    <CardTitle>{category}</CardTitle>
-                                    <CardDescription>{playersInCategory.length} joueur(s) dans cette catégorie.</CardDescription>
-                                </div>
-                                <Button variant="ghost" size="sm">
-                                    {openCategories[category] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                </Button>
-                            </CardHeader>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Joueur</TableHead>
-                                            <TableHead className="hidden lg:table-cell">Poste</TableHead>
-                                            <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {playersInCategory.sort((a, b) => a.name.localeCompare(b.name)).map(player => (
-                                        <TableRow key={player.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar>
-                                                        <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
-                                                        <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">{toTitleCase(player.name)}</span>
-                                                        <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
-                                            <TableCell className="hidden sm:table-cell">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                    <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
-                                                        {player.status || "N/A"}
-                                                    </Badge>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                                        <DropdownMenuRadioGroup 
-                                                            value={player.status} 
-                                                            onValueChange={(newStatus) => handleUpdateStatus(player.id, newStatus as PlayerStatus)}
-                                                        >
-                                                            {playerStatuses.map(status => (
-                                                                <DropdownMenuRadioItem key={status} value={status}>
-                                                                    {status}
-                                                                </DropdownMenuRadioItem>
-                                                            ))}
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Ouvrir le menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <Link href={`/dashboard/players/${player.id}`} passHref>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        <FileText className="mr-2 h-4 w-4" />
-                                                        Voir les détails
-                                                    </DropdownMenuItem>
-                                                    </Link>
-                                                    <Link href={`/dashboard/players/${player.id}/edit`} passHref>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                        Modifier
-                                                    </DropdownMenuItem>
-                                                    </Link>
-                                                    <Link href={`/dashboard/players/${player.id}/details`} passHref>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        <FileDown className="mr-2 h-4 w-4" />
-                                                        Exporter la fiche
-                                                    </DropdownMenuItem>
-                                                    </Link>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                    onClick={() => setPlayerToDelete(player)}
-                                                    >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Supprimer
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </CollapsibleContent>
-                    </Card>
-                </Collapsible>
-            ))}
-        </div>
-        ) : !fetchError && (
-            <Card>
-                <CardContent className="py-20 text-center text-muted-foreground">
-                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé. Commencez par en ajouter un !"}
-                </CardContent>
-            </Card>
+        ) : (
+        <Tabs defaultValue="male">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="male">Masculin ({malePlayers.length})</TabsTrigger>
+                <TabsTrigger value="female">Féminin ({femalePlayers.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="male">
+                {renderPlayerGroups(groupedMalePlayers)}
+            </TabsContent>
+            <TabsContent value="female">
+                 {renderPlayerGroups(groupedFemalePlayers)}
+            </TabsContent>
+        </Tabs>
         )}
       </div>
 
