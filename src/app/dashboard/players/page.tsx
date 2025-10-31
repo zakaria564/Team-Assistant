@@ -254,7 +254,7 @@ export default function PlayersPage() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : Object.keys(groupedPlayers).length > 0 ? (
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {Object.entries(groupedPlayers).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
                         <Collapsible 
                             key={category} 
@@ -397,4 +397,3 @@ export default function PlayersPage() {
     </>
   );
 }
-
