@@ -91,20 +91,23 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 const currentClubName = clubDoc.exists() && clubDoc.data().clubName ? clubDoc.data().clubName : "Votre Club";
                 setClubName(currentClubName);
                 
-                // Determine if teams are involved
-                const isHomeTeamClub = event.teamHome === currentClubName || event.teamHome === `${currentClubName} (F)`;
-                const isAwayTeamClub = event.teamAway === currentClubName || event.teamAway === `${currentClubName} (F)`;
+                const clubTeamNameFeminine = `${currentClubName} (F)`;
+                const isHomeTeamClub = event.teamHome === currentClubName || event.teamHome === clubTeamNameFeminine;
+                const isAwayTeamClub = event.teamAway === currentClubName || event.teamAway === clubTeamNameFeminine;
 
                 if (!isHomeTeamClub && !isAwayTeamClub) {
                     setPlayers([]);
                     return;
                 }
 
-                // Fetch players for the relevant category
+                // The category of our club's team involved in this match
+                const clubTeamCategory = event.category;
+
+                // Fetch players for the relevant category of the team playing
                 const q = query(
                     collection(db, "players"), 
                     where("userId", "==", user.uid),
-                    where("category", "==", event.category)
+                    where("category", "==", clubTeamCategory)
                 );
                 const querySnapshot = await getDocs(q);
                 const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
