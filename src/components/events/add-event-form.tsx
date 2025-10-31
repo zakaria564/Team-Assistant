@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -72,7 +71,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [allTeams, setAllTeams] = useState<string[]>([]);
+    const [opponents, setOpponents] = useState<string[]>([]);
+    const [clubName, setClubName] = useState("Votre Club");
+    const [availableTeams, setAvailableTeams] = useState<string[]>([]);
     const router = useRouter();
     const isEditMode = !!event;
 
@@ -89,6 +90,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     });
 
+    const selectedCategory = form.watch("category");
+
     useEffect(() => {
         const fetchInitialData = async () => {
             if (!user) return;
@@ -98,13 +101,12 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 
                 const [clubDoc, opponentsSnapshot] = await Promise.all([getDoc(clubDocRef), getDocs(opponentsQuery)]);
                 
-                let clubName = "Votre Club";
                 if (clubDoc.exists() && clubDoc.data().clubName) {
-                    clubName = clubDoc.data().clubName;
+                    setClubName(clubDoc.data().clubName);
                 }
 
                 const opponentsData = opponentsSnapshot.docs.map(doc => doc.data().name as string);
-                setAllTeams([clubName, ...opponentsData.sort()]);
+                setOpponents(opponentsData.sort());
 
             } catch (error) {
                 console.error("Error fetching initial data: ", error);
@@ -112,6 +114,21 @@ export function AddEventForm({ event }: AddEventFormProps) {
         };
         fetchInitialData();
     }, [user]);
+
+    useEffect(() => {
+        const isFeminineCategory = selectedCategory?.includes(" F");
+        
+        const userClubTeamName = isFeminineCategory ? `${clubName} (F)` : clubName;
+        
+        // This logic is a placeholder. A more robust solution would be to associate opponents with categories.
+        // For now, we assume all opponents can play in any category (male or female).
+        // This will be improved in a future iteration.
+        const filteredOpponents = opponents; 
+
+        setAvailableTeams([userClubTeamName, ...filteredOpponents]);
+
+    }, [selectedCategory, clubName, opponents]);
+
 
     useEffect(() => {
         if(isEditMode && event) {
@@ -240,9 +257,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à Domicile</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
-                                        <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
@@ -254,9 +271,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à l'Extérieur</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
-                                        <SelectContent>{allTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
