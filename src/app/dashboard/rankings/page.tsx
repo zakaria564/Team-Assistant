@@ -196,7 +196,7 @@ export default function RankingsPage() {
                 const [clubDoc, opponentsSnapshot, eventsSnapshot] = await Promise.all([
                     getDoc(clubDocRef),
                     getDocs(opponentsQuery),
-                    getDocs(eventsSnapshot)
+                    getDocs(eventsQuery)
                 ]);
 
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
@@ -398,5 +398,3 @@ export default function RankingsPage() {
         </div>
     );
 }
-
-    
