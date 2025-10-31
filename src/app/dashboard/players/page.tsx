@@ -76,8 +76,12 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void }) => {
-    const [isOpen, setIsOpen] = useState(true);
+const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, defaultOpen: boolean }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    useEffect(() => {
+        setIsOpen(defaultOpen);
+    }, [defaultOpen]);
 
     return (
          <Collapsible 
@@ -360,6 +364,7 @@ export default function PlayersPage() {
                     players={playersInCategory}
                     onUpdateStatus={handleUpdateStatus}
                     onDeletePlayer={setPlayerToDelete}
+                    defaultOpen={true}
                 />
             ))}
         </div>
