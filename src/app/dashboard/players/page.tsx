@@ -364,7 +364,7 @@ export default function PlayersPage() {
                     players={playersInCategory}
                     onUpdateStatus={handleUpdateStatus}
                     onDeletePlayer={setPlayerToDelete}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 />
             ))}
         </div>
