@@ -35,7 +35,9 @@ export function UserNav() {
 
   useEffect(() => {
     if (!user) {
-      setLoadingClub(false);
+      if (!loading) {
+        setLoadingClub(false);
+      }
       return;
     }
       
@@ -54,7 +56,7 @@ export function UserNav() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, loading]);
 
   const handleLogout = () => {
     signOut(auth);
