@@ -64,6 +64,8 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
             </div>
         );
     }
+    
+    const clubNameFeminine = `${clubName} (F)`;
 
     return (
         <>
@@ -80,7 +82,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                     </TableHeader>
                     <TableBody>
                         {rankings.map((team, index) => (
-                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                            <TableRow key={team.name} className={team.name === clubName || team.name === clubNameFeminine ? "bg-primary/10" : ""}>
                                 <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2 font-medium">
@@ -118,7 +120,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                     </TableHeader>
                     <TableBody>
                         {rankings.map((team, index) => (
-                            <TableRow key={team.name} className={team.name === clubName ? "bg-primary/10" : ""}>
+                            <TableRow key={team.name} className={team.name === clubName || team.name === clubNameFeminine ? "bg-primary/10" : ""}>
                                 <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2 font-medium">
@@ -207,7 +209,8 @@ export default function RankingsPage() {
 
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
-                        const teamData = allTeamsMap.get(teamName);
+                        const originalName = teamName.replace(" (F)", "");
+                        const teamData = allTeamsMap.get(originalName);
                         statsObject[teamName] = {
                             name: teamName,
                             logoUrl: teamData?.logoUrl,

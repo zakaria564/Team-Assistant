@@ -120,12 +120,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
         
         const userClubTeamName = isFeminineCategory ? `${clubName} (F)` : clubName;
         
-        // This logic is a placeholder. A more robust solution would be to associate opponents with categories.
-        // For now, we assume all opponents can play in any category (male or female).
-        // This will be improved in a future iteration.
-        const filteredOpponents = opponents; 
+        const opponentTeams = opponents.map(op => isFeminineCategory ? `${op} (F)` : op);
 
-        setAvailableTeams([userClubTeamName, ...filteredOpponents]);
+        setAvailableTeams([userClubTeamName, ...opponentTeams].sort());
 
     }, [selectedCategory, clubName, opponents]);
 
