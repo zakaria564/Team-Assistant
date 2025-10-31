@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -122,74 +123,27 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
 
     useEffect(() => {
-        const fetchPlayersAndPayments = async () => {
+        const fetchAllPlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
-            try {
-                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
-
-                const [playersSnapshot, paymentsSnapshot] = await Promise.all([
-                    getDocs(playersQuery),
-                    getDocs(paymentsQuery)
-                ]);
-
-                const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-
-                const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
-
-                const paidPlayerIds = new Set<string>();
-                paymentsSnapshot.forEach(doc => {
-                    const paymentData = doc.data();
-                    if (paymentData.description) {
-                         const normalizedPaymentDesc = normalizeString(paymentData.description);
-                         const amountPaid = (paymentData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
-                         const totalAmount = paymentData.totalAmount || 0;
-                         const isPaid = amountPaid >= totalAmount;
-
-                        if (normalizedPaymentDesc === normalizedCurrentMonthDesc && isPaid) {
-                            paidPlayerIds.add(paymentData.playerId);
-                        }
-                    }
-                });
-
-                const availablePlayers = playersData.filter(player => !paidPlayerIds.has(player.id));
-
-                setPlayers(availablePlayers);
-
-            } catch (error) {
-                console.error("Error fetching data: ", error);
-                toast({
+             try {
+                const q = query(collection(db, "players"), where("userId", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+                const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
+                setPlayers(playersData.sort((a, b) => a.name.localeCompare(b.name)));
+            } catch(e) {
+                 console.error("Error fetching players: ", e);
+                 toast({
                     variant: "destructive",
                     title: "Erreur de chargement",
-                    description: "Impossible de charger les joueurs disponibles.",
+                    description: "Impossible de charger les joueurs.",
                 });
             } finally {
                 setLoadingPlayers(false);
             }
-        };
-
-        if (!isEditMode) {
-           fetchPlayersAndPayments();
-        } else {
-            const fetchAllPlayers = async () => {
-                if (!user) return;
-                setLoadingPlayers(true);
-                 try {
-                    const q = query(collection(db, "players"), where("userId", "==", user.uid));
-                    const querySnapshot = await getDocs(q);
-                    const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-                    setPlayers(playersData);
-                } catch(e) {
-                     console.error("Error fetching players: ", e);
-                } finally {
-                    setLoadingPlayers(false);
-                }
-            }
-            fetchAllPlayers();
         }
-    }, [user, toast, isEditMode]);
+        fetchAllPlayers();
+    }, [user, toast]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -277,7 +231,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             </FormControl>
                             <SelectContent>
                             {players.length === 0 && !loadingPlayers ? (
-                                <SelectItem value="no-player" disabled>Aucun joueur disponible pour le paiement</SelectItem>
+                                <SelectItem value="no-player" disabled>Aucun joueur trouvé</SelectItem>
                             ) : (
                                 players.map(player => (
                                     <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
@@ -297,7 +251,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} readOnly={!isEditMode} className={isEditMode ? "" : "bg-muted"}/>
+                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -448,5 +402,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
 
     
