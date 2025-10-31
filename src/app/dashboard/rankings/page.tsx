@@ -46,7 +46,22 @@ interface Opponent {
 }
 
 const playerCategories = [
-    "Seniors", "Seniors F", "U19", "U18", "U17", "U17 F", "U16", "U15", "U15 F", "U14", "U13", "U13 F", "U12", "U11", "U11 F", "U10", "U9", "U8", "U7", "Vétérans", "École de foot"
+    "Seniors", "Seniors F",
+    "U19", "U19 F",
+    "U18", "U18 F",
+    "U17", "U17 F",
+    "U16", "U16 F",
+    "U15", "U15 F",
+    "U14", "U14 F",
+    "U13", "U13 F",
+    "U12", "U12 F",
+    "U11", "U11 F",
+    "U10", "U10 F",
+    "U9", "U9 F",
+    "U8", "U8 F",
+    "U7", "U7 F",
+    "Vétérans",
+    "École de foot"
 ];
 
 const competitionTypes = [
@@ -181,7 +196,7 @@ export default function RankingsPage() {
                 const [clubDoc, opponentsSnapshot, eventsSnapshot] = await Promise.all([
                     getDoc(clubDocRef),
                     getDocs(opponentsQuery),
-                    getDocs(eventsQuery)
+                    getDocs(eventsSnapshot)
                 ]);
 
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
@@ -383,3 +398,5 @@ export default function RankingsPage() {
         </div>
     );
 }
+
+    
