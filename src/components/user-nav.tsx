@@ -24,7 +24,7 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 
 export function UserNav() {
@@ -35,14 +35,15 @@ export function UserNav() {
   const defaultLogoUrl = "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg";
 
   useEffect(() => {
+    if (loading) {
+      setLoadingClub(true);
+      return;
+    }
     if (!user) {
-      if (!loading) {
-        setLoadingClub(false);
-      }
+      setLoadingClub(false);
       return;
     }
       
-    setLoadingClub(true);
     const clubDocRef = doc(db, "clubs", user.uid);
     const unsubscribe = onSnapshot(clubDocRef, (doc) => {
       if (doc.exists() && doc.data().logoUrl) {
@@ -82,7 +83,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={clubLogoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
+            <AvatarImage src={clubLogoUrl ?? undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

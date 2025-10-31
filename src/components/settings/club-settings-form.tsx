@@ -64,11 +64,13 @@ export function ClubSettingsForm() {
                   address: data.address || "",
                 });
             } else {
-                const defaultData = {
-                    contactEmail: user.email || "",
-                    logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
-                };
-                form.reset(defaultData);
+                form.reset({
+                  clubName: "",
+                  logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
+                  contactEmail: user.email || "",
+                  clubPhone: "",
+                  address: "",
+                });
             }
         } catch (error) {
             console.error("Error fetching club data: ", error);
