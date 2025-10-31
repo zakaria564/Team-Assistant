@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
-import { collection, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, updateDoc, getDocs, query, where, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Separator } from "../ui/separator";
@@ -57,6 +57,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
+    const [clubName, setClubName] = useState("Votre Club");
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -77,13 +78,29 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
         name: "assisters"
     });
     
-    useEffect(() => {
-        const fetchPlayers = async () => {
-            if(!user || !event.category) {
+     useEffect(() => {
+        const fetchClubNameAndPlayers = async () => {
+            if (!user || !event.category) {
                 setPlayers([]);
                 return;
             }
             try {
+                // Fetch Club Name
+                const clubDocRef = doc(db, "clubs", user.uid);
+                const clubDoc = await getDoc(clubDocRef);
+                const currentClubName = clubDoc.exists() && clubDoc.data().clubName ? clubDoc.data().clubName : "Votre Club";
+                setClubName(currentClubName);
+                
+                // Determine if teams are involved
+                const isHomeTeamClub = event.teamHome === currentClubName || event.teamHome === `${currentClubName} (F)`;
+                const isAwayTeamClub = event.teamAway === currentClubName || event.teamAway === `${currentClubName} (F)`;
+
+                if (!isHomeTeamClub && !isAwayTeamClub) {
+                    setPlayers([]);
+                    return;
+                }
+
+                // Fetch players for the relevant category
                 const q = query(
                     collection(db, "players"), 
                     where("userId", "==", user.uid),
@@ -91,13 +108,20 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 );
                 const querySnapshot = await getDocs(q);
                 const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-                setPlayers(playersData);
+                setPlayers(playersData.sort((a,b) => a.name.localeCompare(b.name)));
+
             } catch (error) {
-                console.error("Error fetching players for category:", error);
+                console.error("Error fetching data:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: "Impossible de charger les joueurs pour ce match."
+                })
             }
         };
-        fetchPlayers();
-    }, [user, event.category]);
+
+        fetchClubNameAndPlayers();
+    }, [user, event, toast]);
 
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
