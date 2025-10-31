@@ -147,7 +147,7 @@ export default function RegistrationFormPage() {
                                 <div className="flex items-center"><div className="break-words shrink-0">Date et Lieu de naissance :</div><DottedLine /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                                     <div className="flex items-center"><div className="break-words shrink-0">Nationalité :</div><DottedLine /></div>
-                                    <div className="flex items-center"><div className="break-words shrink-0">Sexe :</div><DottedLine /></div>
+                                    <div className="flex items-center"><div className="break-words shrink-0">Genre :</div><DottedLine /></div>
                                 </div>
                                 <div className="flex items-center"><div className="break-words shrink-0">N° CIN (si applicable) :</div><DottedLine /></div>
                                 <div className="flex items-center"><div className="break-words shrink-0">Adresse :</div><DottedLine /></div>
