@@ -47,14 +47,18 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
         return { label: "Match Nul", className: "bg-yellow-100 text-yellow-800 border-yellow-300" };
     }
     
-    const isUserClubInvolved = clubName === homeTeam || clubName === awayTeam;
+    const clubNameBase = clubName.replace(" (F)", "").trim();
+    const homeTeamBase = homeTeam.replace(" (F)", "").trim();
+    const awayTeamBase = awayTeam.replace(" (F)", "").trim();
+
+    const isUserClubInvolved = clubNameBase === homeTeamBase || clubNameBase === awayTeamBase;
     
     if (!isUserClubInvolved) {
         return { label: "Terminé", className: "bg-gray-100 text-gray-800 border-gray-300" };
     }
 
     let won;
-    if (clubName === homeTeam) {
+    if (clubNameBase === homeTeamBase) {
         won = scoreHome > scoreAway;
     } else { // clubName is awayTeam
         won = scoreAway > scoreHome;
