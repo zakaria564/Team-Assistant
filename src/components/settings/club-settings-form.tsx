@@ -37,7 +37,7 @@ export function ClubSettingsForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
         clubName: "",
-        logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
+        logoUrl: "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
         contactEmail: "",
         clubPhone: "",
         address: "",
@@ -58,7 +58,7 @@ export function ClubSettingsForm() {
                 const data = docSnap.data();
                 form.reset({
                   clubName: data.clubName || "",
-                  logoUrl: data.logoUrl || "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
+                  logoUrl: data.logoUrl || "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
                   contactEmail: data.contactEmail || user.email || "",
                   clubPhone: data.clubPhone || "",
                   address: data.address || "",
@@ -66,7 +66,7 @@ export function ClubSettingsForm() {
             } else {
                 form.reset({
                   clubName: "",
-                  logoUrl: "https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg",
+                  logoUrl: "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
                   contactEmail: user.email || "",
                   clubPhone: "",
                   address: "",

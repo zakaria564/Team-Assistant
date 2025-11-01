@@ -48,12 +48,12 @@ export function UserNav() {
       if (doc.exists() && doc.data().logoUrl) {
         setClubLogoUrl(doc.data().logoUrl);
       } else {
-        setClubLogoUrl("https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg");
+        setClubLogoUrl("https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png");
       }
       setLoadingClub(false);
     }, (error) => {
         console.error("Error fetching club logo:", error);
-        setClubLogoUrl("https://i.pinimg.com/736x/76/d5/bb/76d5bbed230f59e02a8fac7d7fdf5468.jpg");
+        setClubLogoUrl("https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png");
         setLoadingClub(false);
     });
 
