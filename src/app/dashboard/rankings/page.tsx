@@ -60,8 +60,7 @@ const playerCategories = [
     "U9", "U9 F",
     "U8", "U8 F",
     "U7", "U7 F",
-    "Vétérans", "Vétérans F",
-    "École de foot", "École de foot F"
+    "Vétérans"
 ];
 
 const competitionTypes = [
@@ -397,3 +396,5 @@ export default function RankingsPage() {
         </div>
     );
 }
+
+    

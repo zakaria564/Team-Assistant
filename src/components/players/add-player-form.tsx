@@ -102,8 +102,7 @@ const playerCategories = [
     "U9", "U9 F",
     "U8", "U8 F",
     "U7", "U7 F",
-    "Vétérans", "Vétérans F",
-    "École de foot", "École de foot F"
+    "Vétérans"
 ];
 
 const nationalities = [
@@ -881,3 +880,5 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     </>
   );
 }
+
+    

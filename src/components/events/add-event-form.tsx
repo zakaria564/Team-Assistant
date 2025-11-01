@@ -65,8 +65,7 @@ const playerCategories = [
     "U9", "U9 F",
     "U8", "U8 F",
     "U7", "U7 F",
-    "Vétérans", "Vétérans F",
-    "École de foot", "École de foot F"
+    "Vétérans"
 ];
 
 interface EventData {
@@ -136,9 +135,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
     useEffect(() => {
         const isFeminineCategory = selectedCategory?.includes(" F");
         const userClubTeamName = isFeminineCategory ? `${clubName} (F)` : clubName;
-        const opponentTeams = opponents.map(op => isFeminineCategory ? `${op} (F)` : op);
-
-        setAvailableTeams([userClubTeamName, ...opponentTeams].sort());
+        
+        setAvailableTeams([userClubTeamName, ...opponents].sort());
     }, [selectedCategory, clubName, opponents]);
 
 
@@ -361,3 +359,5 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
+
+    
