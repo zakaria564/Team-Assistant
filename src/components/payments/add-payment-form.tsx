@@ -67,7 +67,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
@@ -300,7 +300,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             step="0.01"
                             {...field}
                             value={field.value ?? ''}
-                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                            onChange={e => field.onChange(e.target.valueAsNumber)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -337,7 +337,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                 {(!isEditMode || (watchTotalAmount || 0) > amountAlreadyPaid) && (
+                 {(watchTotalAmount || 0) > amountAlreadyPaid && (
                   <div className="space-y-4 rounded-md border p-4">
                     <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
