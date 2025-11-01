@@ -48,6 +48,7 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
     }
     
     const isUserClubInvolved = clubName === homeTeam || clubName === awayTeam;
+    
     if (!isUserClubInvolved) {
         return { label: "Terminé", className: "bg-gray-100 text-gray-800 border-gray-300" };
     }
