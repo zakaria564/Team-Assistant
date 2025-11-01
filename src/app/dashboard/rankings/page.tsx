@@ -97,7 +97,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                     </TableHeader>
                     <TableBody>
                         {rankings.map((team, index) => (
-                            <TableRow key={team.name} className={team.name === clubName || team.name === clubNameFeminine ? "bg-primary/10" : ""}>
+                            <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() || team.name.toLowerCase() === clubNameFeminine.toLowerCase() ? "bg-primary/10" : ""}>
                                 <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2 font-medium">
@@ -135,7 +135,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                     </TableHeader>
                     <TableBody>
                         {rankings.map((team, index) => (
-                            <TableRow key={team.name} className={team.name === clubName || team.name === clubNameFeminine ? "bg-primary/10" : ""}>
+                            <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() || team.name.toLowerCase() === clubNameFeminine.toLowerCase() ? "bg-primary/10" : ""}>
                                 <TableCell className="font-bold text-center">{index + 1}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2 font-medium">
@@ -198,19 +198,15 @@ export default function RankingsPage() {
                     getDocs(opponentsQuery),
                     getDocs(eventsQuery)
                 ]);
-
-                const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 
                 let localClubName = "Votre Club";
-                let clubLogo: string | undefined;
-
-                if (clubDoc.exists()) {
-                    const clubData = clubDoc.data();
-                    if(clubData.clubName) localClubName = clubData.clubName;
-                    clubLogo = clubData.logoUrl;
+                if (clubDoc.exists() && clubDoc.data().clubName) {
+                    localClubName = clubDoc.data().clubName;
                 }
                 setClubName(localClubName);
+                const clubLogo = clubDoc.exists() ? clubDoc.data().logoUrl : undefined;
 
+                const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 opponentsSnapshot.docs.forEach(doc => {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
@@ -224,8 +220,8 @@ export default function RankingsPage() {
 
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
-                        const baseName = teamName.replace(" (F)", "");
-                        const isClubTeam = baseName === localClubName;
+                        const baseName = teamName.replace(/\s*\(F\)\s*/, "").trim();
+                        const isClubTeam = baseName.toLowerCase() === localClubName.toLowerCase();
                         const teamData = isClubTeam ? { logoUrl: clubLogo } : allTeamsMap.get(baseName);
                         
                         statsObject[teamName] = {
