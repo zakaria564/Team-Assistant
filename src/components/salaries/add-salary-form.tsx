@@ -65,11 +65,11 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
     const formSchema = z.object({
         coachId: z.string({ required_error: "L'entraîneur est requis." }).min(1, "L'entraîneur est requis."),
-        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif.").optional(),
+        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
-        status: z.enum(["Payé", "Partiel", "En attente" | "En retard"]),
+        status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
         const totalAmount = data.totalAmount || 0;
         const amountRemaining = isEditMode ? (salary?.totalAmount || 0) - amountAlreadyPaid : totalAmount;
@@ -303,7 +303,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Salaire de Septembre" {...field} readOnly={!isEditMode} className={isEditMode ? "" : "bg-muted"} />
+                            <Input placeholder="Ex: Salaire de Septembre" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -321,7 +321,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                             type="number" 
                             step="0.01" 
                             {...field}
-                            value={field.value ?? ''}
+                            value={field.value ?? ""}
                             onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         />
                       </FormControl>
@@ -359,7 +359,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
-                { (isEditMode && amountRemainingOnTotal > 0) || (!isEditMode && (watchTotalAmount || 0) > 0) ? (
+                 {((!isEditMode || (isEditMode && watchTotalAmount > amountAlreadyPaid)) && watchTotalAmount > 0) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,7 +375,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                     step="0.01" 
                                     placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
                                     {...field}
-                                    value={field.value === undefined ? '' : field.value}
+                                    value={field.value ?? ''}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                                 />
                               </FormControl>
@@ -422,7 +422,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           </FormItem>
                       </div>
                 </div>
-                ) : null}
+                )}
 
                  <FormField
                     control={form.control}
