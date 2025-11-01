@@ -25,6 +25,14 @@ interface Coach {
   name: string;
 }
 
+interface Salary {
+  id: string;
+  coachId: string;
+  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
+  description: string;
+  totalAmount: number;
+}
+
 interface SalaryData {
     id: string;
     coachId: string;
@@ -42,7 +50,8 @@ interface AddSalaryFormProps {
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
-const normalizeString = (str: string) => {
+const normalizeString = (str: string | null | undefined): string => {
+    if (!str) return '';
     return str
         .toLowerCase()
         .normalize("NFD") // Decompose accented characters
@@ -55,6 +64,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [coaches, setCoaches] = useState<Coach[]>([]);
+    const [allSalaries, setAllSalaries] = useState<Salary[]>([]);
     const [loadingCoaches, setLoadingCoaches] = useState(true);
     const router = useRouter();
     const isEditMode = !!salary;
@@ -65,7 +75,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
     const formSchema = z.object({
         coachId: z.string({ required_error: "L'entraîneur est requis." }).min(1, "L'entraîneur est requis."),
-        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
+        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0.01, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
@@ -108,6 +118,28 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
     const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
+    const watchCoachId = form.watch("coachId");
+
+    useEffect(() => {
+        if (isEditMode || !watchCoachId || !allSalaries.length) return;
+
+        const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
+        
+        const existingSalary = allSalaries.find(s => {
+            const isSameCoach = s.coachId === watchCoachId;
+            const isSameMonth = normalizeString(s.description) === normalizedCurrentMonthDesc;
+            const isPending = s.status === 'Partiel' || s.status === 'En attente';
+            return isSameCoach && isSameMonth && isPending;
+        });
+
+        if (existingSalary) {
+            toast({
+                title: "Salaire existant trouvé",
+                description: `Cet entraîneur a déjà un salaire en attente pour ce mois. Vous allez être redirigé pour le compléter.`,
+            });
+            router.push(`/dashboard/salaries/${existingSalary.id}/edit`);
+        }
+    }, [watchCoachId, allSalaries, isEditMode, defaultDescription, router, toast]);
 
     useEffect(() => {
         if ((watchTotalAmount || 0) > 0) {
@@ -134,30 +166,28 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     getDocs(coachesQuery),
                     getDocs(salariesQuery)
                 ]);
-
-                const coachesData = coachesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
                 
-                const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
+                const allCoaches = coachesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
+                const allSalariesData = salariesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Salary));
+                setAllSalaries(allSalariesData);
+                
+                if (isEditMode) {
+                    setCoaches(allCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+                } else {
+                    const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
+                    const paidCoachIds = new Set<string>();
 
-                const paidCoachIds = new Set<string>();
-                salariesSnapshot.forEach(doc => {
-                    const salaryData = doc.data();
-                    if (salaryData.description) {
-                        const normalizedSalaryDesc = normalizeString(salaryData.description);
-                        const amountPaid = (salaryData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
-                        const totalAmount = salaryData.totalAmount || 0;
-                        const isPaid = amountPaid >= totalAmount;
-
-                        if (normalizedSalaryDesc === normalizedCurrentMonthDesc && isPaid) {
-                            paidCoachIds.add(salaryData.coachId);
+                    allSalariesData.forEach(s => {
+                        const normalizedSalaryDesc = normalizeString(s.description);
+                        if(normalizedSalaryDesc === normalizedCurrentMonthDesc && s.status === 'Payé'){
+                            paidCoachIds.add(s.coachId);
                         }
-                    }
-                });
+                    });
+                    
+                    const availableCoaches = allCoaches.filter(c => !paidCoachIds.has(c.id));
+                    setCoaches(availableCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+                }
 
-                const availableCoaches = coachesData.filter(coach => !paidCoachIds.has(coach.id));
-
-                setCoaches(availableCoaches);
             } catch (error) {
                 console.error("Error fetching data: ", error);
                 toast({
@@ -169,27 +199,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                 setLoadingCoaches(false);
             }
         };
-
-        if (!isEditMode) {
-           fetchCoachesAndSalaries();
-        } else {
-            const fetchAllCoaches = async () => {
-                if (!user) return;
-                setLoadingCoaches(true);
-                 try {
-                    const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-                    const querySnapshot = await getDocs(q);
-                    const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Coach));
-                    setCoaches(coachesData);
-                } catch(e) {
-                     console.error("Error fetching coaches: ", e);
-                } finally {
-                    setLoadingCoaches(false);
-                }
-            }
-            fetchAllCoaches();
-        }
-    }, [user, toast, isEditMode]);
+        fetchCoachesAndSalaries();
+    }, [user, toast, isEditMode, defaultDescription]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -283,7 +294,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                             </FormControl>
                             <SelectContent>
                             {coaches.length === 0 && !loadingCoaches ? (
-                                <SelectItem value="no-coach" disabled>Aucun entraîneur disponible pour le paiement</SelectItem>
+                                <SelectItem value="no-coach" disabled>Aucun entraîneur à payer pour ce mois-ci.</SelectItem>
                             ) : (
                                 coaches.map(coach => (
                                     <SelectItem key={coach.id} value={coach.id}>{coach.name}</SelectItem>
@@ -321,7 +332,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                             type="number" 
                             step="0.01" 
                             {...field}
-                            value={field.value ?? ""}
+                            value={field.value === undefined ? "" : field.value}
                             onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         />
                       </FormControl>
@@ -359,7 +370,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
-                 {((!isEditMode || (isEditMode && watchTotalAmount > amountAlreadyPaid)) && watchTotalAmount > 0) && (
+                 {((watchTotalAmount || 0) > amountAlreadyPaid) && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,7 +386,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                     step="0.01" 
                                     placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
                                     {...field}
-                                    value={field.value ?? ''}
+                                    value={field.value === undefined ? '' : field.value}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                                 />
                               </FormControl>
@@ -460,3 +471,4 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
+
