@@ -47,7 +47,6 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
         return { label: "Match Nul", className: "bg-yellow-100 text-yellow-800 border-yellow-300" };
     }
     
-    // Check if the user's club is involved in the match
     const isUserClubInvolved = clubName === homeTeam || clubName === awayTeam;
     if (!isUserClubInvolved) {
         return { label: "Terminé", className: "bg-gray-100 text-gray-800 border-gray-300" };
