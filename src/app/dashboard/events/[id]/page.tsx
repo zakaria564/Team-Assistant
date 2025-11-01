@@ -47,9 +47,9 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
         return { label: "Match Nul", className: "bg-yellow-100 text-yellow-800 border-yellow-300" };
     }
     
-    const clubNameBase = clubName.replace(" (F)", "").trim();
-    const homeTeamBase = homeTeam.replace(" (F)", "").trim();
-    const awayTeamBase = awayTeam.replace(" (F)", "").trim();
+    const clubNameBase = clubName.replace(/\s*\(F\)\s*/g, "").trim().toLowerCase();
+    const homeTeamBase = homeTeam.replace(/\s*\(F\)\s*/g, "").trim().toLowerCase();
+    const awayTeamBase = awayTeam.replace(/\s*\(F\)\s*/g, "").trim().toLowerCase();
 
     const isUserClubInvolved = clubNameBase === homeTeamBase || clubNameBase === awayTeamBase;
     
