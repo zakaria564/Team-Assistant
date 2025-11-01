@@ -67,7 +67,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif.").optional(),
+        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
@@ -438,5 +438,3 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
