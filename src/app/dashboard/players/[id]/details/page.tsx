@@ -80,6 +80,7 @@ export default function PlayerDetailsPdfPage() {
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
+  const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!playerId) return;
@@ -118,6 +119,7 @@ export default function PlayerDetailsPdfPage() {
         const clubDoc = await getDoc(clubDocRef);
         if (clubDoc.exists() && clubDoc.data().clubName) {
           setClubName(clubDoc.data().clubName);
+          setClubLogoUrl(clubDoc.data().logoUrl || null);
         }
 
       } catch (error) {
@@ -201,6 +203,8 @@ export default function PlayerDetailsPdfPage() {
   }
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
+  const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
+
 
   return (
     <div className="bg-muted/40 min-h-screen p-4 sm:p-8">
@@ -228,7 +232,10 @@ export default function PlayerDetailsPdfPage() {
             {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
                  <div className="flex items-center gap-4">
-                    <Trophy className="h-10 w-10 text-primary" />
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={clubLogoUrl || ''} alt={clubName} />
+                        <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
+                    </Avatar>
                     <div>
                         <h1 className="text-2xl font-bold text-primary">{toTitleCase(clubName)}</h1>
                         <p className="text-muted-foreground">Fiche d'information du joueur</p>

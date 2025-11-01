@@ -69,6 +69,7 @@ export default function CoachDetailsPdfPage() {
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
+  const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!coachId) return;
@@ -96,8 +97,10 @@ export default function CoachDetailsPdfPage() {
         // Fetch Club Name
         const clubDocRef = doc(db, "clubs", user.uid);
         const clubDoc = await getDoc(clubDocRef);
-        if (clubDoc.exists() && clubDoc.data().clubName) {
-          setClubName(clubDoc.data().clubName);
+        if (clubDoc.exists()) {
+          const clubData = clubDoc.data();
+          setClubName(clubData.clubName || "Votre Club");
+          setClubLogoUrl(clubData.logoUrl || null);
         }
 
       } catch (error) {
@@ -181,6 +184,8 @@ export default function CoachDetailsPdfPage() {
   }
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
+  const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
+
 
   return (
     <div className="bg-muted/40 min-h-screen p-4 sm:p-8">
@@ -208,7 +213,10 @@ export default function CoachDetailsPdfPage() {
             {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
                  <div className="flex items-center gap-4">
-                    <Trophy className="h-10 w-10 text-primary" />
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={clubLogoUrl || ''} alt={clubName} />
+                        <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
+                    </Avatar>
                     <div>
                         <h1 className="text-2xl font-bold text-primary">{toTitleCase(clubName)}</h1>
                         <p className="text-muted-foreground">Fiche d'information de l'entraîneur</p>
@@ -276,5 +284,3 @@ export default function CoachDetailsPdfPage() {
     </div>
   );
 }
-
-    

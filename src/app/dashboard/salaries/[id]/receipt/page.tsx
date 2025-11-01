@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 interface Salary {
@@ -32,6 +33,7 @@ interface Salary {
 
 interface ClubInfo {
     name: string;
+    logoUrl: string | null;
     address: string;
     email: string;
 }
@@ -92,12 +94,14 @@ export default function SalaryReceiptPage() {
             const clubData = clubSnap.data();
             setClubInfo({
                 name: clubData.clubName || "Votre Club",
+                logoUrl: clubData.logoUrl || null,
                 address: clubData.address || "Adresse non configurée",
                 email: clubData.contactEmail || "Email non configuré",
             });
         } else {
              setClubInfo({
                 name: "Votre Club",
+                logoUrl: null,
                 address: "Adresse non configurée",
                 email: "Email non configuré",
             });
@@ -169,6 +173,8 @@ export default function SalaryReceiptPage() {
   
   const amountPaid = salary.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
   const amountRemaining = salary.totalAmount - amountPaid;
+  const clubInitial = clubInfo?.name?.charAt(0)?.toUpperCase() || "C";
+
 
   return (
     <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center">
@@ -197,7 +203,10 @@ export default function SalaryReceiptPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <Trophy className="h-10 w-10 text-primary" />
+                                <Avatar className="h-12 w-12">
+                                    <AvatarImage src={clubInfo?.logoUrl || ''} alt={clubInfo?.name} />
+                                    <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
+                                </Avatar>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
                             </div>
                             <p className="text-sm text-muted-foreground break-words">{clubInfo?.address}</p>
@@ -304,5 +313,3 @@ export default function SalaryReceiptPage() {
     </div>
   );
 }
-
-    
