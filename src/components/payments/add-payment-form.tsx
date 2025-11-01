@@ -99,7 +99,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         } : {
             description: defaultDescription,
             playerId: "",
-            totalAmount: 1500,
+            totalAmount: undefined,
             status: "En attente",
             newTransactionAmount: undefined,
             newTransactionMethod: "Espèces",
@@ -337,7 +337,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {((watchTotalAmount || 0) > amountAlreadyPaid) && (
+                 {(!isEditMode || (watchTotalAmount || 0) > amountAlreadyPaid) && (
                   <div className="space-y-4 rounded-md border p-4">
                     <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -438,3 +438,5 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
+
+    
