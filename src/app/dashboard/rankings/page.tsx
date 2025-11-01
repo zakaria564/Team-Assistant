@@ -60,8 +60,8 @@ const playerCategories = [
     "U9", "U9 F",
     "U8", "U8 F",
     "U7", "U7 F",
-    "Vétérans",
-    "École de foot"
+    "Vétérans", "Vétérans F",
+    "École de foot", "École de foot F"
 ];
 
 const competitionTypes = [
@@ -205,11 +205,12 @@ export default function RankingsPage() {
                 }
                 setClubName(localClubName);
                 const clubLogo = clubDoc.exists() ? clubDoc.data().logoUrl : undefined;
+                const normalizedClubName = localClubName.toLowerCase();
 
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 opponentsSnapshot.docs.forEach(doc => {
                     const opponent = doc.data() as Opponent;
-                    allTeamsMap.set(opponent.name, { logoUrl: opponent.logoUrl });
+                    allTeamsMap.set(opponent.name.toLowerCase(), { logoUrl: opponent.logoUrl });
                 });
                 
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
@@ -221,8 +222,8 @@ export default function RankingsPage() {
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
                         const baseName = teamName.replace(/\s*\(F\)\s*/, "").trim();
-                        const isClubTeam = baseName.toLowerCase() === localClubName.toLowerCase();
-                        const teamData = isClubTeam ? { logoUrl: clubLogo } : allTeamsMap.get(baseName);
+                        const isClubTeam = baseName.toLowerCase() === normalizedClubName;
+                        const teamData = isClubTeam ? { logoUrl: clubLogo } : allTeamsMap.get(baseName.toLowerCase());
                         
                         statsObject[teamName] = {
                             name: teamName,
