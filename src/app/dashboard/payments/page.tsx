@@ -321,7 +321,7 @@ export default function PaymentsPage() {
                           </TableHeader>
                           <TableBody>
                               {playerGroup.payments.map((payment) => {
-                                  const canDelete = payment.transactions.length === 0;
+                                  const canDelete = true;
                                   return (
                                       <TableRow key={payment.id}>
                                           <TableCell>
