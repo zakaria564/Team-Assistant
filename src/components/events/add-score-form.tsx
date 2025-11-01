@@ -85,7 +85,6 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 return;
             }
             try {
-                // Fetch Club Name
                 const clubDocRef = doc(db, "clubs", user.uid);
                 const clubDoc = await getDoc(clubDocRef);
                 const currentClubName = clubDoc.exists() && clubDoc.data().clubName ? clubDoc.data().clubName : "Votre Club";
@@ -100,14 +99,16 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                     return;
                 }
 
-                // The category of our club's team involved in this match
-                const clubTeamCategory = event.category;
+                const eventCategory = event.category;
+                const relatedCategories = [eventCategory];
+                if (eventCategory.endsWith(" F")) {
+                    relatedCategories.push(eventCategory.replace(" F", ""));
+                }
 
-                // Fetch players for the relevant category of the team playing
                 const q = query(
                     collection(db, "players"), 
                     where("userId", "==", user.uid),
-                    where("category", "==", clubTeamCategory)
+                    where("category", "in", relatedCategories)
                 );
                 const querySnapshot = await getDocs(q);
                 const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
