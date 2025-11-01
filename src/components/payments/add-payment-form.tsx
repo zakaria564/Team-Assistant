@@ -25,6 +25,15 @@ interface Player {
   name: string;
 }
 
+interface Payment {
+  id: string;
+  playerId: string;
+  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
+  description: string;
+  totalAmount: number;
+}
+
+
 interface PaymentData {
     id: string;
     playerId: string;
@@ -57,6 +66,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
+    const [allPayments, setAllPayments] = useState<Payment[]>([]);
     const [loadingPlayers, setLoadingPlayers] = useState(true);
     const router = useRouter();
     const isEditMode = !!payment;
@@ -67,7 +77,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-        totalAmount: z.coerce.number({required_error: "Le montant est requis.", invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif.").optional(),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
@@ -110,6 +120,29 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
     const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
+    const watchPlayerId = form.watch("playerId");
+
+    useEffect(() => {
+      if (isEditMode || !watchPlayerId || !allPayments.length) return;
+
+      const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
+      
+      const existingPayment = allPayments.find(p => {
+          const isSamePlayer = p.playerId === watchPlayerId;
+          const isSameMonth = normalizeString(p.description) === normalizedCurrentMonthDesc;
+          const isPending = p.status === 'Partiel' || p.status === 'En attente';
+          return isSamePlayer && isSameMonth && isPending;
+      });
+
+      if (existingPayment) {
+          toast({
+              title: "Paiement existant trouvé",
+              description: `Ce joueur a déjà une cotisation en attente pour ce mois. Vous allez être redirigé pour la compléter.`,
+          });
+          router.push(`/dashboard/payments/${existingPayment.id}/edit`);
+      }
+
+    }, [watchPlayerId, allPayments, isEditMode, defaultDescription, router, toast]);
 
     useEffect(() => {
         if ((watchTotalAmount || 0) > 0) {
@@ -138,22 +171,19 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 ]);
 
                 const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-
+                const allPaymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Payment));
+                setAllPayments(allPaymentsData);
+                
                 if (isEditMode) {
                     setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
                 } else {
                     const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
                     const paidPlayerIds = new Set<string>();
 
-                    paymentsSnapshot.forEach(doc => {
-                        const paymentData = doc.data();
-                        const normalizedPaymentDesc = normalizeString(paymentData.description);
-                         const amountPaid = (paymentData.transactions || []).reduce((sum: number, t: any) => sum + t.amount, 0);
-                        const totalAmount = paymentData.totalAmount || 0;
-                        const isPaid = amountPaid >= totalAmount;
-
-                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && isPaid){
-                            paidPlayerIds.add(paymentData.playerId);
+                    allPaymentsData.forEach(p => {
+                        const normalizedPaymentDesc = normalizeString(p.description);
+                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && p.status === 'Payé'){
+                            paidPlayerIds.add(p.playerId);
                         }
                     });
                     
@@ -180,6 +210,12 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
             return;
         }
+
+        if (values.totalAmount === undefined) {
+             toast({ variant: "destructive", title: "Montant manquant", description: "Veuillez spécifier un montant total." });
+            return;
+        }
+
         setLoading(true);
 
         const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
