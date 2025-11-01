@@ -60,9 +60,9 @@ export default function DashboardAppLayout({
   const ClubBrand = () => (
      <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-full" />
         ) : (
-            <Avatar className="h-6 w-6">
+            <Avatar className="h-8 w-8">
                 <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" />
                 <AvatarFallback>{clubInitial}</AvatarFallback>
             </Avatar>
