@@ -460,5 +460,3 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
-
-    
