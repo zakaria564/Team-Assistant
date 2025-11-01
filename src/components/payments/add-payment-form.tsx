@@ -298,7 +298,11 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             type="number"
                             step="0.01"
                             {...field}
-                            onChange={e => field.onChange(e.target.valueAsNumber || 0)}
+                            value={field.value ?? ''}
+                            onChange={e => {
+                                const value = e.target.value;
+                                field.onChange(value === '' ? undefined : parseFloat(value));
+                            }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -436,5 +440,3 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
         </Form>
     );
 }
-
-    
