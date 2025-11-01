@@ -58,18 +58,18 @@ export default function DashboardAppLayout({
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "T";
 
   const ClubBrand = () => (
-     <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
+     <Link href="/dashboard" className="flex items-center gap-3 font-semibold text-primary text-lg">
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="h-12 w-12 rounded-full" />
         ) : (
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-12 w-12">
                 <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" />
-                <AvatarFallback>{clubInitial}</AvatarFallback>
+                <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
             </Avatar>
         )}
 
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-6 w-32" />
         ) : (
             <span className="">{clubName}</span>
         )}
@@ -80,7 +80,7 @@ export default function DashboardAppLayout({
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
+          <div className="flex h-20 items-center border-b border-sidebar-border px-4 lg:h-[72px] lg:px-6">
             <ClubBrand />
           </div>
           <div className="flex-1 py-4">
@@ -102,7 +102,7 @@ export default function DashboardAppLayout({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
-               <SheetHeader className="h-14 flex flex-row items-center border-b border-sidebar-border px-4">
+               <SheetHeader className="h-20 flex flex-row items-center border-b border-sidebar-border px-4">
                   <ClubBrand />
                    <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
                 </SheetHeader>
