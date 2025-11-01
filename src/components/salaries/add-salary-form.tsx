@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -64,13 +65,14 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
     const formSchema = z.object({
         coachId: z.string({ required_error: "L'entraîneur est requis." }).min(1, "L'entraîneur est requis."),
-        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(1, "Le montant total doit être supérieur à 0."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif.").optional(),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
-        status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
+        status: z.enum(["Payé", "Partiel", "En attente" | "En retard"]),
     }).superRefine((data, ctx) => {
-        const amountRemaining = isEditMode ? salary.totalAmount - amountAlreadyPaid : data.totalAmount;
+        const totalAmount = data.totalAmount || 0;
+        const amountRemaining = isEditMode ? (salary?.totalAmount || 0) - amountAlreadyPaid : totalAmount;
         if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -95,7 +97,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         } : {
             description: defaultDescription,
             coachId: "",
-            totalAmount: 5000,
+            totalAmount: undefined,
             status: "En attente",
             newTransactionAmount: undefined,
             newTransactionMethod: "Espèces",
@@ -105,10 +107,10 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const watchTotalAmount = form.watch("totalAmount");
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
-    const amountRemainingOnTotal = watchTotalAmount - newTotalPaid;
+    const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
 
     useEffect(() => {
-        if (watchTotalAmount > 0) {
+        if ((watchTotalAmount || 0) > 0) {
             if (amountRemainingOnTotal <= 0) {
                 form.setValue("status", "Payé");
             } else if (newTotalPaid > 0 && amountRemainingOnTotal > 0) {
@@ -194,6 +196,12 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
             return;
         }
+
+        if (!values.totalAmount) {
+             toast({ variant: "destructive", title: "Montant manquant", description: "Veuillez spécifier un montant total." });
+            return;
+        }
+
         setLoading(true);
 
         const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
@@ -256,7 +264,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         }
     }
     
-    const amountRemainingForPlaceholder = isEditMode ? (salary.totalAmount - amountAlreadyPaid) : watchTotalAmount;
+    const amountRemainingForPlaceholder = parseFloat(isEditMode ? ((salary?.totalAmount || 0) - amountAlreadyPaid).toString() : (watchTotalAmount || 0).toString());
 
     return (
         <Form {...form}>
@@ -309,7 +317,13 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   <FormItem>
                       <FormLabel>Montant total (MAD)</FormLabel>
                       <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input 
+                            type="number" 
+                            step="0.01" 
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
+                        />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
@@ -345,7 +359,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                   </Card>
                 )}
                
-                {amountRemainingOnTotal > 0 && (
+                { (isEditMode && amountRemainingOnTotal > 0) || (!isEditMode && (watchTotalAmount || 0) > 0) ? (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -408,7 +422,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           </FormItem>
                       </div>
                 </div>
-                )}
+                ) : null}
 
                  <FormField
                     control={form.control}
