@@ -337,7 +337,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {(watchTotalAmount || 0) > amountAlreadyPaid && (
+                {((watchTotalAmount || 0) > amountAlreadyPaid) && (
                   <div className="space-y-4 rounded-md border p-4">
                     <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
