@@ -300,7 +300,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             step="0.01"
                             {...field}
                             value={field.value ?? ''}
-                             onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
                         />
                       </FormControl>
                       <FormMessage />
@@ -337,69 +337,69 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {amountRemainingOnTotal > 0 && watchTotalAmount && watchTotalAmount > 0 && (
-                <div className="space-y-4 rounded-md border p-4">
-                  <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                          control={form.control}
-                          name="newTransactionAmount"
-                          render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Montant du versement (MAD)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                    type="number" 
-                                    step="0.01" 
-                                    placeholder={amountRemainingForPlaceholder.toFixed(2)}
-                                    {...field}
-                                    value={field.value ?? ''}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                          </FormItem>
-                          )}
-                      />
-                      <FormField
-                          control={form.control}
-                          name="newTransactionMethod"
-                          render={({ field }) => (
+                {(watchTotalAmount || 0) > amountAlreadyPaid && (
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="newTransactionAmount"
+                            render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Méthode du versement</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormLabel>Montant du versement (MAD)</FormLabel>
                                 <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une méthode" />
-                                  </SelectTrigger>
+                                  <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
+                                      {...field}
+                                      value={field.value ?? ''}
+                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
+                                  />
                                 </FormControl>
-                                <SelectContent>
-                                    {paymentMethods.map(method => (
-                                        <SelectItem key={method} value={method}>{method}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
+                                <FormMessage />
                             </FormItem>
-                          )}
-                      />
-                    </div>
-                     <Separator />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                          <FormItem>
-                              <FormLabel>Nouveau total payé</FormLabel>
-                              <FormControl>
-                                  <Input type="text" value={`${newTotalPaid.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-green-600"/>
-                              </FormControl>
-                          </FormItem>
-                          <FormItem>
-                              <FormLabel>Montant restant</FormLabel>
-                              <FormControl>
-                                  <Input type="text" value={`${amountRemainingOnTotal.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
-                              </FormControl>
-                          </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="newTransactionMethod"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Méthode du versement</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner une méthode" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {paymentMethods.map(method => (
+                                          <SelectItem key={method} value={method}>{method}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                        />
                       </div>
-                </div>
+                      <Separator />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <FormItem>
+                                <FormLabel>Nouveau total payé</FormLabel>
+                                <FormControl>
+                                    <Input type="text" value={`${newTotalPaid.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-green-600"/>
+                                </FormControl>
+                            </FormItem>
+                            <FormItem>
+                                <FormLabel>Montant restant</FormLabel>
+                                <FormControl>
+                                    <Input type="text" value={`${amountRemainingOnTotal.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
+                                </FormControl>
+                            </FormItem>
+                        </div>
+                  </div>
                 )}
 
                  <FormField
