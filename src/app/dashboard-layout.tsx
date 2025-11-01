@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Menu, Trophy } from "lucide-react";
+import { Menu } from "lucide-react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import { useState, useEffect } from "react";
@@ -60,18 +60,18 @@ export default function DashboardAppLayout({
   const ClubBrand = () => (
      <Link href="/dashboard" className="flex items-center gap-3 font-semibold text-primary text-lg">
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-12 w-12 rounded-full" />
+            <Skeleton className="h-16 w-16 rounded-full" />
         ) : (
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-16 w-16">
                 <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" />
-                <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
+                <AvatarFallback className="text-2xl">{clubInitial}</AvatarFallback>
             </Avatar>
         )}
 
         {loadingUser || loadingClubInfo ? (
             <Skeleton className="h-6 w-32" />
         ) : (
-            <span className="">{clubName}</span>
+            <span className="text-xl">{clubName}</span>
         )}
     </Link>
   )
@@ -80,7 +80,7 @@ export default function DashboardAppLayout({
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-20 items-center border-b border-sidebar-border px-4 lg:h-[72px] lg:px-6">
+          <div className="flex h-24 items-center border-b border-sidebar-border px-4 lg:px-6">
             <ClubBrand />
           </div>
           <div className="flex-1 py-4">
@@ -102,7 +102,7 @@ export default function DashboardAppLayout({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
-               <SheetHeader className="h-20 flex flex-row items-center border-b border-sidebar-border px-4">
+               <SheetHeader className="h-24 flex flex-row items-center border-b border-sidebar-border px-4">
                   <ClubBrand />
                    <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
                 </SheetHeader>
