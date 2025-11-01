@@ -67,13 +67,14 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
     const formSchema = z.object({
         playerId: z.string({ required_error: "Le joueur est requis." }).min(1, "Le joueur est requis."),
-        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif."),
+        totalAmount: z.coerce.number({invalid_type_error: "Le montant est requis."}).min(0, "Le montant total doit être positif.").optional(),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.number().optional(),
         newTransactionMethod: z.string().optional(),
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
-        const amountRemaining = isEditMode ? payment.totalAmount - amountAlreadyPaid : data.totalAmount;
+        const totalAmount = data.totalAmount || 0;
+        const amountRemaining = isEditMode ? (payment?.totalAmount || 0) - amountAlreadyPaid : totalAmount;
         if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -111,7 +112,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
 
     useEffect(() => {
-        if (watchTotalAmount > 0) {
+        if ((watchTotalAmount || 0) > 0) {
             if (amountRemainingOnTotal <= 0) {
                 form.setValue("status", "Payé");
             } else if (newTotalPaid > 0 && amountRemainingOnTotal > 0) {
@@ -299,10 +300,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             step="0.01"
                             {...field}
                             value={field.value ?? ''}
-                            onChange={e => {
-                                const value = e.target.value;
-                                field.onChange(value === '' ? undefined : parseFloat(value));
-                            }}
+                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
                         />
                       </FormControl>
                       <FormMessage />
@@ -353,9 +351,9 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                 <Input 
                                     type="number" 
                                     step="0.01" 
-                                    placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
+                                    placeholder={amountRemainingForPlaceholder.toFixed(2)}
                                     {...field}
-                                    value={field.value === undefined ? '' : field.value}
+                                    value={field.value ?? ''}
                                     onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                                 />
                               </FormControl>
