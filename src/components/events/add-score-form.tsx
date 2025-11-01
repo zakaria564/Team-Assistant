@@ -52,6 +52,34 @@ const formSchema = z.object({
 });
 
 
+const playerCategories = [
+    "Seniors", "Seniors F",
+    "U19", "U19 F",
+    "U18", "U18 F",
+    "U17", "U17 F",
+    "U16", "U16 F",
+    "U15", "U15 F",
+    "U14", "U14 F",
+    "U13", "U13 F",
+    "U12", "U12 F",
+    "U11", "U11 F",
+    "U10", "U10 F",
+    "U9", "U9 F",
+    "U8", "U8 F",
+    "U7", "U7 F",
+    "Vétérans"
+];
+
+const normalizeString = (str: string | null | undefined): string => {
+    if (!str) return '';
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '')
+        .replace(/\(f\)/g, ''); // Remove (f) for comparison
+};
+
 export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
@@ -90,26 +118,29 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 const currentClubName = clubDoc.exists() && clubDoc.data().clubName ? clubDoc.data().clubName : "Votre Club";
                 setClubName(currentClubName);
                 
-                const clubTeamNameFeminine = `${currentClubName} (F)`;
-                const isHomeTeamClub = event.teamHome === currentClubName || event.teamHome === clubTeamNameFeminine;
-                const isAwayTeamClub = event.teamAway === currentClubName || event.teamAway === clubTeamNameFeminine;
+                const normalizedClub = normalizeString(currentClubName);
+                const normalizedHome = normalizeString(event.teamHome);
+                const normalizedAway = normalizeString(event.teamAway);
 
-                if (!isHomeTeamClub && !isAwayTeamClub) {
+                if (normalizedHome !== normalizedClub && normalizedAway !== normalizedClub) {
                     setPlayers([]);
-                    return;
+                    return; // Neither team is the user's club
                 }
 
                 const eventCategory = event.category;
                 const relatedCategories = [eventCategory];
                 if (eventCategory.endsWith(" F")) {
                     relatedCategories.push(eventCategory.replace(" F", ""));
+                } else if (playerCategories.includes(`${eventCategory} F`)) { // Check if a female version exists
+                    relatedCategories.push(`${eventCategory} F`);
                 }
-
+                
                 const q = query(
                     collection(db, "players"), 
                     where("userId", "==", user.uid),
                     where("category", "in", relatedCategories)
                 );
+
                 const querySnapshot = await getDocs(q);
                 const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
                 setPlayers(playersData.sort((a,b) => a.name.localeCompare(b.name)));
