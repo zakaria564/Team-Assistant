@@ -202,12 +202,12 @@ export default function RankingsPage() {
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 
                 let localClubName = "Votre Club";
+                let clubLogo: string | undefined;
+
                 if (clubDoc.exists()) {
                     const clubData = clubDoc.data();
                     if(clubData.clubName) localClubName = clubData.clubName;
-                    allTeamsMap.set(localClubName, { logoUrl: clubData.logoUrl });
-                } else {
-                    allTeamsMap.set(localClubName, { logoUrl: undefined });
+                    clubLogo = clubData.logoUrl;
                 }
                 setClubName(localClubName);
 
@@ -225,7 +225,9 @@ export default function RankingsPage() {
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
                         const baseName = teamName.replace(" (F)", "");
-                        const teamData = allTeamsMap.get(baseName);
+                        const isClubTeam = baseName === localClubName;
+                        const teamData = isClubTeam ? { logoUrl: clubLogo } : allTeamsMap.get(baseName);
+                        
                         statsObject[teamName] = {
                             name: teamName,
                             logoUrl: teamData?.logoUrl,
