@@ -300,7 +300,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             step="0.01"
                             {...field}
                             value={field.value ?? ''}
-                            onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                             onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
                         />
                       </FormControl>
                       <FormMessage />
@@ -337,7 +337,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                {amountRemainingOnTotal > 0 && (
+                {amountRemainingOnTotal > 0 && watchTotalAmount && watchTotalAmount > 0 && (
                 <div className="space-y-4 rounded-md border p-4">
                   <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
