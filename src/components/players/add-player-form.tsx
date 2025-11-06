@@ -181,6 +181,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     if (player) {
       form.reset({
         ...player,
+        number: player.number || 1,
         coachId: player.coachId || "",
         photoUrl: player.photoUrl || "",
         birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
