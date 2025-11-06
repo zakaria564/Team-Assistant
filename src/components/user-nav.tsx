@@ -30,7 +30,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 export function UserNav() {
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
-  const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
+  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
 
   useEffect(() => {
@@ -45,15 +45,16 @@ export function UserNav() {
       
     const clubDocRef = doc(db, "clubs", user.uid);
     const unsubscribe = onSnapshot(clubDocRef, (doc) => {
-      if (doc.exists() && doc.data().logoUrl) {
-        setClubLogoUrl(doc.data().logoUrl);
+      if (doc.exists()) {
+        const data = doc.data();
+        setUserPhotoUrl(data.adminPhotoUrl || data.logoUrl || null);
       } else {
-        setClubLogoUrl("https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png");
+        setUserPhotoUrl(null);
       }
       setLoadingClub(false);
     }, (error) => {
-        console.error("Error fetching club logo:", error);
-        setClubLogoUrl("https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png");
+        console.error("Error fetching user photo:", error);
+        setUserPhotoUrl(null);
         setLoadingClub(false);
     });
 
@@ -82,7 +83,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-12 w-12 rounded-full">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={clubLogoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
+            <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

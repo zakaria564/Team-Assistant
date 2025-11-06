@@ -17,10 +17,12 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import { Separator } from "../ui/separator";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
   logoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
+  adminPhotoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   contactEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   clubPhone: z.string().optional(),
   address: z.string().optional(),
@@ -37,7 +39,8 @@ export function ClubSettingsForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
         clubName: "",
-        logoUrl: "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
+        logoUrl: "",
+        adminPhotoUrl: "",
         contactEmail: "",
         clubPhone: "",
         address: "",
@@ -58,7 +61,8 @@ export function ClubSettingsForm() {
                 const data = docSnap.data();
                 form.reset({
                   clubName: data.clubName || "",
-                  logoUrl: data.logoUrl || "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
+                  logoUrl: data.logoUrl || "",
+                  adminPhotoUrl: data.adminPhotoUrl || "",
                   contactEmail: data.contactEmail || user.email || "",
                   clubPhone: data.clubPhone || "",
                   address: data.address || "",
@@ -66,7 +70,8 @@ export function ClubSettingsForm() {
             } else {
                 form.reset({
                   clubName: "",
-                  logoUrl: "https://image.noelshack.com/fichiers/2025/44/6/1761990236-20180719141912-maroc-logo-frmf.png",
+                  logoUrl: "",
+                  adminPhotoUrl: "",
                   contactEmail: user.email || "",
                   clubPhone: "",
                   address: "",
@@ -114,8 +119,8 @@ export function ClubSettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Informations du Club</CardTitle>
-        <CardDescription>Gérez les informations publiques de votre club.</CardDescription>
+        <CardTitle>Informations du Club & Images</CardTitle>
+        <CardDescription>Gérez les informations publiques et les logos de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -144,61 +149,83 @@ export function ClubSettingsForm() {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="logoUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>URL du logo de votre club</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                     
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        <FormField
+                    <div className="space-y-4 pt-4">
+                         <h4 className="text-base font-medium">Logos & Images</h4>
+                         <FormField
                             control={form.control}
-                            name="contactEmail"
+                            name="logoUrl"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Email de contact</FormLabel>
+                                <FormLabel>URL du logo du club (barre latérale)</FormLabel>
                                 <FormControl>
-                                    <Input type="email" placeholder="contact@club.com" {...field} value={field.value ?? ""}/>
+                                    <Input placeholder="https://exemple.com/logo-club.png" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <FormField
+                         <FormField
                             control={form.control}
-                            name="clubPhone"
+                            name="adminPhotoUrl"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Téléphone du club</FormLabel>
+                                <FormLabel>URL de la photo de profil (en haut à droite)</FormLabel>
                                 <FormControl>
-                                    <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} value={field.value ?? ""} />
+                                    <Input placeholder="https://exemple.com/photo-admin.png" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
                         />
                     </div>
-                    <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Adresse</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="Adresse complète du siège ou du stade" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    
+                     <Separator className="!my-6"/>
+
+                    <div className="space-y-4">
+                        <h4 className="text-base font-medium">Coordonnées</h4>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="contactEmail"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Email de contact</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" placeholder="contact@club.com" {...field} value={field.value ?? ""}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="clubPhone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Téléphone du club</FormLabel>
+                                    <FormControl>
+                                        <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} value={field.value ?? ""} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Adresse</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Adresse complète du siège ou du stade" {...field} value={field.value ?? ""} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     <Button type="submit" disabled={loading} className="!mt-6">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
