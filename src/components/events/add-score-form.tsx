@@ -282,7 +282,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
-                                                        <SelectContent>
+                                                        <SelectContent className="max-h-60">
                                                             <SelectGroup>
                                                                 <SelectLabel>{clubName}</SelectLabel>
                                                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
@@ -355,7 +355,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
-                                                        <SelectContent>
+                                                        <SelectContent className="max-h-60">
                                                             <SelectGroup>
                                                                 <SelectLabel>{clubName}</SelectLabel>
                                                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
