@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
@@ -189,12 +189,12 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 return (items || [])
                     .filter(item => item.playerId && (item.goals > 0 || item.assists > 0))
                     .map(item => {
-                        const isOpponent = opponents.some(o => o.id === item.playerId);
-                        if (isOpponent) {
-                            return { ...item, playerId: `opponent_${item.playerName.replace(/\s/g, '_')}` };
+                        const opponent = opponents.find(o => o.id === item.playerId);
+                        if (opponent) {
+                            return { ...item, playerName: item.playerName || opponent.name, playerId: `opponent_${item.playerName?.replace(/\s/g, '_') || opponent.name.replace(/\s/g, '_')}` };
                         }
-                        const playerName = players.find(p => p.id === item.playerId)?.name || 'Joueur inconnu';
-                        return {...item, playerName };
+                        const player = players.find(p => p.id === item.playerId);
+                        return {...item, playerName: player?.name || 'Joueur inconnu' };
                     });
             };
             
@@ -283,12 +283,14 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                         <SelectContent>
-                                                            <optgroup label={clubName}>
+                                                            <SelectGroup>
+                                                                <SelectLabel>{clubName}</SelectLabel>
                                                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                            </optgroup>
-                                                            <optgroup label="Adversaires">
+                                                            </SelectGroup>
+                                                            <SelectGroup>
+                                                                <SelectLabel>Adversaires</SelectLabel>
                                                                 {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
-                                                            </optgroup>
+                                                            </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
                                                     <FormMessage />
@@ -354,12 +356,14 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                         <SelectContent>
-                                                            <optgroup label={clubName}>
+                                                            <SelectGroup>
+                                                                <SelectLabel>{clubName}</SelectLabel>
                                                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                            </optgroup>
-                                                            <optgroup label="Adversaires">
+                                                            </SelectGroup>
+                                                            <SelectGroup>
+                                                                <SelectLabel>Adversaires</SelectLabel>
                                                                 {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
-                                                            </optgroup>
+                                                            </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
                                                     <FormMessage />

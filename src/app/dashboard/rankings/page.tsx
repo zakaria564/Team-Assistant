@@ -311,26 +311,26 @@ export default function RankingsPage() {
                     // --- Scorers Stats ---
                     if (scorers) {
                         scorers.forEach(scorer => {
-                            if (!scorersStats[scorer.playerId]) {
+                            const scorerId = scorer.playerId.startsWith('opponent_') ? scorer.playerId : scorer.playerId;
+                            if (!scorersStats[scorerId]) {
                                 const player = playersMap.get(scorer.playerId);
                                 let teamName = "Adversaire";
                                 if (player) {
                                     teamName = localClubName;
                                 } else {
-                                    // Check if scorer's team is home or away
-                                    const opponent = opponentsSnapshot.docs.find(o => o.id === scorer.playerId);
+                                    const opponent = opponentsSnapshot.docs.find(o => scorer.playerName.toLowerCase().includes(o.data().name.toLowerCase()));
                                     if(opponent) teamName = opponent.data().name;
                                 }
                                 
-                                scorersStats[scorer.playerId] = {
-                                    playerId: scorer.playerId,
+                                scorersStats[scorerId] = {
+                                    playerId: scorerId,
                                     playerName: scorer.playerName,
                                     playerPhotoUrl: player?.photoUrl,
                                     teamName: teamName,
                                     goals: 0
                                 };
                             }
-                            scorersStats[scorer.playerId].goals += scorer.goals;
+                            scorersStats[scorerId].goals += scorer.goals;
                         });
                     }
 
