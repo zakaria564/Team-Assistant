@@ -269,6 +269,9 @@ export default function RankingsPage() {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name.toLowerCase(), { logoUrl: opponent.logoUrl });
                 });
+                // Add the user's club to the map as well
+                allTeamsMap.set(normalizedClubName, { logoUrl: clubLogo });
+
 
                 const playersMap = new Map<string, Player>();
                 playersSnapshot.docs.forEach(doc => {
@@ -284,10 +287,7 @@ export default function RankingsPage() {
 
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
-                        const baseName = teamName.replace(/\s*\(F\)\s*/, "").trim();
-                        const isClubTeam = baseName.toLowerCase() === normalizedClubName;
-                        const teamData = isClubTeam ? { logoUrl: clubLogo } : allTeamsMap.get(baseName.toLowerCase());
-                        
+                        const teamData = allTeamsMap.get(teamName.toLowerCase().replace(/\s*\(f\)\s*/, ""));
                         statsObject[teamName] = {
                             name: teamName,
                             logoUrl: teamData?.logoUrl,
