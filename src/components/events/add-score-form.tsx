@@ -226,8 +226,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <ScrollArea className="max-h-[70vh] p-1">
-                    <div className="space-y-6 pr-4">
+                <ScrollArea className="max-h-[65vh] p-1 pr-4">
+                    <div className="space-y-6">
                         <div className="space-y-4 rounded-md border p-4">
                             <h4 className="font-medium text-center">{event.teamHome} vs {event.teamAway}</h4>
                             <div className="grid grid-cols-2 gap-4 items-end">
@@ -417,3 +417,5 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
         </Form>
     );
 }
+
+    
