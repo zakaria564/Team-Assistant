@@ -390,7 +390,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/photo.jpg" {...field} />
+                                <Input placeholder="https://exemple.com/photo.jpg" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -453,7 +453,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Statut</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un statut" />
@@ -478,7 +478,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date d'entrée</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} />
+                                  <Input type="date" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -491,7 +491,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date de sortie</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} />
+                                  <Input type="date" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -524,7 +524,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Type du document</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder="Sélectionner un type" />
@@ -631,7 +631,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Numéro de CIN" {...field} />
+                                    <Input placeholder="Numéro de CIN" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -645,7 +645,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Adresse complète..." {...field} />
+                            <Textarea placeholder="Adresse complète..." {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -671,7 +671,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Téléphone</FormLabel>
                             <FormControl>
-                                <Input type="tel" placeholder="06 12 34 56 78" {...field} />
+                                <Input type="tel" placeholder="06 12 34 56 78" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
