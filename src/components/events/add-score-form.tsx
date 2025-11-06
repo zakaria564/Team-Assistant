@@ -16,6 +16,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Separator } from "../ui/separator";
 import { Label } from "../ui/label";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface Player {
     id: string;
@@ -225,184 +226,188 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-4 rounded-md border p-4">
-                    <h4 className="font-medium text-center">{event.teamHome} vs {event.teamAway}</h4>
-                    <div className="grid grid-cols-2 gap-4 items-end">
-                        <FormField
-                            control={form.control}
-                            name="scoreHome"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Score {event.teamHome}</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="scoreAway"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Score {event.teamAway}</FormLabel>
-                                     <FormControl>
-                                        <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
-                                    </FormControl>
-                                   <FormMessage />
-                                 </FormItem>
-                            )}
-                        />
-                    </div>
-                </div>
-
-                 <div className="space-y-4 rounded-md border p-4">
-                    <h4 className="font-medium">Statistiques des joueurs</h4>
-                    
-                    <div className="space-y-4">
-                         <div className="mb-2 flex items-center justify-between">
-                            <Label>Buteurs</Label>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', playerName: '', goals: 1 })}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
-                            </Button>
-                        </div>
-                        <div className="space-y-4">
-                            {scorerFields.map((field, index) => {
-                                const selectedPlayerId = watchScorers?.[index]?.playerId;
-                                const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
-                                return (
-                                    <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
-                                        <div className="flex items-end gap-2">
-                                            <FormField
-                                                control={form.control}
-                                                name={`scorers.${index}.playerId`}
-                                                render={({ field }) => (
-                                                <FormItem className="flex-1">
-                                                    <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
-                                                        <SelectContent className="max-h-60">
-                                                            <SelectGroup>
-                                                                <SelectLabel>{clubName}</SelectLabel>
-                                                                {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                            </SelectGroup>
-                                                            <SelectGroup>
-                                                                <SelectLabel>Adversaires</SelectLabel>
-                                                                {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name={`scorers.${index}.goals`}
-                                                render={({ field }) => (
-                                                <FormItem>
-                                                <FormLabel className="text-xs">Buts</FormLabel>
-                                                <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
-                                                <FormMessage />
-                                                </FormItem>
-                                                )}
-                                            />
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </div>
-                                        {isOpponentSelected && (
-                                            <FormField
-                                                control={form.control}
-                                                name={`scorers.${index}.playerName`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-xs">Nom du buteur adverse</FormLabel>
-                                                        <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        )}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    <Separator />
-
-                     <div className="space-y-4">
-                         <div className="mb-2 flex items-center justify-between">
-                            <Label>Passeurs</Label>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', playerName: '', assists: 1 })}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
-                            </Button>
-                        </div>
-                        <div className="space-y-4">
-                            {assisterFields.map((field, index) => {
-                                const selectedPlayerId = watchAssisters?.[index]?.playerId;
-                                const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
-                                return(
-                                <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
-                                    <div className="flex items-end gap-2">
-                                        <FormField
-                                            control={form.control}
-                                            name={`assisters.${index}.playerId`}
-                                            render={({ field }) => (
-                                                <FormItem className="flex-1">
-                                                    <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
-                                                        <SelectContent className="max-h-60">
-                                                            <SelectGroup>
-                                                                <SelectLabel>{clubName}</SelectLabel>
-                                                                {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                            </SelectGroup>
-                                                            <SelectGroup>
-                                                                <SelectLabel>Adversaires</SelectLabel>
-                                                                {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name={`assisters.${index}.assists`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                <FormLabel className="text-xs">Passes</FormLabel>
-                                                <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
-                                                <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </div>
-                                    {isOpponentSelected && (
-                                        <FormField
-                                            control={form.control}
-                                            name={`assisters.${index}.playerName`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-xs">Nom du passeur adverse</FormLabel>
-                                                    <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                <ScrollArea className="max-h-[70vh] p-1">
+                    <div className="space-y-6 pr-4">
+                        <div className="space-y-4 rounded-md border p-4">
+                            <h4 className="font-medium text-center">{event.teamHome} vs {event.teamAway}</h4>
+                            <div className="grid grid-cols-2 gap-4 items-end">
+                                <FormField
+                                    control={form.control}
+                                    name="scoreHome"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Score {event.teamHome}</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="scoreAway"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Score {event.teamAway}</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                            </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-md border p-4">
+                            <h4 className="font-medium">Statistiques des joueurs</h4>
+                            
+                            <div className="space-y-4">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <Label>Buteurs</Label>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', playerName: '', goals: 1 })}>
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
+                                    </Button>
                                 </div>
-                            )})}
+                                <div className="space-y-4">
+                                    {scorerFields.map((field, index) => {
+                                        const selectedPlayerId = watchScorers?.[index]?.playerId;
+                                        const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
+                                        return (
+                                            <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
+                                                <div className="flex items-end gap-2">
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`scorers.${index}.playerId`}
+                                                        render={({ field }) => (
+                                                        <FormItem className="flex-1">
+                                                            <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
+                                                                <SelectContent className="max-h-60">
+                                                                    <SelectGroup>
+                                                                        <SelectLabel>{clubName}</SelectLabel>
+                                                                        {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                    </SelectGroup>
+                                                                    <SelectGroup>
+                                                                        <SelectLabel>Adversaires</SelectLabel>
+                                                                        {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                                                                    </SelectGroup>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                        )}
+                                                    />
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`scorers.${index}.goals`}
+                                                        render={({ field }) => (
+                                                        <FormItem>
+                                                        <FormLabel className="text-xs">Buts</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                        </FormItem>
+                                                        )}
+                                                    />
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                                {isOpponentSelected && (
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`scorers.${index}.playerName`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel className="text-xs">Nom du buteur adverse</FormLabel>
+                                                                <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+
+                            <Separator />
+
+                            <div className="space-y-4">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <Label>Passeurs</Label>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', playerName: '', assists: 1 })}>
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
+                                    </Button>
+                                </div>
+                                <div className="space-y-4">
+                                    {assisterFields.map((field, index) => {
+                                        const selectedPlayerId = watchAssisters?.[index]?.playerId;
+                                        const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
+                                        return(
+                                        <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
+                                            <div className="flex items-end gap-2">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`assisters.${index}.playerId`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex-1">
+                                                            <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
+                                                                <SelectContent className="max-h-60">
+                                                                    <SelectGroup>
+                                                                        <SelectLabel>{clubName}</SelectLabel>
+                                                                        {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                    </SelectGroup>
+                                                                    <SelectGroup>
+                                                                        <SelectLabel>Adversaires</SelectLabel>
+                                                                        {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                                                                    </SelectGroup>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`assisters.${index}.assists`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                        <FormLabel className="text-xs">Passes</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
+                                            {isOpponentSelected && (
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`assisters.${index}.playerName`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs">Nom du passeur adverse</FormLabel>
+                                                            <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            )}
+                                        </div>
+                                    )})}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ScrollArea>
 
                 <Button type="submit" disabled={loading} className="w-full">
                     {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) 
