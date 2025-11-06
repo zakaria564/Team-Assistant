@@ -199,7 +199,7 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
             </TableHeader>
             <TableBody>
                 {scorers.map((scorer, index) => (
-                    <TableRow key={scorer.playerId}>
+                    <TableRow key={scorer.playerId + index}>
                         <TableCell className="font-bold text-center">{index + 1}</TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2 font-medium">
@@ -271,16 +271,13 @@ export default function RankingsPage() {
                 }
                 setClubName(localClubName);
                 const clubLogo = clubDoc.exists() ? clubDoc.data().logoUrl : undefined;
-                const normalizedClubName = localClubName.toLowerCase();
 
                 const allTeamsMap = new Map<string, { logoUrl?: string }>();
                 opponentsSnapshot.docs.forEach(doc => {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name.toLowerCase(), { logoUrl: opponent.logoUrl });
                 });
-                // Add the user's club to the map as well
-                allTeamsMap.set(normalizedClubName, { logoUrl: clubLogo });
-
+                allTeamsMap.set(localClubName.toLowerCase(), { logoUrl: clubLogo });
 
                 const playersMap = new Map<string, Player>();
                 playersSnapshot.docs.forEach(doc => {
@@ -311,33 +308,29 @@ export default function RankingsPage() {
                     const { teamHome, teamAway, scoreHome, scoreAway, scorers } = event;
                     if (!teamHome || !teamAway) return;
 
-                    // Initialize teams in all stat objects
                     [generalStats, homeStats, awayStats].forEach(stats => {
                         initializeTeam(teamHome, stats);
                         initializeTeam(teamAway, stats);
                     });
 
-                    // --- Scorers Stats ---
                     if (scorers) {
                         scorers.forEach(scorer => {
-                            const scorerId = scorer.playerId.startsWith('opponent_') ? scorer.playerId : scorer.playerId;
+                            const player = playersMap.get(scorer.playerId);
+                            let teamName, teamLogoUrl;
+                            
+                            if (player) { // Scorer is from the user's club
+                                teamName = localClubName;
+                                teamLogoUrl = clubLogo;
+                            } else { // Scorer is from an opponent team
+                                const isHomeTeamUserClub = teamHome.toLowerCase() === localClubName.toLowerCase();
+                                const opponentTeamName = isHomeTeamUserClub ? teamAway : teamHome;
+                                const opponentTeamData = allTeamsMap.get(opponentTeamName.toLowerCase());
+                                teamName = opponentTeamName;
+                                teamLogoUrl = opponentTeamData?.logoUrl;
+                            }
+
+                            const scorerId = scorer.playerId.startsWith('opponent_') ? scorer.playerName : scorer.playerId;
                             if (!scorersStats[scorerId]) {
-                                const player = playersMap.get(scorer.playerId);
-                                let teamName = "Adversaire";
-                                let teamLogoUrl;
-                                
-                                if (player) {
-                                    teamName = localClubName;
-                                    teamLogoUrl = clubLogo;
-                                } else {
-                                     const opponentDoc = opponentsSnapshot.docs.find(o => scorer.playerName.toLowerCase().includes(o.data().name.toLowerCase()));
-                                    if(opponentDoc) {
-                                        const opponentData = opponentDoc.data() as Opponent;
-                                        teamName = opponentData.name;
-                                        teamLogoUrl = opponentData.logoUrl;
-                                    }
-                                }
-                                
                                 scorersStats[scorerId] = {
                                     playerId: scorerId,
                                     playerName: scorer.playerName,
@@ -351,7 +344,6 @@ export default function RankingsPage() {
                         });
                     }
 
-                    // --- General Stats ---
                     generalStats[teamHome].played++;
                     generalStats[teamAway].played++;
                     generalStats[teamHome].goalsFor += scoreHome;
@@ -359,17 +351,14 @@ export default function RankingsPage() {
                     generalStats[teamAway].goalsFor += scoreAway;
                     generalStats[teamAway].goalsAgainst += scoreHome;
                     
-                    // --- Home Stats ---
                     homeStats[teamHome].played++;
                     homeStats[teamHome].goalsFor += scoreHome;
                     homeStats[teamHome].goalsAgainst += scoreAway;
 
-                    // --- Away Stats ---
                     awayStats[teamAway].played++;
                     awayStats[teamAway].goalsFor += scoreAway;
                     awayStats[teamAway].goalsAgainst += scoreHome;
 
-                    // --- Points Logic ---
                     if (scoreHome > scoreAway) {
                         generalStats[teamHome].wins++;
                         generalStats[teamHome].points += 3;
