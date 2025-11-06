@@ -145,10 +145,13 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: player ? {
+        ...player,
+        coachId: player.coachId || "",
+    } : {
       name: "",
       photoUrl: "",
-      gender: "Masculin",
+      gender: undefined,
       category: "",
       status: "Actif",
       number: 10,
@@ -204,7 +207,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         })),
       });
     }
-  }, [player, form]);
+  }, [player, form.reset]);
 
 
   useEffect(() => {
@@ -441,7 +444,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/photo.jpg" {...field} />
+                                <Input placeholder="https://exemple.com/photo.jpg" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -460,7 +463,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Catégorie</FormLabel>
-                               <Select onValueChange={field.onChange} value={field.value || ""}>
+                               <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Sélectionner une catégorie" />
@@ -482,7 +485,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Poste</FormLabel>
-                                 <Select onValueChange={field.onChange} value={field.value || ""}>
+                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un poste" />
@@ -505,7 +508,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Entraîneur</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Assigner un entraîneur" />
@@ -627,7 +630,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Genre</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner le genre" />
@@ -650,7 +653,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Nationalité</FormLabel>
-                               <Select onValueChange={field.onChange} value={field.value || ""}>
+                               <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Sélectionner une nationalité" />
