@@ -28,6 +28,14 @@ interface TeamStats {
     points: number;
 }
 
+interface Scorer {
+    playerId: string;
+    playerName: string;
+    playerPhotoUrl?: string;
+    teamName: string;
+    goals: number;
+}
+
 interface Event {
     id: string;
     type: string;
@@ -37,6 +45,13 @@ interface Event {
     date: { seconds: number, nanoseconds: number };
     scoreHome?: number;
     scoreAway?: number;
+    scorers?: { playerId: string, playerName: string, goals: number }[];
+}
+
+interface Player {
+    id: string;
+    name: string;
+    photoUrl?: string;
 }
 
 interface Opponent {
@@ -162,11 +177,52 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
     );
 };
 
+const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
+    if (scorers.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-20">
+                <p>Aucun buteur trouvé pour cette sélection.</p>
+            </div>
+        );
+    }
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="text-center">Pos</TableHead>
+                    <TableHead>Joueur</TableHead>
+                    <TableHead className="hidden sm:table-cell">Équipe</TableHead>
+                    <TableHead className="text-right">Buts</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {scorers.map((scorer, index) => (
+                    <TableRow key={scorer.playerId}>
+                        <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2 font-medium">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={scorer.playerPhotoUrl} alt={scorer.playerName} />
+                                    <AvatarFallback>{scorer.playerName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span>{scorer.playerName}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">{scorer.teamName}</TableCell>
+                        <TableCell className="font-bold text-right">{scorer.goals}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
+
 
 export default function RankingsPage() {
     const [user, loadingUser] = useAuthState(auth);
     const router = useRouter();
-    const [rankings, setRankings] = useState<{ general: TeamStats[], home: TeamStats[], away: TeamStats[] }>({ general: [], home: [], away: [] });
+    const [rankings, setRankings] = useState<{ general: TeamStats[], home: TeamStats[], away: TeamStats[], scorers: Scorer[] }>({ general: [], home: [], away: [], scorers: [] });
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
@@ -174,7 +230,7 @@ export default function RankingsPage() {
 
     useEffect(() => {
         if (!user || !selectedCategory || !selectedCompetition) {
-            setRankings({ general: [], home: [], away: [] });
+            setRankings({ general: [], home: [], away: [], scorers: [] });
             if (user) setLoading(false);
             return;
         }
@@ -185,6 +241,7 @@ export default function RankingsPage() {
             try {
                 const clubDocRef = doc(db, "clubs", user.uid);
                 const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
                 const eventsQuery = query(
                     collection(db, "events"),
                     where("userId", "==", user.uid),
@@ -192,10 +249,11 @@ export default function RankingsPage() {
                     where("category", "==", selectedCategory)
                 );
 
-                const [clubDoc, opponentsSnapshot, eventsSnapshot] = await Promise.all([
+                const [clubDoc, opponentsSnapshot, eventsSnapshot, playersSnapshot] = await Promise.all([
                     getDoc(clubDocRef),
                     getDocs(opponentsQuery),
-                    getDocs(eventsQuery)
+                    getDocs(eventsQuery),
+                    getDocs(playersQuery)
                 ]);
                 
                 let localClubName = "Votre Club";
@@ -211,12 +269,18 @@ export default function RankingsPage() {
                     const opponent = doc.data() as Opponent;
                     allTeamsMap.set(opponent.name.toLowerCase(), { logoUrl: opponent.logoUrl });
                 });
+
+                const playersMap = new Map<string, Player>();
+                playersSnapshot.docs.forEach(doc => {
+                    playersMap.set(doc.id, { id: doc.id, ...doc.data() } as Player);
+                });
                 
                 const events = eventsSnapshot.docs.map(doc => doc.data() as Event);
 
                 const generalStats: { [key: string]: TeamStats } = {};
                 const homeStats: { [key: string]: TeamStats } = {};
                 const awayStats: { [key: string]: TeamStats } = {};
+                const scorersStats: { [key: string]: Scorer } = {};
 
                 const initializeTeam = (teamName: string, statsObject: { [key: string]: TeamStats }) => {
                     if (!statsObject[teamName]) {
@@ -235,7 +299,7 @@ export default function RankingsPage() {
                 events.forEach(event => {
                     if (typeof event.scoreHome !== 'number' || typeof event.scoreAway !== 'number') return;
                     
-                    const { teamHome, teamAway, scoreHome, scoreAway } = event;
+                    const { teamHome, teamAway, scoreHome, scoreAway, scorers } = event;
                     if (!teamHome || !teamAway) return;
 
                     // Initialize teams in all stat objects
@@ -243,6 +307,24 @@ export default function RankingsPage() {
                         initializeTeam(teamHome, stats);
                         initializeTeam(teamAway, stats);
                     });
+
+                    // --- Scorers Stats ---
+                    if (scorers) {
+                        scorers.forEach(scorer => {
+                            if (!scorersStats[scorer.playerId]) {
+                                const player = playersMap.get(scorer.playerId);
+                                const playerTeam = player ? localClubName : 'Adversaire'; // Simplified team name logic
+                                scorersStats[scorer.playerId] = {
+                                    playerId: scorer.playerId,
+                                    playerName: scorer.playerName,
+                                    playerPhotoUrl: player?.photoUrl,
+                                    teamName: playerTeam,
+                                    goals: 0
+                                };
+                            }
+                            scorersStats[scorer.playerId].goals += scorer.goals;
+                        });
+                    }
 
                     // --- General Stats ---
                     generalStats[teamHome].played++;
@@ -303,10 +385,13 @@ export default function RankingsPage() {
                         });
                 }
                 
+                const sortedScorers = Object.values(scorersStats).sort((a, b) => b.goals - a.goals);
+
                 setRankings({
                     general: sortAndFilter(generalStats),
                     home: sortAndFilter(homeStats),
-                    away: sortAndFilter(awayStats)
+                    away: sortAndFilter(awayStats),
+                    scorers: sortedScorers,
                 });
             } catch (error) {
                 console.error("Error fetching ranking data:", error);
@@ -371,10 +456,11 @@ export default function RankingsPage() {
                         </div>
                     ) : selectedCategory ? (
                        <Tabs defaultValue="general" className="w-full">
-                           <TabsList className="grid w-full grid-cols-3">
+                           <TabsList className="grid w-full grid-cols-4">
                                <TabsTrigger value="general">Général</TabsTrigger>
                                <TabsTrigger value="home">Domicile</TabsTrigger>
                                <TabsTrigger value="away">Extérieur</TabsTrigger>
+                               <TabsTrigger value="scorers">Buteurs</TabsTrigger>
                            </TabsList>
                            <TabsContent value="general">
                                <RankingTable rankings={rankings.general} clubName={clubName} />
@@ -384,6 +470,9 @@ export default function RankingsPage() {
                            </TabsContent>
                            <TabsContent value="away">
                                <RankingTable rankings={rankings.away} clubName={clubName} />
+                           </TabsContent>
+                            <TabsContent value="scorers">
+                               <ScorersTable scorers={rankings.scorers} />
                            </TabsContent>
                        </Tabs>
                     ) : (
@@ -396,5 +485,3 @@ export default function RankingsPage() {
         </div>
     );
 }
-
-    
