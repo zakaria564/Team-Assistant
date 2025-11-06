@@ -14,6 +14,17 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
+interface Scorer {
+    playerId: string;
+    playerName: string;
+    goals: number;
+}
+
+interface Assister {
+    playerId: string;
+    playerName: string;
+    assists: number;
+}
 interface Event {
   id: string;
   type: string;
@@ -24,8 +35,8 @@ interface Event {
   teamAway?: string;
   scoreHome?: number;
   scoreAway?: number;
-  scorers?: { playerId: string, playerName: string, goals: number }[];
-  assisters?: { playerId: string, playerName: string, assists: number }[];
+  scorers?: Scorer[];
+  assisters?: Assister[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number, children?: React.ReactNode }) => (
@@ -61,7 +72,7 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
     if (clubNameBase === homeTeamBase) {
         won = scoreHome > scoreAway;
     } else { // clubName is awayTeam
-        won = scoreAway > scoreHome;
+        won = scoreAway > homeTeamBase.length;
     }
 
     if (won) {
@@ -148,6 +159,20 @@ export default function EventDetailPage() {
   
   const resultStyles = getResultStyles(event.scoreHome, event.scoreAway, clubName, event.teamHome, event.teamAway);
 
+  const clubNameIsHomeTeam = event.teamHome?.toLowerCase() === clubName.toLowerCase();
+
+  let homeScorers: Scorer[] = [];
+  let awayScorers: Scorer[] = [];
+  if (event.scorers) {
+      event.scorers.forEach(scorer => {
+          const isOpponent = scorer.playerId.startsWith('opponent_');
+          if ((clubNameIsHomeTeam && !isOpponent) || (!clubNameIsHomeTeam && isOpponent)) {
+              homeScorers.push(scorer);
+          } else {
+              awayScorers.push(scorer);
+          }
+      });
+  }
 
   return (
     <div className="space-y-6">
@@ -196,17 +221,17 @@ export default function EventDetailPage() {
                     <CardTitle>Résultat Final</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-between gap-6">
-                        <div className="text-center">
-                            <p className="text-sm text-muted-foreground">{event.teamHome}</p>
+                    <div className="flex items-center justify-around gap-6">
+                        <div className="text-center flex-1">
+                            <p className="text-sm text-muted-foreground truncate">{event.teamHome}</p>
                             <p className="text-4xl font-bold">{event.scoreHome ?? '-'}</p>
                         </div>
                          <div className="text-2xl font-bold text-muted-foreground">vs</div>
-                        <div className="text-center">
-                            <p className="text-sm text-muted-foreground">{event.teamAway}</p>
+                        <div className="text-center flex-1">
+                            <p className="text-sm text-muted-foreground truncate">{event.teamAway}</p>
                             <p className="text-4xl font-bold">{event.scoreAway ?? '-'}</p>
                         </div>
-                        <Badge className={cn("ml-auto text-base", resultStyles.className)}>
+                        <Badge className={cn("ml-auto text-base hidden sm:inline-flex", resultStyles.className)}>
                            {resultStyles.label}
                         </Badge>
                     </div>
@@ -214,32 +239,32 @@ export default function EventDetailPage() {
             </Card>
         )}
         
-        {showScoreAndStats && ((event.scorers && event.scorers.length > 0) || (event.assisters && event.assisters.length > 0)) && (
+        {showScoreAndStats && (homeScorers.length > 0 || awayScorers.length > 0) && (
             <Card>
                 <CardHeader>
                     <CardTitle>Statistiques du Match</CardTitle>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
-                    {event.scorers && event.scorers.length > 0 ? (
-                        <div className="space-y-3">
-                            <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs</h4>
-                            <ul className="list-disc pl-5 text-sm space-y-1">
-                                {event.scorers.map((scorer, index) => (
-                                    <li key={index}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : (<div></div>)}
-                     {event.assisters && event.assisters.length > 0 ? (
-                        <div className="space-y-3">
-                            <h4 className="font-semibold flex items-center gap-2"><Footprints className="h-5 w-5" />Passeurs</h4>
-                             <ul className="list-disc pl-5 text-sm space-y-1">
-                                {event.assisters.map((assister, index) => (
-                                    <li key={index}>{assister.playerName} ({assister.assists} passe{assister.assists > 1 ? 's' : ''})</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ): (<div></div>)}
+                <CardContent className="grid md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="space-y-3">
+                        <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs ({event.teamHome})</h4>
+                        {homeScorers.length > 0 ? (
+                          <ul className="list-disc pl-5 text-sm space-y-1">
+                              {homeScorers.map((scorer, index) => (
+                                  <li key={`home-${index}`}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
+                              ))}
+                          </ul>
+                        ) : (<p className="text-sm text-muted-foreground pl-5">Aucun buteur</p>)}
+                    </div>
+                    <div className="space-y-3">
+                         <h4 className="font-semibold flex items-center gap-2"><Goal className="h-5 w-5" />Buteurs ({event.teamAway})</h4>
+                        {awayScorers.length > 0 ? (
+                           <ul className="list-disc pl-5 text-sm space-y-1">
+                              {awayScorers.map((scorer, index) => (
+                                  <li key={`away-${index}`}>{scorer.playerName} ({scorer.goals} but{scorer.goals > 1 ? 's' : ''})</li>
+                              ))}
+                          </ul>
+                        ) : (<p className="text-sm text-muted-foreground pl-5">Aucun buteur</p>)}
+                    </div>
                 </CardContent>
             </Card>
         )}
