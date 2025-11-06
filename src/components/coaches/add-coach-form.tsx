@@ -163,13 +163,13 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             cin: coach.cin || "",
             address: coach.address || "",
             documents: (coach.documents || []).map(doc => ({
-                name: doc.name,
-                url: doc.url,
+                name: doc.name || "",
+                url: doc.url || "",
                 validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
             })),
         });
     }
-  }, [coach, form]);
+  }, [coach, form.reset]);
 
 
   const getCameraPermission = useCallback(async () => {
