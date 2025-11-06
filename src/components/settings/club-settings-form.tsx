@@ -33,6 +33,7 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [isClubNameSet, setIsClubNameSet] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,6 +68,9 @@ export function ClubSettingsForm() {
                   clubPhone: data.clubPhone || "",
                   address: data.address || "",
                 });
+                if (data.clubName) {
+                    setIsClubNameSet(true);
+                }
             } else {
                 form.reset({
                   clubName: "",
@@ -76,6 +80,7 @@ export function ClubSettingsForm() {
                   clubPhone: "",
                   address: "",
                 });
+                setIsClubNameSet(false);
             }
         } catch (error) {
             console.error("Error fetching club data: ", error);
@@ -108,6 +113,9 @@ export function ClubSettingsForm() {
             userId: user.uid,
         }, { merge: true });
         toast({ title: "Informations du club enregistrées", description: "Les données de votre club ont été mises à jour." });
+        if (values.clubName && !isClubNameSet) {
+            setIsClubNameSet(true);
+        }
         router.refresh();
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les informations." });
@@ -143,7 +151,7 @@ export function ClubSettingsForm() {
                             <FormItem>
                             <FormLabel>Nom de votre club</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de votre club" {...field} />
+                                <Input placeholder="Nom de votre club" {...field} disabled={isClubNameSet} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
