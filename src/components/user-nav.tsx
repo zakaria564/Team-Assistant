@@ -67,7 +67,7 @@ export function UserNav() {
 
   if (loading || loadingClub) {
     return (
-       <Skeleton className="h-10 w-10 rounded-full" />
+       <Skeleton className="h-12 w-12 rounded-full" />
     )
   }
 
@@ -80,8 +80,8 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+        <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+          <Avatar className="h-12 w-12">
             <AvatarImage src={clubLogoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
