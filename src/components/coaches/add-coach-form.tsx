@@ -126,21 +126,6 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      photoUrl: "",
-      category: "",
-      status: "Actif",
-      phone: "",
-      email: "",
-      specialty: "",
-      entryDate: "",
-      exitDate: "",
-      nationality: "",
-      cin: "",
-      address: "",
-      documents: [],
-    }
   });
 
   const photoDataUrl = form.watch('photoUrl');
@@ -152,27 +137,27 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
   useEffect(() => {
     if (coach) {
-        form.reset({
-            name: coach.name || "",
-            photoUrl: coach.photoUrl || "",
-            category: coach.category || "",
-            status: coach.status || "Actif",
-            phone: coach.phone || "",
-            email: coach.email || "",
-            specialty: coach.specialty || "",
-            entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
-            exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
-            nationality: coach.nationality || "",
-            cin: coach.cin || "",
-            address: coach.address || "",
-            documents: (coach.documents || []).map(doc => ({
-                name: doc.name || "",
-                url: doc.url || "",
-                validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
-            })),
-        });
+      form.reset({
+        name: coach.name || "",
+        photoUrl: coach.photoUrl || "",
+        category: coach.category || "",
+        status: coach.status || "Actif",
+        phone: coach.phone || "",
+        email: coach.email || "",
+        specialty: coach.specialty || "",
+        entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : "",
+        exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : "",
+        nationality: coach.nationality || "",
+        cin: coach.cin || "",
+        address: coach.address || "",
+        documents: (coach.documents || []).map(doc => ({
+            name: doc.name || "",
+            url: doc.url || "",
+            validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
+        })),
+      });
     }
-  }, [coach, form]);
+  }, [coach, form.reset]);
 
 
   const getCameraPermission = useCallback(async () => {
