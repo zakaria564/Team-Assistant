@@ -153,10 +153,13 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
   useEffect(() => {
     if (coach) {
         form.reset({
-            ...coach,
-            specialty: coach.specialty || "",
-            category: coach.category || "",
+            name: coach.name || "",
             photoUrl: coach.photoUrl || "",
+            category: coach.category || "",
+            status: coach.status || "Actif",
+            phone: coach.phone || "",
+            email: coach.email || "",
+            specialty: coach.specialty || "",
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
             nationality: coach.nationality || "",
@@ -169,7 +172,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             })),
         });
     }
-  }, [coach, form.reset]);
+  }, [coach, form]);
 
 
   const getCameraPermission = useCallback(async () => {
@@ -695,3 +698,5 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
+
+    
