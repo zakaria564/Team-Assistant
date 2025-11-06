@@ -154,6 +154,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     if (coach) {
         form.reset({
             ...coach,
+            specialty: coach.specialty || "",
+            category: coach.category || "",
             photoUrl: coach.photoUrl || "",
             entryDate: coach.entryDate ? coach.entryDate.split('T')[0] : '',
             exitDate: coach.exitDate ? coach.exitDate.split('T')[0] : '',
@@ -407,7 +409,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Spécialité</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Sélectionner une spécialité" />
@@ -430,7 +432,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Catégorie</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner une catégorie" />
@@ -607,7 +609,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Nationalité</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Sélectionner une nationalité" />
@@ -693,5 +695,3 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     </>
   );
 }
-
-    
