@@ -261,7 +261,7 @@ export default function RankingsPage() {
                 const [clubDoc, opponentsSnapshot, eventsSnapshot, playersSnapshot] = await Promise.all([
                     getDoc(clubDocRef),
                     getDocs(opponentsQuery),
-                    getDocs(eventsSnapshot),
+                    getDocs(eventsQuery),
                     getDocs(playersQuery)
                 ]);
                 
