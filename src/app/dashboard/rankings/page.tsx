@@ -33,6 +33,7 @@ interface Scorer {
     playerName: string;
     playerPhotoUrl?: string;
     teamName: string;
+    teamLogoUrl?: string;
     goals: number;
 }
 
@@ -209,7 +210,15 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
                                 <span>{scorer.playerName}</span>
                             </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">{scorer.teamName}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                             <div className="flex items-center gap-2 font-medium">
+                                <Avatar className="h-6 w-6">
+                                    <AvatarImage src={scorer.teamLogoUrl} alt={scorer.teamName} />
+                                    <AvatarFallback>{scorer.teamName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span>{scorer.teamName}</span>
+                            </div>
+                        </TableCell>
                         <TableCell className="font-bold text-right">{scorer.goals}</TableCell>
                     </TableRow>
                 ))}
@@ -252,7 +261,7 @@ export default function RankingsPage() {
                 const [clubDoc, opponentsSnapshot, eventsSnapshot, playersSnapshot] = await Promise.all([
                     getDoc(clubDocRef),
                     getDocs(opponentsQuery),
-                    getDocs(eventsQuery),
+                    getDocs(eventsSnapshot),
                     getDocs(playersQuery)
                 ]);
                 
@@ -315,11 +324,18 @@ export default function RankingsPage() {
                             if (!scorersStats[scorerId]) {
                                 const player = playersMap.get(scorer.playerId);
                                 let teamName = "Adversaire";
+                                let teamLogoUrl;
+                                
                                 if (player) {
                                     teamName = localClubName;
+                                    teamLogoUrl = clubLogo;
                                 } else {
-                                    const opponent = opponentsSnapshot.docs.find(o => scorer.playerName.toLowerCase().includes(o.data().name.toLowerCase()));
-                                    if(opponent) teamName = opponent.data().name;
+                                     const opponentDoc = opponentsSnapshot.docs.find(o => scorer.playerName.toLowerCase().includes(o.data().name.toLowerCase()));
+                                    if(opponentDoc) {
+                                        const opponentData = opponentDoc.data() as Opponent;
+                                        teamName = opponentData.name;
+                                        teamLogoUrl = opponentData.logoUrl;
+                                    }
                                 }
                                 
                                 scorersStats[scorerId] = {
@@ -327,6 +343,7 @@ export default function RankingsPage() {
                                     playerName: scorer.playerName,
                                     playerPhotoUrl: player?.photoUrl,
                                     teamName: teamName,
+                                    teamLogoUrl: teamLogoUrl,
                                     goals: 0
                                 };
                             }
