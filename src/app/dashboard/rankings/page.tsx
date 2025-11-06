@@ -313,12 +313,20 @@ export default function RankingsPage() {
                         scorers.forEach(scorer => {
                             if (!scorersStats[scorer.playerId]) {
                                 const player = playersMap.get(scorer.playerId);
-                                const playerTeam = player ? localClubName : 'Adversaire'; // Simplified team name logic
+                                let teamName = "Adversaire";
+                                if (player) {
+                                    teamName = localClubName;
+                                } else {
+                                    // Check if scorer's team is home or away
+                                    const opponent = opponentsSnapshot.docs.find(o => o.id === scorer.playerId);
+                                    if(opponent) teamName = opponent.data().name;
+                                }
+                                
                                 scorersStats[scorer.playerId] = {
                                     playerId: scorer.playerId,
                                     playerName: scorer.playerName,
                                     playerPhotoUrl: player?.photoUrl,
-                                    teamName: playerTeam,
+                                    teamName: teamName,
                                     goals: 0
                                 };
                             }

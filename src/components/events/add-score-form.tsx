@@ -23,6 +23,11 @@ interface Player {
     category: string;
 }
 
+interface Opponent {
+    id: string;
+    name: string;
+}
+
 interface EventData {
   id: string;
   category: string;
@@ -40,12 +45,12 @@ const formSchema = z.object({
   scoreHome: z.coerce.number({ required_error: "Score requis" }).min(0, "Score invalide"),
   scoreAway: z.coerce.number({ required_error: "Score requis" }).min(0, "Score invalide"),
   scorers: z.array(z.object({
-      playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
+      playerId: z.string().min(1, "Veuillez sélectionner un joueur ou une équipe."),
       playerName: z.string().optional(),
       goals: z.coerce.number().min(1, "Minimum 1 but."),
   })).optional(),
   assisters: z.array(z.object({
-      playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
+      playerId: z.string().min(1, "Veuillez sélectionner un joueur ou une équipe."),
       playerName: z.string().optional(),
       assists: z.coerce.number().min(1, "Minimum 1 passe."),
   })).optional(),
@@ -85,6 +90,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
+    const [opponents, setOpponents] = useState<Opponent[]>([]);
     const [clubName, setClubName] = useState("Votre Club");
     
     const form = useForm<z.infer<typeof formSchema>>({
@@ -105,9 +111,12 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
         control: form.control,
         name: "assisters"
     });
+
+    const watchScorers = form.watch("scorers");
+    const watchAssisters = form.watch("assisters");
     
      useEffect(() => {
-        const fetchClubNameAndPlayers = async () => {
+        const fetchInitialData = async () => {
             if (!user || !event.category) {
                 setPlayers([]);
                 return;
@@ -118,6 +127,11 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 const currentClubName = clubDoc.exists() && clubDoc.data().clubName ? clubDoc.data().clubName : "Votre Club";
                 setClubName(currentClubName);
                 
+                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
+                const opponentsSnapshot = await getDocs(opponentsQuery);
+                const opponentsData = opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent));
+                setOpponents(opponentsData);
+
                 const normalizedClub = normalizeString(currentClubName);
                 const normalizedHome = normalizeString(event.teamHome);
                 const normalizedAway = normalizeString(event.teamAway);
@@ -155,7 +169,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
             }
         };
 
-        fetchClubNameAndPlayers();
+        fetchInitialData();
     }, [user, event, toast]);
 
 
@@ -170,16 +184,22 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
               scoreHome: values.scoreHome,
               scoreAway: values.scoreAway,
             };
-                  
-            const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Joueur inconnu';
             
-            dataToSave.scorers = (values.scorers || [])
-                .filter(s => s.playerId && s.goals > 0)
-                .map(s => ({...s, playerName: getPlayerName(s.playerId)}));
-                
-            dataToSave.assisters = (values.assisters || [])
-                .filter(a => a.playerId && a.assists > 0)
-                .map(a => ({...a, playerName: getPlayerName(a.playerId)}));
+            const processStats = (items: any[]) => {
+                return (items || [])
+                    .filter(item => item.playerId && (item.goals > 0 || item.assists > 0))
+                    .map(item => {
+                        const isOpponent = opponents.some(o => o.id === item.playerId);
+                        if (isOpponent) {
+                            return { ...item, playerId: `opponent_${item.playerName.replace(/\s/g, '_')}` };
+                        }
+                        const playerName = players.find(p => p.id === item.playerId)?.name || 'Joueur inconnu';
+                        return {...item, playerName };
+                    });
+            };
+            
+            dataToSave.scorers = processStats(values.scorers || []);
+            dataToSave.assisters = processStats(values.assisters || []);
 
             const eventDocRef = doc(db, "events", event.id);
             await updateDoc(eventDocRef, dataToSave);
@@ -243,84 +263,139 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                     <div className="space-y-4">
                          <div className="mb-2 flex items-center justify-between">
                             <Label>Buteurs</Label>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', goals: 1 })}>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendScorer({ playerId: '', playerName: '', goals: 1 })}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
                             </Button>
                         </div>
-                        <div className="space-y-2">
-                            {scorerFields.map((field, index) => (
-                                <div key={field.id} className="flex items-center gap-2">
-                                    <FormField
-                                        control={form.control}
-                                        name={`scorers.${index}.playerId`}
-                                        render={({ field }) => (
-                                          <FormItem className="flex-1">
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
-                                                <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                           </FormItem>
+                        <div className="space-y-4">
+                            {scorerFields.map((field, index) => {
+                                const selectedPlayerId = watchScorers?.[index]?.playerId;
+                                const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
+                                return (
+                                    <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
+                                        <div className="flex items-end gap-2">
+                                            <FormField
+                                                control={form.control}
+                                                name={`scorers.${index}.playerId`}
+                                                render={({ field }) => (
+                                                <FormItem className="flex-1">
+                                                    <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
+                                                        <SelectContent>
+                                                            <optgroup label={clubName}>
+                                                                {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                            </optgroup>
+                                                            <optgroup label="Adversaires">
+                                                                {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                                                            </optgroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name={`scorers.${index}.goals`}
+                                                render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel className="text-xs">Buts</FormLabel>
+                                                <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                                )}
+                                            />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </div>
+                                        {isOpponentSelected && (
+                                            <FormField
+                                                control={form.control}
+                                                name={`scorers.${index}.playerName`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs">Nom du buteur adverse</FormLabel>
+                                                        <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
                                         )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name={`scorers.${index}.goals`}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                           <FormControl><Input type="number" placeholder="Buts" className="w-24" {...field} /></FormControl>
-                                           <FormMessage />
-                                           </FormItem>
-                                        )}
-                                    />
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeScorer(index)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                </div>
-                            ))}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
 
                     <Separator />
 
-                    <div className="space-y-4">
+                     <div className="space-y-4">
                          <div className="mb-2 flex items-center justify-between">
                             <Label>Passeurs</Label>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', assists: 1 })}>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendAssister({ playerId: '', playerName: '', assists: 1 })}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Ajouter
                             </Button>
                         </div>
-                        <div className="space-y-2">
-                            {assisterFields.map((field, index) => (
-                                <div key={field.id} className="flex items-center gap-2">
-                                    <FormField
-                                        control={form.control}
-                                        name={`assisters.${index}.playerId`}
-                                        render={({ field }) => (
-                                            <FormItem className="flex-1">
-                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                  <FormControl><SelectTrigger><SelectValue placeholder="Choisir un joueur" /></SelectTrigger></FormControl>
-                                                  <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                                              </Select>
-                                              <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name={`assisters.${index}.assists`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                              <FormControl><Input type="number" placeholder="Passes" className="w-24" {...field} /></FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
+                        <div className="space-y-4">
+                            {assisterFields.map((field, index) => {
+                                const selectedPlayerId = watchAssisters?.[index]?.playerId;
+                                const isOpponentSelected = opponents.some(o => o.id === selectedPlayerId);
+                                return(
+                                <div key={field.id} className="flex flex-col gap-2 p-2 border rounded-md">
+                                    <div className="flex items-end gap-2">
+                                        <FormField
+                                            control={form.control}
+                                            name={`assisters.${index}.playerId`}
+                                            render={({ field }) => (
+                                                <FormItem className="flex-1">
+                                                    <FormLabel className="text-xs">Joueur / Équipe</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
+                                                        <SelectContent>
+                                                            <optgroup label={clubName}>
+                                                                {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                            </optgroup>
+                                                            <optgroup label="Adversaires">
+                                                                {opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                                                            </optgroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`assisters.${index}.assists`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel className="text-xs">Passes</FormLabel>
+                                                <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </div>
+                                    {isOpponentSelected && (
+                                        <FormField
+                                            control={form.control}
+                                            name={`assisters.${index}.playerName`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-xs">Nom du passeur adverse</FormLabel>
+                                                    <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     </div>
                 </div>
