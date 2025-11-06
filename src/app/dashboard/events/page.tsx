@@ -141,15 +141,6 @@ export default function EventsPage() {
 
   const handleDeleteEvent = async () => {
     if (!eventToDelete) return;
-    if (typeof eventToDelete.scoreHome === 'number') {
-        toast({
-            variant: "destructive",
-            title: "Action non autorisée",
-            description: "Vous ne pouvez pas supprimer un événement dont le score a déjà été enregistré.",
-        });
-        setEventToDelete(null);
-        return;
-    }
     try {
       await deleteDoc(doc(db, "events", eventToDelete.id));
       toast({
