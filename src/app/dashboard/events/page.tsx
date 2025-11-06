@@ -236,8 +236,7 @@ export default function EventsPage() {
                         const hasScore = typeof event.scoreHome === 'number';
                         const canAddScore = eventIsPast && !hasScore && (event.type.includes('Match') || event.type.includes('Tournoi'));
                         const canModify = !eventIsPast;
-                        const hoursSinceEvent = eventIsPast ? differenceInHours(new Date(), event.date) : 0;
-                        const canDelete = !hasScore && hoursSinceEvent < 24;
+                        const canDelete = !hasScore;
 
 
                         return (
