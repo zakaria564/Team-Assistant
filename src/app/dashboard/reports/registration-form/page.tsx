@@ -12,17 +12,19 @@ import { db, auth } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 
 export default function RegistrationFormPage() {
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [clubName, setClubName] = useState("");
+  const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
 
   useEffect(() => {
-    const fetchClubName = async () => {
+    const fetchClubInfo = async () => {
       if (!user) {
         if (!loadingUser) {
           setLoadingClub(false);
@@ -32,8 +34,10 @@ export default function RegistrationFormPage() {
       try {
         const clubDocRef = doc(db, "clubs", user.uid);
         const docSnap = await getDoc(clubDocRef);
-        if (docSnap.exists() && docSnap.data().clubName) {
-          setClubName(docSnap.data().clubName);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setClubName(data.clubName || "votre club");
+          setClubLogoUrl(data.logoUrl || null);
         } else {
           setClubName("votre club");
         }
@@ -46,7 +50,7 @@ export default function RegistrationFormPage() {
     };
     
     if (user || !loadingUser) {
-        fetchClubName();
+        fetchClubInfo();
     }
   }, [user, loadingUser]);
 
@@ -95,6 +99,7 @@ export default function RegistrationFormPage() {
   };
 
   const DottedLine = () => <div className="flex-grow border-b border-dotted border-gray-400 mx-1"></div>;
+  const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
 
 
   return (
@@ -126,13 +131,22 @@ export default function RegistrationFormPage() {
                 <Card className="w-full mx-auto print:shadow-none print:border-none bg-white text-black" id="printable-form">
                     <CardHeader className="text-center space-y-4 p-4 sm:p-6">
                         {loadingClub || loadingUser ? (
-                            <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
+                           <div className="flex flex-col items-center gap-4">
+                                <Skeleton className="h-16 w-16 rounded-full bg-gray-200" />
+                                <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
+                            </div>
                         ) : (
-                            <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase">
-                                <span className="break-words">FICHE D'INSCRIPTION</span>
-                                <span className="hidden sm:inline">-</span>
-                                <span className="break-all">{clubName}</span>
-                            </CardTitle>
+                            <div className="flex flex-col items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" />
+                                    <AvatarFallback>{clubInitial}</AvatarFallback>
+                                </Avatar>
+                                <CardTitle className="flex flex-col sm:flex-row items-center justify-center gap-x-2 text-xl md:text-2xl font-bold uppercase">
+                                    <span className="break-words">FICHE D'INSCRIPTION</span>
+                                    <span className="hidden sm:inline">-</span>
+                                    <span className="break-all">{clubName}</span>
+                                </CardTitle>
+                            </div>
                         )}
                         <div className="flex items-center font-semibold text-sm md:text-base">
                             <span className="shrink-0">Saison sportive :</span>
