@@ -141,6 +141,15 @@ export default function EventsPage() {
 
   const handleDeleteEvent = async () => {
     if (!eventToDelete) return;
+    if (typeof eventToDelete.scoreHome === 'number') {
+        toast({
+            variant: "destructive",
+            title: "Action non autorisée",
+            description: "Vous ne pouvez pas supprimer un événement dont le score a déjà été enregistré.",
+        });
+        setEventToDelete(null);
+        return;
+    }
     try {
       await deleteDoc(doc(db, "events", eventToDelete.id));
       toast({
@@ -236,8 +245,6 @@ export default function EventsPage() {
                         const hasScore = typeof event.scoreHome === 'number';
                         const canAddScore = eventIsPast && !hasScore && (event.type.includes('Match') || event.type.includes('Tournoi'));
                         const canModify = !eventIsPast;
-                        const canDelete = !hasScore;
-
 
                         return (
                           <Card key={event.id} className="bg-muted/30 group">
@@ -295,9 +302,8 @@ export default function EventsPage() {
                                       )}
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
-                                          className={cn("cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10", !canDelete && "cursor-not-allowed text-muted-foreground focus:text-muted-foreground focus:bg-transparent")}
-                                          onSelect={(e) => { if (canDelete) { e.preventDefault(); setEventToDelete(event); } }}
-                                          disabled={!canDelete}
+                                          className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                          onSelect={(e) => { e.preventDefault(); setEventToDelete(event); }}
                                         >
                                           <Trash2 className="mr-2 h-4 w-4" />
                                           Supprimer
