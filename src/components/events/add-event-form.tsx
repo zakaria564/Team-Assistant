@@ -133,11 +133,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
     }, [user]);
 
     useEffect(() => {
-        const isFeminineCategory = selectedCategory?.includes(" F");
-        const userClubTeamName = isFeminineCategory ? `${clubName} (F)` : clubName;
-        
-        setAvailableTeams([userClubTeamName, ...opponents].sort());
-    }, [selectedCategory, clubName, opponents]);
+        // We just combine the club name and opponents, regardless of category.
+        // This keeps team names consistent.
+        setAvailableTeams([clubName, ...opponents].sort());
+    }, [clubName, opponents]);
 
 
     useEffect(() => {
@@ -359,5 +358,3 @@ export function AddEventForm({ event }: AddEventFormProps) {
         </Form>
     );
 }
-
-    
