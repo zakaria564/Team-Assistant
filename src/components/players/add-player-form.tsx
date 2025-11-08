@@ -22,6 +22,10 @@ import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -154,7 +158,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
       gender: undefined,
       category: "",
       status: "Actif",
-      number: 10,
+      number: undefined,
       birthDate: "",
       entryDate: "",
       exitDate: "",
@@ -184,7 +188,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     if (player) {
       form.reset({
         ...player,
-        number: player.number || 1,
+        number: player.number || undefined,
         coachId: player.coachId || "",
         photoUrl: player.photoUrl || "",
         birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
@@ -533,7 +537,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Numéro</FormLabel>
                             <FormControl>
-                                <Input type="number" {...field} />
+                                <Input type="number" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
