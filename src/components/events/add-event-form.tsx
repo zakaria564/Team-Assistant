@@ -33,7 +33,7 @@ const eventTypes = [
 const formSchema = z.object({
   type: z.enum(eventTypes, { required_error: "Le type d'événement est requis." }),
   category: z.string({ required_error: "La catégorie est requise." }),
-  date: z.date({ required_error: "La date est requise."}),
+  date: z.date({ required_error: "La date est requise."}).optional(),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
   location: z.string().optional(),
   teamHome: z.string().optional(),
@@ -95,10 +95,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            type: "Match de Championnat",
+            type: undefined,
             category: "",
-            date: new Date(),
-            time: "15:00",
+            date: undefined,
+            time: "",
             location: "",
             teamHome: "",
             teamAway: "",
@@ -144,8 +144,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
             form.reset({
                 type: event.type,
                 category: event.category,
-                date: new Date(event.date),
-                time: format(new Date(event.date), "HH:mm"),
+                date: event.date ? new Date(event.date) : undefined,
+                time: event.date ? format(new Date(event.date), "HH:mm") : "",
                 location: event.location || "",
                 teamHome: event.teamHome || "",
                 teamAway: event.teamAway || "",
@@ -159,6 +159,10 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
             toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+            return;
+        }
+        if (!values.date) {
+            toast({ variant: "destructive", title: "Date manquante", description: "Veuillez sélectionner une date." });
             return;
         }
         setLoading(true);

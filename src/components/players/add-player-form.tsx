@@ -42,7 +42,7 @@ const formSchema = z.object({
   gender: z.enum(["Masculin", "Féminin"], { required_error: "Le genre est requis." }),
   category: z.string().min(1, "La catégorie est requise."),
   status: z.enum(playerStatuses, { required_error: "Le statut est requis." }),
-  number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99."),
+  number: z.coerce.number().min(1, "Le numéro doit être supérieur à 0.").max(99, "Le numéro ne peut pas dépasser 99.").optional(),
   birthDate: z.string().optional(),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
@@ -211,7 +211,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         })),
       });
     }
-  }, [player, form.reset]);
+  }, [player, form]);
 
 
   useEffect(() => {
@@ -549,7 +549,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Statut</FormLabel>
-                                 <Select onValueChange={field.onChange} value={field.value}>
+                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue />

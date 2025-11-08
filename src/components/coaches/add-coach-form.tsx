@@ -391,7 +391,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Spécialité</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue />
@@ -414,7 +414,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Catégorie</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
+                                  <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -436,7 +436,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Statut</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
+                                  <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -461,7 +461,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date d'entrée</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} />
+                                  <Input type="date" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -474,7 +474,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date de sortie</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} />
+                                  <Input type="date" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -507,7 +507,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Type du document</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue />
@@ -530,7 +530,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date d'expiration</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} />
+                                  <Input type="date" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -590,7 +590,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Nationalité</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue />
