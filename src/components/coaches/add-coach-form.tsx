@@ -577,7 +577,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Jean Dupont" {...field} />
+                            <Input placeholder="" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

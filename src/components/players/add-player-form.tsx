@@ -604,7 +604,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Jean Dupont" {...field} />
+                            <Input placeholder="" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
