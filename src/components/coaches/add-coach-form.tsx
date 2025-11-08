@@ -373,7 +373,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="" {...field} />
+                                <Input {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -394,7 +394,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner une spécialité" />
+                                    <SelectValue />
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -417,7 +417,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner une catégorie" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -439,7 +439,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un statut" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -510,7 +510,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner un type" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -546,7 +546,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                <FormControl>
                                    <Input 
                                       type="text" 
-                                      placeholder=""
+                                      
                                       {...field}
                                     />
                                </FormControl>
@@ -577,7 +577,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -593,7 +593,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner une nationalité" />
+                                    <SelectValue />
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -613,7 +613,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -627,7 +627,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="" {...field} />
+                            <Textarea {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -640,7 +640,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="" {...field} />
+                                <Input type="email" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -653,7 +653,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Téléphone</FormLabel>
                             <FormControl>
-                                <Input type="tel" placeholder="" {...field} />
+                                <Input type="tel" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

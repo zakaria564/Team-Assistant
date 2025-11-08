@@ -225,7 +225,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner un type d'événement" />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -247,7 +247,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner une catégorie" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -270,7 +270,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Équipe à Domicile</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                         <SelectContent>{availableTeamsForHome.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -284,7 +284,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                 <FormItem>
                                     <FormLabel>Équipe à l'Extérieur</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Choisir équipe" /></SelectTrigger></FormControl>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                         <SelectContent>{availableTeamsForAway.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -308,7 +308,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                                     variant={"outline"}
                                     className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                                     >
-                                    {field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisir une date</span>}
+                                    {field.value ? format(field.value, "PPP", { locale: fr }) : <span></span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                     </Button>
                                 </FormControl>
@@ -343,7 +343,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
                         <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

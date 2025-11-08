@@ -322,7 +322,7 @@ export default function RankingsPage() {
                                 teamName = localClubName;
                                 teamLogoUrl = clubLogo;
                             } else { // Scorer is from an opponent team
-                                const isHomeTeamUserClub = teamHome.toLowerCase() === localClubName.toLowerCase();
+                                const isHomeTeamUserClub = teamHome.toLowerCase().includes(localClubName.toLowerCase());
                                 const opponentTeamName = isHomeTeamUserClub ? teamAway : teamHome;
                                 const opponentTeamData = allTeamsMap.get(opponentTeamName.toLowerCase());
                                 teamName = opponentTeamName;
@@ -444,7 +444,7 @@ export default function RankingsPage() {
                     <div className="flex flex-col md:flex-row gap-4">
                         <Select onValueChange={setSelectedCompetition} value={selectedCompetition}>
                             <SelectTrigger className="w-full md:w-[280px]">
-                                <SelectValue placeholder="Sélectionner une compétition" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {competitionTypes.map(comp => (
@@ -454,7 +454,7 @@ export default function RankingsPage() {
                         </Select>
                         <Select onValueChange={setSelectedCategory} value={selectedCategory}>
                             <SelectTrigger className="w-full md:w-[280px]">
-                                <SelectValue placeholder="Sélectionner une catégorie" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {playerCategories.map(cat => (

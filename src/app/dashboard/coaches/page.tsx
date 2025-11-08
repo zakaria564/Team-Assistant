@@ -201,7 +201,7 @@ export default function CoachesPage() {
               </div>
               <Select value={searchCategory} onValueChange={setSearchCategory}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Critère" />
+                      <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="name">Nom</SelectItem>

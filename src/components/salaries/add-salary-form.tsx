@@ -289,7 +289,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingCoaches || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder={loadingCoaches ? "Chargement des entraîneurs..." : "Sélectionner un entraîneur"} />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -314,7 +314,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -403,7 +403,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une méthode" />
+                                      <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -444,7 +444,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger className="bg-muted">
-                                <SelectValue placeholder="Sélectionner un statut" />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -471,4 +471,3 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         </Form>
     );
 }
-

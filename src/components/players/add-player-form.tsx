@@ -444,7 +444,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="" {...field} value={field.value || ''} />
+                                <Input {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -466,7 +466,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                   <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une catégorie" />
+                                      <SelectValue />
                                   </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -488,7 +488,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                  <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un poste" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -511,7 +511,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                               <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Assigner un entraîneur" />
+                                    <SelectValue />
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -548,7 +548,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                  <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un statut" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -604,7 +604,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -633,7 +633,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner le genre" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -656,7 +656,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                   <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une nationalité" />
+                                      <SelectValue />
                                   </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -676,7 +676,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                <Input placeholder="" {...field} value={field.value || ''} />
+                                <Input {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -690,7 +690,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="" {...field} value={field.value || ''} />
+                            <Textarea {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -704,7 +704,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Téléphone</FormLabel>
                               <FormControl>
-                                <Input type="tel" placeholder="" {...field} value={field.value || ''} />
+                                <Input type="tel" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -717,7 +717,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="" {...field} value={field.value || ''} />
+                                <Input type="email" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -737,7 +737,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet du tuteur</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} value={field.value || ''} />
+                            <Input {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -750,7 +750,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>N° CIN du tuteur</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} value={field.value || ''} />
+                            <Input {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -764,7 +764,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Téléphone du tuteur</FormLabel>
                               <FormControl>
-                                <Input type="tel" placeholder="" {...field} value={field.value || ''} />
+                                <Input type="tel" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -777,7 +777,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Email du tuteur</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="" {...field} value={field.value || ''} />
+                                <Input type="email" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -813,7 +813,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner un type" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -849,7 +849,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                <FormControl>
                                    <Input 
                                       type="text" 
-                                      placeholder=""
+                                      
                                       {...field}
                                       value={field.value || ''}
                                     />

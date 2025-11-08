@@ -292,7 +292,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder={loadingPlayers ? "Chargement des joueurs..." : "Sélectionner un joueur"} />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -317,7 +317,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -406,7 +406,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner une méthode" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -447,7 +447,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger className="bg-muted">
-                                <SelectValue placeholder="Sélectionner un statut" />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
