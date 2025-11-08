@@ -316,20 +316,25 @@ export default function RankingsPage() {
                     if (scorers) {
                         scorers.forEach(scorer => {
                             const player = playersMap.get(scorer.playerId);
-                            let teamName, teamLogoUrl;
-                            
+                             let teamName, teamLogoUrl;
+
+                            const isOpponentScorer = scorer.playerId.startsWith('opponent_');
+                            const isUserClubHome = teamHome.toLowerCase().includes(localClubName.toLowerCase());
+
                             if (player) { // Scorer is from the user's club
                                 teamName = localClubName;
                                 teamLogoUrl = clubLogo;
-                            } else { // Scorer is from an opponent team
-                                const isHomeTeamUserClub = teamHome.toLowerCase().includes(localClubName.toLowerCase());
-                                const opponentTeamName = isHomeTeamUserClub ? teamAway : teamHome;
-                                const opponentTeamData = allTeamsMap.get(opponentTeamName.toLowerCase());
-                                teamName = opponentTeamName;
+                            } else if (isOpponentScorer) {
+                                teamName = isUserClubHome ? teamAway : teamHome;
+                                const opponentTeamData = allTeamsMap.get(teamName.toLowerCase());
                                 teamLogoUrl = opponentTeamData?.logoUrl;
+                            } else { // Fallback for old data or unknown scorer
+                                teamName = "Adversaire";
+                                teamLogoUrl = undefined;
                             }
 
-                            const scorerId = scorer.playerId.startsWith('opponent_') ? scorer.playerName : scorer.playerId;
+
+                            const scorerId = isOpponentScorer ? `${scorer.playerName}_${teamName}` : scorer.playerId;
                             if (!scorersStats[scorerId]) {
                                 scorersStats[scorerId] = {
                                     playerId: scorerId,
@@ -454,7 +459,7 @@ export default function RankingsPage() {
                         </Select>
                         <Select onValueChange={setSelectedCategory} value={selectedCategory}>
                             <SelectTrigger className="w-full md:w-[280px]">
-                                <SelectValue />
+                                <SelectValue placeholder="Catégories" />
                             </SelectTrigger>
                             <SelectContent>
                                 {playerCategories.map(cat => (
