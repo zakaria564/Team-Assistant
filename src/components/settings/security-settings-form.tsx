@@ -85,7 +85,7 @@ export function SecuritySettingsForm() {
                         <FormItem>
                         <FormLabel>Mot de passe actuel</FormLabel>
                         <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <Input type="password" placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -98,7 +98,7 @@ export function SecuritySettingsForm() {
                         <FormItem>
                         <FormLabel>Nouveau mot de passe</FormLabel>
                         <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <Input type="password" placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -111,7 +111,7 @@ export function SecuritySettingsForm() {
                         <FormItem>
                         <FormLabel>Confirmer le nouveau mot de passe</FormLabel>
                         <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <Input type="password" placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

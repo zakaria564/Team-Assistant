@@ -135,7 +135,7 @@ export function AddOpponentForm({ opponent, onFinished }: AddOpponentFormProps) 
             <FormItem>
               <FormLabel>Nom de l'équipe adverse</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: AS Victoire" {...field} />
+                <Input placeholder="" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -148,7 +148,7 @@ export function AddOpponentForm({ opponent, onFinished }: AddOpponentFormProps) 
             <FormItem>
               <FormLabel>URL du logo</FormLabel>
               <FormControl>
-                <Input placeholder="https://exemple.com/logo.png" {...field} value={field.value || ''}/>
+                <Input placeholder="" {...field} value={field.value || ''}/>
               </FormControl>
               <FormMessage />
             </FormItem>

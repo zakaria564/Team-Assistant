@@ -151,7 +151,7 @@ export function ClubSettingsForm() {
                             <FormItem>
                             <FormLabel>Nom de votre club</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nom de votre club" {...field} disabled={isClubNameSet} />
+                                <Input placeholder="" {...field} disabled={isClubNameSet} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -167,7 +167,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>URL du logo du club (barre latérale)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https://exemple.com/logo-club.png" {...field} value={field.value || ''} />
+                                    <Input placeholder="" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -180,7 +180,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>URL de la photo de profil (en haut à droite)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https://exemple.com/photo-admin.png" {...field} value={field.value || ''} />
+                                    <Input placeholder="" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -200,7 +200,7 @@ export function ClubSettingsForm() {
                                     <FormItem>
                                     <FormLabel>Email de contact</FormLabel>
                                     <FormControl>
-                                        <Input type="email" placeholder="contact@club.com" {...field} value={field.value ?? ""}/>
+                                        <Input type="email" placeholder="" {...field} value={field.value ?? ""}/>
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -213,7 +213,7 @@ export function ClubSettingsForm() {
                                     <FormItem>
                                     <FormLabel>Téléphone du club</FormLabel>
                                     <FormControl>
-                                        <Input type="tel" placeholder="+33 1 23 45 67 89" {...field} value={field.value ?? ""} />
+                                        <Input type="tel" placeholder="" {...field} value={field.value ?? ""} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -227,7 +227,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>Adresse</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="Adresse complète du siège ou du stade" {...field} value={field.value ?? ""} />
+                                    <Textarea placeholder="" {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>

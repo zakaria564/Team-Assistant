@@ -317,7 +317,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Cotisation annuelle 2024/2025" {...field} />
+                            <Input placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

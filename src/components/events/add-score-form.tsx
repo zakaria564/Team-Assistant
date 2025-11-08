@@ -238,7 +238,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                         <FormItem>
                                             <FormLabel>Score {event.teamHome}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                                <Input type="number" placeholder="" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -251,7 +251,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                         <FormItem>
                                         <FormLabel>Score {event.teamAway}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" placeholder="-" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                                <Input type="number" placeholder="" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                             </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -306,7 +306,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                         render={({ field }) => (
                                                         <FormItem>
                                                         <FormLabel className="text-xs">Buts</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="" className="w-20" {...field} /></FormControl>
                                                         <FormMessage />
                                                         </FormItem>
                                                         )}
@@ -322,7 +322,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormLabel className="text-xs">Nom du buteur adverse</FormLabel>
-                                                                <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                                <FormControl><Input placeholder="" {...field} /></FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
                                                         )}
@@ -379,7 +379,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                         <FormLabel className="text-xs">Passes</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="1" className="w-20" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="" className="w-20" {...field} /></FormControl>
                                                         <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -395,7 +395,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-xs">Nom du passeur adverse</FormLabel>
-                                                            <FormControl><Input placeholder="Entrer le nom du joueur" {...field} /></FormControl>
+                                                            <FormControl><Input placeholder="" {...field} /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -417,5 +417,3 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
         </Form>
     );
 }
-
-    

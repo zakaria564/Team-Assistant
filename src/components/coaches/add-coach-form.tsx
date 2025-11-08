@@ -373,7 +373,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/photo.jpg" {...field} />
+                                <Input placeholder="" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -546,7 +546,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                <FormControl>
                                    <Input 
                                       type="text" 
-                                      placeholder="https://example.com/document.pdf"
+                                      placeholder=""
                                       {...field}
                                     />
                                </FormControl>
@@ -613,7 +613,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Numéro de CIN" {...field} />
+                                    <Input placeholder="" {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -627,7 +627,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Adresse complète..." {...field} />
+                            <Textarea placeholder="" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -640,7 +640,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="contact@email.com" {...field} />
+                                <Input type="email" placeholder="" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -653,7 +653,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Téléphone</FormLabel>
                             <FormControl>
-                                <Input type="tel" placeholder="06 12 34 56 78" {...field} />
+                                <Input type="tel" placeholder="" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

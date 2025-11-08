@@ -88,7 +88,7 @@ export function ProfileSettingsForm() {
                         <FormItem>
                         <FormLabel>Nom complet</FormLabel>
                         <FormControl>
-                            <Input placeholder="Votre nom complet" {...field} />
+                            <Input placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -101,7 +101,7 @@ export function ProfileSettingsForm() {
                         <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                            <Input type="email" placeholder="Votre email" {...field} disabled />
+                            <Input type="email" placeholder="" {...field} disabled />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

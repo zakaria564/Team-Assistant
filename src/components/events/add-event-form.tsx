@@ -343,7 +343,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <FormItem>
                         <FormLabel>Lieu</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Stade Municipal, Complexe sportif..." {...field} />
+                            <Input placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

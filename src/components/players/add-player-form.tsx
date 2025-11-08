@@ -444,7 +444,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://exemple.com/photo.jpg" {...field} value={field.value || ''} />
+                                <Input placeholder="" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -676,7 +676,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                <Input placeholder="Numéro de Carte d'Identité Nationale" {...field} value={field.value || ''} />
+                                <Input placeholder="" {...field} value={field.value || ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -690,7 +690,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="123 Rue du Stade..." {...field} value={field.value || ''} />
+                            <Textarea placeholder="" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -704,7 +704,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Téléphone</FormLabel>
                               <FormControl>
-                                <Input type="tel" placeholder="0612345678" {...field} value={field.value || ''} />
+                                <Input type="tel" placeholder="" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -717,7 +717,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="contact@email.com" {...field} value={field.value || ''} />
+                                <Input type="email" placeholder="" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -737,7 +737,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet du tuteur</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Marie Dupont" {...field} value={field.value || ''} />
+                            <Input placeholder="" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -750,7 +750,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>N° CIN du tuteur</FormLabel>
                           <FormControl>
-                            <Input placeholder="Numéro de Carte d'Identité Nationale du tuteur" {...field} value={field.value || ''} />
+                            <Input placeholder="" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -764,7 +764,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Téléphone du tuteur</FormLabel>
                               <FormControl>
-                                <Input type="tel" placeholder="0612345678" {...field} value={field.value || ''} />
+                                <Input type="tel" placeholder="" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -777,7 +777,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                               <FormLabel>Email du tuteur</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="tuteur@email.com" {...field} value={field.value || ''} />
+                                <Input type="email" placeholder="" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -849,7 +849,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                <FormControl>
                                    <Input 
                                       type="text" 
-                                      placeholder="https://example.com/document.pdf"
+                                      placeholder=""
                                       {...field}
                                       value={field.value || ''}
                                     />

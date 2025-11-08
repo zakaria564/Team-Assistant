@@ -314,7 +314,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Salaire de Septembre" {...field} />
+                            <Input placeholder="" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
