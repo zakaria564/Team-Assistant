@@ -191,7 +191,7 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="text-center">Pos</TableHead>
+                    <TableHead className="w-[40px] text-center">Pos</TableHead>
                     <TableHead>Joueur</TableHead>
                     <TableHead className="hidden sm:table-cell">Équipe</TableHead>
                     <TableHead className="text-right">Buts</TableHead>
@@ -202,12 +202,15 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
                     <TableRow key={scorer.playerId + index}>
                         <TableCell className="font-bold text-center">{index + 1}</TableCell>
                         <TableCell>
-                            <div className="flex items-center gap-2 font-medium">
+                            <div className="flex items-center gap-3 font-medium">
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={scorer.playerPhotoUrl} alt={scorer.playerName} />
                                     <AvatarFallback>{scorer.playerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <span>{scorer.playerName}</span>
+                                <div className="flex flex-col">
+                                    <span>{scorer.playerName}</span>
+                                    <span className="text-xs text-muted-foreground sm:hidden">{scorer.teamName}</span>
+                                </div>
                             </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
@@ -320,17 +323,20 @@ export default function RankingsPage() {
 
                             const isOpponentScorer = scorer.playerId.startsWith('opponent_');
                             const isUserClubHome = teamHome.toLowerCase().includes(localClubName.toLowerCase());
-
-                            if (player) { // Scorer is from the user's club
+                             
+                             if (player) { // Scorer is from the user's club
                                 teamName = localClubName;
                                 teamLogoUrl = clubLogo;
                             } else if (isOpponentScorer) {
+                                // If the scorer is an opponent, their team is the one that ISN'T the user's club.
                                 teamName = isUserClubHome ? teamAway : teamHome;
                                 const opponentTeamData = allTeamsMap.get(teamName.toLowerCase());
                                 teamLogoUrl = opponentTeamData?.logoUrl;
                             } else { // Fallback for old data or unknown scorer
-                                teamName = "Adversaire";
-                                teamLogoUrl = undefined;
+                                // Best guess: if the user's club is not home, the scorer is from the home team.
+                                teamName = isUserClubHome ? teamAway : teamHome;
+                                const opponentTeamData = allTeamsMap.get(teamName.toLowerCase());
+                                teamLogoUrl = opponentTeamData?.logoUrl;
                             }
 
 
