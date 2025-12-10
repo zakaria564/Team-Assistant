@@ -45,7 +45,7 @@ export default function Home() {
       <main className="flex-1">
         <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
           <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2">
-            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl text-foreground">
+            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tighter text-foreground sm:text-3xl md:text-5xl lg:text-6xl">
               La gestion de votre club de foot, <br className="hidden sm:inline" />
               simplifiée et intelligente.
             </h1>
@@ -54,7 +54,7 @@ export default function Home() {
             </p>
           </div>
         </section>
-        <section id="features" className="container space-y-6 bg-slate-50/50 py-8 dark:bg-transparent md:py-12 lg:py-24">
+        <section id="features" className="container space-y-6 bg-muted py-8 md:py-12 lg:py-24">
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-5xl">
               Fonctionnalités
