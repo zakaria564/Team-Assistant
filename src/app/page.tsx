@@ -45,7 +45,7 @@ export default function Home() {
       <main className="flex-1">
         <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
           <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2">
-            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl">
+            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl text-foreground">
               La gestion de votre club de foot, <br className="hidden sm:inline" />
               simplifiée et intelligente.
             </h1>
