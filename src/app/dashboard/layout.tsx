@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -76,7 +77,7 @@ export default function DashboardAppLayout({
   )
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+    <div className="grid h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-24 items-center border-b border-sidebar-border px-4 lg:px-6">
