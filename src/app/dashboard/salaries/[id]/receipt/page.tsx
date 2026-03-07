@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -49,9 +49,8 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryReceiptPage() {
-  const params = useParams();
-  const salaryId = params.id;
+export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: salaryId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

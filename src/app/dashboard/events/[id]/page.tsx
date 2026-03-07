@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -82,9 +82,8 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
     }
 };
 
-export default function EventDetailPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

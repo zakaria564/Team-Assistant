@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -49,9 +49,8 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryDetailPage() {
-  const params = useParams();
-  const salaryId = params.id;
+export default function SalaryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: salaryId } = React.use(params);
   const router = useRouter();
   
   const [salary, setSalary] = useState<Salary | null>(null);
@@ -209,5 +208,3 @@ export default function SalaryDetailPage() {
     </div>
   );
 }
-
-    

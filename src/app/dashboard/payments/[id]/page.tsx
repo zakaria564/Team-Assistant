@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -49,9 +49,8 @@ const getBadgeClass = (status?: Payment['status']) => {
 }
 
 
-export default function PaymentDetailPage() {
-  const params = useParams();
-  const paymentId = params.id;
+export default function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   const router = useRouter();
   
   const [payment, setPayment] = useState<Payment | null>(null);
@@ -209,5 +208,3 @@ export default function PaymentDetailPage() {
     </div>
   );
 }
-
-    
