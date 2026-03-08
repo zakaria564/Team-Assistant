@@ -55,9 +55,9 @@ const normalizeString = (str: string | null | undefined): string => {
     if (!str) return '';
     return str
         .toLowerCase()
-        .normalize("NFD") // Decompose accented characters
-        .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
-        .replace(/\s+/g, ''); // Remove all whitespace
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '');
 };
 
 
@@ -248,8 +248,9 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                       : 'Les informations du paiement ont été mises à jour.',
                 });
 
-            } else { // Mode Création
+            } else { 
                  const initialTransactions = newTransactionData ? [newTransactionData] : [];
+                 // NEW: Every new payment is archived by default as a permanent copy
                  await addDoc(collection(db, "payments"), {
                     userId: user.uid,
                     playerId: values.playerId,
@@ -258,10 +259,12 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     status: values.status,
                     createdAt: new Date(),
                     transactions: initialTransactions,
+                    isArchived: true,
+                    isDeleted: false
                 });
                 toast({
                     title: "Paiement ajouté !",
-                    description: `Le paiement a été enregistré avec succès.`
+                    description: `Le paiement a été enregistré et une copie a été créée dans les archives.`
                 });
             }
             router.push("/dashboard/payments");

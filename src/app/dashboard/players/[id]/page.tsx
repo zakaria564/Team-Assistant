@@ -8,12 +8,11 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Pencil, Star, Activity, ClipboardList, LogIn, LogOut, FileHeart, Link as LinkIcon, Download, Calendar, Fingerprint, VenetianMask, FileDown } from "lucide-react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, Activity, ClipboardList, LogIn, LogOut, Download, Fingerprint, VenetianMask } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
@@ -188,8 +187,8 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                     <DetailItem icon={Star} label="Poste" value={player.position} />
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
                     <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
-                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy') : undefined} />
-                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy') : undefined} />
+                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </CardContent>
             </Card>
         </div>
@@ -200,7 +199,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
-                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy') : undefined} />
+                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
@@ -233,8 +232,8 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                                     <span className="font-medium">{doc.name}</span>
                                     {doc.validityDate && (
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <Calendar className="h-3 w-3"/>
-                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy')}
+                                            <Calendar icon={LogIn} className="h-3 w-3"/>
+                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', { locale: fr })}
                                         </span>
                                     )}
                                 </div>

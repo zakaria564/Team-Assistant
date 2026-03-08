@@ -8,8 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Pencil, Star, LogIn, LogOut, Flag, Home, Calendar, Download, Fingerprint } from "lucide-react";
-import Link from "next/link";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star, LogIn, LogOut, Flag, Home, Calendar, Download, Fingerprint } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -166,8 +165,8 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
                             {coach.status}
                         </Badge>
                     </DetailItem>
-                    <DetailItem icon={LogIn} label="Date d'entrée" value={coach.entryDate} />
-                    <DetailItem icon={LogOut} label="Date de sortie" value={coach.exitDate} />
+                    <DetailItem icon={LogIn} label="Date d'entrée" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={LogOut} label="Date de sortie" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </CardContent>
             </Card>
         </div>
@@ -198,7 +197,7 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
                                     {doc.validityDate && (
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                                             <Calendar className="h-3 w-3"/>
-                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', {locale: fr})}
+                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', { locale: fr })}
                                         </span>
                                     )}
                                 </div>

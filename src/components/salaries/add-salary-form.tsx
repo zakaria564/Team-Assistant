@@ -54,9 +54,9 @@ const normalizeString = (str: string | null | undefined): string => {
     if (!str) return '';
     return str
         .toLowerCase()
-        .normalize("NFD") // Decompose accented characters
-        .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
-        .replace(/\s+/g, ''); // Remove all whitespace
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, '');
 };
 
 export function AddSalaryForm({ salary }: AddSalaryFormProps) {
@@ -245,8 +245,9 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                       : 'Les informations du salaire ont été mises à jour.',
                 });
 
-            } else { // Mode Création
+            } else { 
                  const initialTransactions = newTransactionData ? [newTransactionData] : [];
+                 // NEW: Every new salary record is archived by default as a permanent copy
                  await addDoc(collection(db, "salaries"), {
                     userId: user.uid,
                     coachId: values.coachId,
@@ -255,10 +256,12 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     status: values.status,
                     createdAt: new Date(),
                     transactions: initialTransactions,
+                    isArchived: true,
+                    isDeleted: false
                 });
                 toast({
                     title: "Salaire ajouté !",
-                    description: `Le salaire a été enregistré avec succès.`
+                    description: `Le salaire a été enregistré et une copie a été créée dans les archives.`
                 });
             }
             router.push("/dashboard/salaries");

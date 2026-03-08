@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -17,7 +17,6 @@ import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -270,7 +269,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         }
 
         const documentsToSave = (values.documents || [])
-          .filter(doc => doc.name && doc.url) // Only save documents that have a name and a URL
+          .filter(doc => doc.name && doc.url)
           .map(doc => ({
               name: doc.name,
               url: doc.url,
@@ -292,14 +291,17 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                 description: `Les informations de ${values.name} ont été mises à jour.`,
             });
         } else {
+            // NEW: Every new coach is archived by default as a permanent copy
             await addDoc(collection(db, "coaches"), {
                 ...dataToSave,
                 createdAt: new Date(),
+                isArchived: true,
+                isDeleted: false
             });
 
             toast({
                 title: "Entraîneur ajouté !",
-                description: `${values.name} a été ajouté au club.`,
+                description: `${values.name} a été ajouté et une copie a été créée dans les archives.`,
             });
         }
       
