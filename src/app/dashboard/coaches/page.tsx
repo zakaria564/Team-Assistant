@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown, Archive } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ interface Coach {
   photoUrl?: string;
   specialty?: string;
   isArchived?: boolean;
+  isDeleted?: boolean;
 }
 
 const getStatusBadgeClass = (status?: CoachStatus) => {
@@ -87,7 +88,7 @@ export default function CoachesPage() {
       const querySnapshot = await getDocs(q);
       const coachesData = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() } as Coach))
-        .filter(c => c.isArchived !== true);
+        .filter(c => c.isDeleted !== true); // Archived stay, only deleted are hidden
       setCoaches(coachesData);
     } catch (error: any) {
       console.error("Error fetching coaches: ", error);
@@ -107,11 +108,15 @@ export default function CoachesPage() {
   
   const handleArchiveCoach = async (coach: Coach) => {
     try {
-      await updateDoc(doc(db, "coaches", coach.id), { isArchived: true });
-      toast({ title: "Entraîneur archivé", description: `${coach.name} a été déplacé dans les archives.` });
+      const newState = !coach.isArchived;
+      await updateDoc(doc(db, "coaches", coach.id), { isArchived: newState });
+      toast({ 
+        title: newState ? "Entraîneur archivé" : "Entraîneur désarchivé", 
+        description: `${coach.name} a été ${newState ? 'marqué comme archivé' : 'retiré des archives'}.` 
+      });
       fetchCoaches();
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver l'entraîneur." });
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier l'état d'archivage." });
     }
   };
 
@@ -167,19 +172,19 @@ export default function CoachesPage() {
   const confirmDeleteCoach = async () => {
     if (!coachToDelete) return;
     try {
-      await deleteDoc(doc(db, "coaches", coachToDelete.id));
+      await updateDoc(doc(db, "coaches", coachToDelete.id), { isDeleted: true });
       setCoaches(coaches.filter(p => p.id !== coachToDelete.id));
       toast({
-        title: "Entraîneur supprimé",
-        description: `${toTitleCase(coachToDelete.name)} a été retiré du club.`,
+        title: "Entraîneur retiré",
+        description: `${toTitleCase(coachToDelete.name)} a été déplacé dans les archives sécurisées.`,
       });
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de supprimer l'entraîneur.",
+        description: "Impossible de retirer l'entraîneur.",
       });
-      console.error("Error deleting coach: ", error);
+      console.error("Error soft-deleting coach: ", error);
     } finally {
         setCoachToDelete(null);
     }
@@ -192,7 +197,7 @@ export default function CoachesPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Entraîneurs</h1>
-            <p className="text-muted-foreground">Gérez les entraîneurs de votre club.</p>
+            <p className="text-muted-foreground">Gérez les entraîneurs de votre club. Les archives restent visibles dans cette liste.</p>
           </div>
           <Button asChild className="w-full md:w-auto">
             <Link href="/dashboard/coaches/add">
@@ -258,7 +263,10 @@ export default function CoachesPage() {
                                       <AvatarFallback>{coach.name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{toTitleCase(coach.name)}</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">{toTitleCase(coach.name)}</span>
+                                          {coach.isArchived && <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 border-blue-200">Archivé</Badge>}
+                                        </div>
                                         <span className="text-muted-foreground text-sm md:hidden">{coach.specialty}</span>
                                     </div>
                                 </div>
@@ -317,14 +325,14 @@ export default function CoachesPage() {
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchiveCoach(coach)}>
                                       <Archive className="mr-2 h-4 w-4" />
-                                      Archiver
+                                      {coach.isArchived ? "Désarchiver" : "Archiver"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                     onClick={() => setCoachToDelete(coach)}
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Supprimer
+                                    Retirer de la liste
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -349,9 +357,9 @@ export default function CoachesPage() {
        <AlertDialog open={!!coachToDelete} onOpenChange={(isOpen) => !isOpen && setCoachToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer cet entraîneur ?</AlertDialogTitle>
+                <AlertDialogTitle>Retirer cet entraîneur de la liste ?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Cette action est irréversible. L'entraîneur "{toTitleCase(coachToDelete?.name || '')}" sera définitivement supprimé de la base de données.
+                  L'entraîneur "{toTitleCase(coachToDelete?.name || '')}" sera masqué ici mais restera disponible dans les archives permanentes.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -360,7 +368,7 @@ export default function CoachesPage() {
                     onClick={confirmDeleteCoach}
                     className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
-                    Supprimer
+                    Confirmer le retrait
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

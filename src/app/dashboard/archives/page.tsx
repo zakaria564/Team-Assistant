@@ -8,12 +8,11 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet } from "lucide-react";
+import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet, Trash2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 
 export default function ArchivesPage() {
   const [user, loadingUser] = useAuthState(auth);
@@ -37,10 +36,10 @@ export default function ArchivesPage() {
         getDocs(qPlayers), getDocs(qCoaches), getDocs(qPayments), getDocs(qSalaries)
       ]);
 
-      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
-      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
-      setPayments(snapPay.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
-      setSalaries(snapS.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
+      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
+      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
+      setPayments(snapPay.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
+      setSalaries(snapS.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
     } catch (e) {
       console.error(e);
     } finally {
@@ -54,12 +53,18 @@ export default function ArchivesPage() {
 
   const handleRestore = async (collectionName: string, id: string, name: string) => {
     try {
-      await updateDoc(doc(db, collectionName, id), { isArchived: false });
+      await updateDoc(doc(db, collectionName, id), { isArchived: false, isDeleted: false });
       toast({ title: "Élément restauré", description: `${name} a été replacé dans la liste active.` });
       fetchData();
     } catch (e) {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible de restaurer l'élément." });
     }
+  };
+
+  const StatusBadge = ({ item }: { item: any }) => {
+    if (item.isDeleted) return <Badge variant="destructive" className="gap-1"><Trash2 className="h-3 w-3" /> Supprimé</Badge>;
+    if (item.isArchived) return <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-800"><Archive className="h-3 w-3" /> Archivé</Badge>;
+    return null;
   };
 
   if (loading || loadingUser) {
@@ -69,8 +74,8 @@ export default function ArchivesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Archives</h1>
-        <p className="text-muted-foreground">Consultez et restaurez les éléments archivés. Note: Les archives ne peuvent pas être supprimées.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Archives & Historique</h1>
+        <p className="text-muted-foreground">Consultez les éléments archivés ou supprimés. Ces données sont conservées en toute sécurité.</p>
       </div>
 
       <Tabs defaultValue="players">
@@ -83,14 +88,14 @@ export default function ArchivesPage() {
 
         <TabsContent value="players">
           <Card>
-            <CardHeader><CardTitle>Joueurs Archivés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Joueurs Archivés / Supprimés</CardTitle></CardHeader>
             <CardContent>
               {players.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Joueur</TableHead>
-                      <TableHead>Catégorie</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -101,7 +106,7 @@ export default function ArchivesPage() {
                           <Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
                           {p.name}
                         </TableCell>
-                        <TableCell>{p.category}</TableCell>
+                        <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => handleRestore("players", p.id, p.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
                         </TableCell>
@@ -109,21 +114,21 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun joueur archivé.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucun joueur dans les archives.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="coaches">
           <Card>
-            <CardHeader><CardTitle>Entraîneurs Archivés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Entraîneurs Archivés / Supprimés</CardTitle></CardHeader>
             <CardContent>
               {coaches.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Entraîneur</TableHead>
-                      <TableHead>Spécialité</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -134,7 +139,7 @@ export default function ArchivesPage() {
                           <Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
                           {c.name}
                         </TableCell>
-                        <TableCell>{c.specialty}</TableCell>
+                        <TableCell><StatusBadge item={c} /></TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => handleRestore("coaches", c.id, c.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
                         </TableCell>
@@ -142,21 +147,21 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun entraîneur archivé.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucun entraîneur dans les archives.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="payments">
           <Card>
-            <CardHeader><CardTitle>Paiements Joueurs Archivés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Paiements Archivés / Supprimés</CardTitle></CardHeader>
             <CardContent>
               {payments.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Description</TableHead>
-                      <TableHead>Montant</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -164,7 +169,7 @@ export default function ArchivesPage() {
                     {payments.map(p => (
                       <TableRow key={p.id}>
                         <TableCell>{p.description}</TableCell>
-                        <TableCell>{p.totalAmount} MAD</TableCell>
+                        <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => handleRestore("payments", p.id, p.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
                         </TableCell>
@@ -172,21 +177,21 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun paiement archivé.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucun paiement dans les archives.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="salaries">
           <Card>
-            <CardHeader><CardTitle>Salaires Entraîneurs Archivés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Salaires Archivés / Supprimés</CardTitle></CardHeader>
             <CardContent>
               {salaries.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Description</TableHead>
-                      <TableHead>Montant</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -194,7 +199,7 @@ export default function ArchivesPage() {
                     {salaries.map(s => (
                       <TableRow key={s.id}>
                         <TableCell>{s.description}</TableCell>
-                        <TableCell>{s.totalAmount} MAD</TableCell>
+                        <TableCell><StatusBadge item={s} /></TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" onClick={() => handleRestore("salaries", s.id, s.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
                         </TableCell>
@@ -202,7 +207,7 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire archivé.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire dans les archives.</p>}
             </CardContent>
           </Card>
         </TabsContent>

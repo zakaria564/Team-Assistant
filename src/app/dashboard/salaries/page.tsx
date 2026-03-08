@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, where, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -32,7 +32,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -52,6 +51,7 @@ interface Salary {
   amountPaid: number;
   amountRemaining: number;
   isArchived?: boolean;
+  isDeleted?: boolean;
 }
 
 type SalaryStatus = Salary['status'];
@@ -104,13 +104,13 @@ export default function SalariesPage() {
           coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
       });
 
-      const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isArchived", "==", false));
+      const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
       const salariesSnapshot = await getDocs(salariesQuery);
       const salariesData = salariesSnapshot.docs
           .map(doc => {
               const data = doc.data() as any;
               
-              if (!coachesMap.has(data.coachId)) {
+              if (!coachesMap.has(data.coachId) && !data.isDeleted) {
                   return null;
               }
 
@@ -127,7 +127,7 @@ export default function SalariesPage() {
               return { 
                   id: doc.id, 
                   ...data,
-                  coachName: coachesMap.get(data.coachId)?.name || "Entraîneur inconnu",
+                  coachName: coachesMap.get(data.coachId)?.name || data.coachName || "Entraîneur supprimé",
                   coachPhotoUrl: coachesMap.get(data.coachId)?.photoUrl,
                   amountPaid,
                   amountRemaining,
@@ -136,7 +136,7 @@ export default function SalariesPage() {
                   status
               } as Salary;
           })
-          .filter((s): s is Salary => s !== null);
+          .filter((s): s is Salary => s !== null && s.isDeleted !== true); // Archived stay, only explicitly deleted are hidden
       
       const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
       setSalaries(sortedSalaries);
@@ -159,11 +159,15 @@ export default function SalariesPage() {
 
   const handleArchiveSalary = async (s: Salary) => {
     try {
-      await updateDoc(doc(db, "salaries", s.id), { isArchived: true });
-      toast({ title: "Salaire archivé", description: `Le salaire pour ${s.description} a été archivé.` });
+      const newState = !s.isArchived;
+      await updateDoc(doc(db, "salaries", s.id), { isArchived: newState });
+      toast({ 
+        title: newState ? "Salaire archivé" : "Salaire désarchivé", 
+        description: `Le salaire pour ${s.description} a été ${newState ? 'marqué comme archivé' : 'désarchivé'}.` 
+      });
       fetchSalaries();
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver le salaire." });
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier l'état d'archivage." });
     }
   };
 
@@ -207,19 +211,20 @@ export default function SalariesPage() {
   const confirmDeleteSalary = async () => {
     if(!salaryToDelete) return;
     try {
-      await deleteDoc(doc(db, "salaries", salaryToDelete.id));
+      // Soft-delete
+      await updateDoc(doc(db, "salaries", salaryToDelete.id), { isDeleted: true });
       setSalaries(salaries.filter(p => p.id !== salaryToDelete.id));
       toast({
-        title: "Salaire supprimé",
-        description: `Le salaire a été supprimé avec succès.`,
+        title: "Salaire retiré",
+        description: `Le salaire a été retiré de la liste active et conservé dans les archives.`,
       });
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de supprimer le salaire.",
+        description: "Impossible de retirer le salaire.",
       });
-      console.error("Error deleting salary: ", error);
+      console.error("Error soft-deleting salary: ", error);
     } finally {
         setSalaryToDelete(null);
     }
@@ -263,7 +268,7 @@ export default function SalariesPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
               <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
-              <p className="text-muted-foreground">Suivez et gérez les salaires des entraîneurs.</p>
+              <p className="text-muted-foreground">Gérez les salaires. Les archives restent visibles dans cette liste.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
@@ -342,12 +347,14 @@ export default function SalariesPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {coachGroup.salaries.map((salary) => {
-                                            const canDelete = salary.transactions.length === 0;
                                             return (
                                                 <TableRow key={salary.id}>
                                                     <TableCell>
                                                         <div className="flex flex-col">
-                                                            <span className="font-medium">{salary.description}</span>
+                                                            <div className="flex items-center gap-2">
+                                                              <span className="font-medium">{salary.description}</span>
+                                                              {salary.isArchived && <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 border-blue-200">Archivé</Badge>}
+                                                            </div>
                                                             <span className="text-muted-foreground text-sm md:hidden">{salary.amountPaid.toFixed(2)} / {salary.totalAmount.toFixed(2)} MAD</span>
                                                         </div>
                                                     </TableCell>
@@ -390,19 +397,15 @@ export default function SalariesPage() {
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchiveSalary(salary)}>
                                                                 <Archive className="mr-2 h-4 w-4" />
-                                                                Archiver
+                                                                {salary.isArchived ? "Désarchiver" : "Archiver"}
                                                             </DropdownMenuItem>
-                                                            {canDelete && (
-                                                                <>
-                                                                    <DropdownMenuItem
-                                                                        className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                                        onClick={() => setSalaryToDelete(salary)}
-                                                                    >
-                                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                                        Supprimer
-                                                                    </DropdownMenuItem>
-                                                                </>
-                                                            )}
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                                onClick={() => setSalaryToDelete(salary)}
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Retirer de la liste
+                                                            </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>
@@ -428,9 +431,9 @@ export default function SalariesPage() {
       <AlertDialog open={!!salaryToDelete} onOpenChange={(isOpen) => !isOpen && setSalaryToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce salaire ?</AlertDialogTitle>
+              <AlertDialogTitle>Retirer ce salaire de la liste ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Cette action est irréversible. Le salaire pour "{salaryToDelete?.description}" sera définitivement supprimé.
+              Le salaire pour "{salaryToDelete?.description}" sera masqué ici mais conservé dans les archives.
               </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -439,7 +442,7 @@ export default function SalariesPage() {
               onClick={confirmDeleteSalary}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               >
-              Supprimer
+              Confirmer le retrait
               </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
