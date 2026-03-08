@@ -82,7 +82,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);

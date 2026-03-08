@@ -8,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -70,8 +70,9 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

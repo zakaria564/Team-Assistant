@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileDown, Trophy, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield } from "lucide-react";
+import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -59,8 +59,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const coachId = unwrappedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

@@ -7,8 +7,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar, Clock, MapPin, Users, Trophy, Goal, Footprints } from "lucide-react";
-import { format, isPast } from "date-fns";
+import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Users, Trophy, Goal } from "lucide-react";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -82,8 +82,9 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
     }
 };
 
-export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(params);
+export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const eventId = unwrappedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -204,7 +205,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </CardHeader>
             <CardContent className="space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <DetailItem icon={Calendar} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
+                  <DetailItem icon={CalendarIcon} label="Date" value={format(event.date, "eeee d MMMM yyyy", { locale: fr })} />
                   <DetailItem icon={Clock} label="Heure" value={format(event.date, "HH:mm", { locale: fr })} />
                   <DetailItem icon={Users} label="Catégorie" value={event.category} />
                    {event.location && (

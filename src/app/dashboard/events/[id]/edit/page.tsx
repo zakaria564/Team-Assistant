@@ -24,8 +24,9 @@ interface Event {
     scoreAway?: number;
 }
 
-export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(params);
+export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const eventId = unwrappedParams.id;
   const router = useRouter();
   
   const [event, setEvent] = useState<Event | null>(null);

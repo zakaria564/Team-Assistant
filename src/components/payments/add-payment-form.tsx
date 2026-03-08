@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Separator } from "../ui/separator";
@@ -69,6 +69,8 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const [allPayments, setAllPayments] = useState<Payment[]>([]);
     const [loadingPlayers, setLoadingPlayers] = useState(true);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const urlPlayerId = searchParams.get('playerId');
     const isEditMode = !!payment;
     
     const amountAlreadyPaid = isEditMode 
@@ -108,7 +110,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             newTransactionMethod: "Espèces",
         } : {
             description: defaultDescription,
-            playerId: "",
+            playerId: urlPlayerId || "",
             totalAmount: undefined,
             status: "En attente",
             newTransactionAmount: undefined,
@@ -174,7 +176,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 const allPaymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Payment));
                 setAllPayments(allPaymentsData);
                 
-                if (isEditMode) {
+                if (isEditMode || urlPlayerId) {
                     setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
                 } else {
                     const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
@@ -203,7 +205,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             }
         }
         fetchPlayersAndPayments();
-    }, [user, toast, isEditMode, defaultDescription]);
+    }, [user, toast, isEditMode, defaultDescription, urlPlayerId]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {

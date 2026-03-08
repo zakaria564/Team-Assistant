@@ -19,8 +19,9 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditPaymentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
+export default function EditPaymentPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const paymentId = unwrappedParams.id;
   const router = useRouter();
   
   const [payment, setPayment] = useState<Payment | null>(null);

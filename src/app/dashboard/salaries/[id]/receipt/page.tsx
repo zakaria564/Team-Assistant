@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -6,8 +7,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Trophy, Download } from "lucide-react";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { Loader2, ArrowLeft, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +49,9 @@ const getBadgeClass = (status?: Salary['status']) => {
 }
 
 
-export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(params);
+export default function SalaryReceiptPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const salaryId = unwrappedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -197,7 +199,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
             </div>
             
             <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800">
-                 <CardHeader className="p-4 sm:p-6">
+                 <header className="p-4 sm:p-6 border-b border-gray-100">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
@@ -216,8 +218,8 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                             <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
+                </header>
+                <div className="p-4 sm:p-6">
                     <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
                         <div className="space-y-1">
                             <h3 className="text-sm font-semibold text-gray-600">Salarié :</h3>
@@ -275,7 +277,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                               </div>
                         </div>
                     </div>
-                </CardContent>
+                </div>
                 <CardFooter className="p-4 sm:p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm sm:text-base">Statut du paiement:</span>

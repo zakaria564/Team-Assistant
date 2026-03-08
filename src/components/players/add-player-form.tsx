@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
@@ -363,9 +362,10 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                 title: "Joueur modifié !",
                 description: `Les informations de ${values.name} ont été mises à jour.`,
             });
+            router.push("/dashboard/players");
         } else {
              // NEW: Every new player is archived by default as a permanent copy
-             await addDoc(collection(db, "players"), {
+             const docRef = await addDoc(collection(db, "players"), {
                 ...dataToSave,
                 createdAt: new Date(),
                 isArchived: true,
@@ -373,11 +373,12 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             });
             toast({
                 title: "Joueur ajouté !",
-                description: `${values.name} a été ajouté et une copie a été créée dans les archives.`,
+                description: `${values.name} a été ajouté. Passage à l'encaissement du paiement...`,
             });
+            // Redirect directly to payment collection for this player
+            router.push(`/dashboard/payments/add?playerId=${docRef.id}`);
         }
       
-      router.push("/dashboard/players");
       router.refresh();
 
     } catch (e: any) {

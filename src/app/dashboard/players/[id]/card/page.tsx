@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Download, Trophy, User, Shirt, Shield, Star, Cake, Flag, Phone, Mail, Home, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Trophy, Shirt, Shield, Cake, Flag } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,8 +29,9 @@ interface Player {
   address?: string;
 }
 
-export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -127,7 +128,7 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="bg-background">
-      <div className="w-full max-w-sm mx-auto space-y-4 py-4 px-2">
+      <div className="w-full max-sm mx-auto space-y-4 py-4 px-2">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -148,7 +149,6 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col">
-            {/* Header */}
             <header className="bg-primary text-primary-foreground p-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                     <Trophy className="h-6 w-6" />
@@ -156,7 +156,6 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
                 </div>
             </header>
 
-            {/* Body */}
             <div className="p-4 flex-grow flex flex-col items-center justify-center gap-3">
                 <Avatar className="h-28 w-28 border-4 border-primary shadow-md">
                     <AvatarImage src={player.photoUrl} alt={player.name} />
@@ -200,7 +199,6 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
 
             </div>
 
-            {/* Footer */}
             <footer className="bg-muted p-2 text-center text-xs text-black/60 mt-auto">
                 <p>Saison 2024-2025</p>
             </footer>

@@ -19,8 +19,9 @@ interface Salary {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditSalaryPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(params);
+export default function EditSalaryPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const salaryId = unwrappedParams.id;
   const router = useRouter();
   
   const [salary, setSalary] = useState<Salary | null>(null);
