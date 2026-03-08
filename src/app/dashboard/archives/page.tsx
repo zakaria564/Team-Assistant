@@ -8,11 +8,20 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet, Trash2, Archive } from "lucide-react";
+import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet, Trash2, Archive, MoreHorizontal, FileText, FileDown, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default function ArchivesPage() {
   const [user, loadingUser] = useAuthState(auth);
@@ -62,8 +71,8 @@ export default function ArchivesPage() {
   };
 
   const StatusBadge = ({ item }: { item: any }) => {
-    if (item.isDeleted) return <Badge variant="destructive" className="gap-1"><Trash2 className="h-3 w-3" /> Supprimé</Badge>;
-    if (item.isArchived) return <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-800"><Archive className="h-3 w-3" /> Archivé</Badge>;
+    if (item.isDeleted) return <Badge variant="destructive" className="gap-1 h-5 px-1.5 text-[10px] uppercase"><Trash2 className="h-3 w-3" /> Supprimé</Badge>;
+    if (item.isArchived) return <Badge variant="secondary" className="gap-1 bg-blue-50 text-blue-800 border-blue-200 h-5 px-1.5 text-[10px] uppercase"><Archive className="h-3 w-3" /> Archivé</Badge>;
     return null;
   };
 
@@ -102,13 +111,43 @@ export default function ArchivesPage() {
                   <TableBody>
                     {players.map(p => (
                       <TableRow key={p.id}>
-                        <TableCell className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
-                          {p.name}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
+                            <span className="font-medium">{p.name}</span>
+                          </div>
                         </TableCell>
                         <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleRestore("players", p.id, p.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <Link href={`/dashboard/players/${p.id}`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/dashboard/players/${p.id}/details`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/dashboard/players/${p.id}/card`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <IdCard className="mr-2 h-4 w-4" /> Voir Carte
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("players", p.id, p.name)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -135,13 +174,38 @@ export default function ArchivesPage() {
                   <TableBody>
                     {coaches.map(c => (
                       <TableRow key={c.id}>
-                        <TableCell className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
-                          {c.name}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
+                            <span className="font-medium">{c.name}</span>
+                          </div>
                         </TableCell>
                         <TableCell><StatusBadge item={c} /></TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleRestore("coaches", c.id, c.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <Link href={`/dashboard/coaches/${c.id}`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/dashboard/coaches/${c.id}/details`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("coaches", c.id, c.name)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -168,10 +232,33 @@ export default function ArchivesPage() {
                   <TableBody>
                     {payments.map(p => (
                       <TableRow key={p.id}>
-                        <TableCell>{p.description}</TableCell>
+                        <TableCell className="font-medium">{p.description}</TableCell>
                         <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleRestore("payments", p.id, p.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <Link href={`/dashboard/payments/${p.id}`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileText className="mr-2 h-4 w-4" /> Détails transaction
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/dashboard/payments/${p.id}/receipt`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Reçu
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("payments", p.id, p.description)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -198,10 +285,33 @@ export default function ArchivesPage() {
                   <TableBody>
                     {salaries.map(s => (
                       <TableRow key={s.id}>
-                        <TableCell>{s.description}</TableCell>
+                        <TableCell className="font-medium">{s.description}</TableCell>
                         <TableCell><StatusBadge item={s} /></TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleRestore("salaries", s.id, s.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <Link href={`/dashboard/salaries/${s.id}`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileText className="mr-2 h-4 w-4" /> Détails salaire
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/dashboard/salaries/${s.id}/receipt`} passHref>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche Paie
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("salaries", s.id, s.description)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
