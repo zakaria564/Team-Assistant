@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -82,8 +81,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);
@@ -112,6 +111,7 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
           setPlayer(playerData);
         } else {
           console.log("No such document!");
+          router.push('/dashboard/players');
         }
       } catch (error) {
         console.error("Error fetching player:", error);
@@ -121,7 +121,7 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
     };
 
     fetchPlayer();
-  }, [playerId]);
+  }, [playerId, router]);
 
   if (loading) {
     return (

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -59,7 +58,7 @@ export default function ArchivesPage() {
           return { 
               id: d.id, 
               ...data, 
-              personName: playersMap.get(data.playerId) || "Joueur inconnu"
+              personName: playersMap.get(data.playerId) || data.playerName || "Joueur inconnu"
           };
       }).filter(d => d.isArchived === true || d.isDeleted === true));
 
@@ -68,7 +67,7 @@ export default function ArchivesPage() {
           return { 
               id: d.id, 
               ...data, 
-              personName: coachesMap.get(data.coachId) || "Entraîneur inconnu"
+              personName: coachesMap.get(data.coachId) || data.coachName || "Entraîneur inconnu"
           };
       }).filter(d => d.isArchived === true || d.isDeleted === true));
 

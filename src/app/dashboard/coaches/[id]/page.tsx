@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -71,8 +70,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+  const unwrappedParams = React.use(props.params);
+  const coachId = unwrappedParams.id;
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);
