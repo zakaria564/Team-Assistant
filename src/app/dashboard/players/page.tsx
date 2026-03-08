@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight, Archive } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
@@ -59,6 +59,7 @@ interface Player {
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
+  isArchived?: boolean;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -76,7 +77,7 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, defaultOpen: boolean }) => {
+const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, onArchivePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, onArchivePlayer: (player: Player) => void, defaultOpen: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     useEffect(() => {
@@ -180,6 +181,10 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                             </DropdownMenuItem>
                                             </Link>
                                             <DropdownMenuSeparator />
+                                            <DropdownMenuItem className="cursor-pointer" onClick={() => onArchivePlayer(player)}>
+                                                <Archive className="mr-2 h-4 w-4" />
+                                                Archiver
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem
                                             className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                             onClick={() => onDeletePlayer(player)}
@@ -211,34 +216,44 @@ export default function PlayersPage() {
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
-        if (!user) {
-            if(!loadingUser) setLoading(false);
-            return;
-        }
-        setLoading(true);
-        setFetchError(null);
-        try {
-            const q = query(collection(db, "players"), where("userId", "==", user.uid));
-            const querySnapshot = await getDocs(q);
-            const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-            setPlayers(playersData);
-        } catch (error: any) {
-            console.error("Error fetching players: ", error);
-            setFetchError(error.message);
-            toast({
-            variant: "destructive",
-            title: "Erreur de chargement",
-            description: "Impossible de charger les joueurs. Vérifiez les permissions Firestore.",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchPlayers = async () => {
+      if (!user) {
+          if(!loadingUser) setLoading(false);
+          return;
+      }
+      setLoading(true);
+      setFetchError(null);
+      try {
+          const q = query(collection(db, "players"), where("userId", "==", user.uid), where("isArchived", "==", false));
+          const querySnapshot = await getDocs(q);
+          const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+          setPlayers(playersData);
+      } catch (error: any) {
+          console.error("Error fetching players: ", error);
+          setFetchError(error.message);
+          toast({
+          variant: "destructive",
+          title: "Erreur de chargement",
+          description: "Impossible de charger les joueurs.",
+          });
+      } finally {
+          setLoading(false);
+      }
+  };
 
+  useEffect(() => {
     fetchPlayers();
-  }, [user, loadingUser, toast]);
+  }, [user, loadingUser]);
+
+  const handleArchivePlayer = async (player: Player) => {
+    try {
+      await updateDoc(doc(db, "players", player.id), { isArchived: true });
+      toast({ title: "Joueur archivé", description: `${player.name} a été déplacé dans les archives.` });
+      fetchPlayers();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver le joueur." });
+    }
+  };
 
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
@@ -364,6 +379,7 @@ export default function PlayersPage() {
                     players={playersInCategory}
                     onUpdateStatus={handleUpdateStatus}
                     onDeletePlayer={setPlayerToDelete}
+                    onArchivePlayer={handleArchivePlayer}
                     defaultOpen={false}
                 />
             ))}

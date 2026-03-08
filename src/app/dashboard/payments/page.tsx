@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, where, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -60,6 +61,7 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
+  isArchived?: boolean;
 }
 
 type PaymentStatus = Payment['status'];
@@ -101,74 +103,84 @@ export default function PaymentsPage() {
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const fetchPayments = async () => {
-        if (!user) {
-            if (!loadingUser) setLoading(false);
-            return;
-        }
-      setLoading(true);
-      try {
-        const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-        const playersSnapshot = await getDocs(playersQuery);
-        const playersMap = new Map<string, Player>();
-        playersSnapshot.forEach(doc => {
-            playersMap.set(doc.id, { id: doc.id, ...doc.data() } as Player);
-        });
-
-        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
-        const paymentsSnapshot = await getDocs(paymentsQuery);
-        const paymentsData = paymentsSnapshot.docs
-            .map(doc => {
-                const data = doc.data() as any;
-                const player = playersMap.get(data.playerId);
-                
-                if (!player) {
-                    return null;
-                }
-
-                const transactions = data.transactions || [];
-                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-                const totalAmount = data.totalAmount || 0;
-                const amountRemaining = totalAmount - amountPaid;
-                
-                let status: PaymentStatus = data.status;
-                if (amountRemaining <= 0) {
-                  status = 'Payé';
-                }
-
-                return { 
-                    id: doc.id, 
-                    ...data,
-                    playerName: player.name,
-                    playerPhotoUrl: player.photoUrl,
-                    playerGender: player.gender || 'Masculin',
-                    amountPaid,
-                    amountRemaining,
-                    totalAmount,
-                    transactions,
-                    status
-                } as Payment;
-            })
-            .filter((p): p is Payment => p !== null);
-        
-        const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-        setPayments(sortedPayments);
-
-      } catch (error: any) {
-        console.error("Error fetching payments: ", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de chargement",
-          description: "Impossible de charger les paiements. Vérifiez vos règles de sécurité Firestore.",
-        });
-      } finally {
-        setLoading(false);
+  const fetchPayments = async () => {
+      if (!user) {
+          if (!loadingUser) setLoading(false);
+          return;
       }
-    };
+    setLoading(true);
+    try {
+      const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+      const playersSnapshot = await getDocs(playersQuery);
+      const playersMap = new Map<string, Player>();
+      playersSnapshot.forEach(doc => {
+          playersMap.set(doc.id, { id: doc.id, ...doc.data() } as Player);
+      });
 
+      const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid), where("isArchived", "==", false));
+      const paymentsSnapshot = await getDocs(paymentsQuery);
+      const paymentsData = paymentsSnapshot.docs
+          .map(doc => {
+              const data = doc.data() as any;
+              const player = playersMap.get(data.playerId);
+              
+              if (!player) {
+                  return null;
+              }
+
+              const transactions = data.transactions || [];
+              const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+              const totalAmount = data.totalAmount || 0;
+              const amountRemaining = totalAmount - amountPaid;
+              
+              let status: PaymentStatus = data.status;
+              if (amountRemaining <= 0) {
+                status = 'Payé';
+              }
+
+              return { 
+                  id: doc.id, 
+                  ...data,
+                  playerName: player.name,
+                  playerPhotoUrl: player.photoUrl,
+                  playerGender: player.gender || 'Masculin',
+                  amountPaid,
+                  amountRemaining,
+                  totalAmount,
+                  transactions,
+                  status
+              } as Payment;
+          })
+          .filter((p): p is Payment => p !== null);
+      
+      const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+      setPayments(sortedPayments);
+
+    } catch (error: any) {
+      console.error("Error fetching payments: ", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Impossible de charger les paiements.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPayments();
-  }, [user, loadingUser, toast]);
+  }, [user, loadingUser]);
+
+  const handleArchivePayment = async (p: Payment) => {
+    try {
+      await updateDoc(doc(db, "payments", p.id), { isArchived: true });
+      toast({ title: "Paiement archivé", description: `Le paiement pour ${p.description} a été archivé.` });
+      fetchPayments();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver le paiement." });
+    }
+  };
 
   const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
     const grouped: { [key: string]: PlayerPayments } = {};
@@ -392,6 +404,18 @@ export default function PaymentsPage() {
                                                           <Download className="mr-2 h-4 w-4" />
                                                           Exporter le reçu
                                                       </Link>
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuSeparator />
+                                                  <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchivePayment(payment)}>
+                                                      <Archive className="mr-2 h-4 w-4" />
+                                                      Archiver
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuItem
+                                                      className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                      onSelect={(e) => { e.preventDefault(); setPaymentToDelete(payment); }}
+                                                    >
+                                                      <Trash2 className="mr-2 h-4 w-4" />
+                                                      Supprimer
                                                   </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                               </DropdownMenu>

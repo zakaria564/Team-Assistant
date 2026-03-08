@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FileText, Sparkles, Calendar, Settings, ClipboardList, CreditCard, Wallet, BarChart, ListOrdered, Shield, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Wallet, Shield, AlertCircle, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -14,10 +14,10 @@ const links = [
   { href: "/dashboard/players", label: "Joueurs", icon: Users },
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
-  { href: "/dashboard/rankings", label: "Classement", icon: ListOrdered },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, id: "payments" },
   { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet, id: "salaries" },
+  { href: "/dashboard/archives", label: "Archives", icon: Archive },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
@@ -35,10 +35,11 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Monitor player payments for pending status
+    // Monitor player payments for pending status (not archived)
     const paymentsQuery = query(
       collection(db, "payments"),
-      where("userId", "==", user.uid)
+      where("userId", "==", user.uid),
+      where("isArchived", "==", false)
     );
 
     const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
@@ -49,10 +50,11 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       setHasPendingPayments(pending);
     });
 
-    // Monitor coach salaries for pending status
+    // Monitor coach salaries for pending status (not archived)
     const salariesQuery = query(
       collection(db, "salaries"),
-      where("userId", "==", user.uid)
+      where("userId", "==", user.uid),
+      where("isArchived", "==", false)
     );
 
     const unsubscribeSalaries = onSnapshot(salariesQuery, (snapshot) => {
@@ -83,7 +85,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
             onClick={onLinkClick}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              pathname.startsWith(href) && (href !== "/dashboard" || pathname === "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+              pathname === href || (pathname.startsWith(href) && href !== "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
             )}
           >
             <div className="relative flex items-center justify-center">

@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, deleteDoc, where, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -50,6 +51,7 @@ interface Salary {
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
+  isArchived?: boolean;
 }
 
 type SalaryStatus = Salary['status'];
@@ -88,72 +90,82 @@ export default function SalariesPage() {
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const fetchSalaries = async () => {
-        if (!user) {
-            if (!loadingUser) setLoading(false);
-            return;
-        }
-      setLoading(true);
-      try {
-        const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
-        const coachesSnapshot = await getDocs(coachesQuery);
-        const coachesMap = new Map<string, {name: string, photoUrl?: string}>();
-        coachesSnapshot.forEach(doc => {
-            coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
-        });
-
-        const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
-        const salariesSnapshot = await getDocs(salariesQuery);
-        const salariesData = salariesSnapshot.docs
-            .map(doc => {
-                const data = doc.data() as any;
-                
-                if (!coachesMap.has(data.coachId)) {
-                    return null;
-                }
-
-                const transactions = data.transactions || [];
-                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-                const totalAmount = data.totalAmount || 0;
-                const amountRemaining = totalAmount - amountPaid;
-                
-                let status: SalaryStatus = data.status;
-                if (amountRemaining <= 0) {
-                  status = 'Payé';
-                }
-
-                return { 
-                    id: doc.id, 
-                    ...data,
-                    coachName: coachesMap.get(data.coachId)?.name || "Entraîneur inconnu",
-                    coachPhotoUrl: coachesMap.get(data.coachId)?.photoUrl,
-                    amountPaid,
-                    amountRemaining,
-                    totalAmount,
-                    transactions,
-                    status
-                } as Salary;
-            })
-            .filter((s): s is Salary => s !== null);
-        
-        const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-        setSalaries(sortedSalaries);
-
-      } catch (error: any) {
-        console.error("Error fetching salaries: ", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de chargement",
-          description: "Impossible de charger les salaires. Vérifiez vos règles de sécurité Firestore.",
-        });
-      } finally {
-        setLoading(false);
+  const fetchSalaries = async () => {
+      if (!user) {
+          if (!loadingUser) setLoading(false);
+          return;
       }
-    };
+    setLoading(true);
+    try {
+      const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
+      const coachesSnapshot = await getDocs(coachesQuery);
+      const coachesMap = new Map<string, {name: string, photoUrl?: string}>();
+      coachesSnapshot.forEach(doc => {
+          coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
+      });
 
+      const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isArchived", "==", false));
+      const salariesSnapshot = await getDocs(salariesQuery);
+      const salariesData = salariesSnapshot.docs
+          .map(doc => {
+              const data = doc.data() as any;
+              
+              if (!coachesMap.has(data.coachId)) {
+                  return null;
+              }
+
+              const transactions = data.transactions || [];
+              const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+              const totalAmount = data.totalAmount || 0;
+              const amountRemaining = totalAmount - amountPaid;
+              
+              let status: SalaryStatus = data.status;
+              if (amountRemaining <= 0) {
+                status = 'Payé';
+              }
+
+              return { 
+                  id: doc.id, 
+                  ...data,
+                  coachName: coachesMap.get(data.coachId)?.name || "Entraîneur inconnu",
+                  coachPhotoUrl: coachesMap.get(data.coachId)?.photoUrl,
+                  amountPaid,
+                  amountRemaining,
+                  totalAmount,
+                  transactions,
+                  status
+              } as Salary;
+          })
+          .filter((s): s is Salary => s !== null);
+      
+      const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+      setSalaries(sortedSalaries);
+
+    } catch (error: any) {
+      console.error("Error fetching salaries: ", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Impossible de charger les salaires.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSalaries();
-  }, [user, loadingUser, toast]);
+  }, [user, loadingUser]);
+
+  const handleArchiveSalary = async (s: Salary) => {
+    try {
+      await updateDoc(doc(db, "salaries", s.id), { isArchived: true });
+      toast({ title: "Salaire archivé", description: `Le salaire pour ${s.description} a été archivé.` });
+      fetchSalaries();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver le salaire." });
+    }
+  };
 
   const groupedAndFilteredSalaries: CoachSalaries[] = useMemo(() => {
     const grouped: { [key: string]: CoachSalaries } = {};
@@ -162,7 +174,7 @@ export default function SalariesPage() {
 
     salaries.forEach(salary => {
         if (!grouped[salary.coachId]) {
-            grouped[coachId] = {
+            grouped[salary.coachId] = {
                 coachId: salary.coachId,
                 coachName: salary.coachName || "Entraîneur inconnu",
                 coachPhotoUrl: salary.coachPhotoUrl,
@@ -375,9 +387,13 @@ export default function SalariesPage() {
                                                                     Exporter la fiche
                                                                 </Link>
                                                             </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchiveSalary(salary)}>
+                                                                <Archive className="mr-2 h-4 w-4" />
+                                                                Archiver
+                                                            </DropdownMenuItem>
                                                             {canDelete && (
                                                                 <>
-                                                                    <DropdownMenuSeparator />
                                                                     <DropdownMenuItem
                                                                         className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                                                         onClick={() => setSalaryToDelete(salary)}

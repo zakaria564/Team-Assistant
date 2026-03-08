@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown } from "lucide-react";
+import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown, Archive } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, updateDoc, where } from "firebase/firestore";
@@ -50,6 +50,7 @@ interface Coach {
   email: string;
   photoUrl?: string;
   specialty?: string;
+  isArchived?: boolean;
 }
 
 const getStatusBadgeClass = (status?: CoachStatus) => {
@@ -75,33 +76,43 @@ export default function CoachesPage() {
   const [coachToDelete, setCoachToDelete] = useState<Coach | null>(null);
 
 
-  useEffect(() => {
-    const fetchCoaches = async () => {
-      if (!user) {
-        if (!loadingUser) setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
-        setCoaches(coachesData);
-      } catch (error: any) {
-        console.error("Error fetching coaches: ", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de permissions",
-          description: "Impossible de charger les entraîneurs. Veuillez vérifier vos règles de sécurité Firestore.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCoaches = async () => {
+    if (!user) {
+      if (!loadingUser) setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const q = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isArchived", "==", false));
+      const querySnapshot = await getDocs(q);
+      const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
+      setCoaches(coachesData);
+    } catch (error: any) {
+      console.error("Error fetching coaches: ", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de permissions",
+        description: "Impossible de charger les entraîneurs.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCoaches();
-  }, [user, loadingUser, toast]);
+  }, [user, loadingUser]);
   
+  const handleArchiveCoach = async (coach: Coach) => {
+    try {
+      await updateDoc(doc(db, "coaches", coach.id), { isArchived: true });
+      toast({ title: "Entraîneur archivé", description: `${coach.name} a été déplacé dans les archives.` });
+      fetchCoaches();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'archiver l'entraîneur." });
+    }
+  };
+
   const filteredCoaches = useMemo(() => {
     if (!searchTerm) return coaches;
     const lowercasedSearchTerm = searchTerm.toLowerCase();
@@ -302,6 +313,10 @@ export default function CoachesPage() {
                                     </DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchiveCoach(coach)}>
+                                      <Archive className="mr-2 h-4 w-4" />
+                                      Archiver
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                     onClick={() => setCoachToDelete(coach)}
