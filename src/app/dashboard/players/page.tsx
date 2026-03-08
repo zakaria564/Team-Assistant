@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -6,10 +5,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight, Archive } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, deleteDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -54,13 +53,6 @@ interface Player {
   number: number;
   photoUrl?: string;
   position?: string;
-  phone?: string;
-  email?: string;
-  tutorName?: string;
-  tutorPhone?: string;
-  tutorEmail?: string;
-  isArchived?: boolean;
-  isDeleted?: boolean;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -78,7 +70,7 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, onArchivePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, onArchivePlayer: (player: Player) => void, defaultOpen: boolean }) => {
+const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, defaultOpen: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     useEffect(() => {
@@ -121,14 +113,11 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>
-                                                <AvatarImage src={player.photoUrl} alt={player.name} data-ai-hint="player portrait" />
+                                                <AvatarImage src={player.photoUrl} alt={player.name} />
                                                 <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="font-medium">{toTitleCase(player.name)}</span>
-                                                  {player.isArchived && <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 border-blue-200">Archivé</Badge>}
-                                                </div>
+                                                <span className="font-medium">{toTitleCase(player.name)}</span>
                                                 <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
                                             </div>
                                         </div>
@@ -185,16 +174,12 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                             </DropdownMenuItem>
                                             </Link>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="cursor-pointer" onClick={() => onArchivePlayer(player)}>
-                                                <Archive className="mr-2 h-4 w-4" />
-                                                {player.isArchived ? "Désarchiver" : "Archiver"}
-                                            </DropdownMenuItem>
                                             <DropdownMenuItem
                                             className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                             onClick={() => onDeletePlayer(player)}
                                             >
                                             <Trash2 className="mr-2 h-4 w-4" />
-                                            Retirer de la liste
+                                            Supprimer
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                         </DropdownMenu>
@@ -230,9 +215,7 @@ export default function PlayersPage() {
       try {
           const q = query(collection(db, "players"), where("userId", "==", user.uid));
           const querySnapshot = await getDocs(q);
-          const playersData = querySnapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as Player))
-            .filter(p => p.isDeleted !== true); // Show everything NOT deleted (even if archived)
+          const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
           setPlayers(playersData);
       } catch (error: any) {
           console.error("Error fetching players: ", error);
@@ -250,20 +233,6 @@ export default function PlayersPage() {
   useEffect(() => {
     fetchPlayers();
   }, [user, loadingUser]);
-
-  const handleArchivePlayer = async (player: Player) => {
-    try {
-      const newArchivedState = !player.isArchived;
-      await updateDoc(doc(db, "players", player.id), { isArchived: newArchivedState });
-      toast({ 
-        title: newArchivedState ? "Joueur archivé" : "Joueur désarchivé", 
-        description: `${player.name} a été ${newArchivedState ? 'marqué comme archivé' : 'retiré des archives'}. Il reste dans votre liste.` 
-      });
-      fetchPlayers();
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier l'état d'archivage." });
-    }
-  };
 
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
@@ -352,20 +321,19 @@ export default function PlayersPage() {
   const confirmDeletePlayer = async () => {
     if (!playerToDelete) return;
     try {
-      // User requested to keep data even if deleted from the list
-      await updateDoc(doc(db, "players", playerToDelete.id), { isDeleted: true });
+      await deleteDoc(doc(db, "players", playerToDelete.id));
       setPlayers(players.filter(p => p.id !== playerToDelete.id));
       toast({
-        title: "Joueur retiré",
-        description: `${toTitleCase(playerToDelete.name)} a été retiré de la liste active mais conservé dans les archives.`,
+        title: "Joueur supprimé",
+        description: `${toTitleCase(playerToDelete.name)} a été retiré de la liste.`,
       });
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de retirer le joueur.",
+        description: "Impossible de supprimer le joueur.",
       });
-      console.error("Error soft-deleting player: ", error);
+      console.error("Error deleting player: ", error);
     } finally {
         setPlayerToDelete(null);
     }
@@ -390,7 +358,6 @@ export default function PlayersPage() {
                     players={playersInCategory}
                     onUpdateStatus={handleUpdateStatus}
                     onDeletePlayer={setPlayerToDelete}
-                    onArchivePlayer={handleArchivePlayer}
                     defaultOpen={false}
                 />
             ))}
@@ -404,7 +371,7 @@ export default function PlayersPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Joueurs</h1>
-            <p className="text-muted-foreground">Gérez les joueurs de votre club. Les éléments archivés restent visibles ici.</p>
+            <p className="text-muted-foreground">Gérez les joueurs inscrits dans votre club.</p>
           </div>
           <Button asChild className="w-full md:w-auto">
             <Link href="/dashboard/players/add">
@@ -441,7 +408,7 @@ export default function PlayersPage() {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Erreur de chargement des données</AlertTitle>
               <AlertDescription>
-                Une erreur s'est produite: <code className="font-mono text-sm">{fetchError}</code>
+                Une erreur s'est produite lors de la récupération des joueurs : <code className="font-mono text-sm">{fetchError}</code>
               </AlertDescription>
           </Alert>
         )}
@@ -469,9 +436,9 @@ export default function PlayersPage() {
        <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Retirer ce joueur de la liste ?</AlertDialogTitle>
+              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Le joueur "{toTitleCase(playerToDelete?.name || '')}" sera masqué de cette liste mais restera accessible dans les Archives.
+              Cette action est irréversible. Toutes les données associées à "{toTitleCase(playerToDelete?.name || '')}" seront définitivement supprimées.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -480,7 +447,7 @@ export default function PlayersPage() {
                 onClick={confirmDeletePlayer}
                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
-                Confirmer le retrait
+                Supprimer définitivement
                 </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

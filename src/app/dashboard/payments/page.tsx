@@ -1,14 +1,13 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter, Archive } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, where, deleteDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -61,8 +60,6 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
-  isArchived?: boolean;
-  isDeleted?: boolean;
 }
 
 type PaymentStatus = Payment['status'];
@@ -125,9 +122,7 @@ export default function PaymentsPage() {
               const data = doc.data() as any;
               const player = playersMap.get(data.playerId);
               
-              if (!player && !data.isDeleted) { // Only skip if player is gone AND payment isn't explicitly marked deleted
-                  return null;
-              }
+              if (!player) return null;
 
               const transactions = data.transactions || [];
               const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
@@ -142,9 +137,9 @@ export default function PaymentsPage() {
               return { 
                   id: doc.id, 
                   ...data,
-                  playerName: player?.name || data.playerName || "Joueur supprimé",
-                  playerPhotoUrl: player?.photoUrl,
-                  playerGender: player?.gender || data.playerGender || 'Masculin',
+                  playerName: player.name,
+                  playerPhotoUrl: player.photoUrl,
+                  playerGender: player.gender || 'Masculin',
                   amountPaid,
                   amountRemaining,
                   totalAmount,
@@ -152,7 +147,7 @@ export default function PaymentsPage() {
                   status
               } as Payment;
           })
-          .filter((p): p is Payment => p !== null && p.isDeleted !== true); // Show everything except explicitly deleted payments
+          .filter((p): p is Payment => p !== null);
       
       const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
       setPayments(sortedPayments);
@@ -172,20 +167,6 @@ export default function PaymentsPage() {
   useEffect(() => {
     fetchPayments();
   }, [user, loadingUser]);
-
-  const handleArchivePayment = async (p: Payment) => {
-    try {
-      const newState = !p.isArchived;
-      await updateDoc(doc(db, "payments", p.id), { isArchived: newState });
-      toast({ 
-        title: newState ? "Paiement archivé" : "Paiement désarchivé", 
-        description: `Le paiement pour ${p.description} a été ${newState ? 'marqué comme archivé' : 'désarchivé'}.` 
-      });
-      fetchPayments();
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier l'état d'archivage." });
-    }
-  };
 
   const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
     const grouped: { [key: string]: PlayerPayments } = {};
@@ -255,20 +236,19 @@ export default function PaymentsPage() {
   const confirmDeletePayment = async () => {
     if(!paymentToDelete) return;
     try {
-      // Soft-delete: hide from list but keep in archives
-      await updateDoc(doc(db, "payments", paymentToDelete.id), { isDeleted: true });
+      await deleteDoc(doc(db, "payments", paymentToDelete.id));
       setPayments(payments.filter(p => p.id !== paymentToDelete.id));
       toast({
-        title: "Paiement retiré",
-        description: `Le paiement a été retiré de la liste active et conservé dans les archives.`,
+        title: "Paiement supprimé",
+        description: `Le paiement a été définitivement supprimé.`,
       });
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de retirer le paiement.",
+        description: "Impossible de supprimer le paiement.",
       });
-      console.error("Error soft-deleting payment: ", error);
+      console.error("Error deleting payment: ", error);
     } finally {
         setPaymentToDelete(null);
     }
@@ -371,10 +351,7 @@ export default function PaymentsPage() {
                                       <TableRow key={payment.id} className={cn(payment.status !== 'Payé' ? "bg-destructive/5" : "")}>
                                           <TableCell>
                                               <div className="flex flex-col">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="font-medium">{payment.description}</span>
-                                                    {payment.isArchived && <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 bg-blue-50 text-blue-700 border-blue-200">Archivé</Badge>}
-                                                  </div>
+                                                  <span className="font-medium">{payment.description}</span>
                                                   <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
                                               </div>
                                           </TableCell>
@@ -415,16 +392,12 @@ export default function PaymentsPage() {
                                                       </Link>
                                                   </DropdownMenuItem>
                                                   <DropdownMenuSeparator />
-                                                  <DropdownMenuItem className="cursor-pointer" onClick={() => handleArchivePayment(payment)}>
-                                                      <Archive className="mr-2 h-4 w-4" />
-                                                      {payment.isArchived ? "Désarchiver" : "Archiver"}
-                                                  </DropdownMenuItem>
                                                   <DropdownMenuItem
                                                       className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                                                       onSelect={(e) => { e.preventDefault(); setPaymentToDelete(payment); }}
                                                     >
                                                       <Trash2 className="mr-2 h-4 w-4" />
-                                                      Retirer de la liste
+                                                      Supprimer définitivement
                                                   </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                               </DropdownMenu>
@@ -448,7 +421,7 @@ export default function PaymentsPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
               <h1 className="text-3xl font-bold tracking-tight">Paiements des Joueurs</h1>
-              <p className="text-muted-foreground">Suivez les paiements. Les éléments archivés restent visibles ici.</p>
+              <p className="text-muted-foreground">Suivez les cotisations et les règlements de vos joueurs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
@@ -538,9 +511,9 @@ export default function PaymentsPage() {
       <AlertDialog open={!!paymentToDelete} onOpenChange={(isOpen) => !isOpen && setPaymentToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-              <AlertDialogTitle>Retirer ce paiement de la liste ?</AlertDialogTitle>
+              <AlertDialogTitle>Supprimer ce paiement ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Le paiement pour "{paymentToDelete?.description}" sera masqué de cette liste mais restera archivé.
+              Cette action est irréversible. Toutes les transactions liées à "{paymentToDelete?.description}" seront effacées.
               </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -549,7 +522,7 @@ export default function PaymentsPage() {
               onClick={confirmDeletePayment}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               >
-              Confirmer le retrait
+              Supprimer définitivement
               </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
