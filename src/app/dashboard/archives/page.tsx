@@ -45,10 +45,33 @@ export default function ArchivesPage() {
         getDocs(qPlayers), getDocs(qCoaches), getDocs(qPayments), getDocs(qSalaries)
       ]);
 
+      const playersMap = new Map();
+      snapP.docs.forEach(d => playersMap.set(d.id, d.data().name));
+      
+      const coachesMap = new Map();
+      snapC.docs.forEach(d => coachesMap.set(d.id, d.data().name));
+
       setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
       setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
-      setPayments(snapPay.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
-      setSalaries(snapS.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
+      
+      setPayments(snapPay.docs.map(d => {
+          const data = d.data();
+          return { 
+              id: d.id, 
+              ...data, 
+              personName: playersMap.get(data.playerId) || "Joueur inconnu"
+          };
+      }).filter(d => d.isArchived === true || d.isDeleted === true));
+
+      setSalaries(snapS.docs.map(d => {
+          const data = d.data();
+          return { 
+              id: d.id, 
+              ...data, 
+              personName: coachesMap.get(data.coachId) || "Entraîneur inconnu"
+          };
+      }).filter(d => d.isArchived === true || d.isDeleted === true));
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -228,6 +251,7 @@ export default function ArchivesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Joueur</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -236,7 +260,8 @@ export default function ArchivesPage() {
                   <TableBody>
                     {payments.map(p => (
                       <TableRow key={p.id}>
-                        <TableCell className="font-medium">{p.description}</TableCell>
+                        <TableCell className="font-medium">{p.personName}</TableCell>
+                        <TableCell>{p.description}</TableCell>
                         <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
@@ -281,6 +306,7 @@ export default function ArchivesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Entraîneur</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -289,7 +315,8 @@ export default function ArchivesPage() {
                   <TableBody>
                     {salaries.map(s => (
                       <TableRow key={s.id}>
-                        <TableCell className="font-medium">{s.description}</TableCell>
+                        <TableCell className="font-medium">{s.personName}</TableCell>
+                        <TableCell>{s.description}</TableCell>
                         <TableCell><StatusBadge item={s} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
