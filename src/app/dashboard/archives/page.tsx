@@ -36,31 +36,37 @@ export default function ArchivesPage() {
       return;
     }
 
-    setLoading(true);
-
     const fetchData = async () => {
-        // Names Maps
-        const pSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
-        const cSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
-        
-        const pMap = new Map();
-        pSnap.docs.forEach(d => pMap.set(d.id, d.data().name));
-        
-        const cMap = new Map();
-        cSnap.docs.forEach(d => cMap.set(d.id, d.data().name));
+        setLoading(true);
+        try {
+            // Names Maps
+            const pSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
+            const cSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
+            
+            const pMap = new Map();
+            pSnap.docs.forEach(d => pMap.set(d.id, d.data().name));
+            
+            const cMap = new Map();
+            cSnap.docs.forEach(d => cMap.set(d.id, d.data().name));
 
-        const qP = query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", true));
-        const qC = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isDeleted", "==", true));
-        const qPay = query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", true));
-        const qSal = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+            const unsubP = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
+                setPlayers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+            
+            const unsubC = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
+                setCoaches(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+            
+            const unsubPay = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
+                setPayments(s.docs.map(d => ({ id: d.id, ...d.data(), personName: pMap.get(d.data().playerId) || "Joueur" }))));
+            
+            const unsubSal = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
+                setSalaries(s.docs.map(d => ({ id: d.id, ...d.data(), personName: cMap.get(d.data().coachId) || "Entraîneur" }))));
 
-        const unsubP = onSnapshot(qP, (s) => setPlayers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-        const unsubC = onSnapshot(qC, (s) => setCoaches(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-        const unsubPay = onSnapshot(qPay, (s) => setPayments(s.docs.map(d => ({ id: d.id, ...d.data(), personName: pMap.get(d.data().playerId) || "Joueur" }))));
-        const unsubSal = onSnapshot(qSal, (s) => setSalaries(s.docs.map(d => ({ id: d.id, ...d.data(), personName: cMap.get(d.data().coachId) || "Entraîneur" }))));
-
-        setLoading(false);
-        return () => { unsubP(); unsubC(); unsubPay(); unsubSal(); };
+            setLoading(false);
+            return () => { unsubP(); unsubC(); unsubPay(); unsubSal(); };
+        } catch (e) {
+            console.error(e);
+            setLoading(false);
+        }
     };
 
     fetchData();

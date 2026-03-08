@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,202 +7,77 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Pencil, FileText, User, DollarSign, BadgeHelp } from "lucide-react";
-import Link from "next/link";
+import { Loader2, ArrowLeft, FileText, User, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-
-interface Payment {
-  id: string;
-  playerId: string;
-  playerName?: string; 
-  totalAmount: number;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  createdAt: { seconds: number, nanoseconds: number };
-  description: string;
-  transactions: { amount: number; date: { seconds: number, nanoseconds: number }; method: string; }[];
-}
-
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-4">
-    <Icon className="h-6 w-6 text-muted-foreground mt-1" />
-    <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium">{value || children || "Non spécifié"}</div>
-    </div>
-  </div>
-);
-
-const getBadgeClass = (status?: Payment['status']) => {
-     switch (status) {
-        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
-        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
-        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
-        default: return '';
-    }
-}
-
-
 export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const paymentId = unwrappedParams.id;
+  const params = React.use(props.params);
+  const paymentId = params.id;
   const router = useRouter();
-  
-  const [payment, setPayment] = useState<Payment | null>(null);
+  const [payment, setPayment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!paymentId) return;
-
     const fetchPayment = async () => {
       setLoading(true);
       try {
-        const paymentRef = doc(db, "payments", paymentId);
-        const paymentSnap = await getDoc(paymentRef);
-
-        if (paymentSnap.exists()) {
-          const paymentData = { id: paymentSnap.id, ...paymentSnap.data() } as Omit<Payment, 'playerName'>;
-          
-          const playerRef = doc(db, "players", paymentData.playerId);
-          const playerSnap = await getDoc(playerRef);
-
-          setPayment({
-            ...paymentData,
-            playerName: playerSnap.exists() ? playerSnap.data().name : "Joueur inconnu"
-          });
-
-        } else {
-          router.push('/dashboard/payments');
-        }
-      } catch (error) {
-        console.error("Error fetching payment details:", error);
-      } finally {
-        setLoading(false);
-      }
+        const snap = await getDoc(doc(db, "payments", paymentId));
+        if (snap.exists()) {
+          const data = snap.data();
+          const pSnap = await getDoc(doc(db, "players", data.playerId));
+          setPayment({ id: snap.id, ...data, playerName: pSnap.exists() ? pSnap.data().name : "Joueur inconnu" });
+        } else router.push('/dashboard/payments');
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchPayment();
   }, [paymentId, router]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (!payment) return null;
 
-  if (!payment) {
-    return (
-      <div className="text-center">
-        <p>Paiement non trouvé.</p>
-        <Button onClick={() => router.push("/dashboard/payments")} className="mt-4">Retour à la liste</Button>
-      </div>
-    );
-  }
-  
-  const amountPaid = payment.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
-  const amountRemaining = payment.totalAmount - amountPaid;
-  const correctedStatus = amountRemaining <= 0 ? 'Payé' : payment.status;
+  const totalPaid = payment.transactions?.reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="h-6 w-6" />
-              <span className="sr-only">Retour</span>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Détails de la Cotisation</h1>
-              <p className="text-muted-foreground">
-                  Transaction pour {payment.playerName}.
-              </p>
-            </div>
-        </div>
-        {correctedStatus !== 'Payé' && (
-          <Button asChild className="w-full md:w-auto">
-            <Link href={`/dashboard/payments/${paymentId}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Ajouter un versement
-            </Link>
-          </Button>
-        )}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
+        <h1 className="text-3xl font-bold tracking-tight">Détails de Cotisation</h1>
       </div>
-      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl">
-                    <FileText />
-                    <span>{payment.description}</span>
-                </CardTitle>
-                <CardDescription>
-                    Créé le {format(new Date(payment.createdAt.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date du versement</TableHead>
-                      <TableHead>Méthode</TableHead>
-                      <TableHead className="text-right">Montant</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payment.transactions?.length > 0 ? (
-                      payment.transactions.map((transaction, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{format(new Date(transaction.date.seconds * 1000), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}</TableCell>
-                          <TableCell>{transaction.method}</TableCell>
-                          <TableCell className="text-right font-medium">{transaction.amount.toFixed(2)} MAD</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
-                          Aucun versement enregistré pour cette cotisation.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><FileText /> {payment.description}</CardTitle>
+            <CardDescription>Joueur: {payment.playerName}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {payment.transactions?.map((t: any, i: number) => (
+                  <TableRow key={i}>
+                    <TableCell>{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy", { locale: fr })}</TableCell>
+                    <TableCell>{t.method}</TableCell>
+                    <TableCell className="text-right font-medium">{t.amount.toFixed(2)} MAD</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
         </Card>
-
-        <div className="space-y-6 lg:col-span-1">
-            <Card>
-                <CardHeader>
-                  <CardTitle>Résumé Financier</CardTitle>
-                </CardHeader>
-                 <CardContent className="space-y-4">
-                    <DetailItem icon={DollarSign} label="Montant total dû" value={`${payment.totalAmount.toFixed(2)} MAD`} />
-                    <DetailItem icon={DollarSign} label="Montant total payé" value={`${amountPaid.toFixed(2)} MAD`} />
-                    <DetailItem icon={DollarSign} label="Montant restant" value={`${amountRemaining.toFixed(2)} MAD`} />
-                    <DetailItem icon={BadgeHelp} label="Statut">
-                        <Badge className={cn("text-base", getBadgeClass(correctedStatus))}>
-                            {correctedStatus}
-                        </Badge>
-                    </DetailItem>
-                </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Joueur</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <DetailItem icon={User} label="Nom du Joueur" value={payment.playerName} />
-              </CardContent>
-            </Card>
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Résumé</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between"><span>Total Dû:</span><span className="font-bold">{payment.totalAmount.toFixed(2)} MAD</span></div>
+            <div className="flex justify-between"><span>Total Payé:</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>
+            <div className="flex justify-between"><span>Reste:</span><span className="font-bold text-red-600">{(payment.totalAmount - totalPaid).toFixed(2)} MAD</span></div>
+            <Badge className={cn("w-full justify-center text-base py-1", payment.status === 'Payé' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700')}>{payment.status}</Badge>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -67,16 +67,16 @@ export default function SalariesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
-  const [currentMonthStr, setCurrentMonthStr] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Fix Hydration Mismatch for date strings
+  // Fix Hydration Mismatch: Only run date logic after mount
   useEffect(() => {
-    setCurrentMonthStr(`Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`.toLowerCase());
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      if (!loadingUser) setLoading(false);
+    if (!user || !isMounted) {
+      if (!loadingUser && isMounted) setLoading(false);
       return;
     }
 
@@ -84,12 +84,10 @@ export default function SalariesPage() {
 
     const fetchData = async () => {
         try {
-            // 1. Fetch Coaches to Map Names
             const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
             const coachesMap = new Map();
             coachesSnap.docs.forEach(d => coachesMap.set(d.id, { name: d.data().name, photo: d.data().photoUrl }));
 
-            // 2. Listen to Salaries
             const q = query(
                 collection(db, "salaries"), 
                 where("userId", "==", user.uid),
@@ -122,13 +120,7 @@ export default function SalariesPage() {
                     } as Salary;
                 });
 
-                // Safe Sorting
-                salariesData.sort((a, b) => {
-                    const dateA = a.createdAt?.seconds || 0;
-                    const dateB = b.createdAt?.seconds || 0;
-                    return dateB - dateA;
-                });
-
+                salariesData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 setSalaries(salariesData);
                 setLoading(false);
             }, (error) => {
@@ -145,10 +137,12 @@ export default function SalariesPage() {
 
     const unsub = fetchData();
     return () => { if(unsub && typeof unsub === 'function') unsub(); };
-  }, [user, loadingUser]);
+  }, [user, loadingUser, isMounted]);
 
   const groupedAndFilteredSalaries = useMemo(() => {
+    if (!isMounted) return [];
     const grouped: { [key: string]: CoachSalaries } = {};
+    const currentMonthStr = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`.toLowerCase();
 
     salaries.forEach(salary => {
         const coachId = salary.coachId || 'unknown';
@@ -163,7 +157,7 @@ export default function SalariesPage() {
         }
         grouped[coachId].salaries.push(salary);
         
-        if (currentMonthStr && salary.description?.toLowerCase().includes(currentMonthStr)) {
+        if (salary.description?.toLowerCase().includes(currentMonthStr)) {
             grouped[coachId].currentMonthStatus = salary.status;
         }
     });
@@ -174,13 +168,13 @@ export default function SalariesPage() {
         result = result.filter(g => g.coachName.toLowerCase().includes(term));
     }
     return result.sort((a, b) => a.coachName.localeCompare(b.coachName));
-  }, [salaries, searchTerm, currentMonthStr]);
+  }, [salaries, searchTerm, isMounted]);
 
-  const confirmDeleteSalary = async () => {
+  const handleArchive = async () => {
     if(!salaryToDelete) return;
     try {
       await updateDoc(doc(db, "salaries", salaryToDelete.id), { isDeleted: true });
-      toast({ title: "Déplacé aux archives", description: "Le salaire a été sauvegardé dans vos copies de sécurité." });
+      toast({ title: "Déplacé aux archives", description: "Le règlement a été sauvegardé dans vos copies de sécurité." });
     } catch (e) {
        toast({ variant: "destructive", title: "Erreur", description: "Action impossible." });
     } finally {
@@ -188,17 +182,7 @@ export default function SalariesPage() {
     }
   };
 
-  const getBadgeClass = (status?: string) => {
-     switch (status) {
-        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
-        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
-        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
-        default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  if (loading || loadingUser) {
+  if (!isMounted || loading || loadingUser) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -257,7 +241,9 @@ export default function SalariesPage() {
                                   </div>
                               </div>
                               <div className="flex items-center gap-4">
-                                   <Badge className={cn("hidden sm:inline-flex", getBadgeClass(group.currentMonthStatus))}>
+                                   <Badge className={cn("hidden sm:inline-flex", 
+                                      group.currentMonthStatus === 'Payé' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'
+                                   )}>
                                       {group.currentMonthStatus}
                                    </Badge>
                                    {openCollapsibles[group.coachId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
@@ -303,7 +289,7 @@ export default function SalariesPage() {
           <AlertDialogHeader><AlertDialogTitle>Archiver ce règlement ?</AlertDialogTitle><AlertDialogDescription>L'élément sera déplacé vers l'onglet Archives pour libérer votre liste active.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive hover:bg-destructive/90">Déplacer aux Archives</AlertDialogAction>
+              <AlertDialogAction onClick={handleArchive} className="bg-destructive hover:bg-destructive/90">Déplacer aux Archives</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -8,13 +8,12 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star, LogIn, LogOut, Flag, Home, Calendar as CalendarIcon, Download, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const coachId = unwrappedParams.id;
+  const params = React.use(props.params);
+  const coachId = params.id;
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -37,26 +36,26 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
   if (!coach) return null;
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
         <h1 className="text-3xl font-bold tracking-tight">Fiche Entraîneur</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Avatar className="h-32 w-32 border-4 border-primary"><AvatarImage src={coach.photoUrl} /><AvatarFallback>E</AvatarFallback></Avatar>
+            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm"><AvatarImage src={coach.photoUrl} /><AvatarFallback>E</AvatarFallback></Avatar>
             <h2 className="text-2xl font-bold">{coach.name}</h2>
             <Badge className="bg-green-100 text-green-800">{coach.status}</Badge>
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
-          <CardHeader><CardTitle>Informations</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Informations Professionnelles</CardTitle></CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-6">
-            <div className="flex items-center gap-3"><Star className="text-muted-foreground" /> <span>{coach.specialty}</span></div>
-            <div className="flex items-center gap-3"><Shield className="text-muted-foreground" /> <span>{coach.category}</span></div>
-            <div className="flex items-center gap-3"><Phone className="text-muted-foreground" /> <span>{coach.phone || 'N/A'}</span></div>
-            <div className="flex items-center gap-3"><Mail className="text-muted-foreground" /> <span>{coach.email}</span></div>
+            <div className="flex items-center gap-3"><Star className="text-muted-foreground" /> <span>Spécialité: {coach.specialty}</span></div>
+            <div className="flex items-center gap-3"><Shield className="text-muted-foreground" /> <span>Catégorie: {coach.category}</span></div>
+            <div className="flex items-center gap-3"><Phone className="text-muted-foreground" /> <span>Tél: {coach.phone || 'N/A'}</span></div>
+            <div className="flex items-center gap-3"><Mail className="text-muted-foreground" /> <span>Email: {coach.email}</span></div>
           </CardContent>
         </Card>
       </div>

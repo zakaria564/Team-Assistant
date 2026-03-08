@@ -34,7 +34,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Détection globale des retards (Paiements ou Salaires)
     const unsubP = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", false)), (s) => {
       const pending = s.docs.some(d => d.data().status !== 'Payé');
       if (pending) setHasPending(true);
