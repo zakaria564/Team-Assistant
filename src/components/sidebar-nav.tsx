@@ -42,6 +42,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
       const pending = snapshot.docs.some(doc => {
         const data = doc.data();
+        // Return alert if NOT deleted and NOT fully paid
         return data.isDeleted !== true && data.status !== "Payé";
       });
       setHasPendingPayments(pending);
