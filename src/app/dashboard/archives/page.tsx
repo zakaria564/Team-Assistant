@@ -2,17 +2,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, getDocs } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet, Trash2, Archive, MoreHorizontal, FileText, FileDown, IdCard } from "lucide-react";
+import { Loader2, ArchiveRestore, User, ClipboardList, CreditCard, Wallet, MoreHorizontal, FileText, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,65 +31,57 @@ export default function ArchivesPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchData = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const qPlayers = query(collection(db, "players"), where("userId", "==", user.uid));
-      const qCoaches = query(collection(db, "coaches"), where("userId", "==", user.uid));
-      const qPayments = query(collection(db, "payments"), where("userId", "==", user.uid));
-      const qSalaries = query(collection(db, "salaries"), where("userId", "==", user.uid));
-
-      const [snapP, snapC, snapPay, snapS] = await Promise.all([
-        getDocs(qPlayers), getDocs(qCoaches), getDocs(qPayments), getDocs(qSalaries)
-      ]);
-
-      const playersMap = new Map();
-      snapP.docs.forEach(d => playersMap.set(d.id, d.data().name));
-      
-      const coachesMap = new Map();
-      snapC.docs.forEach(d => coachesMap.set(d.id, d.data().name));
-
-      // Filter: either archived manually or deleted
-      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isDeleted === true));
-      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isDeleted === true));
-      
-      setPayments(snapPay.docs.map(d => {
-          const data = d.data();
-          return { 
-              id: d.id, 
-              ...data, 
-              personName: playersMap.get(data.playerId) || data.playerName || "Joueur inconnu"
-          };
-      }).filter(d => d.isDeleted === true));
-
-      setSalaries(snapS.docs.map(d => {
-          const data = d.data();
-          return { 
-              id: d.id, 
-              ...data, 
-              personName: coachesMap.get(data.coachId) || data.coachName || "Entraîneur inconnu"
-          };
-      }).filter(d => d.isDeleted === true));
-
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (user || !loadingUser) fetchData();
+    if (!user) {
+      if (!loadingUser) setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    const fetchData = async () => {
+        // Fetch Names Maps for cross-referencing
+        const pSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
+        const cSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
+        
+        const playersMap = new Map();
+        pSnap.docs.forEach(d => playersMap.set(d.id, d.data().name));
+        
+        const coachesMap = new Map();
+        cSnap.docs.forEach(d => coachesMap.set(d.id, d.data().name));
+
+        // Subscriptions
+        const qP = query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qC = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qPay = query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qSal = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+
+        const unsubP = onSnapshot(qP, (s) => setPlayers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+        const unsubC = onSnapshot(qC, (s) => setCoaches(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+        const unsubPay = onSnapshot(qPay, (s) => setPayments(s.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            personName: playersMap.get(d.data().playerId) || "Joueur inconnu"
+        }))));
+        const unsubSal = onSnapshot(qSal, (s) => setSalaries(s.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            personName: coachesMap.get(d.data().coachId) || "Entraîneur inconnu"
+        }))));
+
+        setLoading(false);
+        return () => { unsubP(); unsubC(); unsubPay(); unsubSal(); };
+    };
+
+    fetchData();
   }, [user, loadingUser]);
 
   const handleRestore = async (collectionName: string, id: string, name: string) => {
     try {
       await updateDoc(doc(db, collectionName, id), { isDeleted: false });
-      toast({ title: "Élément restauré", description: `${name} a été replacé dans la liste active.` });
-      fetchData();
+      toast({ title: "Élément restauré", description: `${name} est de nouveau actif.` });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de restaurer l'élément." });
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de restaurer." });
     }
   };
 
@@ -105,8 +96,8 @@ export default function ArchivesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Archives & Historique</h1>
-        <p className="text-muted-foreground">Consultez les éléments supprimés. Ces copies sont conservées pour votre sécurité.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Archives & Sécurité</h1>
+        <p className="text-muted-foreground">Consultez les copies de sécurité et restaurez les éléments supprimés.</p>
       </div>
 
       <Tabs defaultValue="players">
@@ -119,7 +110,7 @@ export default function ArchivesPage() {
 
         <TabsContent value="players">
           <Card>
-            <CardHeader><CardTitle>Joueurs Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Joueurs Archivés</CardTitle></CardHeader>
             <CardContent>
               {players.length > 0 ? (
                 <Table>
@@ -146,12 +137,7 @@ export default function ArchivesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/players/${p.id}`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
+                              <Link href={`/dashboard/players/${p.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Voir détails</DropdownMenuItem></Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("players", p.id, p.name)}>
                                 <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
@@ -163,14 +149,14 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun joueur dans les archives.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucune copie de joueur.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="coaches">
           <Card>
-            <CardHeader><CardTitle>Entraîneurs Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Entraîneurs Archivés</CardTitle></CardHeader>
             <CardContent>
               {coaches.length > 0 ? (
                 <Table>
@@ -197,12 +183,7 @@ export default function ArchivesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/coaches/${c.id}`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
+                              <Link href={`/dashboard/coaches/${c.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Voir détails</DropdownMenuItem></Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("coaches", c.id, c.name)}>
                                 <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
@@ -214,14 +195,14 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun entraîneur dans les archives.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucune copie d'entraîneur.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="payments">
           <Card>
-            <CardHeader><CardTitle>Paiements Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Paiements Archivés</CardTitle></CardHeader>
             <CardContent>
               {payments.length > 0 ? (
                 <Table>
@@ -245,12 +226,8 @@ export default function ArchivesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/payments/${p.id}`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
+                              <Link href={`/dashboard/payments/${p.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                              <Link href={`/dashboard/payments/${p.id}/receipt`} passHref><DropdownMenuItem className="cursor-pointer"><FileDown className="mr-2 h-4 w-4" /> Reçu PDF</DropdownMenuItem></Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("payments", p.id, p.description)}>
                                 <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
@@ -262,14 +239,14 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun paiement dans les archives.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucune copie de paiement.</p>}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="salaries">
           <Card>
-            <CardHeader><CardTitle>Salaires Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Salaires Archivés</CardTitle></CardHeader>
             <CardContent>
               {salaries.length > 0 ? (
                 <Table>
@@ -293,12 +270,8 @@ export default function ArchivesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/salaries/${s.id}`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
+                              <Link href={`/dashboard/salaries/${s.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                              <Link href={`/dashboard/salaries/${s.id}/receipt`} passHref><DropdownMenuItem className="cursor-pointer"><FileDown className="mr-2 h-4 w-4" /> Fiche PDF</DropdownMenuItem></Link>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("salaries", s.id, s.description)}>
                                 <ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer
@@ -310,7 +283,7 @@ export default function ArchivesPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire dans les archives.</p>}
+              ) : <p className="text-center py-10 text-muted-foreground">Aucune copie de salaire.</p>}
             </CardContent>
           </Card>
         </TabsContent>

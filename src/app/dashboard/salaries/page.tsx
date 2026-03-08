@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, where, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, where, updateDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -36,7 +37,6 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-
 interface Salary {
   id: string;
   coachId: string;
@@ -44,11 +44,12 @@ interface Salary {
   coachPhotoUrl?: string;
   totalAmount: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  createdAt: { seconds: number, nanoseconds: number };
+  createdAt: any;
   description: string;
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
+  isDeleted?: boolean;
 }
 
 type SalaryStatus = Salary['status'];
@@ -77,7 +78,6 @@ const getBadgeClass = (status?: SalaryStatus | 'N/A') => {
     }
 };
 
-
 export default function SalariesPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [salaries, setSalaries] = useState<Salary[]>([]);
@@ -87,70 +87,77 @@ export default function SalariesPage() {
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
-  const fetchSalaries = async () => {
-      if (!user) {
-          if (!loadingUser) setLoading(false);
-          return;
-      }
-    setLoading(true);
-    try {
-      const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
-      const coachesSnapshot = await getDocs(coachesQuery);
-      const coachesMap = new Map<string, {name: string, photoUrl?: string}>();
-      coachesSnapshot.forEach(doc => {
-          coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
-      });
-
-      const salariesQuery = query(collection(db, "salaries"), where("userId", "==", user.uid));
-      const salariesSnapshot = await getDocs(salariesQuery);
-      const salariesData = salariesSnapshot.docs
-          .map(doc => {
-              const data = doc.data() as any;
-              const coachInfo = coachesMap.get(data.coachId);
-              
-              if (!coachInfo) return null;
-
-              const transactions = data.transactions || [];
-              const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
-              const totalAmount = data.totalAmount || 0;
-              const amountRemaining = totalAmount - amountPaid;
-              
-              let status: SalaryStatus = data.status;
-              if (amountRemaining <= 0) {
-                status = 'Payé';
-              }
-
-              return { 
-                  id: doc.id, 
-                  ...data,
-                  coachName: coachInfo.name,
-                  coachPhotoUrl: coachInfo.photoUrl,
-                  amountPaid,
-                  amountRemaining,
-                  totalAmount,
-                  transactions,
-                  status
-              } as Salary;
-          })
-          .filter((s): s is Salary => s !== null);
-      
-      const sortedSalaries = salariesData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-      setSalaries(sortedSalaries);
-
-    } catch (error: any) {
-      console.error("Error fetching salaries: ", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de chargement",
-        description: "Impossible de charger les salaires.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSalaries();
+    if (!user) {
+      if (!loadingUser) setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    
+    // Fetch Coaches Map first
+    const fetchCoaches = async () => {
+        const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
+        const coachesSnapshot = await getDocs(coachesQuery);
+        const coachesMap = new Map<string, {name: string, photoUrl?: string}>();
+        coachesSnapshot.forEach(doc => {
+            coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
+        });
+        return coachesMap;
+    };
+
+    const q = query(
+        collection(db, "salaries"), 
+        where("userId", "==", user.uid),
+        where("isDeleted", "==", false)
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+        const coachesMap = await fetchCoaches();
+        const salariesData = snapshot.docs.map(doc => {
+            const data = doc.data() as any;
+            const coachInfo = coachesMap.get(data.coachId);
+            
+            if (!coachInfo) return null;
+
+            const transactions = data.transactions || [];
+            const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+            const totalAmount = data.totalAmount || 0;
+            const amountRemaining = Math.max(0, totalAmount - amountPaid);
+            
+            let status: SalaryStatus = data.status || 'En attente';
+            if (amountRemaining <= 0 && totalAmount > 0) {
+                status = 'Payé';
+            }
+
+            return { 
+                id: doc.id, 
+                ...data,
+                coachName: coachInfo.name,
+                coachPhotoUrl: coachInfo.photoUrl,
+                amountPaid,
+                amountRemaining,
+                totalAmount,
+                transactions,
+                status
+            } as Salary;
+        }).filter((s): s is Salary => s !== null);
+
+        // Sort by date with safety check
+        salariesData.sort((a, b) => {
+            const dateA = a.createdAt?.seconds || 0;
+            const dateB = b.createdAt?.seconds || 0;
+            return dateB - dateA;
+        });
+
+        setSalaries(salariesData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error listening to salaries:", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [user, loadingUser]);
 
   const groupedAndFilteredSalaries: CoachSalaries[] = useMemo(() => {
@@ -189,15 +196,14 @@ export default function SalariesPage() {
 
   }, [salaries, searchTerm]);
 
-
   const confirmDeleteSalary = async () => {
     if(!salaryToDelete) return;
     try {
-      await deleteDoc(doc(db, "salaries", salaryToDelete.id));
-      setSalaries(salaries.filter(p => p.id !== salaryToDelete.id));
+      // Archive logical instead of hard delete
+      await updateDoc(doc(db, "salaries", salaryToDelete.id), { isDeleted: true });
       toast({
-        title: "Salaire supprimé",
-        description: `Le salaire a été définitivement supprimé.`,
+        title: "Salaire déplacé",
+        description: `Le salaire a été déplacé vers les archives de sécurité.`,
       });
     } catch (error) {
        toast({
@@ -205,7 +211,6 @@ export default function SalariesPage() {
         title: "Erreur",
         description: "Impossible de supprimer le salaire.",
       });
-      console.error("Error deleting salary: ", error);
     } finally {
         setSalaryToDelete(null);
     }
@@ -223,7 +228,7 @@ export default function SalariesPage() {
         s.amountPaid.toFixed(2),
         s.amountRemaining.toFixed(2),
         s.status,
-        format(new Date(s.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr })
+        s.createdAt?.seconds ? format(new Date(s.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr }) : "N/A"
       ].join(';');
       return row;
     }).join('\n');
@@ -245,7 +250,7 @@ export default function SalariesPage() {
 
   return (
     <>
-      <div>
+      <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
               <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
@@ -276,7 +281,6 @@ export default function SalariesPage() {
                 />
             </div>
         </div>
-
 
         <Card>
           <CardHeader>
@@ -407,7 +411,7 @@ export default function SalariesPage() {
           <AlertDialogHeader>
               <AlertDialogTitle>Supprimer ce salaire ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Cette action est irréversible. Toutes les données liées à "{salaryToDelete?.description}" seront supprimées.
+              Cette action est réversible. Les données seront déplacées vers vos archives de sécurité.
               </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -416,7 +420,7 @@ export default function SalariesPage() {
               onClick={confirmDeleteSalary}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               >
-              Supprimer définitivement
+              Confirmer
               </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
