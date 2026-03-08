@@ -39,7 +39,7 @@ export default function ArchivesPage() {
     setLoading(true);
 
     const fetchData = async () => {
-        // Fetch Names Maps for cross-referencing
+        // Names Maps
         const pSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
         const cSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
         
@@ -49,17 +49,15 @@ export default function ArchivesPage() {
         const cMap = new Map();
         cSnap.docs.forEach(d => cMap.set(d.id, d.data().name));
 
-        const unsubP = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
-            setPlayers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-        
-        const unsubC = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
-            setCoaches(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-        
-        const unsubPay = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
-            setPayments(s.docs.map(d => ({ id: d.id, ...d.data(), personName: pMap.get(d.data().playerId) || "Joueur inconnu" }))));
-        
-        const unsubSal = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", true)), (s) => 
-            setSalaries(s.docs.map(d => ({ id: d.id, ...d.data(), personName: cMap.get(d.data().coachId) || "Entraîneur inconnu" }))));
+        const qP = query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qC = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qPay = query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+        const qSal = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", true));
+
+        const unsubP = onSnapshot(qP, (s) => setPlayers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+        const unsubC = onSnapshot(qC, (s) => setCoaches(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+        const unsubPay = onSnapshot(qPay, (s) => setPayments(s.docs.map(d => ({ id: d.id, ...d.data(), personName: pMap.get(d.data().playerId) || "Joueur" }))));
+        const unsubSal = onSnapshot(qSal, (s) => setSalaries(s.docs.map(d => ({ id: d.id, ...d.data(), personName: cMap.get(d.data().coachId) || "Entraîneur" }))));
 
         setLoading(false);
         return () => { unsubP(); unsubC(); unsubPay(); unsubSal(); };
@@ -73,7 +71,7 @@ export default function ArchivesPage() {
       await updateDoc(doc(db, col, id), { isDeleted: false });
       toast({ title: "Élément restauré", description: `${name} est de nouveau actif.` });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de restaurer." });
+      toast({ variant: "destructive", title: "Erreur", description: "Restauration impossible." });
     }
   };
 
@@ -85,13 +83,13 @@ export default function ArchivesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Archives & Copies de Sécurité</h1>
-        <p className="text-muted-foreground">Consultez vos copies de sauvegarde et restaurez les éléments supprimés.</p>
+        <p className="text-muted-foreground">Consultez vos copies de sauvegarde et restaurez les éléments si besoin.</p>
       </div>
 
       <Tabs defaultValue="players">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="players" className="gap-2"><User className="h-4 w-4" /> Joueurs</TabsTrigger>
-          <TabsTrigger value="coaches" className="gap-2"><ClipboardList className="h-4 w-4" /> Entraîneurs</TabsTrigger>
+          <TabsTrigger value="coaches" className="gap-2"><ClipboardList className="h-4 w-4" /> Coachs</TabsTrigger>
           <TabsTrigger value="payments" className="gap-2"><CreditCard className="h-4 w-4" /> Paiements</TabsTrigger>
           <TabsTrigger value="salaries" className="gap-2"><Wallet className="h-4 w-4" /> Salaires</TabsTrigger>
         </TabsList>
@@ -104,7 +102,6 @@ export default function ArchivesPage() {
                       <TableRow key={p.id}><TableCell><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>P</AvatarFallback></Avatar><span>{p.name}</span></div></TableCell><TableCell className="text-right">
                           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
                               <Link href={`/dashboard/players/${p.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("players", p.id, p.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</DropdownMenuItem>
                             </DropdownMenuContent></DropdownMenu></TableCell></TableRow>))}
                   </TableBody></Table>
@@ -120,7 +117,6 @@ export default function ArchivesPage() {
                       <TableRow key={c.id}><TableCell><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>E</AvatarFallback></Avatar><span>{c.name}</span></div></TableCell><TableCell className="text-right">
                           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
                               <Link href={`/dashboard/coaches/${c.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("coaches", c.id, c.name)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</DropdownMenuItem>
                             </DropdownMenuContent></DropdownMenu></TableCell></TableRow>))}
                   </TableBody></Table>
@@ -137,7 +133,6 @@ export default function ArchivesPage() {
                           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
                               <Link href={`/dashboard/payments/${p.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
                               <Link href={`/dashboard/payments/${p.id}/receipt`}><DropdownMenuItem className="cursor-pointer"><FileDown className="mr-2 h-4 w-4" /> Reçu PDF</DropdownMenuItem></Link>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("payments", p.id, p.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</DropdownMenuItem>
                             </DropdownMenuContent></DropdownMenu></TableCell></TableRow>))}
                   </TableBody></Table>
@@ -154,7 +149,6 @@ export default function ArchivesPage() {
                           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
                               <Link href={`/dashboard/salaries/${s.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
                               <Link href={`/dashboard/salaries/${s.id}/receipt`}><DropdownMenuItem className="cursor-pointer"><FileDown className="mr-2 h-4 w-4" /> Fiche PDF</DropdownMenuItem></Link>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem className="cursor-pointer text-primary" onClick={() => handleRestore("salaries", s.id, s.description)}><ArchiveRestore className="mr-2 h-4 w-4" /> Restaurer</DropdownMenuItem>
                             </DropdownMenuContent></DropdownMenu></TableCell></TableRow>))}
                   </TableBody></Table>

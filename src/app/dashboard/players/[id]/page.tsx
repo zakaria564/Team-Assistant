@@ -16,12 +16,6 @@ import { cn } from "@/lib/utils";
 
 type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
 
-interface PlayerDocument {
-  name: string;
-  url: string;
-  validityDate?: string;
-}
-
 interface Player {
   id: string;
   name: string;
@@ -38,201 +32,70 @@ interface Player {
   phone?: string;
   email?: string;
   tutorName?: string;
-  tutorCin?: string;
   tutorPhone?: string;
-  tutorEmail?: string;
   coachId?: string;
   coachName?: string;
   entryDate?: string;
-  exitDate?: string;
-  documents?: PlayerDocument[];
+  documents?: { name: string; url: string }[];
 }
 
-const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3">
-    <Icon className="h-5 w-5 text-muted-foreground mt-1" />
-    <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium">
-        {href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
-            {value || children}
-          </a>
-        ) : (
-          value || children || "Non spécifié"
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-const getStatusBadgeClass = (status?: PlayerStatus) => {
-    switch (status) {
-        case 'Actif': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Inactif': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'Blessé': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        case 'Suspendu': return 'bg-red-100 text-red-800 border-red-300';
-        default: return '';
-    }
-}
-
-const toTitleCase = (str: string) => {
-  if (!str) return '';
-  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
-
-export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
-  
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!playerId) return;
-
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const playerRef = doc(db, "players", playerId);
-        const playerSnap = await getDoc(playerRef);
-
+        const playerSnap = await getDoc(doc(db, "players", playerId));
         if (playerSnap.exists()) {
-          const playerData = { id: playerSnap.id, ...playerSnap.data() } as Player;
-          
-          if(playerData.coachId) {
-            const coachRef = doc(db, "coaches", playerData.coachId);
-            const coachSnap = await getDoc(coachRef);
-            if(coachSnap.exists()) {
-              playerData.coachName = coachSnap.data().name;
-            }
+          const data = { id: playerSnap.id, ...playerSnap.data() } as Player;
+          if(data.coachId) {
+            const cSnap = await getDoc(doc(db, "coaches", data.coachId));
+            if(cSnap.exists()) data.coachName = cSnap.data().name;
           }
-          
-          setPlayer(playerData);
+          setPlayer(data);
         } else {
           router.push('/dashboard/players');
         }
-      } catch (error) {
-        console.error("Error fetching player:", error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchPlayer();
   }, [playerId, router]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+  if (loading) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!player) return null;
-  
-  const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-6 w-6" />
-            <span className="sr-only">Retour</span>
-            </Button>
-            <div>
-            <h1 className="text-3xl font-bold tracking-tight">Détails du Joueur</h1>
-            <p className="text-muted-foreground">
-                Fiche de {toTitleCase(player.name)}.
-            </p>
-            </div>
-        </div>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
+        <h1 className="text-3xl font-bold tracking-tight">Fiche Joueur</h1>
       </div>
-      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-6">
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col items-center gap-4">
-                        <Avatar className="h-32 w-32 border-4 border-primary">
-                            <AvatarImage src={player.photoUrl} alt={player.name} />
-                            <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold">{toTitleCase(player.name)}</h2>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Informations Sportives</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <DetailItem icon={Activity} label="Statut">
-                        <Badge className={cn("text-base", getStatusBadgeClass(player.status))}>
-                            {player.status}
-                        </Badge>
-                    </DetailItem>
-                    <DetailItem icon={Shield} label="Catégorie" value={player.category} />
-                    <DetailItem icon={Star} label="Poste" value={player.position} />
-                    <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
-                    <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
-                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                </CardContent>
-            </Card>
-        </div>
-        <div className="lg:col-span-2 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Informations Personnelles</CardTitle>
-                </CardHeader>
-                 <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
-                    <DetailItem icon={CalendarIcon} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                    <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
-                    <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                    <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                    <DetailItem icon={Home} label="Adresse" value={player.address} />
-                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
-                    <DetailItem icon={Mail} label="Email" value={player.email} />
-                 </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Tuteur & Documents</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                        <DetailItem icon={User} label="Tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
-                        <DetailItem icon={Phone} label="Téléphone Tuteur" value={player.tutorPhone} />
-                    </div>
-                    <Separator />
-                    <div>
-                        <h4 className="text-sm font-semibold mb-3">Documents</h4>
-                        {(player.documents && player.documents.length > 0) ? (
-                          <ul className="space-y-2">
-                              {player.documents.map((doc, index) => (
-                                <li key={index} className="flex items-center justify-between text-sm p-3 rounded-md bg-muted/50">
-                                    <span className="font-medium">{doc.name}</span>
-                                    <Button asChild variant="ghost" size="sm">
-                                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Voir
-                                      </a>
-                                    </Button>
-                                </li>
-                              ))}
-                            </ul>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Aucun document.</p>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+        <Card className="lg:col-span-1">
+          <CardContent className="pt-6 flex flex-col items-center gap-4">
+            <Avatar className="h-32 w-32 border-4 border-primary"><AvatarImage src={player.photoUrl} /><AvatarFallback>P</AvatarFallback></Avatar>
+            <h2 className="text-2xl font-bold">{player.name}</h2>
+            <Badge className={cn("text-base", player.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100')}>{player.status}</Badge>
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle>Détails</CardTitle></CardHeader>
+          <CardContent className="grid sm:grid-cols-2 gap-6">
+            <div className="flex items-center gap-3"><User className="text-muted-foreground" /> <span>{player.name}</span></div>
+            <div className="flex items-center gap-3"><Shield className="text-muted-foreground" /> <span>{player.category}</span></div>
+            <div className="flex items-center gap-3"><Star className="text-muted-foreground" /> <span>{player.position}</span></div>
+            <div className="flex items-center gap-3"><Shirt className="text-muted-foreground" /> <span>N° {player.number}</span></div>
+            <div className="flex items-center gap-3"><Phone className="text-muted-foreground" /> <span>{player.phone || 'N/A'}</span></div>
+            <div className="flex items-center gap-3"><ClipboardList className="text-muted-foreground" /> <span>Coach: {player.coachName || 'Aucun'}</span></div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

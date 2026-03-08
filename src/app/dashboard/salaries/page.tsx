@@ -40,7 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface Salary {
   id: string;
   coachId: string;
-  coachName?: string;
+  coachName: string;
   coachPhotoUrl?: string;
   totalAmount: number;
   status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
@@ -51,129 +51,120 @@ interface Salary {
   amountRemaining: number;
 }
 
-type SalaryStatus = Salary['status'];
-
 interface CoachSalaries {
     coachId: string;
     coachName: string;
     coachPhotoUrl?: string;
     salaries: Salary[];
-    currentMonthStatus?: SalaryStatus | 'N/A';
+    currentMonthStatus: string;
 }
-
-const getBadgeClass = (status?: SalaryStatus | 'N/A') => {
-     switch (status) {
-        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
-        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
-        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
-        case 'N/A': return 'bg-gray-100 text-gray-800 border-gray-300';
-        default: return '';
-    }
-};
 
 export default function SalariesPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [salaries, setSalaries] = useState<Salary[]>([]);
-  const [coachesMap, setCoachesMap] = useState<Map<string, {name: string, photoUrl?: string}>>(new Map());
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
+  const [currentMonthStr, setCurrentMonthStr] = useState("");
 
-  // 1. Fetch Coaches Map
+  // Fix Hydration Mismatch for date strings
   useEffect(() => {
-    if (!user) return;
-    const fetchCoaches = async () => {
-        try {
-            const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-            const snap = await getDocs(q);
-            const map = new Map<string, {name: string, photoUrl?: string}>();
-            snap.forEach(doc => map.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl }));
-            setCoachesMap(map);
-        } catch (e) {
-            console.error("Error fetching coaches:", e);
-        }
-    };
-    fetchCoaches();
-  }, [user]);
+    setCurrentMonthStr(`Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`.toLowerCase());
+  }, []);
 
-  // 2. Listen to Salaries with improved error handling
   useEffect(() => {
     if (!user) {
       if (!loadingUser) setLoading(false);
       return;
     }
 
-    const q = query(
-        collection(db, "salaries"), 
-        where("userId", "==", user.uid),
-        where("isDeleted", "==", false)
-    );
+    setLoading(true);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const salariesData = snapshot.docs.map(doc => {
-            const data = doc.data();
-            const coachInfo = coachesMap.get(data.coachId);
-            
-            // On calcule les montants de manière sécurisée
-            const transactions = data.transactions || [];
-            const amountPaid = transactions.reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
-            const totalAmount = Number(data.totalAmount) || 0;
-            const amountRemaining = Math.max(0, totalAmount - amountPaid);
-            
-            let status: SalaryStatus = data.status || 'En attente';
-            if (amountRemaining <= 0 && totalAmount > 0) status = 'Payé';
+    const fetchData = async () => {
+        try {
+            // 1. Fetch Coaches to Map Names
+            const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
+            const coachesMap = new Map();
+            coachesSnap.docs.forEach(d => coachesMap.set(d.id, { name: d.data().name, photo: d.data().photoUrl }));
 
-            return { 
-                id: doc.id, 
-                ...data,
-                coachName: coachInfo?.name || "Entraîneur inconnu",
-                coachPhotoUrl: coachInfo?.photoUrl,
-                amountPaid,
-                amountRemaining,
-                totalAmount,
-                transactions,
-                status
-            } as Salary;
-        });
+            // 2. Listen to Salaries
+            const q = query(
+                collection(db, "salaries"), 
+                where("userId", "==", user.uid),
+                where("isDeleted", "==", false)
+            );
 
-        // Tri sécurisé par date
-        salariesData.sort((a, b) => {
-            const dateA = a.createdAt?.seconds ? a.createdAt.seconds : (a.createdAt instanceof Date ? a.createdAt.getTime() / 1000 : 0);
-            const dateB = b.createdAt?.seconds ? b.createdAt.seconds : (b.createdAt instanceof Date ? b.createdAt.getTime() / 1000 : 0);
-            return dateB - dateA;
-        });
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const salariesData = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const coachInfo = coachesMap.get(data.coachId);
+                    
+                    const transactions = data.transactions || [];
+                    const amountPaid = transactions.reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
+                    const totalAmount = Number(data.totalAmount) || 0;
+                    const amountRemaining = Math.max(0, totalAmount - amountPaid);
+                    
+                    let status = data.status || 'En attente';
+                    if (amountRemaining <= 0 && totalAmount > 0) status = 'Payé';
 
-        setSalaries(salariesData);
-        setLoading(false);
-    }, (error) => {
-        console.error("Error listening to salaries:", error);
-        setLoading(false);
-    });
+                    return { 
+                        id: doc.id, 
+                        ...data,
+                        coachName: coachInfo?.name || "Entraîneur inconnu",
+                        coachPhotoUrl: coachInfo?.photo,
+                        amountPaid,
+                        amountRemaining,
+                        totalAmount,
+                        transactions,
+                        status
+                    } as Salary;
+                });
 
-    return () => unsubscribe();
-  }, [user, loadingUser, coachesMap]);
+                // Safe Sorting
+                salariesData.sort((a, b) => {
+                    const dateA = a.createdAt?.seconds || 0;
+                    const dateB = b.createdAt?.seconds || 0;
+                    return dateB - dateA;
+                });
+
+                setSalaries(salariesData);
+                setLoading(false);
+            }, (error) => {
+                console.error("Salaries Error:", error);
+                setLoading(false);
+            });
+
+            return unsubscribe;
+        } catch (e) {
+            console.error("Fetch Data Error:", e);
+            setLoading(false);
+        }
+    };
+
+    const unsub = fetchData();
+    return () => { if(unsub && typeof unsub === 'function') unsub(); };
+  }, [user, loadingUser]);
 
   const groupedAndFilteredSalaries = useMemo(() => {
     const grouped: { [key: string]: CoachSalaries } = {};
-    const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`.toLowerCase();
 
     salaries.forEach(salary => {
-        if (!grouped[salary.coachId]) {
-            grouped[salary.coachId] = {
-                coachId: salary.coachId,
-                coachName: salary.coachName || "Inconnu",
+        const coachId = salary.coachId || 'unknown';
+        if (!grouped[coachId]) {
+            grouped[coachId] = {
+                coachId: coachId,
+                coachName: salary.coachName,
                 coachPhotoUrl: salary.coachPhotoUrl,
                 salaries: [],
                 currentMonthStatus: 'N/A'
             };
         }
-        grouped[salary.coachId].salaries.push(salary);
+        grouped[coachId].salaries.push(salary);
         
-        if (salary.description?.toLowerCase().includes(currentMonthDesc)) {
-            grouped[salary.coachId].currentMonthStatus = salary.status;
+        if (currentMonthStr && salary.description?.toLowerCase().includes(currentMonthStr)) {
+            grouped[coachId].currentMonthStatus = salary.status;
         }
     });
 
@@ -183,17 +174,27 @@ export default function SalariesPage() {
         result = result.filter(g => g.coachName.toLowerCase().includes(term));
     }
     return result.sort((a, b) => a.coachName.localeCompare(b.coachName));
-  }, [salaries, searchTerm]);
+  }, [salaries, searchTerm, currentMonthStr]);
 
   const confirmDeleteSalary = async () => {
     if(!salaryToDelete) return;
     try {
       await updateDoc(doc(db, "salaries", salaryToDelete.id), { isDeleted: true });
-      toast({ title: "Déplacé aux archives", description: "Le salaire est maintenant dans vos copies de sécurité." });
+      toast({ title: "Déplacé aux archives", description: "Le salaire a été sauvegardé dans vos copies de sécurité." });
     } catch (e) {
        toast({ variant: "destructive", title: "Erreur", description: "Action impossible." });
     } finally {
         setSalaryToDelete(null);
+    }
+  };
+
+  const getBadgeClass = (status?: string) => {
+     switch (status) {
+        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
+        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
+        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
+        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
+        default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -210,7 +211,7 @@ export default function SalariesPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
-            <p className="text-muted-foreground">Gérez le paiement des salaires et consultez vos copies de sécurité.</p>
+            <p className="text-muted-foreground">Gestion des règlements et copies de sécurité.</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/salaries/add">
@@ -231,8 +232,8 @@ export default function SalariesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Suivi des salaires</CardTitle>
-          <CardDescription>Liste des règlements actifs regroupés par entraîneur.</CardDescription>
+          <CardTitle>Règlements Actifs</CardTitle>
+          <CardDescription>Liste des salaires regroupés par entraîneur.</CardDescription>
         </CardHeader>
         <CardContent>
           {groupedAndFilteredSalaries.length > 0 ? (
@@ -280,7 +281,7 @@ export default function SalariesPage() {
                                                             <Link href={`/dashboard/salaries/${s.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
                                                             <Link href={`/dashboard/salaries/${s.id}/receipt`}><DropdownMenuItem className="cursor-pointer"><Download className="mr-2 h-4 w-4" /> Fiche de paie</DropdownMenuItem></Link>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => setSalaryToDelete(s)}><Trash2 className="mr-2 h-4 w-4" /> Archiver</DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => setSalaryToDelete(s)}><Trash2 className="mr-2 h-4 w-4" /> Archiver (Copie)</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
@@ -293,16 +294,16 @@ export default function SalariesPage() {
                       </Collapsible>
                   ))}
               </div>
-          ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire enregistré.</p>}
+          ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire enregistré pour le moment.</p>}
         </CardContent>
       </Card>
 
       <AlertDialog open={!!salaryToDelete} onOpenChange={() => setSalaryToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Archiver ce salaire ?</AlertDialogTitle><AlertDialogDescription>Il sera déplacé vers vos copies de sécurité dans l'onglet Archives.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Archiver ce règlement ?</AlertDialogTitle><AlertDialogDescription>L'élément sera déplacé vers l'onglet Archives pour libérer votre liste active.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive hover:bg-destructive/90">Confirmer</AlertDialogAction>
+              <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive hover:bg-destructive/90">Déplacer aux Archives</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
