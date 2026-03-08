@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -50,8 +51,9 @@ export default function ArchivesPage() {
       const coachesMap = new Map();
       snapC.docs.forEach(d => coachesMap.set(d.id, d.data().name));
 
-      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
-      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true || d.isDeleted === true));
+      // Filter: either archived manually or deleted
+      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isDeleted === true));
+      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isDeleted === true));
       
       setPayments(snapPay.docs.map(d => {
           const data = d.data();
@@ -60,7 +62,7 @@ export default function ArchivesPage() {
               ...data, 
               personName: playersMap.get(data.playerId) || data.playerName || "Joueur inconnu"
           };
-      }).filter(d => d.isArchived === true || d.isDeleted === true));
+      }).filter(d => d.isDeleted === true));
 
       setSalaries(snapS.docs.map(d => {
           const data = d.data();
@@ -69,7 +71,7 @@ export default function ArchivesPage() {
               ...data, 
               personName: coachesMap.get(data.coachId) || data.coachName || "Entraîneur inconnu"
           };
-      }).filter(d => d.isArchived === true || d.isDeleted === true));
+      }).filter(d => d.isDeleted === true));
 
     } catch (e) {
       console.error(e);
@@ -92,12 +94,6 @@ export default function ArchivesPage() {
     }
   };
 
-  const StatusBadge = ({ item }: { item: any }) => {
-    if (item.isDeleted) return <Badge variant="destructive" className="gap-1 h-5 px-1.5 text-[10px] uppercase"><Trash2 className="h-3 w-3" /> Supprimé</Badge>;
-    if (item.isArchived) return <Badge variant="secondary" className="gap-1 bg-blue-50 text-blue-800 border-blue-200 h-5 px-1.5 text-[10px] uppercase"><Archive className="h-3 w-3" /> Archivé</Badge>;
-    return null;
-  };
-
   if (loading || loadingUser) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -110,7 +106,7 @@ export default function ArchivesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Archives & Historique</h1>
-        <p className="text-muted-foreground">Consultez les éléments archivés ou supprimés. Ces données sont conservées en toute sécurité.</p>
+        <p className="text-muted-foreground">Consultez les éléments supprimés. Ces copies sont conservées pour votre sécurité.</p>
       </div>
 
       <Tabs defaultValue="players">
@@ -123,14 +119,13 @@ export default function ArchivesPage() {
 
         <TabsContent value="players">
           <Card>
-            <CardHeader><CardTitle>Joueurs Archivés / Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Joueurs Supprimés</CardTitle></CardHeader>
             <CardContent>
               {players.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Joueur</TableHead>
-                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -143,7 +138,6 @@ export default function ArchivesPage() {
                             <span className="font-medium">{p.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -156,16 +150,6 @@ export default function ArchivesPage() {
                               <Link href={`/dashboard/players/${p.id}`} passHref>
                                 <DropdownMenuItem className="cursor-pointer">
                                   <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/dashboard/players/${p.id}/details`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/dashboard/players/${p.id}/card`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <IdCard className="mr-2 h-4 w-4" /> Voir Carte
                                 </DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />
@@ -186,14 +170,13 @@ export default function ArchivesPage() {
 
         <TabsContent value="coaches">
           <Card>
-            <CardHeader><CardTitle>Entraîneurs Archivés / Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Entraîneurs Supprimés</CardTitle></CardHeader>
             <CardContent>
               {coaches.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Entraîneur</TableHead>
-                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -206,7 +189,6 @@ export default function ArchivesPage() {
                             <span className="font-medium">{c.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><StatusBadge item={c} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -219,11 +201,6 @@ export default function ArchivesPage() {
                               <Link href={`/dashboard/coaches/${c.id}`} passHref>
                                 <DropdownMenuItem className="cursor-pointer">
                                   <FileText className="mr-2 h-4 w-4" /> Voir détails
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/dashboard/coaches/${c.id}/details`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche
                                 </DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />
@@ -244,7 +221,7 @@ export default function ArchivesPage() {
 
         <TabsContent value="payments">
           <Card>
-            <CardHeader><CardTitle>Paiements Archivés / Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Paiements Supprimés</CardTitle></CardHeader>
             <CardContent>
               {payments.length > 0 ? (
                 <Table>
@@ -252,7 +229,6 @@ export default function ArchivesPage() {
                     <TableRow>
                       <TableHead>Joueur</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -261,7 +237,6 @@ export default function ArchivesPage() {
                       <TableRow key={p.id}>
                         <TableCell className="font-medium">{p.personName}</TableCell>
                         <TableCell>{p.description}</TableCell>
-                        <TableCell><StatusBadge item={p} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -273,12 +248,7 @@ export default function ArchivesPage() {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <Link href={`/dashboard/payments/${p.id}`} passHref>
                                 <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Détails transaction
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/dashboard/payments/${p.id}/receipt`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Reçu
+                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
                                 </DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />
@@ -299,7 +269,7 @@ export default function ArchivesPage() {
 
         <TabsContent value="salaries">
           <Card>
-            <CardHeader><CardTitle>Salaires Archivés / Supprimés</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Salaires Supprimés</CardTitle></CardHeader>
             <CardContent>
               {salaries.length > 0 ? (
                 <Table>
@@ -307,7 +277,6 @@ export default function ArchivesPage() {
                     <TableRow>
                       <TableHead>Entraîneur</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -316,7 +285,6 @@ export default function ArchivesPage() {
                       <TableRow key={s.id}>
                         <TableCell className="font-medium">{s.personName}</TableCell>
                         <TableCell>{s.description}</TableCell>
-                        <TableCell><StatusBadge item={s} /></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -328,12 +296,7 @@ export default function ArchivesPage() {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <Link href={`/dashboard/salaries/${s.id}`} passHref>
                                 <DropdownMenuItem className="cursor-pointer">
-                                  <FileText className="mr-2 h-4 w-4" /> Détails salaire
-                                </DropdownMenuItem>
-                              </Link>
-                              <Link href={`/dashboard/salaries/${s.id}/receipt`} passHref>
-                                <DropdownMenuItem className="cursor-pointer">
-                                  <FileDown className="mr-2 h-4 w-4" /> Exporter Fiche Paie
+                                  <FileText className="mr-2 h-4 w-4" /> Voir détails
                                 </DropdownMenuItem>
                               </Link>
                               <DropdownMenuSeparator />

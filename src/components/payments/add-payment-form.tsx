@@ -91,7 +91,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
-                message: `Le versement ne peut pas dépasser le montant restant de ${amountRemaining.toFixed(2)} MAD.`,
+                message: `Le versement ne peut pas dépasser le montant restant.`,
             });
         }
     });
@@ -125,28 +125,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchPlayerId = form.watch("playerId");
 
     useEffect(() => {
-      if (isEditMode || !watchPlayerId || !allPayments.length) return;
-
-      const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
-      
-      const existingPayment = allPayments.find(p => {
-          const isSamePlayer = p.playerId === watchPlayerId;
-          const isSameMonth = normalizeString(p.description) === normalizedCurrentMonthDesc;
-          const isPending = p.status === 'Partiel' || p.status === 'En attente';
-          return isSamePlayer && isSameMonth && isPending;
-      });
-
-      if (existingPayment) {
-          toast({
-              title: "Paiement existant trouvé",
-              description: `Ce joueur a déjà une cotisation en attente pour ce mois. Vous allez être redirigé pour la compléter.`,
-          });
-          router.push(`/dashboard/payments/${existingPayment.id}/edit`);
-      }
-
-    }, [watchPlayerId, allPayments, isEditMode, defaultDescription, router, toast]);
-
-    useEffect(() => {
         if ((watchTotalAmount || 0) > 0) {
             if (amountRemainingOnTotal <= 0) {
                 form.setValue("status", "Payé");
@@ -164,52 +142,22 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             if (!user) return;
             setLoadingPlayers(true);
              try {
-                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
-                
-                const [playersSnapshot, paymentsSnapshot] = await Promise.all([
-                    getDocs(playersQuery),
-                    getDocs(paymentsQuery)
-                ]);
-
+                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", false));
+                const [playersSnapshot] = await Promise.all([getDocs(playersQuery)]);
                 const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-                const allPaymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Payment));
-                setAllPayments(allPaymentsData);
-                
-                if (isEditMode || urlPlayerId) {
-                    setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
-                } else {
-                    const normalizedCurrentMonthDesc = normalizeString(defaultDescription);
-                    const paidPlayerIds = new Set<string>();
-
-                    allPaymentsData.forEach(p => {
-                        const normalizedPaymentDesc = normalizeString(p.description);
-                        if(normalizedPaymentDesc === normalizedCurrentMonthDesc && p.status === 'Payé'){
-                            paidPlayerIds.add(p.playerId);
-                        }
-                    });
-                    
-                    const availablePlayers = allPlayers.filter(p => !paidPlayerIds.has(p.id));
-                    setPlayers(availablePlayers.sort((a,b) => a.name.localeCompare(b.name)));
-                }
-
+                setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) {
-                 console.error("Error fetching data: ", e);
-                 toast({
-                    variant: "destructive",
-                    title: "Erreur de chargement",
-                    description: "Impossible de charger les données nécessaires.",
-                });
+                 console.error(e);
             } finally {
                 setLoadingPlayers(false);
             }
         }
         fetchPlayersAndPayments();
-    }, [user, toast, isEditMode, defaultDescription, urlPlayerId]);
+    }, [user, isEditMode, urlPlayerId]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
-            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
+            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté." });
             return;
         }
 
@@ -242,17 +190,10 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 }
                 
                 await updateDoc(paymentDocRef, updateData);
-
-                toast({
-                    title: "Paiement mis à jour !",
-                    description: newTransactionData 
-                      ? `Un versement de ${newTransactionData.amount.toFixed(2)} MAD a été ajouté.`
-                      : 'Les informations du paiement ont été mises à jour.',
-                });
+                toast({ title: "Paiement mis à jour !" });
 
             } else { 
                  const initialTransactions = newTransactionData ? [newTransactionData] : [];
-                 // NEW: Every new payment is archived by default as a permanent copy
                  await addDoc(collection(db, "payments"), {
                     userId: user.uid,
                     playerId: values.playerId,
@@ -261,30 +202,19 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     status: values.status,
                     createdAt: new Date(),
                     transactions: initialTransactions,
-                    isArchived: true,
-                    isDeleted: false
+                    isDeleted: false,
                 });
-                toast({
-                    title: "Paiement ajouté !",
-                    description: `Le paiement a été enregistré et une copie a été créée dans les archives.`
-                });
+                toast({ title: "Paiement enregistré avec copie !" });
             }
             router.push("/dashboard/payments");
             router.refresh();
         } catch (e) {
-             toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Une erreur est survenue lors de l'enregistrement du paiement.",
-            });
-            console.error(e);
+             toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
         } finally {
             setLoading(false);
         }
     }
     
-    const amountRemainingForPlaceholder = parseFloat(isEditMode ? ((payment.totalAmount || 0) - amountAlreadyPaid).toString() : (watchTotalAmount || 0).toString());
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
@@ -301,13 +231,9 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                            {players.length === 0 && !loadingPlayers ? (
-                                <SelectItem value="no-player" disabled>Aucun joueur à facturer pour ce mois-ci.</SelectItem>
-                            ) : (
-                                players.map(player => (
+                                {players.map(player => (
                                     <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
-                                ))
-                            )}
+                                ))}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -352,7 +278,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                 {isEditMode && payment && (
                   <Card className="bg-muted/30">
                     <CardHeader>
-                        <CardTitle className="text-lg">Historique des transactions</CardTitle>
+                        <CardTitle className="text-lg">Historique</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
                       <div className="w-full overflow-x-auto">
@@ -361,7 +287,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             {payment.transactions.map((t, i) => (
                                 <li key={i} className="flex justify-between items-center">
                                   <span>{t.amount.toFixed(2)} MAD ({t.method})</span>
-                                  <span className="text-muted-foreground">{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy HH:mm")}</span>
                                 </li>
                             ))}
                             <Separator />
@@ -371,7 +296,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                               </li>
                           </ul>
                         ) : (
-                          <p className="text-muted-foreground">Aucune transaction pour le moment.</p>
+                          <p className="text-muted-foreground">Aucune transaction.</p>
                         )}
                       </div>
                     </CardContent>
@@ -380,19 +305,18 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                
                  {(watchTotalAmount !== undefined && (watchTotalAmount > amountAlreadyPaid)) || !isEditMode ? (
                   <div className="space-y-4 rounded-md border p-4">
-                    <h4 className="font-medium">{isEditMode ? 'Ajouter un nouveau versement' : 'Premier versement (optionnel)'}</h4>
+                    <h4 className="font-medium">Nouveau versement</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
                             name="newTransactionAmount"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Montant du versement (MAD)</FormLabel>
+                                <FormLabel>Montant (MAD)</FormLabel>
                                 <FormControl>
                                   <Input 
                                       type="number" 
                                       step="0.01" 
-                                      placeholder={amountRemainingForPlaceholder?.toFixed(2) || '0.00'}
                                       {...field}
                                       value={field.value ?? ''}
                                       onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
@@ -407,7 +331,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             name="newTransactionMethod"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Méthode du versement</FormLabel>
+                                <FormLabel>Méthode</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
@@ -425,21 +349,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                             )}
                         />
                       </div>
-                      <Separator />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                            <FormItem>
-                                <FormLabel>Nouveau total payé</FormLabel>
-                                <FormControl>
-                                    <Input type="text" value={`${newTotalPaid.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-green-600"/>
-                                </FormControl>
-                            </FormItem>
-                            <FormItem>
-                                <FormLabel>Montant restant</FormLabel>
-                                <FormControl>
-                                    <Input type="text" value={`${amountRemainingOnTotal.toFixed(2)} MAD`} readOnly className="bg-muted font-semibold text-red-600"/>
-                                </FormControl>
-                            </FormItem>
-                        </div>
                   </div>
                 ) : null}
 
@@ -448,7 +357,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     name="status"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Statut final</FormLabel>
+                        <FormLabel>Statut</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger className="bg-muted">
@@ -468,12 +377,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
 
 
                 <Button type="submit" disabled={loading || loadingPlayers} className="w-full !mt-8">
-                    {loading ? (
-                        <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enregistrement...
-                        </>
-                    ) : isEditMode ? "Enregistrer les modifications" : "Ajouter le paiement"}
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}
                 </Button>
             </form>
         </Form>

@@ -353,6 +353,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             documents: documentsToSave,
+            isDeleted: false, // Default to not deleted
         };
 
         if (isEditMode && player) {
@@ -364,18 +365,15 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             });
             router.push("/dashboard/players");
         } else {
-             // NEW: Every new player is archived by default as a permanent copy
+             // Create main record (this is the "copy" since we keep it even if deleted logically)
              const docRef = await addDoc(collection(db, "players"), {
                 ...dataToSave,
                 createdAt: new Date(),
-                isArchived: true,
-                isDeleted: false
             });
             toast({
                 title: "Joueur ajouté !",
-                description: `${values.name} a été ajouté. Passage à l'encaissement du paiement...`,
+                description: `${values.name} a été enregistré avec succès.`,
             });
-            // Redirect directly to payment collection for this player
             router.push(`/dashboard/payments/add?playerId=${docRef.id}`);
         }
       

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -80,9 +81,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);
@@ -130,14 +130,7 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
     );
   }
 
-  if (!player) {
-    return (
-      <div className="text-center">
-        <p>Joueur non trouvé.</p>
-        <Button onClick={() => router.back()} className="mt-4">Retour</Button>
-      </div>
-    );
-  }
+  if (!player) return null;
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
 
@@ -152,7 +145,7 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
             <div>
             <h1 className="text-3xl font-bold tracking-tight">Détails du Joueur</h1>
             <p className="text-muted-foreground">
-                Fiche complète de {toTitleCase(player.name)}.
+                Fiche de {toTitleCase(player.name)}.
             </p>
             </div>
         </div>
@@ -188,7 +181,6 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
                     <DetailItem icon={Shirt} label="Numéro" value={player.number?.toString()} />
                     <DetailItem icon={ClipboardList} label="Entraîneur" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                    <DetailItem icon={LogOut} label="Date de sortie" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </CardContent>
             </Card>
         </div>
@@ -203,52 +195,41 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                    <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
-                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
-                    <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined}/>
+                    <DetailItem icon={Home} label="Adresse" value={player.address} />
+                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                    <DetailItem icon={Mail} label="Email" value={player.email} />
                  </CardContent>
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Informations du Tuteur</CardTitle>
+                    <CardTitle>Tuteur & Documents</CardTitle>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
-                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
-                    <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
-                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined}/>
-                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Documents</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {(player.documents && player.documents.length > 0) ? (
-                      <ul className="space-y-3">
-                          {player.documents.map((doc, index) => (
-                            <li key={index} className="flex items-center justify-between text-sm p-3 rounded-md bg-muted/50">
-                                <div className="flex flex-col">
+                <CardContent className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        <DetailItem icon={User} label="Tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
+                        <DetailItem icon={Phone} label="Téléphone Tuteur" value={player.tutorPhone} />
+                    </div>
+                    <Separator />
+                    <div>
+                        <h4 className="text-sm font-semibold mb-3">Documents</h4>
+                        {(player.documents && player.documents.length > 0) ? (
+                          <ul className="space-y-2">
+                              {player.documents.map((doc, index) => (
+                                <li key={index} className="flex items-center justify-between text-sm p-3 rounded-md bg-muted/50">
                                     <span className="font-medium">{doc.name}</span>
-                                    {doc.validityDate && (
-                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <CalendarIcon className="h-3 w-3"/>
-                                            Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', { locale: fr })}
-                                        </span>
-                                    )}
-                                </div>
-                                <Button asChild variant="ghost" size="sm">
-                                  <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Voir
-                                  </a>
-                                </Button>
-                            </li>
-                          ))}
-                        </ul>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Aucun document n'a été ajouté pour ce joueur.</p>
-                    )}
+                                    <Button asChild variant="ghost" size="sm">
+                                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Voir
+                                      </a>
+                                    </Button>
+                                </li>
+                              ))}
+                            </ul>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Aucun document.</p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, updateDoc, where, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -53,6 +54,7 @@ interface Player {
   number: number;
   photoUrl?: string;
   position?: string;
+  isDeleted?: boolean;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -167,12 +169,6 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                                 Modifier
                                             </DropdownMenuItem>
                                             </Link>
-                                            <Link href={`/dashboard/players/${player.id}/details`} passHref>
-                                            <DropdownMenuItem className="cursor-pointer">
-                                                <FileDown className="mr-2 h-4 w-4" />
-                                                Exporter la fiche
-                                            </DropdownMenuItem>
-                                            </Link>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
                                             className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -213,7 +209,11 @@ export default function PlayersPage() {
       setLoading(true);
       setFetchError(null);
       try {
-          const q = query(collection(db, "players"), where("userId", "==", user.uid));
+          const q = query(
+            collection(db, "players"), 
+            where("userId", "==", user.uid),
+            where("isDeleted", "==", false)
+          );
           const querySnapshot = await getDocs(q);
           const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
           setPlayers(playersData);
@@ -321,11 +321,12 @@ export default function PlayersPage() {
   const confirmDeletePlayer = async () => {
     if (!playerToDelete) return;
     try {
-      await deleteDoc(doc(db, "players", playerToDelete.id));
+      // Logical delete: move to archives
+      await updateDoc(doc(db, "players", playerToDelete.id), { isDeleted: true });
       setPlayers(players.filter(p => p.id !== playerToDelete.id));
       toast({
-        title: "Joueur supprimé",
-        description: `${toTitleCase(playerToDelete.name)} a été retiré de la liste.`,
+        title: "Joueur déplacé aux archives",
+        description: `${toTitleCase(playerToDelete.name)} a été retiré de la liste active.`,
       });
     } catch (error) {
        toast({
@@ -408,7 +409,7 @@ export default function PlayersPage() {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Erreur de chargement des données</AlertTitle>
               <AlertDescription>
-                Une erreur s'est produite lors de la récupération des joueurs : <code className="font-mono text-sm">{fetchError}</code>
+                Une erreur s'est produite lors de la récupération des joueurs.
               </AlertDescription>
           </Alert>
         )}
@@ -436,9 +437,9 @@ export default function PlayersPage() {
        <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce joueur ?</AlertDialogTitle>
+              <AlertDialogTitle>Supprimer ce joueur ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Cette action est irréversible. Toutes les données associées à "{toTitleCase(playerToDelete?.name || '')}" seront définitivement supprimées.
+              Le joueur sera retiré de la liste active et déplacé vers vos archives de sécurité.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -447,7 +448,7 @@ export default function PlayersPage() {
                 onClick={confirmDeletePlayer}
                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
-                Supprimer définitivement
+                Confirmer la suppression
                 </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

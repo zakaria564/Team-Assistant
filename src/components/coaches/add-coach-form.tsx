@@ -261,7 +261,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                 toast({
                     variant: "destructive",
                     title: "Nom déjà utilisé",
-                    description: "Un entraîneur avec un nom similaire existe déjà. Veuillez choisir un autre nom.",
+                    description: "Un entraîneur avec un nom similaire existe déjà.",
                 });
                 setLoading(false);
                 return;
@@ -281,6 +281,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             userId: user.uid,
             specialty: values.specialty || '',
             documents: documentsToSave,
+            isDeleted: false,
         };
 
         if (isEditMode && coach) {
@@ -291,17 +292,14 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                 description: `Les informations de ${values.name} ont été mises à jour.`,
             });
         } else {
-            // NEW: Every new coach is archived by default as a permanent copy
             await addDoc(collection(db, "coaches"), {
                 ...dataToSave,
                 createdAt: new Date(),
-                isArchived: true,
-                isDeleted: false
             });
 
             toast({
                 title: "Entraîneur ajouté !",
-                description: `${values.name} a été ajouté et une copie a été créée dans les archives.`,
+                description: `${values.name} a été enregistré avec succès.`,
             });
         }
       
@@ -312,7 +310,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
       toast({
           variant: "destructive",
           title: "Erreur",
-          description: isEditMode ? "Impossible de modifier l'entraîneur." : "Une erreur est survenue lors de l'ajout de l'entraîneur.",
+          description: "Une erreur est survenue.",
       });
       console.error(e);
     } finally {
@@ -326,7 +324,6 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
             
-            {/* Colonne de Gauche: Photo et Infos Club */}
             <div className="space-y-6">
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
@@ -341,20 +338,11 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         ) : photoDataUrl ? (
                             <Image src={photoDataUrl} alt="Photo de l'entraîneur" layout="fill" objectFit="cover" />
                         ) : (
-                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
+                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p>
                         )
                         }
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
-
-                    {hasCameraPermission === false && (
-                        <Alert variant="destructive">
-                        <AlertTitle>Accès à la caméra requis</AlertTitle>
-                        <AlertDescription>
-                            Veuillez autoriser l'accès à la caméra pour utiliser cette fonctionnalité.
-                        </AlertDescription>
-                        </Alert>
-                    )}
 
                     <div className="flex gap-4">
                         <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm">
@@ -499,7 +487,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             onClick={() => remove(index)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Supprimer le document</span>
+                            <span className="sr-only">Supprimer</span>
                           </Button>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -546,17 +534,12 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                                <FormLabel>URL du Document</FormLabel>
                                <FormControl>
-                                   <Input 
-                                      type="text" 
-                                      
-                                      {...field}
-                                    />
+                                   <Input type="text" {...field} />
                                </FormControl>
                                <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
                       </div>
                     ))}
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
@@ -564,11 +547,8 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                       Ajouter un document
                     </Button>
                 </div>
-
-
             </div>
 
-            {/* Colonne de Droite: Infos Personnelles et Bouton */}
             <div className="space-y-6">
                 <div className="space-y-4">
                      <h3 className="text-lg font-medium">Informations Personnelles</h3>
