@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star, Shirt, ClipboardList } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

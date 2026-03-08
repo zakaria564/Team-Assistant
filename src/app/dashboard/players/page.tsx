@@ -6,10 +6,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, AlertTriangle, FileDown, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, deleteDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -36,11 +36,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 type PlayerStatus = typeof playerStatuses[number];
@@ -54,7 +52,6 @@ interface Player {
   number: number;
   photoUrl?: string;
   position?: string;
-  isDeleted?: boolean;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -75,10 +72,6 @@ const toTitleCase = (str: string) => {
 const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer, defaultOpen }: { category: string, players: Player[], onUpdateStatus: (playerId: string, newStatus: PlayerStatus) => void, onDeletePlayer: (player: Player) => void, defaultOpen: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
-    useEffect(() => {
-        setIsOpen(defaultOpen);
-    }, [defaultOpen]);
-
     return (
          <Collapsible 
             key={category} 
@@ -91,7 +84,7 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                      <CardHeader className="flex flex-row items-center justify-between cursor-pointer">
                         <div>
                             <CardTitle>{category}</CardTitle>
-                            <CardDescription>{players.length} joueur(s) dans cette catégorie.</CardDescription>
+                            <CardDescription>{players.length} joueur(s).</CardDescription>
                         </div>
                         <Button variant="ghost" size="sm">
                             {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -126,57 +119,22 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                     </TableCell>
                                     <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
                                     <TableCell className="hidden sm:table-cell">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                            <Badge className={cn("text-xs font-semibold cursor-pointer", getStatusBadgeClass(player.status))}>
-                                                {player.status || "N/A"}
-                                            </Badge>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                                <DropdownMenuRadioGroup 
-                                                    value={player.status} 
-                                                    onValueChange={(newStatus) => onUpdateStatus(player.id, newStatus as PlayerStatus)}
-                                                >
-                                                    {playerStatuses.map(status => (
-                                                        <DropdownMenuRadioItem key={status} value={status}>
-                                                            {status}
-                                                        </DropdownMenuRadioItem>
-                                                    ))}
-                                                </DropdownMenuRadioGroup>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <Badge className={cn("text-xs font-semibold", getStatusBadgeClass(player.status))}>
+                                            {player.status}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                            <span className="sr-only">Ouvrir le menu</span>
                                             <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <Link href={`/dashboard/players/${player.id}`} passHref>
-                                            <DropdownMenuItem className="cursor-pointer">
-                                                <FileText className="mr-2 h-4 w-4" />
-                                                Voir les détails
-                                            </DropdownMenuItem>
-                                            </Link>
-                                            <Link href={`/dashboard/players/${player.id}/edit`} passHref>
-                                            <DropdownMenuItem className="cursor-pointer">
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Modifier
-                                            </DropdownMenuItem>
-                                            </Link>
+                                            <Link href={`/dashboard/players/${player.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                                            <Link href={`/dashboard/players/${player.id}/edit`} passHref><DropdownMenuItem className="cursor-pointer"><Pencil className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem></Link>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                            className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                            onClick={() => onDeletePlayer(player)}
-                                            >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => onDeletePlayer(player)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
                                         </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -199,260 +157,112 @@ export default function PlayersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const fetchPlayers = async () => {
+  useEffect(() => {
+    const fetchPlayers = async () => {
       if (!user) {
           if(!loadingUser) setLoading(false);
           return;
       }
       setLoading(true);
-      setFetchError(null);
       try {
-          const q = query(
-            collection(db, "players"), 
-            where("userId", "==", user.uid),
-            where("isDeleted", "==", false)
-          );
+          const q = query(collection(db, "players"), where("userId", "==", user.uid));
           const querySnapshot = await getDocs(q);
           const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
           setPlayers(playersData);
       } catch (error: any) {
           console.error("Error fetching players: ", error);
-          setFetchError(error.message);
-          toast({
-          variant: "destructive",
-          title: "Erreur de chargement",
-          description: "Impossible de charger les joueurs.",
-          });
       } finally {
           setLoading(false);
       }
-  };
-
-  useEffect(() => {
+    };
     fetchPlayers();
   }, [user, loadingUser]);
 
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
-    const lowercasedSearchTerm = searchTerm.toLowerCase();
-
-    return players.filter(player => {
-      let valueToSearch: string | undefined;
-      switch (searchCategory) {
-        case 'name':
-          valueToSearch = player.name;
-          break;
-        case 'category':
-          valueToSearch = player.category;
-          break;
-        case 'status':
-            valueToSearch = player.status;
-            break;
-        default:
-          valueToSearch = player.name;
-      }
-      return (valueToSearch || '').toLowerCase().includes(lowercasedSearchTerm);
-    });
-  }, [players, searchTerm, searchCategory]);
+    const term = searchTerm.toLowerCase();
+    return players.filter(p => p.name.toLowerCase().includes(term));
+  }, [players, searchTerm]);
   
   const { malePlayers, femalePlayers } = useMemo(() => {
     const male: Player[] = [];
     const female: Player[] = [];
-    filteredPlayers.forEach(player => {
-        if (player.gender === "Féminin") {
-            female.push(player);
-        } else {
-            male.push(player);
-        }
-    });
+    filteredPlayers.forEach(p => p.gender === "Féminin" ? female.push(p) : male.push(p));
     return { malePlayers: male, femalePlayers: female };
   }, [filteredPlayers]);
 
+  const groupedMale = malePlayers.reduce((acc, p) => {
+    const cat = p.category || 'Sans catégorie';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {} as Record<string, Player[]>);
 
-  const groupedMalePlayers = useMemo(() => {
-    return malePlayers.reduce((acc, player) => {
-      const category = player.category || 'Sans catégorie';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(player);
-      return acc;
-    }, {} as Record<string, Player[]>);
-  }, [malePlayers]);
-
-  const groupedFemalePlayers = useMemo(() => {
-    return femalePlayers.reduce((acc, player) => {
-      const category = player.category || 'Sans catégorie';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(player);
-      return acc;
-    }, {} as Record<string, Player[]>);
-  }, [femalePlayers]);
-
+  const groupedFemale = femalePlayers.reduce((acc, p) => {
+    const cat = p.category || 'Sans catégorie';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {} as Record<string, Player[]>);
 
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
     try {
-        const playerDocRef = doc(db, "players", playerId);
-        await updateDoc(playerDocRef, { status: newStatus });
-        
-        setPlayers(prevPlayers => 
-            prevPlayers.map(p => p.id === playerId ? { ...p, status: newStatus } : p)
-        );
-
-        toast({
-            title: "Statut mis à jour",
-            description: `Le statut du joueur a été changé en "${newStatus}".`
-        });
-    } catch (error) {
-        toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de mettre à jour le statut."
-        });
-        console.error("Error updating status: ", error);
-    }
+        await updateDoc(doc(db, "players", playerId), { status: newStatus });
+        setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, status: newStatus } : p));
+        toast({ title: "Statut mis à jour" });
+    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
   };
-
 
   const confirmDeletePlayer = async () => {
     if (!playerToDelete) return;
     try {
-      // Logical delete: move to archives
-      await updateDoc(doc(db, "players", playerToDelete.id), { isDeleted: true });
+      await deleteDoc(doc(db, "players", playerToDelete.id));
       setPlayers(players.filter(p => p.id !== playerToDelete.id));
-      toast({
-        title: "Joueur déplacé aux archives",
-        description: `${toTitleCase(playerToDelete.name)} a été retiré de la liste active.`,
-      });
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le joueur.",
-      });
-      console.error("Error deleting player: ", error);
-    } finally {
-        setPlayerToDelete(null);
-    }
+      toast({ title: "Joueur supprimé définitivement" });
+    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
+    finally { setPlayerToDelete(null); }
   };
 
-  const renderPlayerGroups = (groupedData: Record<string, Player[]>) => {
-    if (Object.keys(groupedData).length === 0) {
-        return (
-            <Card>
-                <CardContent className="py-20 text-center text-muted-foreground">
-                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun joueur trouvé dans cette section."}
-                </CardContent>
-            </Card>
-        )
-    }
-    return (
-        <div className="space-y-4">
-            {Object.entries(groupedData).sort(([a], [b]) => a.localeCompare(b)).map(([category, playersInCategory]) => (
-                <PlayerCategoryGroup
-                    key={category}
-                    category={category}
-                    players={playersInCategory}
-                    onUpdateStatus={handleUpdateStatus}
-                    onDeletePlayer={setPlayerToDelete}
-                    defaultOpen={false}
-                />
-            ))}
-        </div>
-    )
-  }
+  if (loading || loadingUser) return <div className="flex justify-center items-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
-    <>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Joueurs</h1>
-            <p className="text-muted-foreground">Gérez les joueurs inscrits dans votre club.</p>
-          </div>
-          <Button asChild className="w-full md:w-auto">
-            <Link href="/dashboard/players/add">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Ajouter un joueur
-            </Link>
-          </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Joueurs</h1>
+          <p className="text-muted-foreground">Gérez vos effectifs actifs.</p>
         </div>
-
-        <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
-            <div className="relative w-full md:max-w-sm">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                    placeholder="Rechercher..."
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <Select value={searchCategory} onValueChange={setSearchCategory}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="name">Nom</SelectItem>
-                    <SelectItem value="category">Catégorie</SelectItem>
-                    <SelectItem value="status">Statut</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-        
-        {fetchError && (
-          <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Erreur de chargement des données</AlertTitle>
-              <AlertDescription>
-                Une erreur s'est produite lors de la récupération des joueurs.
-              </AlertDescription>
-          </Alert>
-        )}
-        
-        {loading || loadingUser ? (
-            <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        ) : (
-        <Tabs defaultValue="male">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="male">Masculin ({malePlayers.length})</TabsTrigger>
-                <TabsTrigger value="female">Féminin ({femalePlayers.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="male">
-                {renderPlayerGroups(groupedMalePlayers)}
-            </TabsContent>
-            <TabsContent value="female">
-                 {renderPlayerGroups(groupedFemalePlayers)}
-            </TabsContent>
-        </Tabs>
-        )}
+        <Button asChild><Link href="/dashboard/players/add"><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Link></Button>
       </div>
 
-       <AlertDialog open={!!playerToDelete} onOpenChange={(isOpen) => !isOpen && setPlayerToDelete(null)}>
+      <div className="relative w-full md:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input placeholder="Rechercher un joueur..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      </div>
+
+      <Tabs defaultValue="male">
+          <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="male">Masculin ({malePlayers.length})</TabsTrigger>
+              <TabsTrigger value="female">Féminin ({femalePlayers.length})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="male" className="space-y-4">
+              {Object.entries(groupedMale).map(([cat, ps]) => <PlayerCategoryGroup key={cat} category={cat} players={ps} onUpdateStatus={handleUpdateStatus} onDeletePlayer={setPlayerToDelete} defaultOpen={false} />)}
+          </TabsContent>
+          <TabsContent value="female" className="space-y-4">
+              {Object.entries(groupedFemale).map(([cat, ps]) => <PlayerCategoryGroup key={cat} category={cat} players={ps} onUpdateStatus={handleUpdateStatus} onDeletePlayer={setPlayerToDelete} defaultOpen={false} />)}
+          </TabsContent>
+      </Tabs>
+
+      <AlertDialog open={!!playerToDelete} onOpenChange={() => setPlayerToDelete(null)}>
           <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer ce joueur ?</AlertDialogTitle>
-              <AlertDialogDescription>
-              Le joueur sera retiré de la liste active et déplacé vers vos archives de sécurité.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setPlayerToDelete(null)}>Annuler</AlertDialogCancel>
-                <AlertDialogAction 
-                onClick={confirmDeletePlayer}
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                >
-                Confirmer la suppression
-                </AlertDialogAction>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeletePlayer} className="bg-destructive hover:bg-destructive/90">Supprimer</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
