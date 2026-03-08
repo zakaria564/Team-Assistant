@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, getDocs, query, doc, deleteDoc, where } from "firebase/firestore";
@@ -32,12 +32,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 
 interface Player {
@@ -71,6 +72,7 @@ interface PlayerPayments {
     playerGender: 'Masculin' | 'Féminin';
     payments: Payment[];
     currentMonthStatus?: PaymentStatus | 'N/A';
+    hasPending: boolean;
 }
 
 const normalizeString = (str: string) => {
@@ -96,6 +98,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showOnlyPending, setShowShowOnlyPending] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
@@ -181,11 +184,16 @@ export default function PaymentsPage() {
                 playerPhotoUrl: payment.playerPhotoUrl,
                 playerGender: payment.playerGender || 'Masculin',
                 payments: [],
-                currentMonthStatus: 'N/A'
+                currentMonthStatus: 'N/A',
+                hasPending: false
             };
         }
         grouped[payment.playerId].payments.push(payment);
         
+        if (payment.status !== 'Payé') {
+            grouped[payment.playerId].hasPending = true;
+        }
+
         const normalizedPaymentDesc = normalizeString(payment.description);
         if(normalizedPaymentDesc === normalizedCurrentMonthDesc) {
             grouped[payment.playerId].currentMonthStatus = payment.status;
@@ -201,9 +209,13 @@ export default function PaymentsPage() {
         );
     }
 
+    if (showOnlyPending) {
+        result = result.filter(playerGroup => playerGroup.hasPending);
+    }
+
     return result.sort((a, b) => a.playerName.localeCompare(b.playerName));
 
-  }, [payments, searchTerm]);
+  }, [payments, searchTerm, showOnlyPending]);
 
   const { malePayments, femalePayments } = useMemo(() => {
     const male: PlayerPayments[] = [];
@@ -217,6 +229,11 @@ export default function PaymentsPage() {
     });
     return { malePayments: male, femalePayments: female };
   }, [groupedAndFilteredPayments]);
+
+  const pendingCount = useMemo(() => {
+      const uniquePlayersWithPending = new Set(payments.filter(p => p.status !== 'Payé').map(p => p.playerId));
+      return uniquePlayersWithPending.size;
+  }, [payments]);
 
 
   const confirmDeletePayment = async () => {
@@ -276,7 +293,7 @@ export default function PaymentsPage() {
      if (groups.length === 0) {
         return (
             <div className="text-center text-muted-foreground py-10">
-                {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé dans cette section."}
+                {searchTerm || showOnlyPending ? "Aucun joueur ne correspond à vos critères." : "Aucun paiement trouvé dans cette section."}
             </div>
         )
     }
@@ -286,25 +303,37 @@ export default function PaymentsPage() {
           {groups.map((playerGroup) => (
               <Collapsible 
                   key={playerGroup.playerId} 
-                  className="border rounded-lg"
+                  className={cn("border rounded-lg transition-all", playerGroup.hasPending ? "border-destructive/30 bg-destructive/5" : "border-border")}
                   open={openCollapsibles[playerGroup.playerId] || false}
                   onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [playerGroup.playerId]: isOpen}))}
               >
                   <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                            <Avatar>
+                            <Avatar className="relative">
                               <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
                               <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
+                              {playerGroup.hasPending && (
+                                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                      <AlertCircle className="relative inline-flex h-4 w-4 text-red-600 fill-white" />
+                                  </span>
+                              )}
                           </Avatar>
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                              <span className="font-medium">{playerGroup.playerName}</span>
-                              <Badge variant="secondary" className="w-fit mt-1 sm:mt-0">{playerGroup.payments.length} paiement(s)</Badge>
+                          <div className="flex flex-col text-left">
+                              <div className="flex items-center gap-2">
+                                  <span className="font-bold text-base">{playerGroup.playerName}</span>
+                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1">Retard/Incomplet</Badge>}
+                              </div>
+                              <Badge variant="secondary" className="w-fit mt-1">{playerGroup.payments.length} paiement(s)</Badge>
                           </div>
                       </div>
                       <div className="flex items-center gap-4">
-                            <Badge className={cn("whitespace-nowrap", getBadgeClass(playerGroup.currentMonthStatus))}>
-                              {playerGroup.currentMonthStatus}
-                            </Badge>
+                            <div className="hidden sm:flex flex-col items-end mr-2">
+                                <span className="text-xs text-muted-foreground uppercase font-bold">Mois en cours</span>
+                                <Badge className={cn("whitespace-nowrap mt-0.5", getBadgeClass(playerGroup.currentMonthStatus))}>
+                                  {playerGroup.currentMonthStatus}
+                                </Badge>
+                            </div>
                             {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                       </div>
                   </CollapsibleTrigger>
@@ -322,7 +351,7 @@ export default function PaymentsPage() {
                           <TableBody>
                               {playerGroup.payments.map((payment) => {
                                   return (
-                                      <TableRow key={payment.id}>
+                                      <TableRow key={payment.id} className={cn(payment.status !== 'Payé' ? "bg-destructive/5" : "")}>
                                           <TableCell>
                                               <div className="flex flex-col">
                                                   <span className="font-medium">{payment.description}</span>
@@ -383,8 +412,8 @@ export default function PaymentsPage() {
 
   return (
     <>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
               <h1 className="text-3xl font-bold tracking-tight">Paiements des Joueurs</h1>
               <p className="text-muted-foreground">Suivez et gérez les paiements des cotisations.</p>
@@ -397,21 +426,46 @@ export default function PaymentsPage() {
               <Button asChild className="w-1/2 md:w-auto">
                 <Link href="/dashboard/payments/add">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter
+                  Nouveau Paiement
                 </Link>
               </Button>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
+        {pendingCount > 0 && (
+            <Card className="bg-destructive/5 border-destructive/20">
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="bg-destructive/10 p-2 rounded-full">
+                        <AlertCircle className="h-6 w-6 text-destructive" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-destructive">{pendingCount} joueur(s) ont des paiements non régularisés.</p>
+                        <p className="text-sm text-muted-foreground">Utilisez le filtre pour identifier rapidement qui contacter.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:max-w-sm">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                     placeholder="Rechercher un joueur..."
-                    className="pl-10"
+                    className="pl-10 h-11"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+            </div>
+            <div className="flex items-center space-x-2 bg-muted/50 p-2 px-4 rounded-md border w-full md:w-auto justify-center">
+                <Checkbox 
+                    id="pending-filter" 
+                    checked={showOnlyPending} 
+                    onCheckedChange={(checked) => setShowShowOnlyPending(checked === true)}
+                />
+                <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-semibold">
+                    <Filter className="h-4 w-4" />
+                    Afficher uniquement les retards
+                </Label>
             </div>
         </div>
 
@@ -441,7 +495,8 @@ export default function PaymentsPage() {
                 </Tabs>
             ) : (
                 <div className="text-center text-muted-foreground py-10">
-                    {searchTerm ? "Aucun joueur ne correspond à votre recherche." : "Aucun paiement trouvé."}
+                    <p className="text-lg font-medium">Aucun résultat trouvé.</p>
+                    <p className="text-sm">Essayez de modifier vos filtres ou vos termes de recherche.</p>
                 </div>
             )}
           </CardContent>
