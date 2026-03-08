@@ -49,7 +49,6 @@ interface Salary {
   transactions: { amount: number; date: any; method: string; }[];
   amountPaid: number;
   amountRemaining: number;
-  isDeleted?: boolean;
 }
 
 type SalaryStatus = Salary['status'];
@@ -61,11 +60,6 @@ interface CoachSalaries {
     salaries: Salary[];
     currentMonthStatus?: SalaryStatus | 'N/A';
 }
-
-const normalizeString = (str: string | null | undefined) => {
-    if (!str) return '';
-    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
-};
 
 const getBadgeClass = (status?: SalaryStatus | 'N/A') => {
      switch (status) {
@@ -81,30 +75,36 @@ const getBadgeClass = (status?: SalaryStatus | 'N/A') => {
 export default function SalariesPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [salaries, setSalaries] = useState<Salary[]>([]);
+  const [coachesMap, setCoachesMap] = useState<Map<string, {name: string, photoUrl?: string}>>(new Map());
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
+  // 1. Fetch Coaches Map
+  useEffect(() => {
+    if (!user) return;
+    const fetchCoaches = async () => {
+        try {
+            const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
+            const snap = await getDocs(q);
+            const map = new Map<string, {name: string, photoUrl?: string}>();
+            snap.forEach(doc => map.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl }));
+            setCoachesMap(map);
+        } catch (e) {
+            console.error("Error fetching coaches:", e);
+        }
+    };
+    fetchCoaches();
+  }, [user]);
+
+  // 2. Listen to Salaries with improved error handling
   useEffect(() => {
     if (!user) {
       if (!loadingUser) setLoading(false);
       return;
     }
-
-    setLoading(true);
-    
-    // Fetch Coaches Map first
-    const fetchCoaches = async () => {
-        const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
-        const coachesSnapshot = await getDocs(coachesQuery);
-        const coachesMap = new Map<string, {name: string, photoUrl?: string}>();
-        coachesSnapshot.forEach(doc => {
-            coachesMap.set(doc.id, { name: doc.data().name, photoUrl: doc.data().photoUrl });
-        });
-        return coachesMap;
-    };
 
     const q = query(
         collection(db, "salaries"), 
@@ -112,41 +112,37 @@ export default function SalariesPage() {
         where("isDeleted", "==", false)
     );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-        const coachesMap = await fetchCoaches();
+    const unsubscribe = onSnapshot(q, (snapshot) => {
         const salariesData = snapshot.docs.map(doc => {
-            const data = doc.data() as any;
+            const data = doc.data();
             const coachInfo = coachesMap.get(data.coachId);
             
-            if (!coachInfo) return null;
-
+            // On calcule les montants de manière sécurisée
             const transactions = data.transactions || [];
-            const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-            const totalAmount = data.totalAmount || 0;
+            const amountPaid = transactions.reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0);
+            const totalAmount = Number(data.totalAmount) || 0;
             const amountRemaining = Math.max(0, totalAmount - amountPaid);
             
             let status: SalaryStatus = data.status || 'En attente';
-            if (amountRemaining <= 0 && totalAmount > 0) {
-                status = 'Payé';
-            }
+            if (amountRemaining <= 0 && totalAmount > 0) status = 'Payé';
 
             return { 
                 id: doc.id, 
                 ...data,
-                coachName: coachInfo.name,
-                coachPhotoUrl: coachInfo.photoUrl,
+                coachName: coachInfo?.name || "Entraîneur inconnu",
+                coachPhotoUrl: coachInfo?.photoUrl,
                 amountPaid,
                 amountRemaining,
                 totalAmount,
                 transactions,
                 status
             } as Salary;
-        }).filter((s): s is Salary => s !== null);
+        });
 
-        // Sort by date with safety check
+        // Tri sécurisé par date
         salariesData.sort((a, b) => {
-            const dateA = a.createdAt?.seconds || 0;
-            const dateB = b.createdAt?.seconds || 0;
+            const dateA = a.createdAt?.seconds ? a.createdAt.seconds : (a.createdAt instanceof Date ? a.createdAt.getTime() / 1000 : 0);
+            const dateB = b.createdAt?.seconds ? b.createdAt.seconds : (b.createdAt instanceof Date ? b.createdAt.getTime() / 1000 : 0);
             return dateB - dateA;
         });
 
@@ -158,18 +154,17 @@ export default function SalariesPage() {
     });
 
     return () => unsubscribe();
-  }, [user, loadingUser]);
+  }, [user, loadingUser, coachesMap]);
 
-  const groupedAndFilteredSalaries: CoachSalaries[] = useMemo(() => {
+  const groupedAndFilteredSalaries = useMemo(() => {
     const grouped: { [key: string]: CoachSalaries } = {};
-    const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-    const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
+    const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`.toLowerCase();
 
     salaries.forEach(salary => {
         if (!grouped[salary.coachId]) {
             grouped[salary.coachId] = {
                 coachId: salary.coachId,
-                coachName: salary.coachName || "Entraîneur inconnu",
+                coachName: salary.coachName || "Inconnu",
                 coachPhotoUrl: salary.coachPhotoUrl,
                 salaries: [],
                 currentMonthStatus: 'N/A'
@@ -177,254 +172,140 @@ export default function SalariesPage() {
         }
         grouped[salary.coachId].salaries.push(salary);
         
-        const normalizedSalaryDesc = normalizeString(salary.description);
-        if(normalizedSalaryDesc === normalizedCurrentMonthDesc) {
+        if (salary.description?.toLowerCase().includes(currentMonthDesc)) {
             grouped[salary.coachId].currentMonthStatus = salary.status;
         }
     });
 
     let result = Object.values(grouped);
-
     if (searchTerm) {
-        const lowercasedSearchTerm = searchTerm.toLowerCase();
-        result = result.filter(coachGroup => 
-            coachGroup.coachName.toLowerCase().includes(lowercasedSearchTerm)
-        );
+        const term = searchTerm.toLowerCase();
+        result = result.filter(g => g.coachName.toLowerCase().includes(term));
     }
-
     return result.sort((a, b) => a.coachName.localeCompare(b.coachName));
-
   }, [salaries, searchTerm]);
 
   const confirmDeleteSalary = async () => {
     if(!salaryToDelete) return;
     try {
-      // Archive logical instead of hard delete
       await updateDoc(doc(db, "salaries", salaryToDelete.id), { isDeleted: true });
-      toast({
-        title: "Salaire déplacé",
-        description: `Le salaire a été déplacé vers les archives de sécurité.`,
-      });
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le salaire.",
-      });
+      toast({ title: "Déplacé aux archives", description: "Le salaire est maintenant dans vos copies de sécurité." });
+    } catch (e) {
+       toast({ variant: "destructive", title: "Erreur", description: "Action impossible." });
     } finally {
         setSalaryToDelete(null);
     }
   };
-  
-  const handleExport = () => {
-    const csvHeader = "Entraîneur;Description;Montant Total;Montant Payé;Montant Restant;Statut;Date de Création\n";
-    const allSalariesToExport = groupedAndFilteredSalaries.flatMap(group => group.salaries);
-    
-    const csvRows = allSalariesToExport.map(s => {
-      const row = [
-        `"${s.coachName}"`,
-        `"${s.description}"`,
-        s.totalAmount.toFixed(2),
-        s.amountPaid.toFixed(2),
-        s.amountRemaining.toFixed(2),
-        s.status,
-        s.createdAt?.seconds ? format(new Date(s.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr }) : "N/A"
-      ].join(';');
-      return row;
-    }).join('\n');
 
-    const csvString = `${csvHeader}${csvRows}`;
-    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
-
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `export_salaires_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+  if (loading || loadingUser) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-              <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
-              <p className="text-muted-foreground">Gérez le paiement des salaires de vos entraîneurs.</p>
-          </div>
-          <div className="flex gap-2 w-full md:w-auto">
-              <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter
-              </Button>
-              <Button asChild className="w-1/2 md:w-auto">
-                <Link href="/dashboard/salaries/add">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter
-                </Link>
-              </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
+            <p className="text-muted-foreground">Gérez le paiement des salaires et consultez vos copies de sécurité.</p>
         </div>
-
-        <div className="mb-4 flex flex-col md:flex-row items-center gap-4">
-            <div className="relative w-full md:max-w-sm">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                    placeholder="Rechercher un entraîneur..."
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Suivi des salaires</CardTitle>
-            <CardDescription>Liste des salaires regroupés par entraîneur.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading || loadingUser ? (
-              <div className="flex justify-center items-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : groupedAndFilteredSalaries.length > 0 ? (
-                <div className="space-y-2">
-                    {groupedAndFilteredSalaries.map((coachGroup) => (
-                        <Collapsible 
-                            key={coachGroup.coachId} 
-                            className="border rounded-lg"
-                            open={openCollapsibles[coachGroup.coachId] || false}
-                            onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({...prev, [coachGroup.coachId]: isOpen}))}
-                        >
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                                <div className="flex items-center gap-4">
-                                     <Avatar>
-                                        <AvatarImage src={coachGroup.coachPhotoUrl} alt={coachGroup.coachName} />
-                                        <AvatarFallback>{coachGroup.coachName?.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                                        <span className="font-medium">{coachGroup.coachName}</span>
-                                        <Badge variant="secondary" className="w-fit mt-1 sm:mt-0">{coachGroup.salaries.length} paiement(s)</Badge>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                     <Badge className={cn("whitespace-nowrap", getBadgeClass(coachGroup.currentMonthStatus))}>
-                                        {coachGroup.currentMonthStatus}
-                                     </Badge>
-                                     {openCollapsibles[coachGroup.coachId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                                </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <div className="w-full overflow-x-auto p-2">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="hidden md:table-cell">Montant</TableHead>
-                                        <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {coachGroup.salaries.map((salary) => {
-                                            return (
-                                                <TableRow key={salary.id}>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-medium">{salary.description}</span>
-                                                            <span className="text-muted-foreground text-sm md:hidden">{salary.amountPaid.toFixed(2)} / {salary.totalAmount.toFixed(2)} MAD</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="hidden md:table-cell">{salary.amountPaid.toFixed(2)} / {salary.totalAmount.toFixed(2)} MAD</TableCell>
-                                                    <TableCell className="hidden sm:table-cell">
-                                                        <Badge className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
-                                                            {salary.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Ouvrir le menu</span>
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                                <Link href={`/dashboard/salaries/${salary.id}`}>
-                                                                    <FileText className="mr-2 h-4 w-4" />
-                                                                    Voir les détails
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            {salary.status !== 'Payé' && (
-                                                                <DropdownMenuItem asChild className="cursor-pointer">
-                                                                    <Link href={`/dashboard/salaries/${salary.id}/edit`}>
-                                                                        <PlusCircle className="mr-2 h-4 w-4" />
-                                                                        Ajouter un versement
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                                <Link href={`/dashboard/salaries/${salary.id}/receipt`}>
-                                                                    <Download className="mr-2 h-4 w-4" />
-                                                                    Exporter la fiche
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem
-                                                                className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                                onClick={() => setSalaryToDelete(salary)}
-                                                            >
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Supprimer
-                                                            </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    </TableBody>
-                                    </Table>
-                                </div>
-                            </CollapsibleContent>
-                        </Collapsible>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center text-muted-foreground py-10">
-                    {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun salaire trouvé."}
-                </div>
-            )}
-          </CardContent>
-        </Card>
+        <Button asChild>
+          <Link href="/dashboard/salaries/add">
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un Salaire
+          </Link>
+        </Button>
       </div>
 
-      <AlertDialog open={!!salaryToDelete} onOpenChange={(isOpen) => !isOpen && setSalaryToDelete(null)}>
+      <div className="relative w-full md:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+              placeholder="Rechercher un entraîneur..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+          />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Suivi des salaires</CardTitle>
+          <CardDescription>Liste des règlements actifs regroupés par entraîneur.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {groupedAndFilteredSalaries.length > 0 ? (
+              <div className="space-y-2">
+                  {groupedAndFilteredSalaries.map((group) => (
+                      <Collapsible 
+                          key={group.coachId} 
+                          className="border rounded-lg"
+                          open={openCollapsibles[group.coachId] || false}
+                          onOpenChange={(open) => setOpenCollapsibles(prev => ({...prev, [group.coachId]: open}))}
+                      >
+                          <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center gap-4">
+                                   <Avatar>
+                                      <AvatarImage src={group.coachPhotoUrl} />
+                                      <AvatarFallback>{group.coachName[0]}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="text-left">
+                                      <span className="font-bold block">{group.coachName}</span>
+                                      <Badge variant="secondary" className="text-[10px]">{group.salaries.length} règlement(s)</Badge>
+                                  </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                   <Badge className={cn("hidden sm:inline-flex", getBadgeClass(group.currentMonthStatus))}>
+                                      {group.currentMonthStatus}
+                                   </Badge>
+                                   {openCollapsibles[group.coachId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                              </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                              <div className="p-2 overflow-x-auto">
+                                <Table>
+                                    <TableHeader><TableRow><TableHead>Description</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                                    <TableBody>
+                                        {group.salaries.map((s) => (
+                                            <TableRow key={s.id}>
+                                                <TableCell>
+                                                    <p className="font-medium">{s.description}</p>
+                                                    <p className="text-xs text-muted-foreground">{s.amountPaid.toFixed(2)} / {s.totalAmount.toFixed(2)} MAD</p>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <Link href={`/dashboard/salaries/${s.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                                                            <Link href={`/dashboard/salaries/${s.id}/receipt`}><DropdownMenuItem className="cursor-pointer"><Download className="mr-2 h-4 w-4" /> Fiche de paie</DropdownMenuItem></Link>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => setSalaryToDelete(s)}><Trash2 className="mr-2 h-4 w-4" /> Archiver</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                              </div>
+                          </CollapsibleContent>
+                      </Collapsible>
+                  ))}
+              </div>
+          ) : <p className="text-center py-10 text-muted-foreground">Aucun salaire enregistré.</p>}
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!salaryToDelete} onOpenChange={() => setSalaryToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer ce salaire ?</AlertDialogTitle>
-              <AlertDialogDescription>
-              Cette action est réversible. Les données seront déplacées vers vos archives de sécurité.
-              </AlertDialogDescription>
-          </AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Archiver ce salaire ?</AlertDialogTitle><AlertDialogDescription>Il sera déplacé vers vos copies de sécurité dans l'onglet Archives.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setSalaryToDelete(null)}>Annuler</AlertDialogCancel>
-              <AlertDialogAction 
-              onClick={confirmDeleteSalary}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-              >
-              Confirmer
-              </AlertDialogAction>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive hover:bg-destructive/90">Confirmer</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

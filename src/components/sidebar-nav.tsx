@@ -34,19 +34,18 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Check for pending payments (not paid)
-    const qPayments = query(
-      collection(db, "payments"),
-      where("userId", "==", user.uid),
-      where("isDeleted", "==", false)
-    );
-
-    const unsubscribe = onSnapshot(qPayments, (snap) => {
-      const pending = snap.docs.some(doc => doc.data().status !== 'Payé');
-      setHasPending(pending);
+    // Détection globale des retards (Paiements ou Salaires)
+    const unsubP = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid), where("isDeleted", "==", false)), (s) => {
+      const pending = s.docs.some(d => d.data().status !== 'Payé');
+      if (pending) setHasPending(true);
     });
 
-    return () => unsubscribe();
+    const unsubS = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("isDeleted", "==", false)), (s) => {
+      const pending = s.docs.some(d => d.data().status !== 'Payé');
+      if (pending) setHasPending(true);
+    });
+
+    return () => { unsubP(); unsubS(); };
   }, [user]);
 
   return (
