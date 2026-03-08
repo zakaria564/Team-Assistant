@@ -35,32 +35,32 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Monitor active (not deleted) player payments for pending status
+    // Monitor ALL payments for this user to check for pending status
     const paymentsQuery = query(
       collection(db, "payments"),
-      where("userId", "==", user.uid),
-      where("isDeleted", "==", false)
+      where("userId", "==", user.uid)
     );
 
     const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
       const pending = snapshot.docs.some(doc => {
         const data = doc.data();
-        return data.status !== "Payé";
+        // Check if NOT deleted and NOT paid
+        return data.isDeleted !== true && data.status !== "Payé";
       });
       setHasPendingPayments(pending);
     });
 
-    // Monitor active (not deleted) coach salaries for pending status
+    // Monitor ALL salaries for this user to check for pending status
     const salariesQuery = query(
       collection(db, "salaries"),
-      where("userId", "==", user.uid),
-      where("isDeleted", "==", false)
+      where("userId", "==", user.uid)
     );
 
     const unsubscribeSalaries = onSnapshot(salariesQuery, (snapshot) => {
       const pending = snapshot.docs.some(doc => {
         const data = doc.data();
-        return data.status !== "Payé";
+        // Check if NOT deleted and NOT paid
+        return data.isDeleted !== true && data.status !== "Payé";
       });
       setHasPendingSalaries(pending);
     });
