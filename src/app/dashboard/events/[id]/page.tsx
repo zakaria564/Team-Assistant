@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -71,8 +70,8 @@ const getResultStyles = (scoreHome?: number, scoreAway?: number, clubName?: stri
     let won;
     if (clubNameBase === homeTeamBase) {
         won = scoreHome > scoreAway;
-    } else { // clubName is awayTeam
-        won = scoreAway > homeTeamBase.length;
+    } else {
+        won = scoreAway > scoreHome;
     }
 
     if (won) {
