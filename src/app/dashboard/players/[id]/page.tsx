@@ -82,8 +82,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const playerId = unwrappedParams.id;
+  const params = React.use(props.params);
+  const playerId = params.id;
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);
@@ -95,7 +95,7 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const playerRef = doc(db, "players", playerId as string);
+        const playerRef = doc(db, "players", playerId);
         const playerSnap = await getDoc(playerRef);
 
         if (playerSnap.exists()) {
