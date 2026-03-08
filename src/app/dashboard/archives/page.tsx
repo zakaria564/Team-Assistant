@@ -62,7 +62,9 @@ export default function ArchivesPage() {
 
   const handleRestore = async (collectionName: string, id: string, name: string) => {
     try {
-      await updateDoc(doc(db, collectionName, id), { isArchived: false, isDeleted: false });
+      // Pour restaurer, on retire seulement le flag isDeleted. 
+      // On garde isArchived à true pour maintenir la "copie" dans les archives comme demandé.
+      await updateDoc(doc(db, collectionName, id), { isDeleted: false });
       toast({ title: "Élément restauré", description: `${name} a été replacé dans la liste active.` });
       fetchData();
     } catch (e) {
@@ -77,7 +79,11 @@ export default function ArchivesPage() {
   };
 
   if (loading || loadingUser) {
-    return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -169,9 +175,8 @@ export default function ArchivesPage() {
                       <TableHead>Entraîneur</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                    </TableHeader>
+                    <TableBody>
                     {coaches.map(c => (
                       <TableRow key={c.id}>
                         <TableCell>

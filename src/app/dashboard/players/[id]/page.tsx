@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, Activity, ClipboardList, LogIn, LogOut, Download, Fingerprint, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, Activity, ClipboardList, LogIn, LogOut, Download, Fingerprint, VenetianMask, Calendar } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Badge } from "@/components/ui/badge";
@@ -81,8 +81,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const playerId = params.id;
   const router = useRouter();
   
   const [player, setPlayer] = useState<Player | null>(null);
@@ -120,7 +121,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
     };
 
     fetchPlayer();
-  }, [playerId, router]);
+  }, [playerId]);
 
   if (loading) {
     return (
@@ -199,7 +200,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                 </CardHeader>
                  <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-6">
                     <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
-                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={Calendar} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
@@ -232,7 +233,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                                     <span className="font-medium">{doc.name}</span>
                                     {doc.validityDate && (
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <Calendar icon={LogIn} className="h-3 w-3"/>
+                                            <Calendar className="h-3 w-3"/>
                                             Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', { locale: fr })}
                                         </span>
                                     )}
