@@ -224,9 +224,11 @@ export default function PlayersPage() {
       setLoading(true);
       setFetchError(null);
       try {
-          const q = query(collection(db, "players"), where("userId", "==", user.uid), where("isArchived", "==", false));
+          const q = query(collection(db, "players"), where("userId", "==", user.uid));
           const querySnapshot = await getDocs(q);
-          const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+          const playersData = querySnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as Player))
+            .filter(p => p.isArchived !== true);
           setPlayers(playersData);
       } catch (error: any) {
           console.error("Error fetching players: ", error);

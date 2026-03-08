@@ -31,7 +31,6 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -83,15 +82,17 @@ export default function CoachesPage() {
     }
     setLoading(true);
     try {
-      const q = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isArchived", "==", false));
+      const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
       const querySnapshot = await getDocs(q);
-      const coachesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coach));
+      const coachesData = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Coach))
+        .filter(c => c.isArchived !== true);
       setCoaches(coachesData);
     } catch (error: any) {
       console.error("Error fetching coaches: ", error);
       toast({
         variant: "destructive",
-        title: "Erreur de permissions",
+        title: "Erreur de chargement",
         description: "Impossible de charger les entraîneurs.",
       });
     } finally {

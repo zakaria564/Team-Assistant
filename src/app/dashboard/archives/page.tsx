@@ -28,19 +28,19 @@ export default function ArchivesPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const qPlayers = query(collection(db, "players"), where("userId", "==", user.uid), where("isArchived", "==", true));
-      const qCoaches = query(collection(db, "coaches"), where("userId", "==", user.uid), where("isArchived", "==", true));
-      const qPayments = query(collection(db, "payments"), where("userId", "==", user.uid), where("isArchived", "==", true));
-      const qSalaries = query(collection(db, "salaries"), where("userId", "==", user.uid), where("isArchived", "==", true));
+      const qPlayers = query(collection(db, "players"), where("userId", "==", user.uid));
+      const qCoaches = query(collection(db, "coaches"), where("userId", "==", user.uid));
+      const qPayments = query(collection(db, "payments"), where("userId", "==", user.uid));
+      const qSalaries = query(collection(db, "salaries"), where("userId", "==", user.uid));
 
       const [snapP, snapC, snapPay, snapS] = await Promise.all([
         getDocs(qPlayers), getDocs(qCoaches), getDocs(qPayments), getDocs(qSalaries)
       ]);
 
-      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })));
-      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })));
-      setPayments(snapPay.docs.map(d => ({ id: d.id, ...d.data() })));
-      setSalaries(snapS.docs.map(d => ({ id: d.id, ...d.data() })));
+      setPlayers(snapP.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
+      setCoaches(snapC.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
+      setPayments(snapPay.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
+      setSalaries(snapS.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.isArchived === true));
     } catch (e) {
       console.error(e);
     } finally {
