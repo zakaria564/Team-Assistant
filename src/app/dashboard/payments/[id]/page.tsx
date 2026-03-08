@@ -39,8 +39,8 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 
 const getBadgeClass = (status?: Payment['status']) => {
      switch (status) {
-        case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Partiel': return 'bg-orange-100 text-orange-800 border-orange-300';
+        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
+        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
         case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
         case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
         default: return '';
