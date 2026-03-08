@@ -35,11 +35,11 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Monitor player payments for pending status (not archived)
+    // Monitor active (not deleted) player payments for pending status
     const paymentsQuery = query(
       collection(db, "payments"),
       where("userId", "==", user.uid),
-      where("isArchived", "==", false)
+      where("isDeleted", "==", false)
     );
 
     const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
@@ -50,11 +50,11 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       setHasPendingPayments(pending);
     });
 
-    // Monitor coach salaries for pending status (not archived)
+    // Monitor active (not deleted) coach salaries for pending status
     const salariesQuery = query(
       collection(db, "salaries"),
       where("userId", "==", user.uid),
-      where("isArchived", "==", false)
+      where("isDeleted", "==", false)
     );
 
     const unsubscribeSalaries = onSnapshot(salariesQuery, (snapshot) => {
