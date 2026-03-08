@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -34,7 +33,7 @@ export default function EditSalaryPage(props: { params: Promise<{ id: string }> 
     const fetchSalary = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "salaries", salaryId as string);
+        const docRef = doc(db, "salaries", salaryId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -49,7 +48,6 @@ export default function EditSalaryPage(props: { params: Promise<{ id: string }> 
           }
 
         } else {
-          console.log("No such document!");
           router.push("/dashboard/salaries");
         }
       } catch (error) {

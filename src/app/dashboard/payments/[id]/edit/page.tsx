@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -34,7 +33,7 @@ export default function EditPaymentPage(props: { params: Promise<{ id: string }>
     const fetchPayment = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "payments", paymentId as string);
+        const docRef = doc(db, "payments", paymentId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -49,7 +48,6 @@ export default function EditPaymentPage(props: { params: Promise<{ id: string }>
           }
 
         } else {
-          console.log("No such document!");
           router.push("/dashboard/payments");
         }
       } catch (error) {

@@ -61,7 +61,7 @@ export default function PaymentDetailPage(props: { params: Promise<{ id: string 
     const fetchPayment = async () => {
       setLoading(true);
       try {
-        const paymentRef = doc(db, "payments", paymentId as string);
+        const paymentRef = doc(db, "payments", paymentId);
         const paymentSnap = await getDoc(paymentRef);
 
         if (paymentSnap.exists()) {
@@ -76,7 +76,6 @@ export default function PaymentDetailPage(props: { params: Promise<{ id: string 
           });
 
         } else {
-          console.log("No such payment document!");
           router.push('/dashboard/payments');
         }
       } catch (error) {

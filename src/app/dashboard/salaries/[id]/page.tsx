@@ -61,7 +61,7 @@ export default function SalaryDetailPage(props: { params: Promise<{ id: string }
     const fetchSalary = async () => {
       setLoading(true);
       try {
-        const salaryRef = doc(db, "salaries", salaryId as string);
+        const salaryRef = doc(db, "salaries", salaryId);
         const salarySnap = await getDoc(salaryRef);
 
         if (salarySnap.exists()) {
@@ -76,7 +76,6 @@ export default function SalaryDetailPage(props: { params: Promise<{ id: string }
           });
 
         } else {
-          console.log("No such salary document!");
           router.push('/dashboard/salaries');
         }
       } catch (error) {

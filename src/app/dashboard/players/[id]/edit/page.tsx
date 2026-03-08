@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -52,13 +51,12 @@ export default function EditPlayerPage(props: { params: Promise<{ id: string }> 
     const fetchPlayer = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "players", playerId as string);
+        const docRef = doc(db, "players", playerId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setPlayer({ id: docSnap.id, ...docSnap.data() } as Player);
         } else {
-          console.log("No such document!");
           router.push("/dashboard/players");
         }
       } catch (error) {

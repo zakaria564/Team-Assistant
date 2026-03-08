@@ -110,7 +110,6 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
           
           setPlayer(playerData);
         } else {
-          console.log("No such document!");
           router.push('/dashboard/players');
         }
       } catch (error) {

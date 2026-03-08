@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -45,13 +44,12 @@ export default function EditCoachPage(props: { params: Promise<{ id: string }> }
     const fetchCoach = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "coaches", coachId as string);
+        const docRef = doc(db, "coaches", coachId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setCoach({ id: docSnap.id, ...docSnap.data() } as Coach);
         } else {
-          console.log("No such document!");
           router.push("/dashboard/coaches");
         }
       } catch (error) {
