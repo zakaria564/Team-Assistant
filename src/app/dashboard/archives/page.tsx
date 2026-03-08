@@ -62,8 +62,6 @@ export default function ArchivesPage() {
 
   const handleRestore = async (collectionName: string, id: string, name: string) => {
     try {
-      // Pour restaurer, on retire seulement le flag isDeleted. 
-      // On garde isArchived à true pour maintenir la "copie" dans les archives comme demandé.
       await updateDoc(doc(db, collectionName, id), { isDeleted: false });
       toast({ title: "Élément restauré", description: `${name} a été replacé dans la liste active.` });
       fetchData();
@@ -119,7 +117,7 @@ export default function ArchivesPage() {
                       <TableRow key={p.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className="h-8 w-8"><AvatarImage src={p.photoUrl} /><AvatarFallback>{p.name ? p.name[0] : 'P'}</AvatarFallback></Avatar>
                             <span className="font-medium">{p.name}</span>
                           </div>
                         </TableCell>
@@ -175,13 +173,14 @@ export default function ArchivesPage() {
                       <TableHead>Entraîneur</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
-                    </TableHeader>
-                    <TableBody>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {coaches.map(c => (
                       <TableRow key={c.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className="h-8 w-8"><AvatarImage src={c.photoUrl} /><AvatarFallback>{c.name ? c.name[0] : 'E'}</AvatarFallback></Avatar>
                             <span className="font-medium">{c.name}</span>
                           </div>
                         </TableCell>

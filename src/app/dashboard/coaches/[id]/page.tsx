@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star, LogIn, LogOut, Flag, Home, Calendar, Download, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star, LogIn, LogOut, Flag, Home, Calendar as CalendarIcon, Download, Fingerprint } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -71,8 +71,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+  const { id: coachId } = React.use(props.params);
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);
@@ -197,7 +196,7 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                                     <span className="font-medium">{doc.name}</span>
                                     {doc.validityDate && (
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <Calendar className="h-3 w-3"/>
+                                            <CalendarIcon className="h-3 w-3"/>
                                             Expire le: {format(new Date(doc.validityDate), 'dd/MM/yyyy', { locale: fr })}
                                         </span>
                                     )}
