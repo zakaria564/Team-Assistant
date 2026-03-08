@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -83,7 +82,7 @@ const normalizeString = (str: string) => {
 const getBadgeClass = (status?: PaymentStatus | 'N/A') => {
      switch (status) {
         case 'Payé': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Partiel': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'Partiel': return 'bg-orange-100 text-orange-800 border-orange-300';
         case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
         case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
         case 'N/A': return 'bg-gray-100 text-gray-800 border-gray-300';
@@ -525,4 +524,3 @@ export default function PaymentsPage() {
     </>
   );
 }
-    
