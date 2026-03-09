@@ -43,8 +43,9 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(props.params);
+export default function PlayerDetailsPdfPage(props: any) {
+  const params = React.use(props.params);
+  const playerId = (params as any).id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -203,11 +204,11 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             {/* Player Info Header */}
             <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
                  <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
-                    <AvatarImage src={player.photoUrl} alt={player.name} />
+                    <AvatarImage src={player.photoUrl} alt={player.name} className="object-cover" />
                     <AvatarFallback className="text-5xl">{playerInitial}</AvatarFallback>
                 </Avatar>
                 <div className="text-center sm:text-left">
-                    <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(player.name)}</h1>
+                    <h1 className="text-4xl font-bold text-gray-800 uppercase tracking-tight">{toTitleCase(player.name)}</h1>
                     <Badge variant="outline" className="mt-2 font-mono">{player.professionalId || "N/A"}</Badge>
                 </div>
             </section>
@@ -219,24 +220,34 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Personnelles" />
                     <DetailItem icon={User} label="Nom complet" value={toTitleCase(player.name)} />
-                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                    <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                    <DetailItem icon={Home} label="Adresse" value={player.address} />
-                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
-                    <DetailItem icon={Mail} label="Email" value={player.email}/>
+                    <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
+                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
+                    <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Sportives" />
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste Principal" value={player.position} />
-                    <DetailItem icon={Shirt} label="Numéro de maillot" value={player.number?.toString()} />
+                    <DetailItem icon={Shirt} label="Numéro de maillot" value={player.number ? `#${player.number}` : undefined} />
                     <DetailItem icon={ClipboardList} label="Entraîneur assigné" value={player.coachName ? toTitleCase(player.coachName) : undefined} />
                     <DetailItem icon={LogIn} label="Date d'entrée au club" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={LogOut} label="Date de sortie du club" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </div>
+
+                {player.tutorName && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <SectionTitle title="Informations du Tuteur" />
+                        <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
+                        <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
+                        <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} />
+                        <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
+                    </div>
+                )}
             </main>
         </div>
       </div>

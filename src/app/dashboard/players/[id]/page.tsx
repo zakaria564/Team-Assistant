@@ -7,13 +7,33 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Separator } from "@/components/ui/separator";
 
-export default function PlayerDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(props.params);
+const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
+  <div className="flex items-start gap-3">
+    <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+    <div>
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline break-all">
+          {value || "Non renseigné"}
+        </a>
+      ) : (
+        <p className="text-sm font-semibold">{value || "Non renseigné"}</p>
+      )}
+    </div>
+  </div>
+);
+
+export default function PlayerDetailPage(props: any) {
+  const params = React.use(props.params);
+  const playerId = (params as any).id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);
@@ -47,40 +67,110 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
   if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!player) return null;
 
+  const birthDate = player.birthDate ? format(new Date(player.birthDate), "dd MMMM yyyy", { locale: fr }) : undefined;
+  const entryDate = player.entryDate ? format(new Date(player.entryDate), "dd/MM/yyyy", { locale: fr }) : undefined;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-        <h1 className="text-3xl font-bold tracking-tight">Fiche Joueur</h1>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
+          <h1 className="text-3xl font-bold tracking-tight">Fiche Joueur</h1>
+        </div>
+        <Button onClick={() => router.push(`/dashboard/players/${player.id}/edit`)}>Modifier le profil</Button>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm">
-              <AvatarImage src={player.photoUrl} />
-              <AvatarFallback>P</AvatarFallback>
+        {/* Sidebar: Photo & Status */}
+        <Card className="lg:col-span-1 h-fit">
+          <CardContent className="pt-8 flex flex-col items-center gap-4">
+            <Avatar className="h-40 w-40 border-4 border-primary shadow-lg">
+              <AvatarImage src={player.photoUrl} className="object-cover" />
+              <AvatarFallback className="text-4xl">P</AvatarFallback>
             </Avatar>
-            <div className="text-center">
-                <h2 className="text-2xl font-bold">{player.name}</h2>
-                <p className="text-sm font-mono text-muted-foreground mt-1 flex items-center justify-center gap-1">
+            <div className="text-center space-y-1">
+                <h2 className="text-2xl font-bold uppercase tracking-tight">{player.name}</h2>
+                <Badge variant="outline" className="font-mono text-xs flex items-center gap-1 justify-center">
                     <Fingerprint className="h-3 w-3" />
-                    ID: {player.professionalId || "N/A"}
-                </p>
+                    {player.professionalId || "ID: N/A"}
+                </Badge>
             </div>
-            <Badge className={cn("text-base", player.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100')}>{player.status}</Badge>
+            <Badge className={cn("text-base px-4 py-1", 
+                player.status === 'Actif' ? 'bg-green-100 text-green-800' : 
+                player.status === 'Inactif' ? 'bg-gray-100 text-gray-800' :
+                player.status === 'Blessé' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+            )}>{player.status}</Badge>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-2">
-          <CardHeader><CardTitle>Informations Sportives</CardTitle></CardHeader>
-          <CardContent className="grid sm:grid-cols-2 gap-6">
-            <div className="flex items-center gap-3"><Shield className="text-muted-foreground h-5 w-5" /> <span>Catégorie: {player.category}</span></div>
-            <div className="flex items-center gap-3"><Star className="text-muted-foreground h-5 w-5" /> <span>Poste: {player.position}</span></div>
-            <div className="flex items-center gap-3"><Shirt className="text-muted-foreground h-5 w-5" /> <span>N° Maillot: {player.number}</span></div>
-            <div className="flex items-center gap-3"><ClipboardList className="text-muted-foreground h-5 w-5" /> <span>Coach: {player.coachName || 'Aucun'}</span></div>
-            <div className="flex items-center gap-3"><Phone className="text-muted-foreground h-5 w-5" /> <span>Tél: {player.phone || 'N/A'}</span></div>
-            <div className="flex items-center gap-3"><Mail className="text-muted-foreground h-5 w-5" /> <span>Email: {player.email || 'N/A'}</span></div>
-          </CardContent>
-        </Card>
+
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Informations Sportives */}
+          <Card>
+            <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><Shield className="h-5 w-5" /> Informations Sportives</CardTitle></CardHeader>
+            <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
+              <DetailItem icon={Shield} label="Catégorie" value={player.category} />
+              <DetailItem icon={Star} label="Poste Principal" value={player.position} />
+              <DetailItem icon={Shirt} label="Numéro de Maillot" value={player.number ? `#${player.number}` : undefined} />
+              <DetailItem icon={ClipboardList} label="Entraîneur Responsable" value={player.coachName} />
+              <DetailItem icon={Cake} label="Date d'entrée au club" value={entryDate} />
+            </CardContent>
+          </Card>
+
+          {/* Informations Personnelles */}
+          <Card>
+            <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><User className="h-5 w-5" /> État Civil & Contact</CardTitle></CardHeader>
+            <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
+              <DetailItem icon={Cake} label="Date de naissance" value={birthDate} />
+              <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
+              <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
+              <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
+              <DetailItem 
+                icon={Mail} 
+                label="Email" 
+                value={player.email} 
+                href={player.email ? `mailto:${player.email}` : undefined} 
+              />
+              <DetailItem 
+                icon={Phone} 
+                label="Téléphone" 
+                value={player.phone} 
+                href={player.phone ? `tel:${player.phone}` : undefined} 
+              />
+              <div className="sm:col-span-2">
+                <DetailItem 
+                    icon={Home} 
+                    label="Adresse Résidentielle" 
+                    value={player.address} 
+                    href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informations Tuteur (pour les mineurs) */}
+          {player.tutorName && (
+            <Card>
+                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><User className="h-5 w-5" /> Informations du Tuteur</CardTitle></CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
+                    <DetailItem icon={User} label="Nom du parent / tuteur" value={player.tutorName} />
+                    <DetailItem icon={Fingerprint} label="CIN du tuteur" value={player.tutorCin} />
+                    <DetailItem 
+                        icon={Mail} 
+                        label="Email du tuteur" 
+                        value={player.tutorEmail} 
+                        href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} 
+                    />
+                    <DetailItem 
+                        icon={Phone} 
+                        label="Téléphone du tuteur" 
+                        value={player.tutorPhone} 
+                        href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} 
+                    />
+                </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
