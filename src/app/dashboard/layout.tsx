@@ -89,32 +89,44 @@ export default function DashboardAppLayout({
         </div>
       </div>
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 md:hidden"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
-               <SheetHeader className="h-24 flex flex-row items-center border-b border-sidebar-border px-4">
-                  <ClubBrand />
-                   <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
-                </SheetHeader>
-                <div className="flex-1 py-4">
-                    <SidebarNav onLinkClick={() => setIsSheetOpen(false)} />
-                </div>
-            </SheetContent>
-          </Sheet>
-          <div className="w-full flex-1">
-            <h1 className="text-lg font-bold text-primary uppercase">CLUB USDS</h1>
+        <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:h-[60px] lg:px-6 relative">
+          <div className="flex items-center">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 md:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
+                 <SheetHeader className="h-24 flex flex-row items-center border-b border-sidebar-border px-4">
+                    <ClubBrand />
+                     <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex-1 py-4">
+                      <SidebarNav onLinkClick={() => setIsSheetOpen(false)} />
+                  </div>
+              </SheetContent>
+            </Sheet>
           </div>
-          <UserNav />
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-auto px-4 text-center">
+            {loadingClubInfo ? (
+              <Skeleton className="h-8 w-40 mx-auto" />
+            ) : (
+              <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                {clubName}
+              </h1>
+            )}
+          </div>
+
+          <div className="flex items-center">
+            <UserNav />
+          </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
           {children}
