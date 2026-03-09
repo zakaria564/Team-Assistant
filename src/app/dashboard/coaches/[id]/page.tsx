@@ -8,12 +8,12 @@ import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, User, Phone, Mail, Shield, Star } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+  const unwrappedParams = React.use(props.params);
+  const coachId = unwrappedParams.id;
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,10 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm"><AvatarImage src={coach.photoUrl} /><AvatarFallback>E</AvatarFallback></Avatar>
+            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm">
+              <AvatarImage src={coach.photoUrl} />
+              <AvatarFallback>E</AvatarFallback>
+            </Avatar>
             <h2 className="text-2xl font-bold">{coach.name}</h2>
             <Badge className="bg-green-100 text-green-800">{coach.status}</Badge>
           </CardContent>

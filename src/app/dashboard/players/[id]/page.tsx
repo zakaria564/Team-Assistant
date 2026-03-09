@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const unwrappedParams = React.use(props.params);
+  const playerId = unwrappedParams.id;
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,10 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm"><AvatarImage src={player.photoUrl} /><AvatarFallback>P</AvatarFallback></Avatar>
+            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm">
+              <AvatarImage src={player.photoUrl} />
+              <AvatarFallback>P</AvatarFallback>
+            </Avatar>
             <h2 className="text-2xl font-bold">{player.name}</h2>
             <Badge className={cn("text-base", player.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100')}>{player.status}</Badge>
           </CardContent>

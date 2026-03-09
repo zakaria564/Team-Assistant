@@ -3,16 +3,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { PlusCircle, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search } from "lucide-react";
 import Link from "next/link";
 import { collection, getDocs, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -32,9 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Salary {
@@ -57,37 +52,48 @@ export default function SalariesPage() {
   const [salaryToDelete, setSalaryToDelete] = useState<Salary | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!user || !isMounted) return;
-    setLoading(true);
+
+    let unsubscribe: () => void;
 
     const fetchData = async () => {
-        try {
-            const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
-            const coachesMap = new Map();
-            coachesSnap.docs.forEach(d => coachesMap.set(d.id, { name: d.data().name, photo: d.data().photoUrl }));
+      setLoading(true);
+      try {
+        const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
+        const coachesMap = new Map();
+        coachesSnap.docs.forEach(d => coachesMap.set(d.id, { name: d.data().name, photo: d.data().photoUrl }));
 
-            const unsubscribe = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (snapshot) => {
-                const salariesData = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const coachInfo = coachesMap.get(data.coachId);
-                    return { 
-                        id: doc.id, 
-                        ...data,
-                        coachName: coachInfo?.name || "Entraîneur",
-                        coachPhotoUrl: coachInfo?.photo
-                    } as Salary;
-                });
-                setSalaries(salariesData);
-                setLoading(false);
-            });
-            return unsubscribe;
-        } catch (e) { setLoading(false); }
+        const q = query(collection(db, "salaries"), where("userId", "==", user.uid));
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          const salariesData = snapshot.docs.map(doc => {
+            const data = doc.data();
+            const coachInfo = coachesMap.get(data.coachId);
+            return {
+              id: doc.id,
+              ...data,
+              coachName: coachInfo?.name || "Entraîneur inconnu",
+              coachPhotoUrl: coachInfo?.photo
+            } as Salary;
+          });
+          setSalaries(salariesData);
+          setLoading(false);
+        });
+      } catch (e) {
+        console.error("Error loading salaries:", e);
+        setLoading(false);
+      }
     };
 
     fetchData();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [user, isMounted]);
 
   const filteredSalaries = useMemo(() => {
@@ -100,12 +106,22 @@ export default function SalariesPage() {
     if(!salaryToDelete) return;
     try {
       await deleteDoc(doc(db, "salaries", salaryToDelete.id));
+      setSalaries(prev => prev.filter(s => s.id !== salaryToDelete.id));
       toast({ title: "Salaire supprimé définitivement" });
-    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
-    finally { setSalaryToDelete(null); }
+    } catch (e) { 
+      toast({ variant: "destructive", title: "Erreur lors de la suppression" }); 
+    } finally { 
+      setSalaryToDelete(null); 
+    }
   };
 
-  if (!isMounted || loading || loadingUser) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (!isMounted || loading || loadingUser) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -125,41 +141,84 @@ export default function SalariesPage() {
       <Card>
         <CardHeader><CardTitle>Liste des règlements</CardTitle></CardHeader>
         <CardContent>
-          <Table>
-              <TableHeader><TableRow><TableHead>Entraîneur</TableHead><TableHead>Description</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-              <TableBody>
-                  {filteredSalaries.map((s) => (
-                      <TableRow key={s.id}>
-                          <TableCell>
-                              <div className="flex items-center gap-3">
-                                  <Avatar className="h-8 w-8"><AvatarImage src={s.coachPhotoUrl} /><AvatarFallback>E</AvatarFallback></Avatar>
-                                  <span className="font-medium">{s.coachName}</span>
-                              </div>
-                          </TableCell>
-                          <TableCell>{s.description}</TableCell>
-                          <TableCell className="text-right">
-                              <DropdownMenu>
-                                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                      <Link href={`/dashboard/salaries/${s.id}`}><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => setSalaryToDelete(s)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                              </DropdownMenu>
-                          </TableCell>
+          <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Entraîneur</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredSalaries.length > 0 ? (
+                      filteredSalaries.map((s) => (
+                        <TableRow key={s.id}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarImage src={s.coachPhotoUrl} />
+                                      <AvatarFallback>{s.coachName?.charAt(0) || 'E'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium">{s.coachName}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>{s.description}</TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <Link href={`/dashboard/salaries/${s.id}`} passHref>
+                                          <DropdownMenuItem className="cursor-pointer">
+                                            <FileText className="mr-2 h-4 w-4" /> Détails
+                                          </DropdownMenuItem>
+                                        </Link>
+                                        <Link href={`/dashboard/salaries/${s.id}/edit`} passHref>
+                                          <DropdownMenuItem className="cursor-pointer">
+                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                          </DropdownMenuItem>
+                                        </Link>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem 
+                                          className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10" 
+                                          onClick={() => setSalaryToDelete(s)}
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                          Aucun résultat trouvé.
+                        </TableCell>
                       </TableRow>
-                  ))}
-              </TableBody>
-          </Table>
+                    )}
+                </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!salaryToDelete} onOpenChange={() => setSalaryToDelete(null)}>
+      <AlertDialog open={!!salaryToDelete} onOpenChange={(open) => !open && setSalaryToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
+            <AlertDialogDescription>Cette action est irréversible. Toutes les données de ce règlement seront supprimées.</AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Supprimer</AlertDialogAction>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                Supprimer
+              </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
