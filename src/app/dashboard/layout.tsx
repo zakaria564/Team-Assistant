@@ -93,8 +93,8 @@ export default function DashboardAppLayout({
         </div>
       </div>
       <div className="flex flex-col">
-        <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:h-[60px] lg:px-6 relative">
-          <div className="flex items-center">
+        <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:h-[60px] lg:px-6 relative overflow-hidden">
+          <div className="flex items-center z-10">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -118,17 +118,17 @@ export default function DashboardAppLayout({
             </Sheet>
           </div>
 
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-auto px-4 text-center">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[50%] md:max-w-[65%] px-2 text-center pointer-events-none">
             {loadingClubInfo ? (
               <Skeleton className="h-8 w-48 mx-auto" />
             ) : (
-              <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">
+              <h1 className="text-sm sm:text-lg md:text-2xl lg:text-4xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm leading-tight break-words line-clamp-2 md:line-clamp-none">
                 {displayTitle}
               </h1>
             )}
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center z-10">
             <UserNav />
           </div>
         </header>
