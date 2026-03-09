@@ -121,7 +121,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             )}
                         </div>
                         <div className="space-y-1">
-                            <h1 className="text-2xl font-black uppercase tracking-tighter text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                             <div className="text-slate-400 text-sm font-medium">
                                 <p>{clubInfo?.address || "Adresse du club"}</p>
                             </div>
@@ -187,7 +187,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             <div className={cn(
                                 "flex justify-between items-center font-bold text-base",
                                 remaining > 0 ? "text-red-500" : "text-slate-600"
-                            )} style={{ color: remaining > 0 ? '#ef4444' : '#475569' }}>
+                            )}>
                                 <span className="text-sm uppercase tracking-tighter">RESTE À VERSER :</span>
                                 <span>{remaining.toFixed(2)} MAD</span>
                             </div>

@@ -137,7 +137,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                 )}
               </div>
               <div className="space-y-1">
-                <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "Votre Club"}</h1>
+                <h1 className="text-2xl font-black uppercase tracking-tight bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
                 <div className="text-slate-500 text-sm font-medium">
                     <p>{clubInfo?.address || "Adresse non renseignée"}</p>
                     {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
@@ -208,7 +208,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                 <div className={cn(
                     "flex justify-between items-center font-bold text-base",
                     remaining > 0 ? "text-red-500" : "text-slate-600"
-                )} style={{ color: remaining > 0 ? '#ef4444' : '#475569' }}>
+                )}>
                     <span>RESTE À PAYER :</span>
                     <span>{remaining.toFixed(2)} MAD</span>
                 </div>
