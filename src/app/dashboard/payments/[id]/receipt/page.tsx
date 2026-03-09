@@ -17,11 +17,14 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const paymentId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
+  const { toast } = useToast();
   
   const [payment, setPayment] = useState<any>(null);
   const [clubInfo, setClubInfo] = useState<any>(null);
@@ -73,15 +76,23 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
         html2canvas(element, { 
             scale: 2, 
             useCORS: true,
-            backgroundColor: "#ffffff"
+            backgroundColor: "#ffffff",
+            logging: false
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png');
-            const imgWidth = 595.28; // A4 width in points
+            const imgWidth = 595.28; 
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`recu_paiement_${payment?.playerName.replace(/ /g, "_")}.pdf`);
+        }).catch((err) => {
+            console.error("Erreur PDF:", err);
+            toast({
+                variant: "destructive",
+                title: "Erreur de génération",
+                description: "Impossible de générer le PDF. Vérifiez que les images du club sont valides."
+            });
         }).finally(() => setLoadingPdf(false));
     }
   };
@@ -108,7 +119,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
         </div>
 
         <Card id="printable-receipt" className="bg-white text-slate-900 shadow-2xl border-none overflow-hidden">
-          {/* En-tête professionnel */}
           <header className="p-10 bg-slate-50 border-b-4 border-primary flex justify-between items-start">
             <div className="flex items-center gap-6">
               <Avatar className="h-24 w-24 border-2 border-white shadow-lg">
@@ -130,7 +140,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
           </header>
 
           <div className="p-10 space-y-10">
-            {/* Infos Joueur et Paiement */}
             <div className="grid grid-cols-2 gap-12">
               <div className="space-y-4">
                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-2">Informations Joueur</h3>
@@ -148,7 +157,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* Tableau des transactions */}
             <div className="rounded-xl border shadow-sm overflow-hidden">
                 <Table>
                 <TableHeader className="bg-slate-50">
@@ -172,7 +180,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                 </Table>
             </div>
 
-            {/* Résumé et Totaux */}
             <div className="flex justify-end pt-4">
               <div className="w-full max-w-sm space-y-3">
                 <div className="flex justify-between text-slate-500 font-medium">
@@ -194,7 +201,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* Zone de Cachet et Signature (Centrée) */}
             <div className="flex justify-center pt-16">
                 <div className="text-center space-y-24 w-full max-w-md">
                     <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet et Signature</p>

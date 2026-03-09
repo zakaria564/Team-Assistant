@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 interface Coach {
   id: string;
@@ -60,9 +61,11 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const coachId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
+  const { toast } = useToast();
   
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,6 +124,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
             scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
+            logging: false
         }).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF({
@@ -146,6 +150,13 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
 
             pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
             pdf.save(`fiche_entraineur_${coach?.name?.replace(/ /g, "_")}.pdf`);
+        }).catch((err) => {
+            console.error("Erreur PDF:", err);
+            toast({
+                variant: "destructive",
+                title: "Erreur de génération",
+                description: "Le PDF n'a pas pu être généré. Vérifiez les photos configurées."
+            });
         }).finally(() => {
             if (cardElement) {
               cardElement.style.width = originalWidth;
@@ -193,7 +204,6 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div id="printable-details" className="bg-white p-6 sm:p-8 rounded-lg shadow-sm text-gray-900">
-            {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
                  <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">

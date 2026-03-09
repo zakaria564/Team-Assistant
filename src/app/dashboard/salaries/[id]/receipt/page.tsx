@@ -17,11 +17,14 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const salaryId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
+  const { toast } = useToast();
   
   const [salary, setSalary] = useState<any>(null);
   const [clubInfo, setClubInfo] = useState<any>(null);
@@ -56,12 +59,24 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
-        html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then((canvas) => {
+        html2canvas(element, { 
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: "#ffffff",
+            logging: false 
+        }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgWidth = 595.28;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
+        }).catch((err) => {
+            console.error("Erreur PDF:", err);
+            toast({
+                variant: "destructive",
+                title: "Erreur de génération",
+                description: "Impossible de générer le PDF. Vérifiez que les images du club sont valides."
+            });
         }).finally(() => setLoadingPdf(false));
     }
   };
@@ -165,7 +180,6 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                         </div>
                     </div>
 
-                    {/* Zone de Cachet et Signature (Centrée) */}
                     <div className="flex justify-center pt-16">
                         <div className="text-center space-y-24 w-full max-w-md">
                             <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet et Signature</p>
