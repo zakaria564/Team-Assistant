@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -19,9 +18,9 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
-  const salaryId = resolvedParams.id;
+export default function SalaryReceiptPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: salaryId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

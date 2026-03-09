@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,8 +30,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function EditCoachPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditCoachPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const { id: coachId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);

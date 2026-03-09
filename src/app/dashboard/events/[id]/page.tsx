@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -10,9 +10,9 @@ import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy } f
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const eventId = resolvedParams.id;
+export default function EventDetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: eventId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);

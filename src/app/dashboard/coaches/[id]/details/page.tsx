@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -60,9 +59,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
-  const coachId = resolvedParams.id;
+export default function CoachDetailsPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: coachId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -85,7 +84,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
 
       setLoading(true);
       try {
-        const coachRef = doc(db, "coaches", coachId as string);
+        const coachRef = doc(db, "coaches", coachId);
         const coachSnap = await getDoc(coachRef);
 
         if (coachSnap.exists()) {

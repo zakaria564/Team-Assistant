@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -29,8 +28,9 @@ interface Player {
   address?: string;
 }
 
-export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PlayerCardPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const { id: playerId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -50,7 +50,7 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
 
       setLoading(true);
       try {
-        const playerRef = doc(db, "players", playerId as string);
+        const playerRef = doc(db, "players", playerId);
         const playerSnap = await getDoc(playerRef);
 
         if (playerSnap.exists()) {

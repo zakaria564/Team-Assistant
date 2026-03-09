@@ -14,9 +14,9 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function EditPlayerPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
-  const playerId = resolvedParams.id;
+export default function EditPlayerPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: playerId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   
   const [player, setPlayer] = useState<any>(null);

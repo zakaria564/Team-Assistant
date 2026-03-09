@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -43,8 +42,9 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PlayerDetailsPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const { id: playerId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

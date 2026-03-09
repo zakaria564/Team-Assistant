@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -24,8 +23,9 @@ interface Event {
     scoreAway?: number;
 }
 
-export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditEventPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const { id: eventId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   
   const [event, setEvent] = useState<Event | null>(null);
@@ -38,7 +38,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     const fetchEvent = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, "events", eventId as string);
+        const docRef = doc(db, "events", eventId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

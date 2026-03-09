@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -19,8 +18,9 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditPaymentPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditPaymentPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const { id: paymentId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   
   const [payment, setPayment] = useState<Payment | null>(null);

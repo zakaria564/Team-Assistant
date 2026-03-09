@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-export default function SalaryDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
-  const salaryId = resolvedParams.id;
+export default function SalaryDetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: salaryId } = React.use(params);
+  const _sParams = React.use(searchParams);
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
