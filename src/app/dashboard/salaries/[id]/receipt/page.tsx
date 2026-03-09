@@ -62,7 +62,8 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
             useCORS: true, 
             backgroundColor: "#ffffff",
             logging: false,
-            allowTaint: true
+            allowTaint: true,
+            imageTimeout: 15000,
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgWidth = 595.28;
@@ -74,7 +75,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Impossible de générer le PDF. Vérifiez la connexion Internet."
+                description: "Échec du téléchargement. Vérifiez votre logo."
             });
         }).finally(() => setLoadingPdf(false));
     }
@@ -87,7 +88,6 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
   const remaining = salary.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
-  // Professional Receipt ID: RC-E-YYYYMM-SHORTID
   const dateObj = salary.createdAt?.seconds ? new Date(salary.createdAt.seconds * 1000) : new Date();
   const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
@@ -105,10 +105,10 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                 </div>
             </div>
             
-            <Card id="printable-receipt" className="bg-white text-slate-900 border-none shadow-2xl overflow-hidden">
-                 <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center">
+            <Card id="printable-receipt" className="bg-white text-slate-900 border-none shadow-2xl overflow-hidden" style={{ minHeight: '842pt' }}>
+                 <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center" style={{ backgroundColor: '#0f172a' }}>
                     <div className="flex items-center gap-6">
-                        <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                        <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                             {clubInfo?.logoUrl ? (
                                 <img 
                                     src={clubInfo.logoUrl} 
@@ -117,13 +117,13 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                                     crossOrigin="anonymous"
                                 />
                             ) : (
-                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">
+                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>
                                     {clubInitial}
                                 </div>
                             )}
                         </div>
                         <div className="space-y-1">
-                            <h1 className="text-2xl font-black uppercase tracking-tighter text-primary leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tighter text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                             <div className="text-slate-400 text-sm font-medium">
                                 <p>{clubInfo?.address || "Adresse du club"}</p>
                             </div>
@@ -132,7 +132,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                     <div className="text-right space-y-1">
                         <h2 className="text-4xl font-black uppercase italic tracking-tight text-white">FICHE DE PAIE</h2>
                         <div className="pt-2">
-                            <p className="text-primary font-bold text-sm tracking-widest">N° {professionalId}</p>
+                            <p className="text-primary font-bold text-sm tracking-widest" style={{ color: 'hsl(199, 75%, 53%)' }}>REF: {professionalId}</p>
                             <p className="text-slate-500 text-xs font-semibold">Généré le {format(new Date(), "dd/MM/yyyy")}</p>
                         </div>
                     </div>
@@ -148,7 +148,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-right sm:text-left">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Période / Motif</h3>
                             <p className="text-xl font-bold text-slate-800">{salary.description}</p>
-                            <p className="text-slate-500 font-semibold mt-1 text-xs">Saison 2024-2025</p>
+                            <p className="text-slate-500 font-semibold mt-1 text-xs">Saison Sportive</p>
                         </div>
                     </div>
                     
@@ -189,34 +189,34 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             <div className={cn(
                                 "flex justify-between items-center font-bold text-base",
                                 remaining > 0 ? "text-red-500" : "text-slate-600"
-                            )}>
+                            )} style={{ color: remaining > 0 ? '#ef4444' : '#475569' }}>
                                 <span className="text-sm uppercase tracking-tighter">RESTE À VERSER :</span>
                                 <span>{remaining.toFixed(2)} MAD</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-center pt-16">
-                        <div className="text-center space-y-24 w-full max-w-md">
+                    <div className="flex justify-center pt-24">
+                        <div className="text-center space-y-24 w-full max-w-md border-t-2 border-slate-100 pt-8">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet et Signature</p>
-                            <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
+                            <div className="pt-4 flex flex-col items-center gap-2">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-4 w-4" />
-                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Document Inaltérable</span>
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Document Informatique Certifié</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <footer className="p-8 bg-slate-50 border-t flex justify-between items-center">
+                <footer className="p-8 bg-slate-50 border-t flex justify-between items-center mt-auto">
                     <div className="flex items-center gap-3">
                         <div className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest">
                             STATUT: {salary.status.toUpperCase()}
                         </div>
                     </div>
                     <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest italic">
-                        Document informatique certifié - Team Assistant v2.0
+                        Team Assistant v2.0 - Sécurisé par Firebase
                     </div>
                 </footer>
             </Card>

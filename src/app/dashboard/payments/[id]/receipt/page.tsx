@@ -76,7 +76,8 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
             useCORS: true,
             backgroundColor: "#ffffff",
             logging: false,
-            allowTaint: true
+            allowTaint: true,
+            imageTimeout: 15000,
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
@@ -90,7 +91,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Impossible de générer le PDF. Vérifiez la connexion Internet."
+                description: "Impossible de générer le PDF. Vérifiez votre connexion."
             });
         }).finally(() => setLoadingPdf(false));
     }
@@ -103,7 +104,6 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
   const remaining = payment.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
-  // Professional Receipt ID: RC-J-YYYYMM-SHORTID
   const dateObj = payment.createdAt?.seconds ? new Date(payment.createdAt.seconds * 1000) : new Date();
   const professionalId = `RC-J-${format(dateObj, "yyyyMM")}-${payment.id.substring(0, 4).toUpperCase()}`;
 
@@ -121,10 +121,10 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
           </div>
         </div>
 
-        <Card id="printable-receipt" className="bg-white text-slate-900 shadow-2xl border-none overflow-hidden">
-          <header className="p-10 bg-slate-50 border-b-2 border-slate-200 flex flex-row justify-between items-center">
+        <Card id="printable-receipt" className="bg-white text-slate-900 shadow-2xl border-none overflow-hidden" style={{ minHeight: '842pt' }}>
+          <header className="p-10 bg-slate-50 border-b-2 border-slate-200 flex flex-row justify-between items-center" style={{ backgroundColor: '#f8fafc' }}>
             <div className="flex items-center gap-6">
-              <div className="h-24 w-24 border-2 border-white shadow-md rounded-lg overflow-hidden bg-white flex items-center justify-center">
+              <div className="h-24 w-24 border-2 border-white shadow-md rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                 {clubInfo?.logoUrl ? (
                     <img 
                         src={clubInfo.logoUrl} 
@@ -133,13 +133,13 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                         crossOrigin="anonymous"
                     />
                 ) : (
-                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-4xl font-black">
+                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-4xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>
                         {clubInitial}
                     </div>
                 )}
               </div>
               <div className="space-y-1">
-                <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
+                <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "Votre Club"}</h1>
                 <div className="text-slate-500 text-sm font-medium">
                     <p>{clubInfo?.address || "Adresse non renseignée"}</p>
                     {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
@@ -149,7 +149,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
             <div className="text-right space-y-1">
               <h2 className="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">REÇU</h2>
               <div className="pt-2">
-                <p className="text-slate-600 font-bold text-sm">N° {professionalId}</p>
+                <p className="text-slate-600 font-bold text-sm">REF: {professionalId}</p>
                 <p className="text-slate-400 text-xs font-semibold">Date : {format(new Date(), "dd/MM/yyyy")}</p>
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">Détails de la Cotisation</h3>
                 <div>
                     <p className="text-lg font-bold text-slate-800">{payment.description}</p>
-                    <p className="text-slate-500 text-sm">Saison 2024-2025</p>
+                    <p className="text-slate-500 text-sm">Saison Sportive</p>
                 </div>
               </div>
             </div>
@@ -210,32 +210,32 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                 <div className={cn(
                     "flex justify-between items-center font-bold text-base",
                     remaining > 0 ? "text-red-500" : "text-slate-600"
-                )}>
+                )} style={{ color: remaining > 0 ? '#ef4444' : '#475569' }}>
                     <span>RESTE À PAYER :</span>
                     <span>{remaining.toFixed(2)} MAD</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-center pt-16">
-                <div className="text-center space-y-24 w-full max-w-md">
+            <div className="flex justify-center pt-24">
+                <div className="text-center space-y-24 w-full max-w-md border-t-2 border-slate-100 pt-8">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet et Signature</p>
-                    <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
+                    <div className="pt-4 flex flex-col items-center gap-2">
                         <div className="flex items-center gap-1 text-slate-300">
                             <ShieldCheck className="h-4 w-4" />
-                            <span className="text-[8px] font-black uppercase tracking-widest italic">Document authentifié par {clubInfo?.clubName || "le club"}</span>
+                            <span className="text-[8px] font-black uppercase tracking-widest italic">Document certifié par {clubInfo?.clubName || "le club"}</span>
                         </div>
                     </div>
                 </div>
             </div>
           </div>
 
-          <footer className="p-8 bg-slate-900 text-white flex justify-between items-center">
+          <footer className="p-8 bg-slate-900 text-white flex justify-between items-center mt-auto" style={{ backgroundColor: '#0f172a' }}>
             <div className="text-[9px] opacity-40 font-bold uppercase tracking-widest">
                 <p>© {new Date().getFullYear()} Team Assistant - Système de Gestion Sportive</p>
             </div>
             <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[9px] italic">
-                Validité garantie par l'administration du club
+                Validité garantie par l'administration
             </div>
           </footer>
         </Card>
