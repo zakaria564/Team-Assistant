@@ -62,7 +62,7 @@ export default function DashboardAppLayout({
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "T";
 
   const ClubBrand = () => (
-     <Link href="/dashboard" className="flex items-center gap-3 font-semibold text-primary text-lg">
+     <Link href="/dashboard" className="flex items-center gap-3 font-semibold text-lg">
         {loadingUser || loadingClubInfo ? (
             <Skeleton className="h-16 w-16 rounded-full" />
         ) : (
@@ -75,7 +75,9 @@ export default function DashboardAppLayout({
         {loadingUser || loadingClubInfo ? (
             <Skeleton className="h-6 w-32" />
         ) : (
-            <span className="text-xl">{clubName}</span>
+            <span className="text-xl font-black uppercase tracking-tight bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm">
+                {clubName}
+            </span>
         )}
     </Link>
   )
