@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Shield, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Shield, Banknote } from "lucide-react";
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -15,7 +15,8 @@ const links = [
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
-  { href: "/dashboard/payments", label: "Paiements", icon: CreditCard, hasAlert: true },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
+  { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
@@ -39,7 +40,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      // We count unique players with pending payments
       const uniquePlayers = new Set();
       snapshot.docs.forEach(doc => {
         const data = doc.data();

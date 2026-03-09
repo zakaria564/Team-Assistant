@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,21 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-interface Salary {
-  id: string;
-  coachId: string;
-  totalAmount: number;
-  description: string;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  transactions: { amount: number; date: any; method: string; }[];
-}
-
-export default function EditSalaryPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const salaryId = unwrappedParams.id;
+export default function EditSalaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const salaryId = resolvedParams.id;
   const router = useRouter();
   
-  const [salary, setSalary] = useState<Salary | null>(null);
+  const [salary, setSalary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [coachName, setCoachName] = useState("");
 
@@ -37,21 +29,17 @@ export default function EditSalaryPage(props: { params: Promise<{ id: string }> 
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const salaryData = { id: docSnap.id, ...docSnap.data() } as Salary;
-          setSalary(salaryData);
+          const data = { id: docSnap.id, ...docSnap.data() };
+          setSalary(data);
           
-          // Fetch coach name
-          const coachRef = doc(db, "coaches", salaryData.coachId);
+          const coachRef = doc(db, "coaches", data.coachId);
           const coachSnap = await getDoc(coachRef);
-          if(coachSnap.exists()) {
-              setCoachName(coachSnap.data().name);
-          }
-
+          if(coachSnap.exists()) setCoachName(coachSnap.data().name);
         } else {
           router.push("/dashboard/salaries");
         }
       } catch (error) {
-        console.error("Error fetching salary:", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -62,33 +50,26 @@ export default function EditSalaryPage(props: { params: Promise<{ id: string }> 
 
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6">
-         <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-6 w-6" />
-          <span className="sr-only">Retour</span>
-        </Button>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier le salaire</h1>
-            <p className="text-muted-foreground">
-              Mettez à jour le salaire pour {loading ? "..." : coachName}.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">Gérer les versements</h1>
+            <p className="text-muted-foreground">Ajouter un paiement pour {loading ? "..." : coachName}.</p>
         </div>
       </div>
       <Card>
         <CardHeader>
-            <CardTitle>Détails du Salaire</CardTitle>
-            <CardDescription>Ajoutez un nouveau versement ou modifiez les informations.</CardDescription>
+            <CardTitle>Versements du Salaire</CardTitle>
+            <CardDescription>Ajoutez un nouveau versement ou modifiez le montant total.</CardDescription>
         </CardHeader>
         <CardContent>
             {loading ? (
-                <div className="flex justify-center items-center py-20">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
+                <div className="flex justify-center items-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : salary ? (
                 <AddSalaryForm salary={salary} />
             ) : (
-                <p className="p-6">Salaire non trouvé.</p>
+                <p className="p-6">Document non trouvé.</p>
             )}
         </CardContent>
       </Card>
