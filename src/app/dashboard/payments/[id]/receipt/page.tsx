@@ -19,297 +19,121 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-
-interface Payment {
-  id: string;
-  playerId: string;
-  playerName?: string;
-  totalAmount: number;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  createdAt: { seconds: number, nanoseconds: number };
-  description: string;
-  transactions: { amount: number; date: { seconds: number, nanoseconds: number }; method: string; }[];
-}
-
-interface ClubInfo {
-    name: string;
-    logoUrl: string | null;
-    address: string;
-    email: string;
-}
-
-const getBadgeClass = (status?: Payment['status']) => {
-     switch (status) {
-        case 'Payé': return 'bg-green-50 text-green-700 border-green-100';
-        case 'Partiel': return 'bg-orange-50 text-orange-700 border-orange-100';
-        case 'En attente': return 'bg-gray-100 text-gray-800 border-gray-300';
-        case 'En retard': return 'bg-red-100 text-red-800 border-red-300';
-        default: return '';
-    }
-}
-
-
 export default function PaymentReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const paymentId = unwrappedParams.id;
+  const resolvedParams = React.use(props.params);
+  const paymentId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
-  const [payment, setPayment] = useState<Payment | null>(null);
-  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null);
+  const [payment, setPayment] = useState<any>(null);
+  const [clubInfo, setClubInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   
   useEffect(() => {
-    if (!paymentId) return;
+    if (!paymentId || loadingUser) return;
 
-    const fetchPaymentAndClubInfo = async () => {
-      if (!user) {
-        if (!loadingUser) setLoading(false);
-        return;
-      }
-      setLoading(true);
+    const fetchDetails = async () => {
+      if (!user) return;
       try {
-        const paymentRef = doc(db, "payments", paymentId as string);
+        const paymentRef = doc(db, "payments", paymentId);
         const clubRef = doc(db, "clubs", user.uid);
-        
         const [paymentSnap, clubSnap] = await Promise.all([getDoc(paymentRef), getDoc(clubRef)]);
 
         if (paymentSnap.exists()) {
-          const paymentData = { id: paymentSnap.id, ...paymentSnap.data() } as Omit<Payment, 'playerName'>;
-          
-          const playerRef = doc(db, "players", paymentData.playerId);
-          const playerSnap = await getDoc(playerRef);
-
+          const data = paymentSnap.data();
+          const playerSnap = await getDoc(doc(db, "players", data.playerId));
           setPayment({
-            ...paymentData,
+            id: paymentSnap.id,
+            ...data,
             playerName: playerSnap.exists() ? playerSnap.data().name : "Joueur inconnu"
           });
         } else {
-          console.log("No such payment document!");
           router.push('/dashboard/payments');
         }
 
         if (clubSnap.exists()) {
-            const clubData = clubSnap.data();
-            setClubInfo({
-                name: clubData.clubName || "Votre Club",
-                logoUrl: clubData.logoUrl || null,
-                address: clubData.address || "Adresse non configurée",
-                email: clubData.contactEmail || "Email non configuré",
-            });
-        } else {
-             setClubInfo({
-                name: "Votre Club",
-                logoUrl: null,
-                address: "Adresse non configurée",
-                email: "Email non configuré",
-            });
+            setClubInfo(clubSnap.data());
         }
-
-      } catch (error) {
-        console.error("Error fetching details:", error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (error) { console.error(error); }
+      finally { setLoading(false); }
     };
 
-    fetchPaymentAndClubInfo();
+    fetchDetails();
   }, [paymentId, user, loadingUser, router]);
 
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-receipt");
     if (cardElement) {
-        const originalWidth = cardElement.style.width;
-        cardElement.style.width = '800px';
-
-        html2canvas(cardElement, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-        }).then((canvas) => {
+        html2canvas(cardElement, { scale: 2, useCORS: true }).then((canvas) => {
+            const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'pt',
-                format: 'a4'
-            });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`recu_paiement_${payment?.id.substring(0, 7)}.pdf`);
-        }).finally(() => {
-            if (cardElement) {
-               cardElement.style.width = originalWidth;
-            }
-            setLoadingPdf(false);
-        });
-    } else {
-        console.error("Element to print not found.");
-        setLoadingPdf(false);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+            pdf.save(`recu_${payment?.id.substring(0, 7)}.pdf`);
+        }).finally(() => setLoadingPdf(false));
     }
   };
 
-
-  if (loading || loadingUser) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-muted/40">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!payment) {
-    return (
-      <div className="text-center p-8">
-        <p>Reçu non trouvé.</p>
-        <Button onClick={() => router.push("/dashboard/payments")} className="mt-4">Retour à la liste</Button>
-      </div>
-    );
-  }
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-primary" /></div>;
+  if (!payment) return null;
   
-  const amountPaid = payment.transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
-  const amountRemaining = payment.totalAmount - amountPaid;
-  const clubInitial = clubInfo?.name?.charAt(0)?.toUpperCase() || "C";
-
+  const amountPaid = payment.transactions?.reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
+  const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
     <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center">
       <div className="w-full max-w-4xl space-y-4">
         <div className="flex justify-between items-center print:hidden">
-          <Button variant="outline" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-          </Button>
+          <Button variant="outline" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
-            {loadingPdf ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Télécharger
-              </>
-            )}
+            {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+            Télécharger
           </Button>
         </div>
 
-        <Card id="printable-receipt" className="w-full max-w-4xl mx-auto print:shadow-none print:border-none bg-white text-gray-800 overflow-x-hidden">
-          <header className="p-4 sm:p-6 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Avatar className="h-12 w-12">
-                      <AvatarImage src={clubInfo?.logoUrl || ''} alt={clubInfo?.name} />
-                      <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
-                  </Avatar>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{clubInfo?.name}</h1>
+        <Card id="printable-receipt" className="bg-white">
+          <header className="p-6 border-b">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12"><AvatarImage src={clubInfo?.logoUrl} /><AvatarFallback>{clubInitial}</AvatarFallback></Avatar>
+                <div>
+                  <h1 className="text-2xl font-bold">{clubInfo?.clubName || "Votre Club"}</h1>
+                  <p className="text-sm text-muted-foreground">{clubInfo?.address}</p>
                 </div>
-                <p className="text-sm text-muted-foreground break-words">{clubInfo?.address}</p>
-                <p className="text-sm text-muted-foreground break-words">{clubInfo?.email}</p>
               </div>
-              <div className="text-left sm:text-right mt-4 sm:mt-0 shrink-0">
-                <h2 className="text-xl sm:text-2xl font-bold text-primary">REÇU DE PAIEMENT</h2>
-                <p className="text-sm text-muted-foreground">Reçu #{payment.id.substring(0, 7).toUpperCase()}</p>
+              <div className="text-right">
+                <h2 className="text-xl font-bold text-primary">REÇU DE PAIEMENT</h2>
                 <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
               </div>
             </div>
           </header>
-          <div className="p-4 sm:p-6">
-            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3>
-                <p className="font-bold text-base sm:text-lg text-gray-900">{payment.playerName}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-gray-600">Description du paiement :</h3>
-                <p className="text-sm sm:text-base text-gray-800">{payment.description}</p>
-              </div>
+          <div className="p-6 space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg grid sm:grid-cols-2 gap-4">
+              <div><h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3><p className="font-bold">{payment.playerName}</p></div>
+              <div><h3 className="text-sm font-semibold text-gray-600">Description :</h3><p>{payment.description}</p></div>
             </div>
-
-            <div className="w-full mb-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-gray-600">Date</TableHead>
-                    <TableHead className="text-gray-600">Méthode</TableHead>
-                    <TableHead className="text-right text-gray-600">Montant</TableHead>
+            <Table>
+              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {payment.transactions?.map((t: any, i: number) => (
+                  <TableRow key={i}>
+                    <TableCell>{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yy", { locale: fr }) : 'N/A'}</TableCell>
+                    <TableCell>{t.method}</TableCell>
+                    <TableCell className="text-right font-medium">{t.amount.toFixed(2)} MAD</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payment.transactions?.length > 0 ? (
-                    payment.transactions.map((transaction, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="text-xs sm:text-sm">{format(new Date(transaction.date.seconds * 1000), "dd/MM/yy", { locale: fr })}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">{transaction.method}</TableCell>
-                        <TableCell className="text-right font-medium text-xs sm:text-sm">{transaction.amount.toFixed(2)} MAD</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
-                        Aucun versement enregistré.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="flex flex-col items-end mt-6">
-              <div className="w-full sm:max-w-xs space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Montant total dû :</span>
-                  <span className="font-medium">{payment.totalAmount.toFixed(2)} MAD</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total payé :</span>
-                  <span className="font-medium">{amountPaid.toFixed(2)} MAD</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-bold text-base text-primary">
-                  <span>Montant restant :</span>
-                  <span>{amountRemaining.toFixed(2)} MAD</span>
-                </div>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-full max-w-xs space-y-1">
+                <div className="flex justify-between"><span>Total Dû :</span><span>{payment.totalAmount.toFixed(2)} MAD</span></div>
+                <div className="flex justify-between font-bold text-primary"><span>Montant restant :</span><span>{(payment.totalAmount - amountPaid).toFixed(2)} MAD</span></div>
               </div>
             </div>
           </div>
-          <CardFooter className="p-4 sm:p-6 flex-col items-start gap-4 bg-gray-50/50 mt-6">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm sm:text-base">Statut du paiement:</span>
-              <Badge className={cn("text-sm sm:text-base", getBadgeClass(payment.status))}>
-                {payment.status}
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Merci pour votre paiement. Ce reçu est une confirmation des versements enregistrés à ce jour.
-            </p>
-          </CardFooter>
         </Card>
       </div>
-      <style jsx global>{`
-            @media print {
-                body {
-                    background-color: #fff !important;
-                }
-                .print\\:hidden {
-                    display: none;
-                }
-                .print\\:shadow-none {
-                    box-shadow: none;
-                }
-                .print\\:border-none {
-                    border: none;
-                }
-                 .print\\:bg-transparent {
-                    background-color: transparent;
-                }
-            }
-        `}</style>
     </div>
   );
 }

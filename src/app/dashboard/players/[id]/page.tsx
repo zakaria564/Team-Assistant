@@ -66,12 +66,12 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>Informations Sportives</CardTitle></CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-6">
-            <div className="flex items-center gap-3"><Shield className="text-muted-foreground" /> <span>Catégorie: {player.category}</span></div>
-            <div className="flex items-center gap-3"><Star className="text-muted-foreground" /> <span>Poste: {player.position}</span></div>
-            <div className="flex items-center gap-3"><Shirt className="text-muted-foreground" /> <span>N° Maillot: {player.number}</span></div>
-            <div className="flex items-center gap-3"><ClipboardList className="text-muted-foreground" /> <span>Coach: {player.coachName || 'Aucun'}</span></div>
-            <div className="flex items-center gap-3"><Phone className="text-muted-foreground" /> <span>Tél: {player.phone || 'N/A'}</span></div>
-            <div className="flex items-center gap-3"><Mail className="text-muted-foreground" /> <span>Email: {player.email || 'N/A'}</span></div>
+            <div className="flex items-center gap-3"><Shield className="text-muted-foreground h-5 w-5" /> <span>Catégorie: {player.category}</span></div>
+            <div className="flex items-center gap-3"><Star className="text-muted-foreground h-5 w-5" /> <span>Poste: {player.position}</span></div>
+            <div className="flex items-center gap-3"><Shirt className="text-muted-foreground h-5 w-5" /> <span>N° Maillot: {player.number}</span></div>
+            <div className="flex items-center gap-3"><ClipboardList className="text-muted-foreground h-5 w-5" /> <span>Coach: {player.coachName || 'Aucun'}</span></div>
+            <div className="flex items-center gap-3"><Phone className="text-muted-foreground h-5 w-5" /> <span>Tél: {player.phone || 'N/A'}</span></div>
+            <div className="flex items-center gap-3"><Mail className="text-muted-foreground h-5 w-5" /> <span>Email: {player.email || 'N/A'}</span></div>
           </CardContent>
         </Card>
       </div>

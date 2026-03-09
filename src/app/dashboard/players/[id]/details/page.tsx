@@ -15,33 +15,6 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 
-type PlayerStatus = "Actif" | "Inactif" | "Blessé" | "Suspendu";
-
-interface Player {
-  id: string;
-  name: string;
-  gender: "Masculin" | "Féminin";
-  category: string;
-  number: number;
-  status: PlayerStatus;
-  photoUrl?: string;
-  position?: string;
-  birthDate?: string;
-  address?: string;
-  nationality?: string;
-  cin?: string;
-  phone?: string;
-  email?: string;
-  tutorName?: string;
-  tutorCin?: string;
-  tutorPhone?: string;
-  tutorEmail?: string;
-  coachId?: string;
-  coachName?: string;
-  entryDate?: string;
-  exitDate?: string;
-}
-
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 break-inside-avoid">
     <Icon className="h-5 w-5 text-muted-foreground mt-1" />
@@ -71,12 +44,12 @@ const toTitleCase = (str: string) => {
 
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const playerId = unwrappedParams.id;
+  const resolvedParams = React.use(props.params);
+  const playerId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
-  const [player, setPlayer] = useState<Player | null>(null);
+  const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
@@ -94,13 +67,11 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
       setLoading(true);
       try {
-        // Fetch Player
-        const playerRef = doc(db, "players", playerId as string);
+        const playerRef = doc(db, "players", playerId);
         const playerSnap = await getDoc(playerRef);
 
         if (playerSnap.exists()) {
-          const playerData = { id: playerSnap.id, ...playerSnap.data() } as Player;
-          
+          const playerData = { id: playerSnap.id, ...playerSnap.data() };
           if(playerData.coachId) {
             const coachRef = doc(db, "coaches", playerData.coachId);
             const coachSnap = await getDoc(coachRef);
@@ -110,11 +81,9 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
           }
           setPlayer(playerData);
         } else {
-          console.log("No such document!");
           router.push("/dashboard/players");
         }
         
-        // Fetch Club Name
         const clubDocRef = doc(db, "clubs", user.uid);
         const clubDoc = await getDoc(clubDocRef);
         if (clubDoc.exists() && clubDoc.data().clubName) {
@@ -154,10 +123,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const canvasAspectRatio = canvasWidth / canvasHeight;
-            const pdfAspectRatio = pdfWidth / pdfHeight;
+            const canvasAspectRatio = canvas.width / canvas.height;
 
             let imgWidth = pdfWidth;
             let imgHeight = pdfWidth / canvasAspectRatio;
@@ -168,9 +134,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             }
 
             const x = (pdfWidth - imgWidth) / 2;
-            const y = 0; // Start from top
-
-            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', x, 0, imgWidth, imgHeight);
             pdf.save(`fiche_details_${player?.name?.replace(/ /g, "_")}.pdf`);
         }).finally(() => {
             if (cardElement) {
@@ -178,9 +142,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             }
             setLoadingPdf(false);
         });
-    } else {
-        console.error("Element to print not found.");
-        setLoadingPdf(false);
     }
   };
 
@@ -193,14 +154,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     );
   }
 
-  if (!player) {
-    return (
-      <div className="text-center p-8">
-        <p>Joueur non trouvé.</p>
-        <Button onClick={() => router.back()} className="mt-4">Retour</Button>
-      </div>
-    );
-  }
+  if (!player) return null;
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
@@ -217,7 +171,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
+                Chargement...
               </>
             ) : (
               <>
@@ -238,7 +192,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </Avatar>
                     <div>
                         <h1 className="text-2xl font-bold text-primary">{toTitleCase(clubName)}</h1>
-                        <p className="text-muted-foreground">Fiche d'information du joueur</p>
+                        <p className="text-muted-foreground text-sm">Fiche d'information du joueur</p>
                     </div>
                 </div>
                 <div className="text-left sm:text-right mt-4 sm:mt-0">
@@ -273,7 +227,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <DetailItem icon={Mail} label="Email" value={player.email}/>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Sportives" />
                     <DetailItem icon={Shield} label="Catégorie" value={player.category} />
                     <DetailItem icon={Star} label="Poste Principal" value={player.position} />
@@ -282,38 +236,9 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <DetailItem icon={LogIn} label="Date d'entrée au club" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={LogOut} label="Date de sortie du club" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </div>
-                
-                {(player.tutorName || player.tutorCin || player.tutorPhone || player.tutorEmail) && (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
-                    <SectionTitle title="Informations du Tuteur" />
-                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName ? toTitleCase(player.tutorName) : undefined} />
-                    <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
-                    <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
-                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
-                  </div>
-                )}
             </main>
         </div>
       </div>
-
-       <style jsx global>{`
-            @media print {
-                body {
-                    background-color: #fff !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .print\\:hidden {
-                    display: none;
-                }
-                 .break-before-page {
-                    page-break-before: always;
-                }
-            }
-            .break-inside-avoid {
-                break-inside: avoid;
-            }
-        `}</style>
     </div>
   );
 }

@@ -71,8 +71,9 @@ export function UserNav() {
   const handleSync = () => {
     toast({
       title: "Synchronisation...",
-      description: "Rafraîchissement de l'application en cours.",
+      description: "Mise à jour de l'application en cours.",
     });
+    // Forcer le rechargement complet du cache
     setTimeout(() => {
       window.location.reload();
     }, 1000);
@@ -96,17 +97,17 @@ export function UserNav() {
         variant="outline" 
         size="sm" 
         onClick={handleSync}
-        className="hidden sm:flex items-center gap-2"
+        className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
       >
         <RefreshCw className="h-4 w-4" />
-        Synchroniser
+        <span className="hidden sm:inline">Synchroniser</span>
       </Button>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-12 w-12 rounded-full">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile'} />
               <AvatarFallback>{userInitial}</AvatarFallback>
             </Avatar>
           </Button>
@@ -134,7 +135,7 @@ export function UserNav() {
             </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Se déconnecter</span>
             </DropdownMenuItem>

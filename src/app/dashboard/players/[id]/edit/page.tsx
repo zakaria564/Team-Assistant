@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,40 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-interface Player {
-  id: string;
-  name: string;
-  gender: "Masculin" | "Féminin";
-  category: string;
-  number: number;
-  photoUrl?: string;
-  position?: string;
-  birthDate?: string;
-  address?: string;
-  nationality?: string;
-  cin?: string;
-  phone?: string;
-  email?: string;
-  tutorName?: string;
-  tutorCin?: string;
-  tutorPhone?: string;
-  tutorEmail?: string;
-  entryDate?: string;
-  exitDate?: string;
-  documents?: { name: string; url: string; validityDate?: string }[];
-}
-
 const toTitleCase = (str: string) => {
   if (!str) return '';
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
 export default function EditPlayerPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const resolvedParams = React.use(props.params);
+  const playerId = resolvedParams.id;
   const router = useRouter();
   
-  const [player, setPlayer] = useState<Player | null>(null);
+  const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
    useEffect(() => {
@@ -55,7 +33,7 @@ export default function EditPlayerPage(props: { params: Promise<{ id: string }> 
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setPlayer({ id: docSnap.id, ...docSnap.data() } as Player);
+          setPlayer({ id: docSnap.id, ...docSnap.data() });
         } else {
           router.push("/dashboard/players");
         }

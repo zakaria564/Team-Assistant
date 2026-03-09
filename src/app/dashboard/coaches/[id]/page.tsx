@@ -57,10 +57,10 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>Informations Professionnelles</CardTitle></CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-6">
-            <div className="flex items-center gap-3"><Star className="text-muted-foreground" /> <span>Spécialité: {coach.specialty}</span></div>
-            <div className="flex items-center gap-3"><Shield className="text-muted-foreground" /> <span>Catégorie: {coach.category}</span></div>
-            <div className="flex items-center gap-3"><Phone className="text-muted-foreground" /> <span>Tél: {coach.phone || 'N/A'}</span></div>
-            <div className="flex items-center gap-3"><Mail className="text-muted-foreground" /> <span>Email: {coach.email}</span></div>
+            <div className="flex items-center gap-3"><Star className="text-muted-foreground h-5 w-5" /> <span>Spécialité: {coach.specialty}</span></div>
+            <div className="flex items-center gap-3"><Shield className="text-muted-foreground h-5 w-5" /> <span>Catégorie: {coach.category}</span></div>
+            <div className="flex items-center gap-3"><Phone className="text-muted-foreground h-5 w-5" /> <span>Tél: {coach.phone || 'N/A'}</span></div>
+            <div className="flex items-center gap-3"><Mail className="text-muted-foreground h-5 w-5" /> <span>Email: {coach.email}</span></div>
           </CardContent>
         </Card>
       </div>
