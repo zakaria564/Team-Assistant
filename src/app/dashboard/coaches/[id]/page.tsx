@@ -27,8 +27,11 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
         const snap = await getDoc(doc(db, "coaches", coachId));
         if (snap.exists()) setCoach({ id: snap.id, ...snap.data() });
         else router.push('/dashboard/coaches');
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchCoach();
   }, [coachId, router, loadingUser]);

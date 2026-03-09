@@ -51,8 +51,11 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
         if (clubSnap.exists()) {
             setClubInfo(clubSnap.data());
         }
-      } catch (error) { console.error(error); }
-      finally { setLoading(false); }
+      } catch (error) { 
+        console.error(error); 
+      } finally { 
+        setLoading(false); 
+      }
     };
 
     fetchDetails();

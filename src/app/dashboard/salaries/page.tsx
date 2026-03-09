@@ -8,5 +8,9 @@ export default function SalariesPage() {
   useEffect(() => {
     router.push("/dashboard");
   }, [router]);
-  return null;
+  return (
+    <div className="flex justify-center items-center h-full">
+      <p>Redirection en cours...</p>
+    </div>
+  );
 }

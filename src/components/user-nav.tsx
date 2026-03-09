@@ -71,11 +71,14 @@ export function UserNav() {
   const handleSync = () => {
     toast({
       title: "Synchronisation...",
-      description: "Mise à jour de l'application en cours.",
+      description: "Mise à jour de l'application en cours. Veuillez patienter.",
     });
-    // Forcer le rechargement complet et ignorer le cache
+    
+    // On ajoute un timestamp pour forcer le navigateur à ignorer le cache
     setTimeout(() => {
-      window.location.href = window.location.origin + '/dashboard?t=' + Date.now();
+      const currentUrl = new URL(window.location.origin + '/dashboard');
+      currentUrl.searchParams.set('t', Date.now().toString());
+      window.location.href = currentUrl.toString();
     }, 1000);
   };
 
@@ -97,7 +100,7 @@ export function UserNav() {
         variant="outline" 
         size="sm" 
         onClick={handleSync}
-        className="flex items-center gap-2 bg-blue-600 text-white border-blue-700 hover:bg-blue-700 animate-pulse"
+        className="flex items-center gap-2 bg-blue-600 text-white border-blue-700 hover:bg-blue-700 transition-all shadow-md"
       >
         <RefreshCw className="h-4 w-4" />
         <span className="hidden sm:inline font-bold">SYNCHRONISER</span>

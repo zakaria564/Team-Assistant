@@ -33,8 +33,11 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
           const pSnap = await getDoc(doc(db, "players", data.playerId));
           setPayment({ id: snap.id, ...data, playerName: pSnap.exists() ? pSnap.data().name : "Joueur inconnu" });
         } else router.push('/dashboard/payments');
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchPayment();
   }, [paymentId, router, loadingUser]);

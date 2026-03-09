@@ -25,8 +25,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         const snap = await getDoc(doc(db, "events", eventId));
         if (snap.exists()) setEvent({ id: snap.id, ...snap.data(), date: snap.data().date.toDate() });
         else router.push('/dashboard/events');
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchEvent();
   }, [eventId, router]);

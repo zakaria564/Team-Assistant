@@ -36,8 +36,11 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
         } else {
           router.push('/dashboard/players');
         }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchPlayer();
   }, [playerId, router, loadingUser]);
