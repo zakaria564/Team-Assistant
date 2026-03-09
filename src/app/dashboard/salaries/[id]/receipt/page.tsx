@@ -7,21 +7,18 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download, Printer } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Loader2, ArrowLeft, Download, Printer, Banknote, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 
 export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
-  const salaryId = resolvedParams.id;
+  const { id: salaryId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -58,9 +55,11 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
-        html2canvas(element, { scale: 2, useCORS: true }).then((canvas) => {
+        html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 595, (canvas.height * 595) / canvas.width);
+            const imgWidth = 595.28;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
         }).finally(() => setLoadingPdf(false));
     }
@@ -70,6 +69,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
   if (!salary) return null;
   
   const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
+  const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
@@ -85,63 +85,110 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                 </div>
             </div>
             
-            <Card id="printable-receipt" className="bg-white text-gray-900 border-none shadow-xl overflow-hidden">
-                 <header className="p-8 bg-primary text-white flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-black uppercase">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                        <p className="text-primary-foreground/80">{clubInfo?.address}</p>
+            <Card id="printable-receipt" className="bg-white text-slate-900 border-none shadow-2xl overflow-hidden">
+                 <header className="p-10 bg-slate-900 text-white flex justify-between items-start">
+                    <div className="flex items-center gap-6">
+                        <Avatar className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg">
+                            <AvatarImage src={clubInfo?.logoUrl} />
+                            <AvatarFallback className="bg-primary text-white text-3xl font-black rounded-lg">{clubInitial}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h1 className="text-3xl font-black uppercase tracking-tighter text-primary">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <p className="text-slate-400 font-medium">{clubInfo?.address || "Adresse du club"}</p>
+                        </div>
                     </div>
                     <div className="text-right">
-                        <h2 className="text-2xl font-bold">FICHE DE PAIE</h2>
-                        <p className="text-primary-foreground/80">Date : {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
+                        <div className="bg-primary text-white px-3 py-1 rounded-sm text-[10px] font-black tracking-widest inline-block mb-3">CONFIDENTIEL</div>
+                        <h2 className="text-4xl font-black uppercase italic tracking-tight">FICHE DE PAIE</h2>
+                        <p className="text-slate-400 font-bold mt-1">REF: {salary.id.substring(0, 8).toUpperCase()}</p>
+                        <p className="text-slate-500 text-xs mt-1">Généré le {format(new Date(), "dd/MM/yyyy")}</p>
                     </div>
                 </header>
-                <div className="p-8 space-y-8">
-                    <div className="grid sm:grid-cols-2 gap-8">
-                        <div>
-                            <h3 className="text-sm font-bold text-muted-foreground uppercase mb-2">Entraîneur</h3>
-                            <p className="text-xl font-bold">{salary.coachName}</p>
+
+                <div className="p-10 space-y-10">
+                    <div className="grid sm:grid-cols-2 gap-12">
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Bénéficiaire</h3>
+                            <p className="text-2xl font-black text-slate-800">{salary.coachName}</p>
+                            <p className="text-slate-500 font-bold mt-1 uppercase text-sm">Entraîneur du club</p>
                         </div>
-                        <div className="text-right sm:text-left">
-                            <h3 className="text-sm font-bold text-muted-foreground uppercase mb-2">Période / Description</h3>
-                            <p className="text-lg font-medium">{salary.description}</p>
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-right sm:text-left">
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Période / Motif</h3>
+                            <p className="text-xl font-bold text-slate-800">{salary.description}</p>
+                            <p className="text-slate-500 font-semibold mt-1">Saison 2024-2025</p>
                         </div>
                     </div>
                     
-                    <Table className="border rounded-md">
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead>Date Versement</TableHead>
-                                <TableHead>Mode de Paiement</TableHead>
-                                <TableHead className="text-right">Montant</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {salary.transactions?.map((t: any, i: number) => (
-                                <TableRow key={i}>
-                                    <TableCell>{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
-                                    <TableCell>{t.method}</TableCell>
-                                    <TableCell className="text-right font-bold">{t.amount.toFixed(2)} MAD</TableCell>
+                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                        <Table>
+                            <TableHeader className="bg-slate-50">
+                                <TableRow>
+                                    <TableHead className="px-6 font-bold text-slate-700">Description du paiement</TableHead>
+                                    <TableHead className="font-bold text-slate-700">Date Versement</TableHead>
+                                    <TableHead className="font-bold text-slate-700">Méthode</TableHead>
+                                    <TableHead className="text-right px-6 font-bold text-slate-700">Montant</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {salary.transactions?.map((t: any, i: number) => (
+                                    <TableRow key={i} className="border-b last:border-0">
+                                        <TableCell className="px-6 py-4 font-bold text-slate-800">Versement #{i+1}</TableCell>
+                                        <TableCell className="text-slate-600">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                                        <TableCell className="text-slate-600 font-medium">{t.method}</TableCell>
+                                        <TableCell className="text-right px-6 font-black text-slate-900">{t.amount.toFixed(2)} MAD</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
 
                     <div className="flex justify-end">
-                        <div className="w-full max-w-xs space-y-2">
-                            <div className="flex justify-between text-muted-foreground"><span>Salaire Total :</span><span>{salary.totalAmount.toFixed(2)} MAD</span></div>
-                            <div className="flex justify-between text-green-600 font-bold"><span>Total Versé :</span><span>{amountPaid.toFixed(2)} MAD</span></div>
-                            <Separator />
-                            <div className="flex justify-between text-xl font-black text-primary"><span>Reste :</span><span>{(salary.totalAmount - amountPaid).toFixed(2)} MAD</span></div>
+                        <div className="w-full max-w-xs space-y-3">
+                            <div className="flex justify-between text-slate-500 font-bold">
+                                <span>Salaire Brut Total :</span>
+                                <span>{salary.totalAmount.toFixed(2)} MAD</span>
+                            </div>
+                            <div className="flex justify-between text-green-600 font-black">
+                                <span>Déjà versé :</span>
+                                <span>{amountPaid.toFixed(2)} MAD</span>
+                            </div>
+                            <Separator className="bg-slate-200" />
+                            <div className="flex justify-between items-center text-3xl font-black text-primary p-4 bg-primary/5 rounded-xl">
+                                <span className="text-sm">RESTE :</span>
+                                <span>{(salary.totalAmount - amountPaid).toFixed(2)} MAD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Zone de Cachet et Signature */}
+                    <div className="grid grid-cols-2 gap-20 pt-16">
+                        <div className="text-center space-y-24 border-r border-slate-100 pr-10">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Signature du Bénéficiaire</p>
+                            <div className="border-t border-slate-200 pt-4">
+                                <p className="text-[9px] text-slate-400 italic">Précédé de la mention "Reçu pour solde de tout compte"</p>
+                            </div>
+                        </div>
+                        <div className="text-center space-y-24">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Cachet du Club et Signature Direction</p>
+                            <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
+                                <div className="flex items-center gap-1 text-slate-300">
+                                    <ShieldCheck className="h-4 w-4" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">Document Inaltérable</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <footer className="p-8 bg-gray-50 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold">Statut :</span>
-                        <Badge className={salary.status === 'Payé' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>{salary.status}</Badge>
+
+                <footer className="p-8 bg-slate-50 border-t flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full font-black text-xs">
+                            STATUT: {salary.status.toUpperCase()}
+                        </div>
                     </div>
-                    <div className="text-xs text-muted-foreground italic">Document généré électroniquement par Team Assistant.</div>
+                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">
+                        Document informatique certifié - Team Assistant v2.0
+                    </div>
                 </footer>
             </Card>
         </div>

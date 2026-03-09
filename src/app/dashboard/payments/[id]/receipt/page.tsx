@@ -7,14 +7,15 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Loader2, ArrowLeft, Download, Printer, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { Separator } from "@/components/ui/separator";
 
 export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: paymentId } = React.use(params);
@@ -39,10 +40,13 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
         if (paymentSnap.exists()) {
           const data = paymentSnap.data();
           const playerSnap = await getDoc(doc(db, "players", data.playerId));
+          const playerData = playerSnap.exists() ? playerSnap.data() : null;
+          
           setPayment({
             id: paymentSnap.id,
             ...data,
-            playerName: playerSnap.exists() ? playerSnap.data().name : "Joueur inconnu"
+            playerName: playerData?.name || "Joueur inconnu",
+            playerCategory: playerData?.category || "N/A"
           });
         } else {
           router.push('/dashboard/payments');
@@ -63,13 +67,20 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
 
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
-    const cardElement = document.getElementById("printable-receipt");
-    if (cardElement) {
-        html2canvas(cardElement, { scale: 2, useCORS: true }).then((canvas) => {
+    const element = document.getElementById("printable-receipt");
+    if (element) {
+        html2canvas(element, { 
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: "#ffffff"
+        }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-            pdf.save(`recu_${payment?.id.substring(0, 7)}.pdf`);
+            const imgWidth = 595.28; // A4 width in points
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`recu_paiement_${payment?.playerName.replace(/ /g, "_")}.pdf`);
         }).finally(() => setLoadingPdf(false));
     }
   };
@@ -81,56 +92,133 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center">
+    <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
       <div className="w-full max-w-4xl space-y-4">
         <div className="flex justify-between items-center print:hidden">
           <Button variant="outline" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-          <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
-            {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            Télécharger
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Imprimer</Button>
+            <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+                {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                Télécharger PDF
+            </Button>
+          </div>
         </div>
 
-        <Card id="printable-receipt" className="bg-white">
-          <header className="p-6 border-b">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12"><AvatarImage src={clubInfo?.logoUrl} /><AvatarFallback>{clubInitial}</AvatarFallback></Avatar>
-                <div>
-                  <h1 className="text-2xl font-bold">{clubInfo?.clubName || "Votre Club"}</h1>
-                  <p className="text-sm text-muted-foreground">{clubInfo?.address}</p>
-                </div>
+        <Card id="printable-receipt" className="bg-white text-slate-900 shadow-2xl border-none overflow-hidden">
+          {/* En-tête professionnel */}
+          <header className="p-10 bg-slate-50 border-b-4 border-primary flex justify-between items-start">
+            <div className="flex items-center gap-6">
+              <Avatar className="h-24 w-24 border-2 border-white shadow-lg">
+                <AvatarImage src={clubInfo?.logoUrl} />
+                <AvatarFallback className="text-3xl bg-primary text-white">{clubInitial}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-tighter text-primary">{clubInfo?.clubName || "Votre Club"}</h1>
+                <p className="text-slate-500 font-medium max-w-xs">{clubInfo?.address || "Adresse non renseignée"}</p>
+                {clubInfo?.clubPhone && <p className="text-slate-500 text-sm">Tél: {clubInfo.clubPhone}</p>}
               </div>
-              <div className="text-right">
-                <h2 className="text-xl font-bold text-primary">REÇU DE PAIEMENT</h2>
-                <p className="text-sm text-muted-foreground">Date: {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
-              </div>
+            </div>
+            <div className="text-right">
+              <div className="inline-block bg-primary text-white px-4 py-1 rounded-sm font-bold text-sm mb-2">DOCUMENT OFFICIEL</div>
+              <h2 className="text-4xl font-black text-slate-800">REÇU</h2>
+              <p className="text-slate-500 font-bold mt-1">N° {payment.id.substring(0, 8).toUpperCase()}</p>
+              <p className="text-slate-400 text-sm">Date d'émission : {format(new Date(), "dd/MM/yyyy")}</p>
             </div>
           </header>
-          <div className="p-6 space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg grid sm:grid-cols-2 gap-4">
-              <div><h3 className="text-sm font-semibold text-gray-600">Reçu pour :</h3><p className="font-bold">{payment.playerName}</p></div>
-              <div><h3 className="text-sm font-semibold text-gray-600">Description :</h3><p>{payment.description}</p></div>
-            </div>
-            <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {payment.transactions?.map((t: any, i: number) => (
-                  <TableRow key={i}>
-                    <TableCell>{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yy", { locale: fr }) : 'N/A'}</TableCell>
-                    <TableCell>{t.method}</TableCell>
-                    <TableCell className="text-right font-medium">{t.amount.toFixed(2)} MAD</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <div className="flex flex-col items-end gap-2">
-              <div className="w-full max-w-xs space-y-1">
-                <div className="flex justify-between"><span>Total Dû :</span><span>{payment.totalAmount.toFixed(2)} MAD</span></div>
-                <div className="flex justify-between font-bold text-primary"><span>Montant restant :</span><span>{(payment.totalAmount - amountPaid).toFixed(2)} MAD</span></div>
+
+          <div className="p-10 space-y-10">
+            {/* Infos Joueur et Paiement */}
+            <div className="grid grid-cols-2 gap-12">
+              <div className="space-y-4">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-2">Informations Joueur</h3>
+                <div>
+                    <p className="text-xl font-bold text-slate-800">{payment.playerName}</p>
+                    <p className="text-slate-500 font-semibold">Catégorie : {payment.playerCategory}</p>
+                </div>
+              </div>
+              <div className="space-y-4 text-right">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-2">Détails de la Cotisation</h3>
+                <div>
+                    <p className="text-lg font-bold text-slate-800">{payment.description}</p>
+                    <p className="text-slate-500">Période : {format(new Date(), "MMMM yyyy", { locale: fr })}</p>
+                </div>
               </div>
             </div>
+
+            {/* Tableau des transactions */}
+            <div className="rounded-xl border shadow-sm overflow-hidden">
+                <Table>
+                <TableHeader className="bg-slate-50">
+                    <TableRow>
+                        <TableHead className="font-bold text-slate-700 h-12 px-6">Désignation du Versement</TableHead>
+                        <TableHead className="font-bold text-slate-700 h-12">Date</TableHead>
+                        <TableHead className="font-bold text-slate-700 h-12">Mode</TableHead>
+                        <TableHead className="text-right font-bold text-slate-700 h-12 px-6">Montant</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {payment.transactions?.map((t: any, i: number) => (
+                    <TableRow key={i} className="border-b last:border-0">
+                        <TableCell className="px-6 py-4 font-medium">Versement partiel #{i+1}</TableCell>
+                        <TableCell className="py-4 text-slate-600">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                        <TableCell className="py-4 text-slate-600">{t.method}</TableCell>
+                        <TableCell className="text-right py-4 px-6 font-bold text-slate-800">{t.amount.toFixed(2)} MAD</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
+
+            {/* Résumé et Totaux */}
+            <div className="flex justify-end pt-4">
+              <div className="w-full max-w-sm space-y-3">
+                <div className="flex justify-between text-slate-500 font-medium">
+                    <span>Montant Total Dû :</span>
+                    <span>{payment.totalAmount.toFixed(2)} MAD</span>
+                </div>
+                <div className="flex justify-between text-green-600 font-bold text-lg">
+                    <span>Total Réglé à ce jour :</span>
+                    <span>{amountPaid.toFixed(2)} MAD</span>
+                </div>
+                <Separator className="bg-slate-200" />
+                <div className="flex justify-between items-center text-2xl font-black text-primary bg-primary/5 p-4 rounded-lg">
+                    <span>RESTE À PAYER :</span>
+                    <span>{(payment.totalAmount - amountPaid).toFixed(2)} MAD</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Zone de Signature et Cachet */}
+            <div className="grid grid-cols-2 gap-20 pt-16">
+                <div className="text-center space-y-24">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Signature du Parent / Joueur</p>
+                    <div className="border-t border-slate-200 pt-4">
+                        <p className="text-[10px] text-slate-400 italic">Mention "Lu et approuvé"</p>
+                    </div>
+                </div>
+                <div className="text-center space-y-24">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet du Club et Signature Administration</p>
+                    <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
+                        <div className="flex items-center gap-1 text-primary/40">
+                            <ShieldCheck className="h-4 w-4" />
+                            <span className="text-[9px] uppercase font-bold tracking-tighter">Document certifié par {clubInfo?.clubName || "le club"}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
           </div>
+
+          <footer className="p-8 bg-slate-900 text-white flex justify-between items-center">
+            <div className="text-xs opacity-60">
+                <p>© {new Date().getFullYear()} Team Assistant - Gestion Club Sportif</p>
+                <p>Généré le {format(new Date(), "Pp", { locale: fr })}</p>
+            </div>
+            <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
+                <ShieldCheck className="h-5 w-5" />
+                Validité garantie par le club
+            </div>
+          </footer>
         </Card>
       </div>
     </div>
