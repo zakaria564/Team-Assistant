@@ -137,6 +137,31 @@ const normalizeString = (str: string | null | undefined) => {
         .replace(/[\u0300-\u036f]/g, "");
 };
 
+const defaultPlayerValues = {
+  name: "",
+  photoUrl: "",
+  gender: "Masculin" as const,
+  category: "",
+  status: "Actif" as const,
+  number: undefined,
+  birthDate: "",
+  entryDate: "",
+  exitDate: "",
+  address: "",
+  nationality: "",
+  cin: "",
+  phone: "",
+  email: "",
+  position: "",
+  tutorName: "",
+  tutorCin: "",
+  tutorPhone: "",
+  tutorEmail: "",
+  coachId: "",
+  documents: [],
+  professionalId: "",
+};
+
 export function AddPlayerForm(props: AddPlayerFormProps) {
   const { player } = props;
   const [user] = useAuthState(auth);
@@ -151,33 +176,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: player ? {
-        ...player,
-        coachId: player.coachId || "",
-    } : {
-      name: "",
-      photoUrl: "",
-      gender: undefined,
-      category: "",
-      status: undefined,
-      number: undefined,
-      birthDate: "",
-      entryDate: "",
-      exitDate: "",
-      address: "",
-      nationality: "",
-      cin: "",
-      phone: "",
-      email: "",
-      position: "",
-      tutorName: "",
-      tutorCin: "",
-      tutorPhone: "",
-      tutorEmail: "",
-      coachId: "",
-      documents: [],
-      professionalId: "",
-    }
+    defaultValues: defaultPlayerValues
   });
 
   const photoDataUrl = form.watch('photoUrl');
@@ -190,6 +189,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
   useEffect(() => {
     if (player) {
       form.reset({
+        ...defaultPlayerValues,
         ...player,
         number: player.number || undefined,
         coachId: player.coachId || "",
@@ -208,8 +208,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
         documents: (player.documents || []).map(doc => ({
-            name: doc.name,
-            url: doc.url,
+            name: doc.name || "",
+            url: doc.url || "",
             validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
         })),
         professionalId: player.professionalId || "",
@@ -361,7 +361,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         const dataToSave = {
             ...values,
             userId: user.uid,
-            coachId: values.coachId === 'none' ? '' : values.coachId,
+            coachId: values.coachId === 'none' ? '' : (values.coachId || ''),
             documents: documentsToSave,
             isDeleted: false,
             professionalId: values.professionalId || generateProfessionalId(),
@@ -479,7 +479,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 <FormItem>
                                     <FormLabel>ID Professionnel (Généré)</FormLabel>
                                     <FormControl>
-                                        <Input {...field} disabled className="bg-muted font-mono font-bold" />
+                                        <Input {...field} value={field.value || ""} disabled className="bg-muted font-mono font-bold" />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -563,7 +563,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Numéro</FormLabel>
                             <FormControl>
-                                <Input type="number" {...field} value={field.value || ''} />
+                                <Input type="number" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -634,7 +634,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
