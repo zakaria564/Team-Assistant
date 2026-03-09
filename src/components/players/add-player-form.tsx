@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -20,6 +20,7 @@ import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { format } from "date-fns";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -52,6 +53,7 @@ const formSchema = z.object({
   tutorEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
   coachId: z.string().optional(),
   documents: z.array(documentSchema).optional(),
+  professionalId: z.string().optional(),
 });
 
 interface PlayerData extends z.infer<typeof formSchema> {
@@ -119,6 +121,12 @@ const documentTypes = [
     "Autre"
 ];
 
+const generateProfessionalId = () => {
+    const yearMonth = format(new Date(), "yyyyMM");
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `PL-${yearMonth}-${random}`;
+};
+
 const normalizeString = (str: string | null | undefined) => {
     if (!str) return '';
     return str
@@ -168,6 +176,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
       tutorEmail: "",
       coachId: "",
       documents: [],
+      professionalId: "",
     }
   });
 
@@ -203,6 +212,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             url: doc.url,
             validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
         })),
+        professionalId: player.professionalId || "",
       });
     }
   }, [player, form]);
@@ -353,7 +363,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             userId: user.uid,
             coachId: values.coachId === 'none' ? '' : values.coachId,
             documents: documentsToSave,
-            isDeleted: false, // Default to not deleted
+            isDeleted: false,
+            professionalId: values.professionalId || generateProfessionalId(),
         };
 
         if (isEditMode && player) {
@@ -365,7 +376,6 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             });
             router.push("/dashboard/players");
         } else {
-             // Create main record (this is the "copy" since we keep it even if deleted logically)
              const docRef = await addDoc(collection(db, "players"), {
                 ...dataToSave,
                 createdAt: new Date(),
@@ -456,7 +466,26 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                 <Separator />
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Informations Club</h3>
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                        <Fingerprint className="h-5 w-5 text-primary" />
+                        Informations Club
+                    </h3>
+                    
+                    {isEditMode && (
+                        <FormField
+                            control={form.control}
+                            name="professionalId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>ID Professionnel (Généré)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} disabled className="bg-muted font-mono font-bold" />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}

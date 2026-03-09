@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight, AlertCircle, Fingerprint } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, updateDoc, where, deleteDoc, onSnapshot } from "firebase/firestore";
@@ -50,6 +50,7 @@ interface Player {
   photoUrl?: string;
   position?: string;
   hasPendingPayment?: boolean;
+  professionalId?: string;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -96,6 +97,7 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                 <TableRow>
                                     <TableHead>Joueur</TableHead>
                                     <TableHead className="hidden lg:table-cell">Poste</TableHead>
+                                    <TableHead className="hidden sm:table-cell">ID Professionnel</TableHead>
                                     <TableHead className="hidden sm:table-cell">Statut</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -122,11 +124,17 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                                     <span className="font-medium">{toTitleCase(player.name)}</span>
                                                     {player.hasPendingPayment && <Badge variant="destructive" className="text-[10px] h-4 px-1">Impayé</Badge>}
                                                 </div>
-                                                <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
+                                                <span className="text-muted-foreground text-xs font-mono sm:hidden">{player.professionalId || "N/A"}</span>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell className="hidden lg:table-cell">{player.position}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">
+                                        <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                                            <Fingerprint className="h-3 w-3" />
+                                            {player.professionalId || "N/A"}
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="hidden sm:table-cell">
                                         <Badge className={cn("text-xs font-semibold", getStatusBadgeClass(player.status))}>
                                             {player.status}
@@ -174,14 +182,11 @@ export default function PlayersPage() {
 
     setLoading(true);
     
-    // Create query for players
     const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
     
-    // We listen to both players and payments to check for pending status
     const unsubscribePlayers = onSnapshot(playersQuery, (playersSnapshot) => {
         const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
         
-        // Fetch all pending payments for this user to mark players
         const paymentsQuery = query(
             collection(db, "payments"), 
             where("userId", "==", user.uid)
@@ -214,7 +219,7 @@ export default function PlayersPage() {
   const filteredPlayers = useMemo(() => {
     if (!searchTerm) return players;
     const term = searchTerm.toLowerCase();
-    return players.filter(p => p.name.toLowerCase().includes(term));
+    return players.filter(p => p.name.toLowerCase().includes(term) || p.professionalId?.toLowerCase().includes(term));
   }, [players, searchTerm]);
   
   const { malePlayers, femalePlayers } = useMemo(() => {
@@ -268,7 +273,7 @@ export default function PlayersPage() {
 
       <div className="relative w-full md:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Rechercher un joueur..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <Input placeholder="Rechercher (Nom ou ID)..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
       </div>
 
       <Tabs defaultValue="male">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Download, Trophy, Shirt, Shield, Cake, Flag } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Trophy, Shirt, Shield, Cake, Flag, Fingerprint } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +27,7 @@ interface Player {
   phone?: string;
   email?: string;
   address?: string;
+  professionalId?: string;
 }
 
 export default function PlayerCardPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
@@ -151,55 +153,65 @@ export default function PlayerCardPdfPage({ params, searchParams }: { params: Pr
             <header className="bg-primary text-primary-foreground p-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                     <Trophy className="h-6 w-6" />
-                    <h1 className="font-bold text-xl">{clubName}</h1>
+                    <h1 className="font-bold text-xl uppercase tracking-tighter">{clubName}</h1>
                 </div>
             </header>
 
             <div className="p-4 flex-grow flex flex-col items-center justify-center gap-3">
-                <Avatar className="h-28 w-28 border-4 border-primary shadow-md">
-                    <AvatarImage src={player.photoUrl} alt={player.name} />
-                    <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                    <Avatar className="h-28 w-28 border-4 border-primary shadow-md">
+                        <AvatarImage src={player.photoUrl} alt={player.name} />
+                        <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-2 -right-2 bg-black text-white px-2 py-0.5 rounded font-mono text-[10px] border border-white">
+                        ID: {player.professionalId?.split('-').pop() || "????"}
+                    </div>
+                </div>
+                
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold leading-tight">{player.name}</h2>
-                    <p className="text-md font-semibold text-primary">{player.position || "Poste non spécifié"}</p>
+                    <h2 className="text-2xl font-bold leading-tight uppercase">{player.name}</h2>
+                    <p className="text-sm font-black text-primary uppercase">{player.position || "Poste non spécifié"}</p>
+                    <div className="mt-1 flex items-center justify-center gap-1 bg-muted px-2 py-0.5 rounded-full border">
+                        <Fingerprint className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[10px] font-mono font-bold tracking-widest">{player.professionalId || "N/A"}</span>
+                    </div>
                 </div>
 
                  <div className="w-full grid grid-cols-2 gap-3 text-xs mt-3">
                     <div className="flex items-center gap-2">
                         <Shirt className="h-4 w-4 text-primary/80"/>
                         <div>
-                            <p className="font-semibold">Numéro</p>
-                            <p className="text-sm text-black/80">{player.number}</p>
+                            <p className="font-semibold text-[10px] uppercase text-muted-foreground">Numéro</p>
+                            <p className="text-sm font-black text-black/80">#{player.number}</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4 text-primary/80"/>
                         <div>
-                            <p className="font-semibold">Catégorie</p>
-                            <p className="text-sm text-black/80">{player.category}</p>
+                            <p className="font-semibold text-[10px] uppercase text-muted-foreground">Catégorie</p>
+                            <p className="text-sm font-black text-black/80">{player.category}</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-2">
                         <Cake className="h-4 w-4 text-primary/80"/>
                         <div>
-                            <p className="font-semibold">Date de naissance</p>
-                            <p className="text-sm text-black/80">{player.birthDate ? format(new Date(player.birthDate), "dd/MM/yyyy", { locale: fr }) : 'N/A'}</p>
+                            <p className="font-semibold text-[10px] uppercase text-muted-foreground">Naissance</p>
+                            <p className="text-sm font-black text-black/80">{player.birthDate ? format(new Date(player.birthDate), "dd/MM/yyyy") : 'N/A'}</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-2">
                         <Flag className="h-4 w-4 text-primary/80"/>
                         <div>
-                            <p className="font-semibold">Nationalité</p>
-                            <p className="text-sm text-black/80">{player.nationality || "N/A"}</p>
+                            <p className="font-semibold text-[10px] uppercase text-muted-foreground">Nationalité</p>
+                            <p className="text-sm font-black text-black/80">{player.nationality || "N/A"}</p>
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            <footer className="bg-muted p-2 text-center text-xs text-black/60 mt-auto">
-                <p>Saison 2024-2025</p>
+            <footer className="bg-primary/5 p-2 text-center text-[10px] font-bold text-black/60 mt-auto border-t">
+                <p>DOCUMENT OFFICIEL - SAISON {new Date().getFullYear()}-{new Date().getFullYear()+1}</p>
             </footer>
         </div>
       </div>

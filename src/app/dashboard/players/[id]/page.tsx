@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -61,7 +62,13 @@ export default function PlayerDetailPage({ params, searchParams }: { params: Pro
               <AvatarImage src={player.photoUrl} />
               <AvatarFallback>P</AvatarFallback>
             </Avatar>
-            <h2 className="text-2xl font-bold">{player.name}</h2>
+            <div className="text-center">
+                <h2 className="text-2xl font-bold">{player.name}</h2>
+                <p className="text-sm font-mono text-muted-foreground mt-1 flex items-center justify-center gap-1">
+                    <Fingerprint className="h-3 w-3" />
+                    ID: {player.professionalId || "N/A"}
+                </p>
+            </div>
             <Badge className={cn("text-base", player.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100')}>{player.status}</Badge>
           </CardContent>
         </Card>

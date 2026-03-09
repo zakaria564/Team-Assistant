@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -195,6 +196,7 @@ export default function PlayerDetailsPdfPage({ params, searchParams }: { params:
                     </div>
                 </div>
                 <div className="text-left sm:text-right mt-4 sm:mt-0">
+                    <p className="text-xs font-mono font-bold text-primary">ID: {player.professionalId || "N/A"}</p>
                     <p className="text-sm">Généré le: {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
             </header>
@@ -207,6 +209,7 @@ export default function PlayerDetailsPdfPage({ params, searchParams }: { params:
                 </Avatar>
                 <div className="text-center sm:text-left">
                     <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(player.name)}</h1>
+                    <Badge variant="outline" className="mt-2 font-mono">{player.professionalId || "N/A"}</Badge>
                 </div>
             </section>
             
