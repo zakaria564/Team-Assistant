@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const coachId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [coach, setCoach] = useState<any>(null);

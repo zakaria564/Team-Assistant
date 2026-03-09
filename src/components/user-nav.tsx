@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -70,14 +69,13 @@ export function UserNav() {
 
   const handleSync = () => {
     toast({
-      title: "Synchronisation...",
-      description: "Mise à jour de l'application en cours. Veuillez patienter.",
+      title: "Synchronisation forcée...",
+      description: "Mise à jour de l'application. Veuillez patienter.",
     });
     
-    // On ajoute un timestamp pour forcer le navigateur à ignorer le cache
     setTimeout(() => {
       const currentUrl = new URL(window.location.origin + '/dashboard');
-      currentUrl.searchParams.set('t', Date.now().toString());
+      currentUrl.searchParams.set('reload', Date.now().toString());
       window.location.href = currentUrl.toString();
     }, 1000);
   };
