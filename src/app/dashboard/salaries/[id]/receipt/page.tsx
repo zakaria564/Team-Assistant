@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -121,7 +122,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             )}
                         </div>
                         <div className="space-y-1">
-                            <h1 className="text-2xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                             <div className="text-slate-400 text-sm font-medium">
                                 <p>{clubInfo?.address || "Adresse du club"}</p>
                             </div>
