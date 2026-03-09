@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -62,20 +63,20 @@ export default function DashboardAppLayout({
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "T";
 
   const ClubBrand = () => (
-     <Link href="/dashboard" className="flex items-center gap-3 font-semibold text-lg">
+     <Link href="/dashboard" className="flex flex-col items-center gap-4 w-full py-4">
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-16 w-16 rounded-full" />
+            <Skeleton className="h-24 w-24 rounded-full" />
         ) : (
-            <Avatar className="h-16 w-16">
+            <Avatar className="h-24 w-24 shadow-xl border-2 border-sidebar-border">
                 <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" />
-                <AvatarFallback className="text-2xl">{clubInitial}</AvatarFallback>
+                <AvatarFallback className="text-4xl font-bold">{clubInitial}</AvatarFallback>
             </Avatar>
         )}
 
         {loadingUser || loadingClubInfo ? (
-            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-8 w-40" />
         ) : (
-            <span className="text-xl font-black uppercase tracking-tight bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm">
+            <span className="text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-md text-center px-2 leading-none">
                 {clubName}
             </span>
         )}
@@ -86,7 +87,7 @@ export default function DashboardAppLayout({
     <div className="grid h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-24 items-center border-b border-sidebar-border px-4 lg:px-6">
+          <div className="flex flex-col items-center border-b border-sidebar-border px-4 py-8 lg:px-6">
             <ClubBrand />
           </div>
           <div className="flex-1 py-4">
@@ -109,7 +110,7 @@ export default function DashboardAppLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm bg-sidebar text-sidebar-foreground">
-                 <SheetHeader className="h-24 flex flex-row items-center border-b border-sidebar-border px-4">
+                 <SheetHeader className="flex flex-col items-center border-b border-sidebar-border px-4 py-8">
                     <ClubBrand />
                      <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
                   </SheetHeader>
