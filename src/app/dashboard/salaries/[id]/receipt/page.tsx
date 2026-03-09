@@ -58,12 +58,11 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
     const element = document.getElementById("printable-receipt");
     if (element) {
         html2canvas(element, { 
-            scale: 3, 
+            scale: 2, 
             useCORS: true, 
             backgroundColor: "#ffffff",
             logging: false,
             allowTaint: true,
-            imageTimeout: 15000,
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgWidth = 595.28;
@@ -75,7 +74,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Échec du téléchargement. Vérifiez votre logo."
+                description: "Désolé, une erreur est survenue lors de la création du PDF."
             });
         }).finally(() => setLoadingPdf(false));
     }
@@ -114,7 +113,6 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                                     src={clubInfo.logoUrl} 
                                     alt="Logo" 
                                     className="h-full w-full object-contain"
-                                    crossOrigin="anonymous"
                                 />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>

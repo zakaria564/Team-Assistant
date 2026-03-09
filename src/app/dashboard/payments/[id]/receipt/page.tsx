@@ -72,12 +72,11 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
     const element = document.getElementById("printable-receipt");
     if (element) {
         html2canvas(element, { 
-            scale: 3, 
+            scale: 2, 
             useCORS: true,
             backgroundColor: "#ffffff",
             logging: false,
             allowTaint: true,
-            imageTimeout: 15000,
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
@@ -91,7 +90,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Impossible de générer le PDF. Vérifiez votre connexion."
+                description: "Désolé, une erreur est survenue lors de la création du PDF."
             });
         }).finally(() => setLoadingPdf(false));
     }
@@ -130,7 +129,6 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                         src={clubInfo.logoUrl} 
                         alt="Logo" 
                         className="h-full w-full object-contain"
-                        crossOrigin="anonymous"
                     />
                 ) : (
                     <div className="h-full w-full bg-primary text-white flex items-center justify-center text-4xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>

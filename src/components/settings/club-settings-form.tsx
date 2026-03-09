@@ -8,12 +8,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload, CheckCircle2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
-import { db, auth, storage } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
@@ -33,8 +32,6 @@ export function ClubSettingsForm() {
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingAdmin, setUploadingAdmin] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const router = useRouter();
 
@@ -95,35 +92,38 @@ export function ClubSettingsForm() {
     }
   }, [user, loadingUser, form]);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'admin') => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'logoUrl' | 'adminPhotoUrl') => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
-    const isLogo = type === 'logo';
-    isLogo ? setUploadingLogo(true) : setUploadingAdmin(true);
-
-    try {
-        const storageRef = ref(storage, `clubs/${user.uid}/${type}_${Date.now()}`);
-        await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(storageRef);
-        
-        form.setValue(isLogo ? 'logoUrl' : 'adminPhotoUrl', downloadUrl);
-        toast({
-            title: "Image chargée",
-            description: "L'image a été stockée avec succès sur Firebase."
-        });
-    } catch (error) {
-        console.error("Upload error:", error);
+    // Validation de la taille (max 1Mo pour rester fluide dans Firestore)
+    if (file.size > 1024 * 1024) {
         toast({
             variant: "destructive",
-            title: "Erreur d'envoi",
-            description: "Impossible d'envoyer l'image vers Firebase Storage."
+            title: "Fichier trop volumineux",
+            description: "Le logo doit faire moins de 1 Mo pour une performance optimale."
         });
-    } finally {
-        isLogo ? setUploadingLogo(false) : setUploadingAdmin(false);
+        return;
     }
-  };
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const base64String = reader.result as string;
+        form.setValue(type, base64String);
+        toast({
+            title: "Image chargée",
+            description: "L'image a été préparée avec succès."
+        });
+    };
+    reader.onerror = () => {
+        toast({
+            variant: "destructive",
+            title: "Erreur de lecture",
+            description: "Impossible de lire le fichier."
+        });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
@@ -133,21 +133,31 @@ export function ClubSettingsForm() {
         await setDoc(clubDocRef, {
             ...values,
             userId: user.uid,
+            updatedAt: new Date(),
         }, { merge: true });
-        toast({ title: "Informations enregistrées", description: "Les données ont été mises à jour." });
+        
+        toast({ 
+            title: "Configuration enregistrée !", 
+            description: "Vos informations et votre logo sont maintenant à jour." 
+        });
+        
         router.refresh();
     } catch (error: any) {
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer." });
+        toast({ 
+            variant: "destructive", 
+            title: "Erreur d'enregistrement", 
+            description: "Une erreur est survenue lors de la sauvegarde." 
+        });
     } finally {
         setLoading(false);
     }
   };
 
   return (
-    <Card>
+    <Card className="shadow-md">
       <CardHeader>
-        <CardTitle>Configuration de l'Interface</CardTitle>
-        <CardDescription>Gérez le titre affiché et les informations de votre club.</CardDescription>
+        <CardTitle>Identité du Club</CardTitle>
+        <CardDescription>Gérez le logo et les informations officielles qui apparaîtront sur vos documents.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -161,8 +171,8 @@ export function ClubSettingsForm() {
             </div>
         ) : (
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="clubName"
@@ -170,7 +180,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>Nom officiel du club</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Ex: USDS Football" {...field} />
+                                    <Input placeholder="Ex: WAC Casablanca" {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -181,7 +191,7 @@ export function ClubSettingsForm() {
                             name="displayTitle"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Grand Titre (Barre du haut)</FormLabel>
+                                <FormLabel>Titre de l'application (Barre du haut)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="Ex: CLUB USDS" {...field} />
                                 </FormControl>
@@ -191,87 +201,109 @@ export function ClubSettingsForm() {
                         />
                     </div>
                     
-                    <Separator className="!my-6"/>
+                    <Separator />
 
-                    <div className="space-y-6">
-                         <h4 className="text-base font-medium">Images & Logos (Firebase)</h4>
-                         <div className="grid sm:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <FormLabel>Logo du Club</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    <div className="h-16 w-16 rounded border bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                                        {form.watch('logoUrl') ? (
-                                            <img src={form.watch('logoUrl')} className="h-full w-full object-contain" />
-                                        ) : <Upload className="opacity-20" />}
-                                    </div>
-                                    <div className="space-y-2 flex-1">
-                                        <Input 
-                                            type="file" 
-                                            accept="image/*" 
-                                            onChange={(e) => handleImageUpload(e, 'logo')} 
-                                            className="hidden" 
-                                            id="logo-upload"
-                                        />
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            disabled={uploadingLogo}
-                                            onClick={() => document.getElementById('logo-upload')?.click()}
-                                        >
-                                            {uploadingLogo ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Upload className="mr-2 h-4 w-4" />}
-                                            {form.watch('logoUrl') ? "Changer le logo" : "Uploader le logo"}
-                                        </Button>
-                                        <p className="text-[10px] text-muted-foreground italic">Recommandé : PNG fond transparent</p>
-                                    </div>
+                    <div className="grid sm:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <FormLabel className="text-base">Logo du Club (PDF & Documents)</FormLabel>
+                            <div className="flex flex-col gap-4">
+                                <div className="h-32 w-full max-w-[200px] border-2 border-dashed rounded-lg bg-muted flex items-center justify-center overflow-hidden relative group">
+                                    {form.watch('logoUrl') ? (
+                                        <>
+                                            <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-2" alt="Logo" />
+                                            <Button 
+                                                type="button" 
+                                                variant="destructive" 
+                                                size="icon" 
+                                                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => form.setValue('logoUrl', '')}
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <div className="text-center p-4">
+                                            <Upload className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                                            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold">Aucun logo</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFileChange(e, 'logoUrl')} 
+                                        className="hidden" 
+                                        id="logo-input"
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        className="w-full sm:w-auto"
+                                        onClick={() => document.getElementById('logo-input')?.click()}
+                                    >
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
+                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 1Mo).</p>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="space-y-3">
-                                <FormLabel>Photo Profil Admin</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    <div className="h-16 w-16 rounded-full border bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                                        {form.watch('adminPhotoUrl') ? (
-                                            <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" />
-                                        ) : <Upload className="opacity-20" />}
-                                    </div>
-                                    <div className="space-y-2 flex-1">
-                                        <Input 
-                                            type="file" 
-                                            accept="image/*" 
-                                            onChange={(e) => handleImageUpload(e, 'admin')} 
-                                            className="hidden" 
-                                            id="admin-upload"
-                                        />
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            disabled={uploadingAdmin}
-                                            onClick={() => document.getElementById('admin-upload')?.click()}
-                                        >
-                                            {uploadingAdmin ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Upload className="mr-2 h-4 w-4" />}
-                                            Changer la photo
-                                        </Button>
-                                    </div>
+                        <div className="space-y-4">
+                            <FormLabel className="text-base">Photo Profil Admin</FormLabel>
+                            <div className="flex flex-col gap-4">
+                                <div className="h-32 w-32 rounded-full border-2 border-dashed bg-muted flex items-center justify-center overflow-hidden relative group">
+                                    {form.watch('adminPhotoUrl') ? (
+                                        <>
+                                            <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" />
+                                            <Button 
+                                                type="button" 
+                                                variant="destructive" 
+                                                size="icon" 
+                                                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => form.setValue('adminPhotoUrl', '')}
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Upload className="h-8 w-8 text-muted-foreground opacity-50" />
+                                    )}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFileChange(e, 'adminPhotoUrl')} 
+                                        className="hidden" 
+                                        id="admin-input"
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        className="w-full sm:w-auto"
+                                        onClick={() => document.getElementById('admin-input')?.click()}
+                                    >
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Modifier la photo
+                                    </Button>
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     </div>
                     
-                     <Separator className="!my-6"/>
+                    <Separator />
 
                     <div className="space-y-4">
-                        <h4 className="text-base font-medium">Coordonnées</h4>
+                        <h4 className="text-lg font-semibold">Coordonnées de Contact</h4>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
                                 name="contactEmail"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Email de contact</FormLabel>
+                                    <FormLabel>Email officiel</FormLabel>
                                     <FormControl>
                                         <Input type="email" {...field} value={field.value ?? ""}/>
                                     </FormControl>
@@ -298,9 +330,9 @@ export function ClubSettingsForm() {
                             name="address"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Adresse</FormLabel>
+                                <FormLabel>Adresse complète</FormLabel>
                                 <FormControl>
-                                    <Textarea {...field} value={field.value ?? ""} />
+                                    <Textarea {...field} value={field.value ?? ""} placeholder="Rue, Ville, Code Postal..." />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -308,9 +340,9 @@ export function ClubSettingsForm() {
                         />
                     </div>
 
-                    <Button type="submit" disabled={loading} className="!mt-10 w-full">
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                        Enregistrer toutes les modifications
+                    <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold">
+                        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
+                        Enregistrer les modifications
                     </Button>
                 </form>
             </Form>
