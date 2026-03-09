@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Wallet, Shield } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Shield } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -12,7 +12,6 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
-  { href: "/dashboard/salaries", label: "Salaires Entraîneurs", icon: Wallet },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];

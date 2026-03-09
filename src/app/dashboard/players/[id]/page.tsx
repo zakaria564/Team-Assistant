@@ -12,9 +12,9 @@ import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail } f
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const playerId = unwrappedParams.id;
+export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const playerId = resolvedParams.id;
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);

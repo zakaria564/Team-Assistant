@@ -11,9 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Phone, Mail, Shield, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const coachId = unwrappedParams.id;
+export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const coachId = resolvedParams.id;
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);

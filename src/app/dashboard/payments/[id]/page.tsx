@@ -7,15 +7,16 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, FileText, User, DollarSign } from "lucide-react";
+import { Loader2, ArrowLeft, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
-export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+export default function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const paymentId = resolvedParams.id;
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
