@@ -33,24 +33,49 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, "payments"),
-      where("userId", "==", user.uid),
-      where("status", "in", ["En attente", "Partiel", "En retard"])
-    );
+    let activePlayerIds = new Set<string>();
+    let pendingPaymentData: { playerId: string; status: string }[] = [];
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const uniquePlayers = new Set();
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        if (data.status !== "Payé") {
-          uniquePlayers.add(data.playerId);
+    const updateBadgeCount = () => {
+      const uniquePlayersWithPending = new Set();
+      pendingPaymentData.forEach(payment => {
+        // On ne compte que si le joueur existe encore dans la liste des joueurs actifs
+        if (payment.status !== "Payé" && activePlayerIds.has(payment.playerId)) {
+          uniquePlayersWithPending.add(payment.playerId);
         }
       });
-      setPendingCount(uniquePlayers.size);
-    });
+      setPendingCount(uniquePlayersWithPending.size);
+    };
 
-    return () => unsubscribe();
+    // Écouter les joueurs pour savoir qui existe réellement
+    const unsubscribePlayers = onSnapshot(
+      query(collection(db, "players"), where("userId", "==", user.uid)),
+      (snapshot) => {
+        activePlayerIds = new Set(snapshot.docs.map(doc => doc.id));
+        updateBadgeCount();
+      }
+    );
+
+    // Écouter les paiements en attente
+    const unsubscribePayments = onSnapshot(
+      query(
+        collection(db, "payments"),
+        where("userId", "==", user.uid),
+        where("status", "in", ["En attente", "Partiel", "En retard"])
+      ),
+      (snapshot) => {
+        pendingPaymentData = snapshot.docs.map(doc => ({
+          playerId: doc.data().playerId,
+          status: doc.data().status
+        }));
+        updateBadgeCount();
+      }
+    );
+
+    return () => {
+      unsubscribePlayers();
+      unsubscribePayments();
+    };
   }, [user]);
 
   return (

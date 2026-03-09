@@ -253,9 +253,17 @@ export default function PlayersPage() {
   const confirmDeletePlayer = async () => {
     if (!playerToDelete) return;
     try {
+      // 1. Supprimer le joueur
       await deleteDoc(doc(db, "players", playerToDelete.id));
-      toast({ title: "Joueur supprimé définitivement" });
-    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
+      
+      // 2. Nettoyer les paiements associés pour éviter les badges fantômes
+      const paymentsQuery = query(collection(db, "payments"), where("playerId", "==", playerToDelete.id));
+      const paymentsSnapshot = await getDocs(paymentsQuery);
+      const deletePromises = paymentsSnapshot.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(deletePromises);
+
+      toast({ title: "Joueur et ses paiements supprimés définitivement" });
+    } catch (e) { toast({ variant: "destructive", title: "Erreur lors de la suppression" }); }
     finally { setPlayerToDelete(null); }
   };
 
@@ -291,7 +299,7 @@ export default function PlayersPage() {
 
       <AlertDialog open={!!playerToDelete} onOpenChange={() => setPlayerToDelete(null)}>
           <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible. Le joueur et tout son historique de paiement seront effacés.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
                 <AlertDialogAction onClick={confirmDeletePlayer} className="bg-destructive hover:bg-destructive/90">Supprimer</AlertDialogAction>
