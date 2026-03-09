@@ -8,7 +8,7 @@ import { Menu } from "lucide-react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import { useState, useEffect } from "react";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -112,7 +112,6 @@ export default function DashboardAppLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-            {/* Future search bar can go here */}
           </div>
           <UserNav />
         </header>
