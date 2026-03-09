@@ -12,9 +12,8 @@ import { Loader2, ArrowLeft, Phone, Mail, Shield, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(props.params);
-  const coachId = resolvedParams.id;
+export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [coach, setCoach] = useState<any>(null);

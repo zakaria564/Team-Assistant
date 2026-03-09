@@ -73,9 +73,9 @@ export function UserNav() {
       title: "Synchronisation...",
       description: "Mise à jour de l'application en cours.",
     });
-    // Forcer le rechargement complet du cache
+    // Forcer le rechargement complet et ignorer le cache
     setTimeout(() => {
-      window.location.reload();
+      window.location.href = window.location.origin + '/dashboard?t=' + Date.now();
     }, 1000);
   };
 
@@ -97,10 +97,10 @@ export function UserNav() {
         variant="outline" 
         size="sm" 
         onClick={handleSync}
-        className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+        className="flex items-center gap-2 bg-blue-600 text-white border-blue-700 hover:bg-blue-700 animate-pulse"
       >
         <RefreshCw className="h-4 w-4" />
-        <span className="hidden sm:inline">Synchroniser</span>
+        <span className="hidden sm:inline font-bold">SYNCHRONISER</span>
       </Button>
       
       <DropdownMenu>
@@ -123,7 +123,7 @@ export function UserNav() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-             <DropdownMenuItem onClick={handleSync} className="cursor-pointer sm:hidden">
+             <DropdownMenuItem onClick={handleSync} className="cursor-pointer sm:hidden text-blue-600 font-bold">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 <span>Synchroniser</span>
               </DropdownMenuItem>

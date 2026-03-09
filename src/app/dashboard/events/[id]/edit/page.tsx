@@ -24,9 +24,8 @@ interface Event {
     scoreAway?: number;
 }
 
-export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const eventId = unwrappedParams.id;
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = React.use(params);
   const router = useRouter();
   
   const [event, setEvent] = useState<Event | null>(null);
@@ -46,9 +45,7 @@ export default function EditEventPage(props: { params: Promise<{ id: string }> }
           const data = docSnap.data();
           const date = data.date?.toDate ? data.date.toDate() : new Date();
           
-          const eventIsPast = isPast(date);
-
-          if (eventIsPast) {
+          if (isPast(date)) {
             setIsLocked(true);
           }
           
@@ -58,7 +55,6 @@ export default function EditEventPage(props: { params: Promise<{ id: string }> }
               date: date
             } as Event);
         } else {
-          console.log("No such document!");
           router.push("/dashboard/events");
         }
       } catch (error) {
@@ -104,7 +100,7 @@ export default function EditEventPage(props: { params: Promise<{ id: string }> }
                     <Info className="h-4 w-4" />
                     <AlertTitle>Modification verrouillée</AlertTitle>
                     <AlertDescription>
-                        Vous ne pouvez plus modifier un événement qui est déjà passé. Seul l'ajout du score est possible depuis la page des événements.
+                        Vous ne pouvez plus modifier un événement qui est déjà passé.
                     </AlertDescription>
                 </Alert>
             ) : event ? (

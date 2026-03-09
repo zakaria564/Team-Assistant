@@ -59,9 +59,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const coachId = unwrappedParams.id;
+export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -83,18 +82,15 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
 
       setLoading(true);
       try {
-        // Fetch Coach
         const coachRef = doc(db, "coaches", coachId as string);
         const coachSnap = await getDoc(coachRef);
 
         if (coachSnap.exists()) {
           setCoach({ id: coachSnap.id, ...coachSnap.data() } as Coach);
         } else {
-          console.log("No such document!");
           router.push("/dashboard/coaches");
         }
         
-        // Fetch Club Name
         const clubDocRef = doc(db, "clubs", user.uid);
         const clubDoc = await getDoc(clubDocRef);
         if (clubDoc.exists()) {
@@ -135,10 +131,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const canvasAspectRatio = canvasWidth / canvasHeight;
-            const pdfAspectRatio = pdfWidth / pdfHeight;
+            const canvasAspectRatio = canvas.width / canvas.height;
 
             let imgWidth = pdfWidth;
             let imgHeight = pdfWidth / canvasAspectRatio;
@@ -159,9 +152,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             }
             setLoadingPdf(false);
         });
-    } else {
-        console.error("Element to print not found.");
-        setLoadingPdf(false);
     }
   };
 
@@ -174,14 +164,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
     );
   }
 
-  if (!coach) {
-    return (
-      <div className="text-center p-8">
-        <p>Entraîneur non trouvé.</p>
-        <Button onClick={() => router.back()} className="mt-4">Retour</Button>
-      </div>
-    );
-  }
+  if (!coach) return null;
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
@@ -227,7 +210,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 </div>
             </header>
             
-            {/* Coach Info Header */}
             <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
                  <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
                     <AvatarImage src={coach.photoUrl} alt={coach.name} />
@@ -240,7 +222,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             
             <Separator className="my-6" />
 
-            {/* Main Content */}
             <main className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Personnelles" />
@@ -252,7 +233,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <DetailItem icon={Mail} label="Email" value={coach.email}/>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 break-before-page">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Sportives" />
                     <DetailItem icon={Star} label="Spécialité" value={coach.specialty} />
                     <DetailItem icon={Shield} label="Catégorie Entraînée" value={coach.category} />
@@ -262,25 +243,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             </main>
         </div>
       </div>
-
-       <style jsx global>{`
-            @media print {
-                body {
-                    background-color: #fff !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .print\\:hidden {
-                    display: none;
-                }
-                 .break-before-page {
-                    page-break-before: always;
-                }
-            }
-            .break-inside-avoid {
-                break-inside: avoid;
-            }
-        `}</style>
     </div>
   );
 }

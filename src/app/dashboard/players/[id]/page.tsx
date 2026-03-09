@@ -13,9 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(props.params);
-  const playerId = resolvedParams.id;
+export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);

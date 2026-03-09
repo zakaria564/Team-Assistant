@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -18,9 +19,8 @@ interface Payment {
   transactions: { amount: number; date: any; method: string; }[];
 }
 
-export default function EditPaymentPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const paymentId = unwrappedParams.id;
+export default function EditPaymentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   const router = useRouter();
   
   const [payment, setPayment] = useState<Payment | null>(null);
@@ -40,7 +40,6 @@ export default function EditPaymentPage(props: { params: Promise<{ id: string }>
           const paymentData = { id: docSnap.id, ...docSnap.data() } as Payment;
           setPayment(paymentData);
           
-          // Fetch player name
           const playerRef = doc(db, "players", paymentData.playerId);
           const playerSnap = await getDoc(playerRef);
           if(playerSnap.exists()) {

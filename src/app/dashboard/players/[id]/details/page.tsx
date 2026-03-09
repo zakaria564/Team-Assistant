@@ -43,9 +43,8 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(props.params);
-  const playerId = resolvedParams.id;
+export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

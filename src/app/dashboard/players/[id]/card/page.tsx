@@ -29,9 +29,8 @@ interface Player {
   address?: string;
 }
 
-export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(props.params);
-  const playerId = unwrappedParams.id;
+export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -82,7 +81,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
     const cardElement = document.getElementById("printable-card");
     if (cardElement) {
       html2canvas(cardElement, {
-        scale: 2.5, // Increase scale for better quality
+        scale: 2.5,
         useCORS: true,
         backgroundColor: '#ffffff',
       }).then((canvas) => {
@@ -90,7 +89,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
-          format: 'a6' // A6 is a good size for a player card
+          format: 'a6'
         });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();

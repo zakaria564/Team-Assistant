@@ -7,21 +7,17 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function PaymentReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(props.params);
-  const paymentId = resolvedParams.id;
+export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
