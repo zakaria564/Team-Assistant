@@ -10,7 +10,7 @@ const links = [
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
+  { href: "/dashboard/payments", label: "Paiements", icon: CreditCard },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];

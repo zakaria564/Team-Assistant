@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+  const resolvedParams = use(params);
   const playerId = resolvedParams.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

@@ -7,9 +7,5 @@ export default function ArchivesPage() {
   useEffect(() => {
     router.push("/dashboard");
   }, [router]);
-  return (
-    <div className="flex justify-center items-center h-full">
-      <p>Redirection en cours...</p>
-    </div>
-  );
+  return null;
 }

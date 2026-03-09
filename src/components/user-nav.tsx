@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, RefreshCw } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -24,22 +24,15 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
 import { doc, onSnapshot } from "firebase/firestore";
-import { useToast } from "@/hooks/use-toast";
-
 
 export function UserNav() {
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
   const router = useRouter();
-  const { toast } = useToast();
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
 
   useEffect(() => {
-    if (loading) {
-      setLoadingClub(true);
-      return;
-    }
-    if (!user) {
+    if (loading || !user) {
       setLoadingClub(false);
       return;
     }
@@ -49,13 +42,9 @@ export function UserNav() {
       if (doc.exists()) {
         const data = doc.data();
         setUserPhotoUrl(data.adminPhotoUrl || data.logoUrl || null);
-      } else {
-        setUserPhotoUrl(null);
       }
       setLoadingClub(false);
-    }, (error) => {
-        console.error("Error fetching user photo:", error);
-        setUserPhotoUrl(null);
+    }, () => {
         setLoadingClub(false);
     });
 
@@ -67,81 +56,46 @@ export function UserNav() {
     router.push("/");
   };
 
-  const handleSync = () => {
-    toast({
-      title: "Synchronisation forcée...",
-      description: "Mise à jour de l'application. Veuillez patienter.",
-    });
-    
-    setTimeout(() => {
-      const currentUrl = new URL(window.location.origin + '/dashboard');
-      currentUrl.searchParams.set('reload', Date.now().toString());
-      window.location.href = currentUrl.toString();
-    }, 1000);
-  };
-
   if (loading || loadingClub) {
-    return (
-       <Skeleton className="h-12 w-12 rounded-full" />
-    )
+    return <Skeleton className="h-10 w-10 rounded-full" />;
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
 
   return (
-    <div className="flex items-center gap-2">
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={handleSync}
-        className="flex items-center gap-2 bg-blue-600 text-white border-blue-700 hover:bg-blue-700 transition-all shadow-md"
-      >
-        <RefreshCw className="h-4 w-4" />
-        <span className="hidden sm:inline font-bold">SYNCHRONISER</span>
-      </Button>
-      
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-12 w-12 rounded-full">
-            <Avatar className="h-12 w-12 border-2 border-primary/20">
-              <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile'} />
-              <AvatarFallback>{userInitial}</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user?.displayName || "Utilisateur"}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {user?.email}
-              </p>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-             <DropdownMenuItem onClick={handleSync} className="cursor-pointer sm:hidden text-blue-600 font-bold">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                <span>Synchroniser</span>
-              </DropdownMenuItem>
-             <Link href="/dashboard/settings" passHref>
-              <DropdownMenuItem className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profil & Club</span>
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Se déconnecter</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10 border">
+            <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'Profile'} />
+            <AvatarFallback>{userInitial}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user?.displayName || "Utilisateur"}</p>
+            <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+           <Link href="/dashboard/settings" passHref>
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profil & Club</span>
             </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          </Link>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Se déconnecter</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
