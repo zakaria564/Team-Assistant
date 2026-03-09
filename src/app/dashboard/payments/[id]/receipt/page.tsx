@@ -185,8 +185,8 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                 </div>
                 <Separator className="bg-slate-200" />
                 <div className={cn(
-                    "flex justify-between items-center text-2xl font-black p-4 rounded-lg",
-                    remaining > 0 ? "text-red-800 bg-red-50" : "text-slate-600 bg-slate-50"
+                    "flex justify-between items-center font-bold text-lg",
+                    remaining > 0 ? "text-red-500" : "text-slate-600"
                 )}>
                     <span>RESTE À PAYER :</span>
                     <span>{remaining.toFixed(2)} MAD</span>
@@ -197,7 +197,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
             {/* Zone de Cachet et Signature (Centrée) */}
             <div className="flex justify-center pt-16">
                 <div className="text-center space-y-24 w-full max-w-md">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet du Club et Signature Administration</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet et Signature</p>
                     <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
                         <div className="flex items-center gap-1 text-primary/40">
                             <ShieldCheck className="h-4 w-4" />
