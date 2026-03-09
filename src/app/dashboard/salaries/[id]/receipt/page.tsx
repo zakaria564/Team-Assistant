@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Download, Printer, Banknote, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -59,22 +58,23 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
     const element = document.getElementById("printable-receipt");
     if (element) {
         html2canvas(element, { 
-            scale: 2, 
+            scale: 3, 
             useCORS: true, 
             backgroundColor: "#ffffff",
-            logging: false 
+            logging: false,
+            allowTaint: true
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgWidth = 595.28;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
         }).catch((err) => {
             console.error("Erreur PDF:", err);
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Impossible de générer le PDF. Vérifiez que les images du club sont valides."
+                description: "Impossible de générer le PDF. Vérifiez la connexion Internet."
             });
         }).finally(() => setLoadingPdf(false));
     }
@@ -86,6 +86,10 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
   const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
   const remaining = salary.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
+
+  // Professional Receipt ID: RC-E-YYYYMM-SHORTID
+  const dateObj = salary.createdAt?.seconds ? new Date(salary.createdAt.seconds * 1000) : new Date();
+  const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
   return (
     <div className="bg-muted/40 p-4 sm:p-8 flex flex-col items-center min-h-screen">
@@ -102,22 +106,35 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
             </div>
             
             <Card id="printable-receipt" className="bg-white text-slate-900 border-none shadow-2xl overflow-hidden">
-                 <header className="p-10 bg-slate-900 text-white flex justify-between items-start">
+                 <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center">
                     <div className="flex items-center gap-6">
-                        <Avatar className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg">
-                            <AvatarImage src={clubInfo?.logoUrl} />
-                            <AvatarFallback className="bg-primary text-white text-3xl font-black rounded-lg">{clubInitial}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <h1 className="text-3xl font-black uppercase tracking-tighter text-primary">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                            <p className="text-slate-400 font-medium">{clubInfo?.address || "Adresse du club"}</p>
+                        <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                            {clubInfo?.logoUrl ? (
+                                <img 
+                                    src={clubInfo.logoUrl} 
+                                    alt="Logo" 
+                                    className="h-full w-full object-contain"
+                                    crossOrigin="anonymous"
+                                />
+                            ) : (
+                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">
+                                    {clubInitial}
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <h1 className="text-2xl font-black uppercase tracking-tighter text-primary leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <div className="text-slate-400 text-sm font-medium">
+                                <p>{clubInfo?.address || "Adresse du club"}</p>
+                            </div>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <div className="bg-primary text-white px-3 py-1 rounded-sm text-[10px] font-black tracking-widest inline-block mb-3">CONFIDENTIEL</div>
-                        <h2 className="text-4xl font-black uppercase italic tracking-tight">FICHE DE PAIE</h2>
-                        <p className="text-slate-400 font-bold mt-1">REF: {salary.id.substring(0, 8).toUpperCase()}</p>
-                        <p className="text-slate-500 text-xs mt-1">Généré le {format(new Date(), "dd/MM/yyyy")}</p>
+                    <div className="text-right space-y-1">
+                        <h2 className="text-4xl font-black uppercase italic tracking-tight text-white">FICHE DE PAIE</h2>
+                        <div className="pt-2">
+                            <p className="text-primary font-bold text-sm tracking-widest">N° {professionalId}</p>
+                            <p className="text-slate-500 text-xs font-semibold">Généré le {format(new Date(), "dd/MM/yyyy")}</p>
+                        </div>
                     </div>
                 </header>
 
@@ -126,20 +143,20 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Bénéficiaire</h3>
                             <p className="text-2xl font-black text-slate-800">{salary.coachName}</p>
-                            <p className="text-slate-500 font-bold mt-1 uppercase text-sm">Entraîneur du club</p>
+                            <p className="text-slate-500 font-bold mt-1 uppercase text-xs">Entraîneur du club</p>
                         </div>
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-right sm:text-left">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Période / Motif</h3>
                             <p className="text-xl font-bold text-slate-800">{salary.description}</p>
-                            <p className="text-slate-500 font-semibold mt-1">Saison 2024-2025</p>
+                            <p className="text-slate-500 font-semibold mt-1 text-xs">Saison 2024-2025</p>
                         </div>
                     </div>
                     
                     <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         <Table>
                             <TableHeader className="bg-slate-50">
-                                <TableRow>
-                                    <TableHead className="px-6 font-bold text-slate-700">Description du paiement</TableHead>
+                                <TableRow className="border-b border-slate-200">
+                                    <TableHead className="px-6 font-bold text-slate-700">Désignation du paiement</TableHead>
                                     <TableHead className="font-bold text-slate-700">Date Versement</TableHead>
                                     <TableHead className="font-bold text-slate-700">Méthode</TableHead>
                                     <TableHead className="text-right px-6 font-bold text-slate-700">Montant</TableHead>
@@ -147,7 +164,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             </TableHeader>
                             <TableBody>
                                 {salary.transactions?.map((t: any, i: number) => (
-                                    <TableRow key={i} className="border-b last:border-0">
+                                    <TableRow key={i} className="border-b border-slate-100 last:border-0">
                                         <TableCell className="px-6 py-4 font-bold text-slate-800">Versement #{i+1}</TableCell>
                                         <TableCell className="text-slate-600">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                         <TableCell className="text-slate-600 font-medium">{t.method}</TableCell>
@@ -159,21 +176,21 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                     </div>
 
                     <div className="flex justify-end">
-                        <div className="w-full max-w-xs space-y-3">
-                            <div className="flex justify-between text-slate-500 font-bold">
+                        <div className="w-full max-w-xs space-y-3 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <div className="flex justify-between text-slate-500 font-bold text-sm">
                                 <span>Salaire Brut Total :</span>
                                 <span>{salary.totalAmount.toFixed(2)} MAD</span>
                             </div>
-                            <div className="flex justify-between text-green-600 font-black">
+                            <div className="flex justify-between text-green-600 font-black text-base">
                                 <span>Déjà versé :</span>
                                 <span>{amountPaid.toFixed(2)} MAD</span>
                             </div>
                             <Separator className="bg-slate-200" />
                             <div className={cn(
-                                "flex justify-between items-center font-bold text-lg",
+                                "flex justify-between items-center font-bold text-base",
                                 remaining > 0 ? "text-red-500" : "text-slate-600"
                             )}>
-                                <span className="text-sm">RESTE :</span>
+                                <span className="text-sm uppercase tracking-tighter">RESTE À VERSER :</span>
                                 <span>{remaining.toFixed(2)} MAD</span>
                             </div>
                         </div>
@@ -181,11 +198,11 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
 
                     <div className="flex justify-center pt-16">
                         <div className="text-center space-y-24 w-full max-w-md">
-                            <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet et Signature</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet et Signature</p>
                             <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-4 w-4" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">Document Inaltérable</span>
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Document Inaltérable</span>
                                 </div>
                             </div>
                         </div>
@@ -194,11 +211,11 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
 
                 <footer className="p-8 bg-slate-50 border-t flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full font-black text-xs">
+                        <div className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest">
                             STATUT: {salary.status.toUpperCase()}
                         </div>
                     </div>
-                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">
+                    <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest italic">
                         Document informatique certifié - Team Assistant v2.0
                     </div>
                 </footer>
