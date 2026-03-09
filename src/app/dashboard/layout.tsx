@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function DashboardAppLayout({
   children,
 }: {
-  children: React.Node;
+  children: React.ReactNode;
 }) {
   const [user, loadingUser] = useAuthState(auth);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -68,7 +68,7 @@ export default function DashboardAppLayout({
             <Skeleton className="h-24 w-24 rounded-full" />
         ) : (
             <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-emerald-400 to-red-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                 <Avatar className="h-24 w-24 shadow-2xl border-4 border-sidebar-accent relative bg-white">
                     <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" className="object-contain p-1" />
                     <AvatarFallback className="text-4xl font-black bg-sidebar-accent text-sidebar-foreground">{clubInitial}</AvatarFallback>
@@ -80,10 +80,10 @@ export default function DashboardAppLayout({
             <Skeleton className="h-10 w-40" />
         ) : (
             <div className="flex flex-col items-center space-y-1">
-                <span className="text-3xl font-black uppercase tracking-tighter bg-gradient-to-br from-white via-white/90 to-white/70 bg-clip-text text-transparent drop-shadow-lg text-center px-2 leading-[0.9] transition-transform group-hover:scale-105 duration-300">
+                <span className="text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-lg text-center px-2 leading-[0.9] transition-transform group-hover:scale-105 duration-300">
                     {clubName}
                 </span>
-                <div className="h-1 w-12 bg-primary rounded-full opacity-50"></div>
+                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-red-600 rounded-full opacity-50"></div>
             </div>
         )}
     </Link>
@@ -131,7 +131,7 @@ export default function DashboardAppLayout({
             {loadingClubInfo ? (
               <Skeleton className="h-8 w-48 mx-auto" />
             ) : (
-              <h1 className="text-sm sm:text-lg md:text-2xl lg:text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm leading-tight break-words line-clamp-1 md:line-clamp-none">
+              <h1 className="text-sm sm:text-lg md:text-2xl lg:text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm leading-tight break-words line-clamp-1 md:line-clamp-none">
                 {displayTitle}
               </h1>
             )}
