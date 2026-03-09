@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -22,6 +21,7 @@ export default function DashboardAppLayout({
   const [user, loadingUser] = useAuthState(auth);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [clubName, setClubName] = useState("");
+  const [displayTitle, setDisplayTitle] = useState("");
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [loadingClubInfo, setLoadingClubInfo] = useState(true);
 
@@ -30,6 +30,7 @@ export default function DashboardAppLayout({
     if (!user) {
       setLoadingClubInfo(false);
       setClubName("Team Assistant");
+      setDisplayTitle("CLUB USDS");
       return;
     }
 
@@ -39,15 +40,18 @@ export default function DashboardAppLayout({
       if (docSnap.exists()) {
         const data = docSnap.data();
         setClubName(data.clubName || "Team Assistant");
+        setDisplayTitle(data.displayTitle || "CLUB USDS");
         setClubLogoUrl(data.logoUrl || null);
       } else {
         setClubName("Team Assistant");
+        setDisplayTitle("CLUB USDS");
         setClubLogoUrl(null);
       }
       setLoadingClubInfo(false);
     }, (error) => {
       console.error("Error fetching club info: ", error);
       setClubName("Team Assistant");
+      setDisplayTitle("CLUB USDS");
       setClubLogoUrl(null);
       setLoadingClubInfo(false);
     });
@@ -116,10 +120,10 @@ export default function DashboardAppLayout({
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-auto px-4 text-center">
             {loadingClubInfo ? (
-              <Skeleton className="h-8 w-40 mx-auto" />
+              <Skeleton className="h-8 w-48 mx-auto" />
             ) : (
-              <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                {clubName}
+              <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">
+                {displayTitle}
               </h1>
             )}
           </div>

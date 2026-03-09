@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -9,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -21,6 +20,7 @@ import { Separator } from "../ui/separator";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
+  displayTitle: z.string().optional(),
   logoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   adminPhotoUrl: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   contactEmail: z.string().email("Veuillez entrer une adresse email valide.").optional().or(z.literal('')),
@@ -33,13 +33,13 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [isClubNameSet, setIsClubNameSet] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
         clubName: "",
+        displayTitle: "",
         logoUrl: "",
         adminPhotoUrl: "",
         contactEmail: "",
@@ -62,25 +62,23 @@ export function ClubSettingsForm() {
                 const data = docSnap.data();
                 form.reset({
                   clubName: data.clubName || "",
+                  displayTitle: data.displayTitle || "",
                   logoUrl: data.logoUrl || "",
                   adminPhotoUrl: data.adminPhotoUrl || "",
                   contactEmail: data.contactEmail || user.email || "",
                   clubPhone: data.clubPhone || "",
                   address: data.address || "",
                 });
-                if (data.clubName) {
-                    setIsClubNameSet(true);
-                }
             } else {
                 form.reset({
                   clubName: "",
+                  displayTitle: "",
                   logoUrl: "",
                   adminPhotoUrl: "",
                   contactEmail: user.email || "",
                   clubPhone: "",
                   address: "",
                 });
-                setIsClubNameSet(false);
             }
         } catch (error) {
             console.error("Error fetching club data: ", error);
@@ -112,10 +110,7 @@ export function ClubSettingsForm() {
             ...values,
             userId: user.uid,
         }, { merge: true });
-        toast({ title: "Informations du club enregistrées", description: "Les données de votre club ont été mises à jour." });
-        if (values.clubName && !isClubNameSet) {
-            setIsClubNameSet(true);
-        }
+        toast({ title: "Informations enregistrées", description: "Les données ont été mises à jour." });
         router.refresh();
     } catch (error: any) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les informations." });
@@ -127,8 +122,8 @@ export function ClubSettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Informations du Club & Images</CardTitle>
-        <CardDescription>Gérez les informations publiques et les logos de votre club.</CardDescription>
+        <CardTitle>Configuration de l'Interface</CardTitle>
+        <CardDescription>Gérez le titre affiché et les informations de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -144,48 +139,67 @@ export function ClubSettingsForm() {
         ) : (
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                        control={form.control}
-                        name="clubName"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Nom de votre club</FormLabel>
-                            <FormControl>
-                                <Input placeholder="" {...field} disabled={isClubNameSet} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="clubName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Nom officiel du club</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Ex: USDS Football" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="displayTitle"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Grand Titre (Barre du haut)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Ex: CLUB USDS" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     
-                    <div className="space-y-4 pt-4">
-                         <h4 className="text-base font-medium">Logos & Images</h4>
-                         <FormField
-                            control={form.control}
-                            name="logoUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>URL du logo du club (barre latérale)</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="" {...field} value={field.value || ''} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="adminPhotoUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>URL de la photo de profil (en haut à droite)</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="" {...field} value={field.value || ''} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <Separator className="!my-6"/>
+
+                    <div className="space-y-4">
+                         <h4 className="text-base font-medium">Images & Logos</h4>
+                         <div className="grid sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="logoUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>URL du logo (Menu latéral)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="" {...field} value={field.value || ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="adminPhotoUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>URL de votre photo de profil</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="" {...field} value={field.value || ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                         </div>
                     </div>
                     
                      <Separator className="!my-6"/>
@@ -211,7 +225,7 @@ export function ClubSettingsForm() {
                                 name="clubPhone"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Téléphone du club</FormLabel>
+                                    <FormLabel>Téléphone</FormLabel>
                                     <FormControl>
                                         <Input type="tel" placeholder="" {...field} value={field.value ?? ""} />
                                     </FormControl>
@@ -235,9 +249,9 @@ export function ClubSettingsForm() {
                         />
                     </div>
 
-                    <Button type="submit" disabled={loading} className="!mt-6">
+                    <Button type="submit" disabled={loading} className="!mt-6 w-full sm:w-auto">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Enregistrer les informations
+                        Enregistrer les modifications
                     </Button>
                 </form>
             </Form>
