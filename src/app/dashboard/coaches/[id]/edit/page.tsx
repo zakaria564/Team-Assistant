@@ -30,9 +30,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function EditCoachPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: coachId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function EditCoachPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: coachId } = React.use(props.params);
   const router = useRouter();
   
   const [coach, setCoach] = useState<Coach | null>(null);

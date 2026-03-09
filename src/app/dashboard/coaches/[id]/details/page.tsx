@@ -59,9 +59,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function CoachDetailsPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: coachId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: coachId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

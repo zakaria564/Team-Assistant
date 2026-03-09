@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,6 +13,7 @@ import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 break-inside-avoid">
@@ -43,9 +43,8 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -30,9 +29,8 @@ interface Player {
   professionalId?: string;
 }
 
-export default function PlayerCardPdfPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<Player | null>(null);

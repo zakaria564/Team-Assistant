@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-export default function EditSalaryPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: salaryId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function EditSalaryPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: salaryId } = React.use(props.params);
   const router = useRouter();
   
   const [salary, setSalary] = useState<any>(null);

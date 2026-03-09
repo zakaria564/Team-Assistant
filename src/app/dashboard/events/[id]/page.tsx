@@ -10,9 +10,8 @@ import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy } f
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function EventDetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: eventId } = React.use(params);
-  const _sParams = React.use(searchParams);
+export default function EventDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: eventId } = React.use(props.params);
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
