@@ -6,10 +6,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { collection, getDocs, query, doc, updateDoc, where, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, where, deleteDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -18,9 +18,7 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuLabel, 
-  DropdownMenuSeparator,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -33,7 +31,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -52,6 +49,7 @@ interface Player {
   number: number;
   photoUrl?: string;
   position?: string;
+  hasPendingPayment?: boolean;
 }
 
 const getStatusBadgeClass = (status?: PlayerStatus) => {
@@ -107,12 +105,23 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                 <TableRow key={player.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={player.photoUrl} alt={player.name} />
-                                                <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
+                                            <div className="relative">
+                                                <Avatar>
+                                                    <AvatarImage src={player.photoUrl} alt={player.name} />
+                                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                {player.hasPendingPayment && (
+                                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                        <AlertCircle className="relative inline-flex h-3 w-3 text-red-600 fill-white" />
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="flex flex-col">
-                                                <span className="font-medium">{toTitleCase(player.name)}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{toTitleCase(player.name)}</span>
+                                                    {player.hasPendingPayment && <Badge variant="destructive" className="text-[10px] h-4 px-1">Impayé</Badge>}
+                                                </div>
                                                 <span className="text-muted-foreground text-sm lg:hidden">{player.position}</span>
                                             </div>
                                         </div>
@@ -155,28 +164,51 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchCategory, setSearchCategory] = useState("name");
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      if (!user) {
-          if(!loadingUser) setLoading(false);
-          return;
-      }
-      setLoading(true);
-      try {
-          const q = query(collection(db, "players"), where("userId", "==", user.uid));
-          const querySnapshot = await getDocs(q);
-          const playersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-          setPlayers(playersData);
-      } catch (error: any) {
-          console.error("Error fetching players: ", error);
-      } finally {
-          setLoading(false);
-      }
-    };
-    fetchPlayers();
+    if (!user) {
+        if(!loadingUser) setLoading(false);
+        return;
+    }
+
+    setLoading(true);
+    
+    // Create query for players
+    const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+    
+    // We listen to both players and payments to check for pending status
+    const unsubscribePlayers = onSnapshot(playersQuery, (playersSnapshot) => {
+        const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+        
+        // Fetch all pending payments for this user to mark players
+        const paymentsQuery = query(
+            collection(db, "payments"), 
+            where("userId", "==", user.uid)
+        );
+
+        const unsubscribePayments = onSnapshot(paymentsQuery, (paymentsSnapshot) => {
+            const pendingPlayerIds = new Set();
+            paymentsSnapshot.docs.forEach(doc => {
+                const p = doc.data();
+                if (p.status !== "Payé") {
+                    pendingPlayerIds.add(p.playerId);
+                }
+            });
+
+            const enrichedPlayers = playersData.map(p => ({
+                ...p,
+                hasPendingPayment: pendingPlayerIds.has(p.id)
+            }));
+
+            setPlayers(enrichedPlayers);
+            setLoading(false);
+        });
+
+        return () => unsubscribePayments();
+    });
+
+    return () => unsubscribePlayers();
   }, [user, loadingUser]);
 
   const filteredPlayers = useMemo(() => {
@@ -209,7 +241,6 @@ export default function PlayersPage() {
   const handleUpdateStatus = async (playerId: string, newStatus: PlayerStatus) => {
     try {
         await updateDoc(doc(db, "players", playerId), { status: newStatus });
-        setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, status: newStatus } : p));
         toast({ title: "Statut mis à jour" });
     } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
   };
@@ -218,7 +249,6 @@ export default function PlayersPage() {
     if (!playerToDelete) return;
     try {
       await deleteDoc(doc(db, "players", playerToDelete.id));
-      setPlayers(players.filter(p => p.id !== playerToDelete.id));
       toast({ title: "Joueur supprimé définitivement" });
     } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
     finally { setPlayerToDelete(null); }
