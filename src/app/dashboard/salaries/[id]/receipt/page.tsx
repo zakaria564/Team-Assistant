@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download, Printer, Banknote, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -97,7 +96,6 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Imprimer</Button>
                     <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
                         {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                         Télécharger PDF
@@ -122,7 +120,7 @@ export default function SalaryReceiptPage({ params, searchParams }: { params: Pr
                             )}
                         </div>
                         <div className="space-y-1">
-                            <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight" style={{ color: '#ffffff' }}>{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                             <div className="text-slate-400 text-sm font-medium">
                                 <p>{clubInfo?.address || "Adresse du club"}</p>
                             </div>

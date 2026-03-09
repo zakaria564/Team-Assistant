@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download, Printer, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -113,7 +112,6 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
         <div className="flex justify-between items-center print:hidden">
           <Button variant="outline" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Imprimer</Button>
             <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
                 {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                 Télécharger PDF
@@ -138,7 +136,7 @@ export default function PaymentReceiptPage({ params, searchParams }: { params: P
                 )}
               </div>
               <div className="space-y-1">
-                <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
+                <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "Votre Club"}</h1>
                 <div className="text-slate-500 text-sm font-medium">
                     <p>{clubInfo?.address || "Adresse non renseignée"}</p>
                     {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
