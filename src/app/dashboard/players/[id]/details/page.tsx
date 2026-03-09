@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, FileText } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -43,9 +43,8 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage(props: any) {
-  const params = React.use(props.params);
-  const playerId = (params as any).id;
+export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -183,7 +182,6 @@ export default function PlayerDetailsPdfPage(props: any) {
         </div>
 
         <div id="printable-details" className="bg-white p-6 sm:p-8 rounded-lg shadow-sm text-gray-900">
-            {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
                  <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
@@ -201,7 +199,6 @@ export default function PlayerDetailsPdfPage(props: any) {
                 </div>
             </header>
             
-            {/* Player Info Header */}
             <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
                  <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
                     <AvatarImage src={player.photoUrl} alt={player.name} className="object-cover" />
@@ -215,7 +212,6 @@ export default function PlayerDetailsPdfPage(props: any) {
             
             <Separator className="my-6" />
 
-            {/* Main Content */}
             <main className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <SectionTitle title="Informations Personnelles" />
@@ -224,9 +220,9 @@ export default function PlayerDetailsPdfPage(props: any) {
                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                     <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                    <DetailItem icon={Home} label="Adresse" value={player.address} href={player.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}` : undefined} />
-                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} href={player.phone ? `tel:${player.phone}` : undefined} />
-                    <DetailItem icon={Mail} label="Email" value={player.email} href={player.email ? `mailto:${player.email}` : undefined} />
+                    <DetailItem icon={Home} label="Adresse" value={player.address} />
+                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                    <DetailItem icon={Mail} label="Email" value={player.email} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -244,8 +240,17 @@ export default function PlayerDetailsPdfPage(props: any) {
                         <SectionTitle title="Informations du Tuteur" />
                         <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                         <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
-                        <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} />
-                        <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} href={player.tutorEmail ? `mailto:${player.tutorEmail}` : undefined} />
+                        <DetailItem icon={Phone} label="Téléphone du tuteur" value={player.tutorPhone} />
+                        <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
+                    </div>
+                )}
+
+                {player.documents && player.documents.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <SectionTitle title="Documents Administratifs" />
+                        {player.documents.map((doc: any, index: number) => (
+                            <DetailItem key={index} icon={FileText} label={doc.name} value={doc.validityDate ? `Valide jusqu'au ${format(new Date(doc.validityDate), 'dd/MM/yyyy')}` : "Enregistré"} />
+                        ))}
                     </div>
                 )}
             </main>

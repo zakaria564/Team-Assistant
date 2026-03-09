@@ -7,13 +7,12 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, MapPin } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, FileText, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Separator } from "@/components/ui/separator";
 
 const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
   <div className="flex items-start gap-3">
@@ -31,9 +30,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function PlayerDetailPage(props: any) {
-  const params = React.use(props.params);
-  const playerId = (params as any).id;
+export default function PlayerDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);
@@ -77,11 +75,13 @@ export default function PlayerDetailPage(props: any) {
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
           <h1 className="text-3xl font-bold tracking-tight">Fiche Joueur</h1>
         </div>
-        <Button onClick={() => router.push(`/dashboard/players/${player.id}/edit`)}>Modifier le profil</Button>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.push(`/dashboard/players/${player.id}/details`)}>Exporter PDF</Button>
+            <Button onClick={() => router.push(`/dashboard/players/${player.id}/edit`)}>Modifier le profil</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sidebar: Photo & Status */}
         <Card className="lg:col-span-1 h-fit">
           <CardContent className="pt-8 flex flex-col items-center gap-4">
             <Avatar className="h-40 w-40 border-4 border-primary shadow-lg">
@@ -103,9 +103,7 @@ export default function PlayerDetailPage(props: any) {
           </CardContent>
         </Card>
 
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Informations Sportives */}
           <Card>
             <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><Shield className="h-5 w-5" /> Informations Sportives</CardTitle></CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
@@ -117,7 +115,6 @@ export default function PlayerDetailPage(props: any) {
             </CardContent>
           </Card>
 
-          {/* Informations Personnelles */}
           <Card>
             <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><User className="h-5 w-5" /> État Civil & Contact</CardTitle></CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
@@ -148,7 +145,6 @@ export default function PlayerDetailPage(props: any) {
             </CardContent>
           </Card>
 
-          {/* Informations Tuteur (pour les mineurs) */}
           {player.tutorName && (
             <Card>
                 <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><User className="h-5 w-5" /> Informations du Tuteur</CardTitle></CardHeader>
@@ -167,6 +163,37 @@ export default function PlayerDetailPage(props: any) {
                         value={player.tutorPhone} 
                         href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} 
                     />
+                </CardContent>
+            </Card>
+          )}
+
+          {player.documents && player.documents.length > 0 && (
+            <Card>
+                <CardHeader className="pb-3 border-b mb-4">
+                    <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                        <FileText className="h-5 w-5" /> Documents Enregistrés
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {player.documents.map((doc: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 group hover:border-primary transition-colors">
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-sm">{doc.name}</span>
+                                    {doc.validityDate && (
+                                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                                            Valide jusqu'au : {format(new Date(doc.validityDate), "dd/MM/yyyy")}
+                                        </span>
+                                    )}
+                                </div>
+                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                        <FileDown className="h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
           )}

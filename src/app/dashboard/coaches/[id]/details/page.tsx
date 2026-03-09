@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield } from "lucide-react";
+import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +29,7 @@ interface Coach {
   nationality?: string;
   cin?: string;
   address?: string;
+  documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
@@ -248,6 +249,15 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                     <DetailItem icon={LogOut} label="Date de sortie du club" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                 </div>
+
+                {coach.documents && coach.documents.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <SectionTitle title="Documents Enregistrés" />
+                        {coach.documents.map((doc: any, index: number) => (
+                            <DetailItem key={index} icon={FileText} label={doc.name} value={doc.validityDate ? `Expire le ${format(new Date(doc.validityDate), 'dd/MM/yyyy')}` : "Document archivé"} />
+                        ))}
+                    </div>
+                )}
             </main>
         </div>
       </div>
