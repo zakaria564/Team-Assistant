@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function DashboardAppLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.Node;
 }) {
   const [user, loadingUser] = useAuthState(auth);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -122,7 +122,7 @@ export default function DashboardAppLayout({
             {loadingClubInfo ? (
               <Skeleton className="h-8 w-48 mx-auto" />
             ) : (
-              <h1 className="text-sm sm:text-lg md:text-2xl lg:text-4xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-500 via-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm leading-tight break-words line-clamp-2 md:line-clamp-none">
+              <h1 className="text-sm sm:text-lg md:text-2xl lg:text-4xl font-black uppercase tracking-tighter bg-gradient-to-r from-blue-600 via-emerald-400 via-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm leading-tight break-words line-clamp-2 md:line-clamp-none">
                 {displayTitle}
               </h1>
             )}
