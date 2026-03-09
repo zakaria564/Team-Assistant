@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: salaryId } = React.use(params);
@@ -69,6 +70,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
   if (!salary) return null;
   
   const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
+  const remaining = salary.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
@@ -153,22 +155,19 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                 <span>{amountPaid.toFixed(2)} MAD</span>
                             </div>
                             <Separator className="bg-slate-200" />
-                            <div className="flex justify-between items-center text-3xl font-black text-primary p-4 bg-primary/5 rounded-xl">
+                            <div className={cn(
+                                "flex justify-between items-center text-3xl font-black p-4 rounded-xl",
+                                remaining > 0 ? "text-red-800 bg-red-50" : "text-slate-600 bg-slate-50"
+                            )}>
                                 <span className="text-sm">RESTE :</span>
-                                <span>{(salary.totalAmount - amountPaid).toFixed(2)} MAD</span>
+                                <span>{remaining.toFixed(2)} MAD</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Zone de Cachet et Signature */}
-                    <div className="grid grid-cols-2 gap-20 pt-16">
-                        <div className="text-center space-y-24 border-r border-slate-100 pr-10">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Signature du Bénéficiaire</p>
-                            <div className="border-t border-slate-200 pt-4">
-                                <p className="text-[9px] text-slate-400 italic">Précédé de la mention "Reçu pour solde de tout compte"</p>
-                            </div>
-                        </div>
-                        <div className="text-center space-y-24">
+                    {/* Zone de Cachet et Signature (Centrée) */}
+                    <div className="flex justify-center pt-16">
+                        <div className="text-center space-y-24 w-full max-w-md">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Cachet du Club et Signature Direction</p>
                             <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
                                 <div className="flex items-center gap-1 text-slate-300">

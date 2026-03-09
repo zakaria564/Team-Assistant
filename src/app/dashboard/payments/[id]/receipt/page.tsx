@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: paymentId } = React.use(params);
@@ -89,6 +90,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
   if (!payment) return null;
   
   const amountPaid = payment.transactions?.reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
+  const remaining = payment.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
@@ -182,22 +184,19 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                     <span>{amountPaid.toFixed(2)} MAD</span>
                 </div>
                 <Separator className="bg-slate-200" />
-                <div className="flex justify-between items-center text-2xl font-black text-primary bg-primary/5 p-4 rounded-lg">
+                <div className={cn(
+                    "flex justify-between items-center text-2xl font-black p-4 rounded-lg",
+                    remaining > 0 ? "text-red-800 bg-red-50" : "text-slate-600 bg-slate-50"
+                )}>
                     <span>RESTE À PAYER :</span>
-                    <span>{(payment.totalAmount - amountPaid).toFixed(2)} MAD</span>
+                    <span>{remaining.toFixed(2)} MAD</span>
                 </div>
               </div>
             </div>
 
-            {/* Zone de Signature et Cachet */}
-            <div className="grid grid-cols-2 gap-20 pt-16">
-                <div className="text-center space-y-24">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Signature du Parent / Joueur</p>
-                    <div className="border-t border-slate-200 pt-4">
-                        <p className="text-[10px] text-slate-400 italic">Mention "Lu et approuvé"</p>
-                    </div>
-                </div>
-                <div className="text-center space-y-24">
+            {/* Zone de Cachet et Signature (Centrée) */}
+            <div className="flex justify-center pt-16">
+                <div className="text-center space-y-24 w-full max-w-md">
                     <p className="text-xs font-black uppercase tracking-widest text-slate-400">Cachet du Club et Signature Administration</p>
                     <div className="border-t border-slate-200 pt-4 flex flex-col items-center gap-2">
                         <div className="flex items-center gap-1 text-primary/40">
