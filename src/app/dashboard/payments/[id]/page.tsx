@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, FileText } from "lucide-react";
@@ -13,16 +13,18 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(props.params);
   const paymentId = resolvedParams.id;
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   const [payment, setPayment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!paymentId) return;
+    if (!paymentId || loadingUser) return;
     const fetchPayment = async () => {
       setLoading(true);
       try {
@@ -36,9 +38,9 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
       finally { setLoading(false); }
     };
     fetchPayment();
-  }, [paymentId, router]);
+  }, [paymentId, router, loadingUser]);
 
-  if (loading) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!payment) return null;
 
   const totalPaid = payment.transactions?.reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
@@ -61,7 +63,7 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {payment.transactions?.map((t: any, i: number) => (
                   <TableRow key={i}>
-                    <TableCell>{format(new Date(t.date.seconds * 1000), "dd/MM/yyyy", { locale: fr })}</TableCell>
+                    <TableCell>{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy", { locale: fr }) : 'N/A'}</TableCell>
                     <TableCell>{t.method}</TableCell>
                     <TableCell className="text-right font-medium">{t.amount.toFixed(2)} MAD</TableCell>
                   </TableRow>

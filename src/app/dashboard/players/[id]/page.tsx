@@ -4,23 +4,25 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(props.params);
   const playerId = resolvedParams.id;
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!playerId) return;
+    if (!playerId || loadingUser) return;
     const fetchPlayer = async () => {
       setLoading(true);
       try {
@@ -39,9 +41,9 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
       finally { setLoading(false); }
     };
     fetchPlayer();
-  }, [playerId, router]);
+  }, [playerId, router, loadingUser]);
 
-  if (loading) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!player) return null;
 
   return (

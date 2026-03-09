@@ -4,22 +4,24 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Phone, Mail, Shield, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(props.params);
   const coachId = resolvedParams.id;
   const router = useRouter();
+  const [user, loadingUser] = useAuthState(auth);
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!coachId) return;
+    if (!coachId || loadingUser) return;
     const fetchCoach = async () => {
       setLoading(true);
       try {
@@ -30,9 +32,9 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
       finally { setLoading(false); }
     };
     fetchCoach();
-  }, [coachId, router]);
+  }, [coachId, router, loadingUser]);
 
-  if (loading) return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!coach) return null;
 
   return (

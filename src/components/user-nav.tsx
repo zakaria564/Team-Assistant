@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -25,11 +25,13 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
 import { doc, onSnapshot } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 
 
 export function UserNav() {
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
+  const { toast } = useToast();
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
 
@@ -66,6 +68,16 @@ export function UserNav() {
     router.push("/");
   };
 
+  const handleSync = () => {
+    toast({
+      title: "Synchronisation...",
+      description: "Rafraîchissement de l'application en cours.",
+    });
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
   if (loading || loadingClub) {
     return (
        <Skeleton className="h-12 w-12 rounded-full" />
@@ -79,39 +91,55 @@ export function UserNav() {
   const userInitial = user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "A";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-12 w-12 rounded-full">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
-            <AvatarFallback>{userInitial}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.displayName || "Utilisateur"}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user?.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-           <Link href="/dashboard/settings" passHref>
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profil & Club</span>
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleSync}
+        className="hidden sm:flex items-center gap-2"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Synchroniser
+      </Button>
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={userPhotoUrl || undefined} alt={user?.displayName || 'User profile picture'} />
+              <AvatarFallback>{userInitial}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user?.displayName || "Utilisateur"}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user?.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+             <DropdownMenuItem onClick={handleSync} className="cursor-pointer sm:hidden">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                <span>Synchroniser</span>
+              </DropdownMenuItem>
+             <Link href="/dashboard/settings" passHref>
+              <DropdownMenuItem className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profil & Club</span>
+              </DropdownMenuItem>
+            </Link>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Se déconnecter</span>
             </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Se déconnecter</span>
-          </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
