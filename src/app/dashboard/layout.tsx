@@ -112,6 +112,7 @@ export default function DashboardAppLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
+            <h1 className="text-lg font-bold text-primary uppercase">CLUB USDS</h1>
           </div>
           <UserNav />
         </header>
