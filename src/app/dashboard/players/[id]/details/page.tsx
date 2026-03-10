@@ -15,30 +15,24 @@ import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
-const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3 break-inside-avoid">
-    <div className="mt-1 bg-primary/5 p-1.5 rounded-md">
-        <Icon className="h-4 w-4 text-primary" />
+const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+  <div className="flex items-start gap-3 mb-4">
+    <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0">
+        <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">{label}</p>
-      <div className="text-sm font-bold text-slate-800 break-words">
-        {href ? (
-          <span className="text-primary underline decoration-primary/30">
-            {value || children}
-          </span>
-        ) : (
-          value || children || "Non spécifié"
-        )}
+      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
+      <div className="text-sm font-bold text-slate-800 break-words leading-tight">
+        {value || children || "Non spécifié"}
       </div>
     </div>
   </div>
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="col-span-full mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-2">
-        {Icon && <Icon className="h-5 w-5 text-primary" />}
-        <h2 className="text-sm font-black uppercase tracking-[0.15em] text-slate-900">{title}</h2>
+    <div className="mb-6 flex items-center gap-2 border-b border-slate-200 pb-2">
+        {Icon && <Icon className="h-4 w-4 text-primary" />}
+        <h2 className="text-xs font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
     </div>
 );
 
@@ -152,7 +146,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
   if (loading || loadingUser) {
     return (
-      <div className="flex justify-center items-center h-screen bg-muted/40">
+      <div className="flex justify-center items-center h-screen bg-slate-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -168,132 +162,121 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     <div className="bg-slate-100 min-h-screen p-4 sm:p-8">
        <div className="w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center print:hidden">
-          <Button variant="outline" onClick={() => router.back()} className="shadow-sm">
+          <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
           </Button>
-          <Button onClick={handleDownloadPdf} disabled={loadingPdf} className="shadow-md">
+          <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Génération en cours...
+                Génération...
               </>
             ) : (
               <>
                 <FileDown className="mr-2 h-4 w-4" />
-                Télécharger la Fiche Officielle
+                Télécharger la Fiche
               </>
             )}
           </Button>
         </div>
 
-        <div id="printable-details" className="bg-white p-10 sm:p-12 shadow-xl text-slate-900 border-t-[12px] border-primary flex flex-col" style={{ minHeight: '1120px' }}>
-            {/* OFFICIAL HEADER */}
-            <header className="flex flex-row justify-between items-start mb-12 border-b-2 border-slate-100 pb-8">
-                 <div className="flex items-center gap-6">
-                    <div className="h-20 w-20 border-2 border-slate-100 rounded-xl overflow-hidden bg-white flex items-center justify-center p-1 shrink-0 shadow-sm">
+        <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto" style={{ width: '800px', minHeight: '1120px' }}>
+            
+            <header className="flex flex-row justify-between items-start mb-10 border-b border-slate-100 pb-6">
+                 <div className="flex items-center gap-5">
+                    <div className="h-16 w-16 border border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                         {clubLogoUrl ? (
                             <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                         ) : (
-                            <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">{clubInitial}</div>
+                            <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>
                         )}
                     </div>
-                    <div className="space-y-1">
-                        <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-tight">{clubName}</h1>
-                        <p className="text-primary font-black text-xs uppercase tracking-[0.25em] opacity-80">Fiche Officielle du Joueur</p>
+                    <div>
+                        <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
+                        <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Document Officiel d'Identification</p>
                     </div>
                 </div>
-                <div className="text-right flex flex-col items-end">
-                    <div className="bg-slate-900 text-white px-4 py-2 rounded-lg mb-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Identifiant Unique</p>
-                        <p className="text-sm font-mono font-bold tracking-tighter">{player.professionalId || "N/A"}</p>
+                <div className="text-right">
+                    <div className="bg-slate-100 px-3 py-1.5 rounded-md mb-1 inline-block">
+                        <p className="text-[8px] font-black uppercase text-slate-500 tracking-wider">Identifiant Unique</p>
+                        <p className="text-xs font-mono font-bold">{player.professionalId || "N/A"}</p>
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
+                    <p className="text-[9px] font-semibold text-slate-400 uppercase">Émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
             </header>
             
-            {/* PLAYER PROFILE HEADER */}
-            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50/50 p-8 rounded-2xl border border-slate-100">
-                 <div className="relative shrink-0">
-                    <Avatar className="h-40 w-40 border-[6px] border-white shadow-xl">
+            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border border-slate-100">
+                 <div className="relative">
+                    <Avatar className="h-32 w-32 border-4 border-white shadow-md">
                         <AvatarImage src={player.photoUrl} alt={player.name} className="object-cover" />
-                        <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
+                        <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-black uppercase px-4 py-1 rounded-full shadow-lg border-2 border-white">
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border border-white shadow-sm">
                         {player.status}
                     </div>
                 </div>
-                <div className="space-y-2">
-                    <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">{player.name}</h1>
-                    <div className="flex items-center gap-4">
-                        <Badge className="bg-slate-900 text-white hover:bg-slate-900 text-xs px-3 py-1 font-bold uppercase tracking-widest">{player.category}</Badge>
-                        <span className="text-slate-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                            <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "N/A"}
+                <div className="space-y-3">
+                    <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{player.name}</h1>
+                    <div className="flex items-center gap-3">
+                        <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{player.category}</Badge>
+                        <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {player.position || "N/A"}
                         </span>
                         {player.number && (
-                            <span className="bg-primary/10 text-primary px-3 py-1 rounded-md text-sm font-black">#{player.number}</span>
+                            <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* CONTENT GRID */}
-            <main className="grid grid-cols-2 gap-x-16 gap-y-12 mb-auto">
-                {/* COLUMN LEFT: PERSO */}
-                <div className="space-y-8">
-                    <SectionTitle title="État Civil & Contact" icon={User} />
-                    <div className="grid grid-cols-1 gap-y-6">
+            <main className="flex flex-row gap-12 flex-grow">
+                {/* COLUMN LEFT: PERSO & CONTACT */}
+                <div className="flex-1 space-y-10">
+                    <div>
+                        <SectionTitle title="État Civil & Contact" icon={User} />
                         <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
-                        <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
+                        <DetailItem icon={VenetianMask} label="Sexe / Genre" value={player.gender} />
                         <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                        <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                        <DetailItem icon={Mail} label="Email personnel" value={player.email} />
-                        <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                        <DetailItem icon={Fingerprint} label="Carte Nationale (CIN)" value={player.cin} />
+                        <DetailItem icon={Mail} label="Adresse e-mail" value={player.email} />
+                        <DetailItem icon={Phone} label="Téléphone mobile" value={player.phone} />
                         <DetailItem icon={MapPin} label="Adresse Résidentielle" value={player.address} />
                     </div>
                 </div>
 
                 {/* COLUMN RIGHT: SPORT & TUTOR */}
-                <div className="space-y-12">
-                    {/* SPORTIVE */}
-                    <div className="space-y-8">
+                <div className="flex-1 space-y-10">
+                    <div>
                         <SectionTitle title="Parcours Sportif" icon={Shield} />
-                        <div className="grid grid-cols-1 gap-y-6">
-                            <DetailItem icon={Shield} label="Catégorie actuelle" value={player.category} />
-                            <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
-                            <DetailItem icon={Shirt} label="Numéro attribué" value={player.number ? `Maillot n° ${player.number}` : undefined} />
-                            <DetailItem icon={ClipboardList} label="Coach référent" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
-                            <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                            <DetailItem icon={LogOut} label="Fin de contrat" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Indéterminée"} />
-                        </div>
+                        <DetailItem icon={Star} label="Poste sur le terrain" value={player.position} />
+                        <DetailItem icon={ClipboardList} label="Coach Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
+                        <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                        <DetailItem icon={LogOut} label="Fin de validité" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Non renseignée"} />
                     </div>
 
-                    {/* TUTOR */}
                     {player.tutorName && (
-                        <div className="space-y-8">
+                        <div>
                             <SectionTitle title="Responsable Légal" icon={VenetianMask} />
-                            <div className="grid grid-cols-1 gap-y-6">
-                                <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
-                                <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
-                                <DetailItem icon={Phone} label="Téléphone d'urgence" value={player.tutorPhone} />
-                                <DetailItem icon={Mail} label="Email de contact" value={player.tutorEmail} />
-                            </div>
+                            <DetailItem icon={User} label="Nom du parent / tuteur" value={toTitleCase(player.tutorName)} />
+                            <DetailItem icon={Fingerprint} label="CIN du responsable" value={player.tutorCin} />
+                            <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
+                            <DetailItem icon={Mail} label="E-mail de contact" value={player.tutorEmail} />
                         </div>
                     )}
                 </div>
             </main>
 
-            {/* OFFICIAL FOOTER */}
-            <footer className="mt-20 pt-12 border-t-2 border-slate-100 flex flex-row justify-between items-end">
-                <div className="space-y-4">
+            <footer className="mt-12 pt-8 border-t border-slate-100 flex flex-row justify-between items-end">
+                <div className="space-y-3">
                     <div className="flex items-center gap-2 text-slate-300">
-                        <ShieldCheck className="h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Document certifié par l'administration du club</span>
+                        <ShieldCheck className="h-4 w-4" />
+                        <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique USDS</span>
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
                 </div>
-                <div className="text-center space-y-16">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet et Signature</p>
-                    <div className="h-20"></div>
+                <div className="text-center">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
+                    <div className="w-40 border-b border-slate-200"></div>
                 </div>
             </footer>
         </div>
