@@ -269,7 +269,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 {/* TUTOR */}
                 {player.tutorName && (
                     <div className="space-y-8">
-                        <SectionTitle title="Responsable Légal" icon={ venetianMask => VenetianMask} />
+                        <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                         <div className="grid grid-cols-1 gap-y-6">
                             <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                             <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
