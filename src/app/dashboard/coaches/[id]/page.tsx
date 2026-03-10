@@ -14,8 +14,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
+  const { params: paramsPromise } = props;
+  const params = React.use(paramsPromise);
   const coachId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

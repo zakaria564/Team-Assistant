@@ -43,8 +43,8 @@ const toTitleCase = (str: string) => {
 
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
+  const { params: paramsPromise } = props;
+  const params = React.use(paramsPromise);
   const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -158,7 +158,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  const displayId = player.professionalId || `PL-NEW-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 4).toUpperCase()}`;
 
 
   return (
@@ -200,7 +200,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="border-2 border-primary/40 px-3 py-1.5 rounded-md mb-1 inline-block bg-white shadow-sm">
+                    <div className="border-2 border-slate-800 px-3 py-1.5 rounded-md mb-1 inline-block bg-white shadow-sm">
                         <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-0.5">Identifiant Unique</p>
                         <p className="text-xs font-mono font-bold text-primary">{displayId}</p>
                     </div>
@@ -229,7 +229,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border-2 border-primary/20 font-bold">
+                    <div className="flex items-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border-2 border-slate-800 font-bold shadow-sm">
                         <Fingerprint className="h-3 w-3" />
                         {displayId}
                     </div>

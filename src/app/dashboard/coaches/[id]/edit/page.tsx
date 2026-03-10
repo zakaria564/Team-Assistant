@@ -16,8 +16,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function EditCoachPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
+  const { params: paramsPromise } = props;
+  const params = React.use(paramsPromise);
   const coachId = params.id;
   const router = useRouter();
   
