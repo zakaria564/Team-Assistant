@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -17,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 mb-4">
-    <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0">
+    <div className="mt-0.5 bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-center shrink-0">
         <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
@@ -156,6 +157,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
+  const displayId = player.professionalId || "PL-NEW-XXXX";
 
 
   return (
@@ -182,9 +184,9 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
         <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto" style={{ width: '800px', minHeight: '1120px' }}>
             
-            <header className="flex flex-row justify-between items-start mb-10 border-b border-slate-100 pb-6">
+            <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
                  <div className="flex items-center gap-5">
-                    <div className="h-16 w-16 border border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
+                    <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                         {clubLogoUrl ? (
                             <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                         ) : (
@@ -193,25 +195,25 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                     <div>
                         <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
-                        <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Document Officiel d'Identification</p>
+                        <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Fiche Officielle du Joueur</p>
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="bg-slate-100 px-3 py-1.5 rounded-md mb-1 inline-block">
-                        <p className="text-[8px] font-black uppercase text-slate-500 tracking-wider">Identifiant Unique</p>
-                        <p className="text-xs font-mono font-bold">{player.professionalId || "N/A"}</p>
+                    <div className="border-2 border-primary/20 px-3 py-1.5 rounded-md mb-1 inline-block bg-slate-50">
+                        <p className="text-[8px] font-black uppercase text-slate-500 tracking-wider mb-0.5">Identifiant Unique</p>
+                        <p className="text-xs font-mono font-bold text-primary">{displayId}</p>
                     </div>
-                    <p className="text-[9px] font-semibold text-slate-400 uppercase">Émis le {format(new Date(), 'dd/MM/yyyy')}</p>
+                    <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
             </header>
             
-            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border border-slate-100">
+            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                  <div className="relative">
                     <Avatar className="h-32 w-32 border-4 border-white shadow-md">
                         <AvatarImage src={player.photoUrl} alt={player.name} className="object-cover" />
                         <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border border-white shadow-sm">
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
                         {player.status}
                     </div>
                 </div>
@@ -226,30 +228,34 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
+                    <div className="flex items-center gap-2 text-slate-400 font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border border-slate-200">
+                        <Fingerprint className="h-3 w-3" />
+                        {displayId}
+                    </div>
                 </div>
             </section>
 
             <main className="flex flex-row gap-12 flex-grow">
                 {/* COLUMN LEFT: PERSO & CONTACT */}
-                <div className="flex-1 space-y-10">
+                <div className="w-[45%] space-y-10">
                     <div>
                         <SectionTitle title="État Civil & Contact" icon={User} />
                         <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
-                        <DetailItem icon={VenetianMask} label="Sexe / Genre" value={player.gender} />
+                        <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                         <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                        <DetailItem icon={Fingerprint} label="Carte Nationale (CIN)" value={player.cin} />
-                        <DetailItem icon={Mail} label="Adresse e-mail" value={player.email} />
+                        <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
+                        <DetailItem icon={Mail} label="Email personnel" value={player.email} />
                         <DetailItem icon={Phone} label="Téléphone mobile" value={player.phone} />
                         <DetailItem icon={MapPin} label="Adresse Résidentielle" value={player.address} />
                     </div>
                 </div>
 
                 {/* COLUMN RIGHT: SPORT & TUTOR */}
-                <div className="flex-1 space-y-10">
+                <div className="w-[45%] space-y-10">
                     <div>
                         <SectionTitle title="Parcours Sportif" icon={Shield} />
-                        <DetailItem icon={Star} label="Poste sur le terrain" value={player.position} />
-                        <DetailItem icon={ClipboardList} label="Coach Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
+                        <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
+                        <DetailItem icon={ClipboardList} label="Coach référent" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                         <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                         <DetailItem icon={LogOut} label="Fin de validité" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Non renseignée"} />
                     </div>
@@ -257,26 +263,26 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     {player.tutorName && (
                         <div>
                             <SectionTitle title="Responsable Légal" icon={VenetianMask} />
-                            <DetailItem icon={User} label="Nom du parent / tuteur" value={toTitleCase(player.tutorName)} />
-                            <DetailItem icon={Fingerprint} label="CIN du responsable" value={player.tutorCin} />
-                            <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
-                            <DetailItem icon={Mail} label="E-mail de contact" value={player.tutorEmail} />
+                            <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
+                            <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
+                            <DetailItem icon={Phone} label="Téléphone d'urgence" value={player.tutorPhone} />
+                            <DetailItem icon={Mail} label="Email de contact" value={player.tutorEmail} />
                         </div>
                     )}
                 </div>
             </main>
 
-            <footer className="mt-12 pt-8 border-t border-slate-100 flex flex-row justify-between items-end">
+            <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end">
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 text-slate-300">
                         <ShieldCheck className="h-4 w-4" />
-                        <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique USDS</span>
+                        <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
                     </div>
                     <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
                 </div>
                 <div className="text-center">
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
-                    <div className="w-40 border-b border-slate-200"></div>
+                    <div className="w-40 border-b-2 border-slate-200"></div>
                 </div>
             </footer>
         </div>
