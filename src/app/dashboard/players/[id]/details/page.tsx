@@ -13,7 +13,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
@@ -31,7 +30,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-6 flex items-center gap-2 border-b border-slate-200 pb-2">
+    <div className="mb-6 flex items-center gap-2 border-b-2 border-slate-100 pb-2">
         {Icon && <Icon className="h-4 w-4 text-primary" />}
         <h2 className="text-xs font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
     </div>
@@ -44,7 +43,9 @@ const toTitleCase = (str: string) => {
 
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -157,7 +158,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  const displayId = player.professionalId || "PL-NEW-XXXX";
+  const displayId = player.professionalId || `PL-NEW-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
 
   return (
@@ -199,8 +200,8 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="border-2 border-primary/20 px-3 py-1.5 rounded-md mb-1 inline-block bg-slate-50">
-                        <p className="text-[8px] font-black uppercase text-slate-500 tracking-wider mb-0.5">Identifiant Unique</p>
+                    <div className="border-2 border-primary/40 px-3 py-1.5 rounded-md mb-1 inline-block bg-white shadow-sm">
+                        <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-0.5">Identifiant Unique</p>
                         <p className="text-xs font-mono font-bold text-primary">{displayId}</p>
                     </div>
                     <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
@@ -228,7 +229,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400 font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border border-slate-200">
+                    <div className="flex items-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border-2 border-primary/20 font-bold">
                         <Fingerprint className="h-3 w-3" />
                         {displayId}
                     </div>
@@ -237,7 +238,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
             <main className="flex flex-row gap-12 flex-grow">
                 {/* COLUMN LEFT: PERSO & CONTACT */}
-                <div className="w-[45%] space-y-10">
+                <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="État Civil & Contact" icon={User} />
                         <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -251,7 +252,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 </div>
 
                 {/* COLUMN RIGHT: SPORT & TUTOR */}
-                <div className="w-[45%] space-y-10">
+                <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="Parcours Sportif" icon={Shield} />
                         <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
@@ -261,7 +262,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
 
                     {player.tutorName && (
-                        <div>
+                        <div className="pt-4">
                             <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                             <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                             <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, FileText, Banknote } from "lucide-react";
+import { Loader2, ArrowLeft, Banknote } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 
 export default function SalaryDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: salaryId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const salaryId = params.id;
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);
   const [loading, setLoading] = useState(true);

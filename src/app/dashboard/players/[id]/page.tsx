@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,7 +32,9 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
 );
 
 export default function PlayerDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);

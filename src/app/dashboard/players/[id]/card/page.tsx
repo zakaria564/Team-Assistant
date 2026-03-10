@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,27 +14,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-interface Player {
-  id: string;
-  name: string;
-  category: string;
-  number: number;
-  photoUrl?: string;
-  position?: string;
-  birthDate?: string;
-  nationality?: string;
-  cin?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  professionalId?: string;
-}
-
 export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
-  const [player, setPlayer] = useState<Player | null>(null);
+  const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
@@ -54,9 +41,8 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
         const playerSnap = await getDoc(playerRef);
 
         if (playerSnap.exists()) {
-          setPlayer({ id: playerSnap.id, ...playerSnap.data() } as Player);
+          setPlayer({ id: playerSnap.id, ...playerSnap.data() });
         } else {
-          console.error("Player not found");
           router.push("/dashboard/players");
         }
 
@@ -101,7 +87,6 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
         setLoadingPdf(false);
       });
     } else {
-      console.error("Element to print not found.");
       setLoadingPdf(false);
     }
   };
@@ -114,16 +99,8 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
     );
   }
   
-  if (!player) {
-     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Joueur non trouvé.</p>
-      </div>
-    );
-  }
-  
+  if (!player) return null;
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "J";
-
 
   return (
     <div className="bg-background">
@@ -136,7 +113,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
+                Génération...
               </>
             ) : (
               <>
@@ -147,7 +124,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
           </Button>
         </div>
 
-        <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col">
+        <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col mx-auto max-w-sm">
             <header className="bg-primary text-primary-foreground p-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                     <Trophy className="h-6 w-6" />

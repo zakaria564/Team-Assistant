@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,23 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { isPast } from "date-fns";
 
-interface Event {
-    id: string;
-    type: any;
-    category: string;
-    date: Date;
-    location?: string;
-    teamHome?: string;
-    teamAway?: string;
-    scoreHome?: number;
-    scoreAway?: number;
-}
-
 export default function EditEventPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: eventId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const eventId = params.id;
   const router = useRouter();
   
-  const [event, setEvent] = useState<Event | null>(null);
+  const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
 
@@ -52,7 +43,7 @@ export default function EditEventPage(props: { params: Promise<{ id: string }>, 
               id: docSnap.id, 
               ...data,
               date: date
-            } as Event);
+            });
         } else {
           router.push("/dashboard/events");
         }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,32 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-interface Coach {
-  id: string;
-  name: string;
-  category: string;
-  status: "Actif" | "Inactif";
-  phone?: string;
-  email: string;
-  photoUrl?: string;
-  specialty?: string;
-  entryDate?: string;
-  exitDate?: string;
-  nationality?: string;
-  address?: string;
-  documents?: { name: string; url: string; validityDate?: string }[];
-}
-
 const toTitleCase = (str: string) => {
   if (!str) return '';
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
 export default function EditCoachPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: coachId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const coachId = params.id;
   const router = useRouter();
   
-  const [coach, setCoach] = useState<Coach | null>(null);
+  const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
    useEffect(() => {
@@ -47,7 +34,7 @@ export default function EditCoachPage(props: { params: Promise<{ id: string }>, 
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setCoach({ id: docSnap.id, ...docSnap.data() } as Coach);
+          setCoach({ id: docSnap.id, ...docSnap.data() });
         } else {
           router.push("/dashboard/coaches");
         }

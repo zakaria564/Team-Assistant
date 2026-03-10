@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -61,7 +62,9 @@ const toTitleCase = (str: string) => {
 };
 
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: coachId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const coachId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

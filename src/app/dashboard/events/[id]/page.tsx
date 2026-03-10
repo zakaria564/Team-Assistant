@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,7 +12,9 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function EventDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: eventId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const eventId = params.id;
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -18,7 +19,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentReceiptPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: paymentId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const paymentId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -138,7 +141,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                 <h1 className="text-2xl font-black uppercase tracking-tight text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "Votre Club"}</h1>
                 <div className="text-slate-500 text-sm font-medium">
                     <p>{clubInfo?.address || "Adresse non renseignée"}</p>
-                    {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
+                    {clubInfo?.clubPhone && <p>Tél: {clubPhone}</p>}
                 </div>
               </div>
             </div>
@@ -193,7 +196,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
             </div>
 
             <div className="flex justify-end pt-4">
-              <div className="w-full max-w-sm space-y-3 bg-slate-50 p-6 rounded-xl border border-slate-100">
+              <div className="w-full max-sm space-y-3 bg-slate-50 p-6 rounded-xl border border-slate-100">
                 <div className="flex justify-between text-slate-500 font-bold text-sm">
                     <span>Montant Total Dû :</span>
                     <span>{payment.totalAmount.toFixed(2)} MAD</span>

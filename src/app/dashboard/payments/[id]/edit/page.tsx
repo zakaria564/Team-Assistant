@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,20 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-interface Payment {
-  id: string;
-  playerId: string;
-  totalAmount: number;
-  description: string;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  transactions: { amount: number; date: any; method: string; }[];
-}
-
 export default function EditPaymentPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { id: paymentId } = React.use(props.params);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
+  const paymentId = params.id;
   const router = useRouter();
   
-  const [payment, setPayment] = useState<Payment | null>(null);
+  const [payment, setPayment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [playerName, setPlayerName] = useState("");
 
@@ -36,7 +30,7 @@ export default function EditPaymentPage(props: { params: Promise<{ id: string }>
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const paymentData = { id: docSnap.id, ...docSnap.data() } as Payment;
+          const paymentData = { id: docSnap.id, ...docSnap.data() };
           setPayment(paymentData);
           
           const playerRef = doc(db, "players", paymentData.playerId);
