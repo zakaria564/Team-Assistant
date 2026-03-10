@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, FileText, Globe, MapPin, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, MapPin, ShieldCheck } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -119,7 +119,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             backgroundColor: '#ffffff',
             logging: false
         }).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'pt',
@@ -139,7 +138,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             }
 
             const x = (pdfWidth - imgWidth) / 2;
-            pdf.addImage(imgData, 'PNG', x, 0, imgWidth, imgHeight);
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
             pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
         }).finally(() => {
             if (cardElement) {
@@ -239,7 +238,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
             {/* CONTENT GRID */}
             <main className="grid grid-cols-2 gap-x-16 gap-y-12 mb-auto">
-                {/* PERSO */}
+                {/* COLUMN LEFT: PERSO */}
                 <div className="space-y-8">
                     <SectionTitle title="État Civil & Contact" icon={User} />
                     <div className="grid grid-cols-1 gap-y-6">
@@ -253,54 +252,34 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
 
-                {/* SPORTIVE */}
-                <div className="space-y-8">
-                    <SectionTitle title="Parcours Sportif" icon={Shield} />
-                    <div className="grid grid-cols-1 gap-y-6">
-                        <DetailItem icon={Shield} label="Catégorie actuelle" value={player.category} />
-                        <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
-                        <DetailItem icon={Shirt} label="Numéro attribué" value={player.number ? `Maillot n° ${player.number}` : undefined} />
-                        <DetailItem icon={ClipboardList} label="Coach référent" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
-                        <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                        <DetailItem icon={LogOut} label="Fin de contrat" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Indéterminée"} />
-                    </div>
-                </div>
-
-                {/* TUTOR */}
-                {player.tutorName && (
+                {/* COLUMN RIGHT: SPORT & TUTOR */}
+                <div className="space-y-12">
+                    {/* SPORTIVE */}
                     <div className="space-y-8">
-                        <SectionTitle title="Responsable Légal" icon={VenetianMask} />
+                        <SectionTitle title="Parcours Sportif" icon={Shield} />
                         <div className="grid grid-cols-1 gap-y-6">
-                            <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
-                            <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
-                            <DetailItem icon={Phone} label="Téléphone d'urgence" value={player.tutorPhone} />
-                            <DetailItem icon={Mail} label="Email de contact" value={player.tutorEmail} />
+                            <DetailItem icon={Shield} label="Catégorie actuelle" value={player.category} />
+                            <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
+                            <DetailItem icon={Shirt} label="Numéro attribué" value={player.number ? `Maillot n° ${player.number}` : undefined} />
+                            <DetailItem icon={ClipboardList} label="Coach référent" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
+                            <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                            <DetailItem icon={LogOut} label="Fin de contrat" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Indéterminée"} />
                         </div>
                     </div>
-                )}
 
-                {/* DOCUMENTS */}
-                {player.documents && player.documents.length > 0 && (
-                    <div className="space-y-8">
-                        <SectionTitle title="Dossier Administratif" icon={FileText} />
-                        <div className="grid grid-cols-1 gap-y-4">
-                            {player.documents.map((doc: any, index: number) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="h-4 w-4 text-slate-400" />
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-700">{doc.name}</p>
-                                            {doc.validityDate && (
-                                                <p className="text-[9px] font-bold text-primary uppercase">Expire le {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <Badge variant="outline" className="text-[8px] uppercase font-black text-slate-400 border-slate-200">Enregistré</Badge>
-                                </div>
-                            ))}
+                    {/* TUTOR */}
+                    {player.tutorName && (
+                        <div className="space-y-8">
+                            <SectionTitle title="Responsable Légal" icon={VenetianMask} />
+                            <div className="grid grid-cols-1 gap-y-6">
+                                <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
+                                <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
+                                <DetailItem icon={Phone} label="Téléphone d'urgence" value={player.tutorPhone} />
+                                <DetailItem icon={Mail} label="Email de contact" value={player.tutorEmail} />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </main>
 
             {/* OFFICIAL FOOTER */}
