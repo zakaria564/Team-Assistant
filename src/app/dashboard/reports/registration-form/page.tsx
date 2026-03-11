@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, Loader2, User, Users } from "lucide-react";
+import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, CheckSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
@@ -22,7 +22,7 @@ export default function RegistrationFormPage() {
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [loadingClub, setLoadingClub] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
-  const [formType, setFormType] = useState<"junior" | "adult">("junior");
+  const [formType, setFormType] = useState<"junior" | "adult" | "checklist">("junior");
 
   useEffect(() => {
     const fetchClubInfo = async () => {
@@ -89,7 +89,13 @@ export default function RegistrationFormPage() {
             const y = (pdfHeight - finalHeight) / 2;
 
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, width, finalHeight);
-            pdf.save(`fiche-inscription-${formType === 'junior' ? 'junior' : 'adulte'}.pdf`);
+            
+            let fileName = "document.pdf";
+            if (formType === 'junior') fileName = "fiche-inscription-junior.pdf";
+            else if (formType === 'adult') fileName = "fiche-inscription-adulte.pdf";
+            else fileName = "pieces-a-fournir.pdf";
+
+            pdf.save(fileName);
         }).finally(() => {
             setLoadingPdf(false);
         });
@@ -115,12 +121,15 @@ export default function RegistrationFormPage() {
                     </Button>
                     
                     <Tabs value={formType} onValueChange={(v) => setFormType(v as any)} className="w-full sm:w-auto">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="junior" className="flex items-center gap-2">
                                 <Users className="h-4 w-4" /> Junior
                             </TabsTrigger>
                             <TabsTrigger value="adult" className="flex items-center gap-2">
                                 <User className="h-4 w-4" /> Adulte
+                            </TabsTrigger>
+                            <TabsTrigger value="checklist" className="flex items-center gap-2">
+                                <ClipboardList className="h-4 w-4" /> Pièces
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
@@ -156,7 +165,7 @@ export default function RegistrationFormPage() {
                                 </Avatar>
                                 <div className="space-y-1">
                                     <CardTitle className="text-2xl font-black uppercase tracking-tight">
-                                        FICHE D'INSCRIPTION {formType === 'adult' ? 'ADULTE' : 'JUNIOR'}
+                                        {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
                                     </CardTitle>
                                     <p className="text-primary font-bold tracking-[0.2em] uppercase text-sm">{clubName}</p>
                                 </div>
@@ -168,95 +177,151 @@ export default function RegistrationFormPage() {
                     </CardHeader>
 
                     <CardContent className="p-8 sm:p-10 space-y-8">
-                        {/* Section I */}
-                        <div className="space-y-4">
-                            <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">I. INFORMATIONS DU JOUEUR</h3>
-                            <div className="space-y-4 text-sm">
-                                <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
-                                <div className="flex items-center"><div>Date et Lieu de naissance :</div><DottedLine /></div>
-                                <div className="grid grid-cols-2 gap-x-8">
-                                    <div className="flex items-center"><div>Nationalité :</div><DottedLine /></div>
-                                    <div className="flex items-center"><div>Genre :</div><DottedLine /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-x-8">
-                                    <div className="flex items-center"><div>N° CIN :</div><DottedLine /></div>
-                                    <div className="flex items-center"><div>N° Lic. (si ré-inscrit) :</div><DottedLine /></div>
-                                </div>
-                                <div className="flex items-center"><div>Adresse Résidentielle :</div><DottedLine /></div>
-                                <div className="grid grid-cols-2 gap-x-8">
-                                    <div className="flex items-center"><div>Téléphone :</div><DottedLine /></div>
-                                    <div className="flex items-center"><div>Adresse e-mail :</div><DottedLine /></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Section II - Uniquement Junior */}
-                        {formType === 'junior' && (
-                            <div className="space-y-4">
-                                <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
-                                <div className="space-y-4 text-sm">
-                                    <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
-                                    <div className="grid grid-cols-2 gap-x-8">
-                                        <div className="flex items-center"><div>Lien de parenté :</div><DottedLine /></div>
-                                        <div className="flex items-center"><div>N° de CIN :</div><DottedLine /></div>
+                        {formType === 'checklist' ? (
+                            /* Onglet Pièces à fournir uniquement */
+                            <div className="space-y-10 py-10">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <ClipboardList className="h-6 w-6 text-primary" />
+                                        <h3 className="font-black text-lg uppercase tracking-tight">LISTE DES DOCUMENTS OBLIGATOIRES</h3>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-x-8">
-                                        <div className="flex items-center"><div>Téléphone d'urgence :</div><DottedLine /></div>
-                                        <div className="flex items-center"><div>Adresse e-mail :</div><DottedLine /></div>
+                                    
+                                    <div className="grid grid-cols-1 gap-6">
+                                        <ul className="space-y-6">
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">2 Photos d'identité</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Format récent, fond clair.</p>
+                                                </div>
+                                            </li>
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">Copie de la CIN (Recto-Verso)</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Celle du joueur (Adulte) ou celle du tuteur légal (Junior).</p>
+                                                </div>
+                                            </li>
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">Certificat médical d'aptitude sportive</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Indispensable pour la pratique du football en compétition.</p>
+                                                </div>
+                                            </li>
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">Attestation d'assurance</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Couvrant la saison sportive en cours.</p>
+                                                </div>
+                                            </li>
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">Frais d'adhésion annuelle</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Règlement des frais selon la catégorie.</p>
+                                                </div>
+                                            </li>
+                                            <li className="flex items-start gap-4 p-4 border rounded-lg bg-slate-50">
+                                                <div className="h-6 w-6 border-2 border-primary rounded-md shrink-0 mt-1"></div>
+                                                <div>
+                                                    <p className="font-black text-sm uppercase">Extrait d'acte de naissance</p>
+                                                    <p className="text-xs text-muted-foreground font-medium">Requis uniquement pour les nouveaux inscrits (Juniors).</p>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
-                            </div>
-                        )}
 
-                        {/* Section III */}
-                        <div className="space-y-4">
-                            <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">III. AUTORISATION ET DÉCLARATION</h3>
-                            <div className="space-y-4 text-xs sm:text-sm leading-relaxed italic text-slate-700">
-                                {formType === 'junior' ? (
-                                    <p>
-                                        Je soussigné(e), ....................................................................., certifie que les informations ci-dessus sont exactes. 
-                                        J'autorise mon enfant, ....................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
-                                    </p>
-                                ) : (
-                                    <p>
-                                        Je soussigné(e), ....................................................................., certifie que les informations ci-dessus sont exactes et m'engage à respecter le règlement intérieur du club ainsi qu'à participer aux activités sportives organisées.
-                                    </p>
-                                )}
-                                <p className="font-bold text-black border-l-4 border-primary pl-3 not-italic">
-                                    IMPORTANT : Cette fiche, une fois remplie et signée, doit impérativement être légalisée auprès des autorités compétentes pour être valide.
-                                </p>
-                                <div className="pt-4 flex flex-row justify-between items-start gap-10">
-                                    <div className="space-y-2">
-                                        <div className="flex items-center">
-                                            <span>Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
-                                            <span className="ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                                <div className="pt-10 border-t border-dashed">
+                                    <div className="flex flex-row justify-between items-center gap-10">
+                                        <div className="space-y-4">
+                                            <p className="text-xs font-bold italic text-slate-500 max-w-xs leading-relaxed">
+                                                * Tout dossier incomplet sera refusé par l'administration du club.
+                                            </p>
+                                        </div>
+                                        <div className="text-center w-64 h-32 border border-slate-200 rounded p-4 flex flex-col items-center bg-slate-50">
+                                            <p className="text-[10px] font-black uppercase text-slate-400 mb-auto tracking-widest">Cachet Administratif</p>
                                         </div>
                                     </div>
-                                    <div className="text-center w-64 h-32 border border-slate-200 rounded p-2 flex flex-col items-center">
-                                        <p className="text-[10px] font-bold uppercase text-slate-400 mb-auto">Signature (Légalisée)</p>
-                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            /* Formulaire Junior / Adulte */
+                            <>
+                                {/* Section I */}
+                                <div className="space-y-4">
+                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">I. INFORMATIONS DU JOUEUR</h3>
+                                    <div className="space-y-4 text-sm">
+                                        <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
+                                        <div className="flex items-center"><div>Date et Lieu de naissance :</div><DottedLine /></div>
+                                        <div className="grid grid-cols-2 gap-x-8">
+                                            <div className="flex items-center"><div>Nationalité :</div><DottedLine /></div>
+                                            <div className="flex items-center"><div>Genre :</div><DottedLine /></div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-x-8">
+                                            <div className="flex items-center"><div>N° CIN :</div><DottedLine /></div>
+                                            <div className="flex items-center"><div>N° Lic. (si ré-inscrit) :</div><DottedLine /></div>
+                                        </div>
+                                        <div className="flex items-center"><div>Adresse Résidentielle :</div><DottedLine /></div>
+                                        <div className="grid grid-cols-2 gap-x-8">
+                                            <div className="flex items-center"><div>Téléphone :</div><DottedLine /></div>
+                                            <div className="flex items-center"><div>Adresse e-mail :</div><DottedLine /></div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        {/* Section IV - Pièces à fournir */}
-                        <div className="space-y-4 pt-4">
-                            <h3 className="font-black text-sm uppercase tracking-wider bg-primary text-white px-3 py-1.5 w-fit rounded">IV. PIÈCES À FOURNIR</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <ul className="list-none space-y-2 text-xs font-semibold uppercase">
-                                    <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> 2 Photos d'identité</li>
-                                    <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> Copie de la CIN (Joueur ou Tuteur)</li>
-                                    <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> Certificat médical d'aptitude</li>
-                                </ul>
-                                <ul className="list-none space-y-2 text-xs font-semibold uppercase">
-                                    <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> Attestation d'assurance</li>
-                                    <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> Frais d'adhésion annuelle</li>
-                                    {formType === 'junior' && (
-                                        <li className="flex items-center gap-2"><div className="h-3 w-3 border-2 border-primary rounded-sm"></div> Extrait d'acte de naissance</li>
-                                    )}
-                                </ul>
-                            </div>
-                        </div>
+                                {/* Section II - Uniquement Junior */}
+                                {formType === 'junior' && (
+                                    <div className="space-y-4">
+                                        <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
+                                        <div className="space-y-4 text-sm">
+                                            <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
+                                            <div className="grid grid-cols-2 gap-x-8">
+                                                <div className="flex items-center"><div>Lien de parenté :</div><DottedLine /></div>
+                                                <div className="flex items-center"><div>N° de CIN :</div><DottedLine /></div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-x-8">
+                                                <div className="flex items-center"><div>Téléphone d'urgence :</div><DottedLine /></div>
+                                                <div className="flex items-center"><div>Adresse e-mail :</div><DottedLine /></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Section III */}
+                                <div className="space-y-4">
+                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">III. AUTORISATION ET DÉCLARATION</h3>
+                                    <div className="space-y-4 text-xs sm:text-sm leading-relaxed italic text-slate-700">
+                                        {formType === 'junior' ? (
+                                            <p>
+                                                Je soussigné(e), ....................................................................., certifie que les informations ci-dessus sont exactes. 
+                                                J'autorise mon enfant, ....................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                                            </p>
+                                        ) : (
+                                            <p>
+                                                Je soussigné(e), ....................................................................., certifie que les informations ci-dessus sont exactes et m'engage à respecter le règlement intérieur du club ainsi qu'à participer aux activités sportives organisées.
+                                            </p>
+                                        )}
+                                        <p className="font-bold text-black border-l-4 border-primary pl-3 not-italic">
+                                            IMPORTANT : Cette fiche, une fois remplie et signée, doit impérativement être légalisée auprès des autorités compétentes pour être valide.
+                                        </p>
+                                        <div className="pt-4 flex flex-row justify-between items-start gap-10">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center">
+                                                    <span>Fait à</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>,
+                                                    <span className="ml-2">le</span><div className="w-32 border-b border-dotted border-gray-400 mx-1"></div>
+                                                </div>
+                                            </div>
+                                            <div className="text-center w-64 h-32 border border-slate-200 rounded p-2 flex flex-col items-center">
+                                                <p className="text-[10px] font-bold uppercase text-slate-400 mb-auto">Signature (Légalisée)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </CardContent>
                     
                     <footer className="p-6 bg-slate-900 text-white flex justify-between items-center rounded-b-lg">
