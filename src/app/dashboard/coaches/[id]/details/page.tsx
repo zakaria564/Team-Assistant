@@ -256,9 +256,9 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         <SectionTitle title="État Civil & Contact" icon={User} />
                         <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
                         <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
-                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} isBlue />
-                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} isBlue />
-                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} isBlue />
+                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
+                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
+                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                     </div>
                 </div>
 
