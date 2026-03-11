@@ -158,7 +158,8 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 4).toUpperCase()}`;
+  // Stable display ID based on doc ID if professionalId is missing
+  const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 6).toUpperCase()}`;
 
 
   return (
@@ -200,9 +201,9 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="border-2 border-slate-800 px-3 py-1.5 rounded-md mb-1 inline-block bg-white shadow-sm">
+                    <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 inline-flex flex-col items-center justify-center bg-white shadow-sm min-w-[150px]">
                         <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-0.5">Identifiant Unique</p>
-                        <p className="text-xs font-mono font-bold text-primary">{displayId}</p>
+                        <p className="text-xs font-mono font-bold text-primary leading-none">{displayId}</p>
                     </div>
                     <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
@@ -229,9 +230,9 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-2 py-0.5 rounded border-2 border-slate-800 font-bold shadow-sm">
-                        <Fingerprint className="h-3 w-3" />
-                        {displayId}
+                    <div className="flex items-center justify-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-3 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[130px]">
+                        <Fingerprint className="h-3.5 w-3.5" />
+                        <span className="leading-none mt-0.5">{displayId}</span>
                     </div>
                 </div>
             </section>
