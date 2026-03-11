@@ -19,8 +19,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentReceiptPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { params: paramsPromise } = props;
-  const params = React.use(paramsPromise);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
   const paymentId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

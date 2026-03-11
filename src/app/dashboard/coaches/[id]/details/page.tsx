@@ -54,14 +54,9 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-const toTitleCase = (str: string) => {
-  if (!str) return '';
-  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
-
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { params: paramsPromise } = props;
-  const params = React.use(paramsPromise);
+  const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
   const coachId = params.id;
   
   const router = useRouter();
@@ -177,7 +172,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  // Professional ID stored in doc, with a stable fallback based on ID if missing
   const displayId = coach.professionalId || `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
 
 
@@ -258,7 +252,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             </section>
 
             <main className="flex flex-row gap-12 flex-grow">
-                {/* COLUMN LEFT: PERSO & CONTACT */}
                 <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="État Civil & Contact" icon={User} />
@@ -270,7 +263,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     </div>
                 </div>
 
-                {/* COLUMN RIGHT: SPORT & PARCOURS */}
                 <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="Parcours Sportif" icon={Shield} />

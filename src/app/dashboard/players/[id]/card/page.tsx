@@ -104,7 +104,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
 
   return (
     <div className="bg-background">
-      <div className="w-full max-sm mx-auto space-y-4 py-4 px-2">
+      <div className="w-full max-w-sm mx-auto space-y-4 py-4 px-2">
          <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour

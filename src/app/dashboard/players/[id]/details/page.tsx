@@ -44,6 +44,7 @@ const toTitleCase = (str: string) => {
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const params = React.use(props.params);
+  const searchParams = React.use(props.searchParams);
   const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -157,7 +158,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  // Stable display ID based on doc ID if professionalId is missing
   const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 6).toUpperCase()}`;
 
 
@@ -241,7 +241,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             </section>
 
             <main className="flex flex-row gap-12 flex-grow">
-                {/* COLUMN LEFT: PERSO & CONTACT */}
                 <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="État Civil & Contact" icon={User} />
@@ -255,7 +254,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
 
-                {/* COLUMN RIGHT: SPORT & TUTOR */}
                 <div className="w-1/2 space-y-10">
                     <div>
                         <SectionTitle title="Parcours Sportif" icon={Shield} />
