@@ -7,13 +7,12 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, FileText, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -31,7 +30,6 @@ interface Coach {
   nationality?: string;
   cin?: string;
   address?: string;
-  documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
@@ -279,22 +277,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                         <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
                     </div>
-
-                    {coach.documents && coach.documents.length > 0 && (
-                        <div className="pt-4">
-                            <SectionTitle title="Documents Qualifiants" icon={FileText} />
-                            <div className="space-y-2">
-                                {coach.documents.map((doc: any, index: number) => (
-                                    <div key={index} className="flex flex-col mb-3">
-                                        <span className="text-xs font-bold text-slate-800">{doc.name}</span>
-                                        {doc.validityDate && (
-                                            <span className="text-[10px] text-slate-400">Expire le : {format(new Date(doc.validityDate), "dd/MM/yyyy")}</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </main>
 
