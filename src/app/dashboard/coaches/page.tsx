@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown } from "lucide-react";
+import { PlusCircle, Loader2, Search, MoreHorizontal, Trash2, Pencil, FileText, FileDown, Fingerprint } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, updateDoc, where, deleteDoc } from "firebase/firestore";
@@ -49,6 +50,7 @@ interface Coach {
   email: string;
   photoUrl?: string;
   specialty?: string;
+  professionalId?: string;
 }
 
 const getStatusBadgeClass = (status?: CoachStatus) => {
@@ -119,6 +121,9 @@ export default function CoachesPage() {
                 break;
             case 'specialty':
                 valueToSearch = coach.specialty;
+                break;
+            case 'professionalId':
+                valueToSearch = coach.professionalId;
                 break;
             default:
                 valueToSearch = coach.name;
@@ -204,6 +209,7 @@ export default function CoachesPage() {
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="name">Nom</SelectItem>
+                      <SelectItem value="professionalId">ID Unique</SelectItem>
                       <SelectItem value="specialty">Spécialité</SelectItem>
                       <SelectItem value="category">Catégorie</SelectItem>
                       <SelectItem value="status">Statut</SelectItem>
@@ -228,6 +234,7 @@ export default function CoachesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Entraîneur</TableHead>
+                      <TableHead className="hidden lg:table-cell">ID Unique</TableHead>
                       <TableHead className="hidden md:table-cell">Spécialité</TableHead>
                       <TableHead className="hidden sm:table-cell">Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -245,9 +252,15 @@ export default function CoachesPage() {
                                     </Avatar>
                                     <div className="flex flex-col">
                                         <span className="font-medium">{toTitleCase(coach.name)}</span>
-                                        <span className="text-muted-foreground text-sm md:hidden">{coach.specialty}</span>
+                                        <span className="text-muted-foreground text-xs lg:hidden">{coach.professionalId || "N/A"}</span>
                                     </div>
                                 </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell font-mono text-xs">
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Fingerprint className="h-3 w-3" />
+                                  {coach.professionalId || "N/A"}
+                              </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">{coach.specialty}</TableCell>
                           <TableCell className="hidden sm:table-cell">
@@ -315,7 +328,7 @@ export default function CoachesPage() {
                       ))
                     ) : (
                       <TableRow>
-                          <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                          <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                             {searchTerm ? "Aucun entraîneur ne correspond à votre recherche." : "Aucun entraîneur trouvé. Commencez par en ajouter un !"}
                           </TableCell>
                         </TableRow>

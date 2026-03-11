@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2 } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { format } from "date-fns";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
@@ -44,6 +45,7 @@ const formSchema = z.object({
   cin: z.string().optional(),
   address: z.string().optional(),
   documents: z.array(documentSchema).optional(),
+  professionalId: z.string().optional(),
 });
 
 interface CoachData extends z.infer<typeof formSchema> {
@@ -103,6 +105,12 @@ const documentTypes = [
     "Autre"
 ];
 
+const generateProfessionalId = () => {
+    const yearMonth = format(new Date(), "yyyyMM");
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `CH-${yearMonth}-${random}`;
+};
+
 const normalizeString = (str: string | null | undefined) => {
     if (!str) return '';
     return str
@@ -143,6 +151,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
           url: doc.url || "",
           validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
       })),
+      professionalId: coach?.professionalId || "",
     },
   });
 
@@ -282,6 +291,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             specialty: values.specialty || '',
             documents: documentsToSave,
             isDeleted: false,
+            professionalId: values.professionalId || generateProfessionalId(),
         };
 
         if (isEditMode && coach) {
@@ -363,7 +373,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input {...field} />
+                                <Input {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -374,7 +384,26 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                 <Separator />
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Informations Club</h3>
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                        <Fingerprint className="h-5 w-5 text-primary" />
+                        Informations Club
+                    </h3>
+
+                    {isEditMode && (
+                        <FormField
+                            control={form.control}
+                            name="professionalId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>ID Professionnel (Généré)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} value={field.value || ""} disabled className="bg-muted font-mono font-bold" />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    )}
+
                     <FormField
                         control={form.control}
                         name="specialty"
@@ -534,7 +563,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                                <FormLabel>URL du Document</FormLabel>
                                <FormControl>
-                                   <Input type="text" {...field} />
+                                   <Input type="text" {...field} value={field.value || ""} />
                                </FormControl>
                                <FormMessage />
                             </FormItem>
@@ -559,7 +588,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -595,7 +624,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                    <Input {...field} />
+                                    <Input {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -609,7 +638,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <Textarea {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -622,7 +651,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" {...field} />
+                                <Input type="email" {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -635,7 +664,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Téléphone</FormLabel>
                             <FormControl>
-                                <Input type="tel" {...field} />
+                                <Input type="tel" {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

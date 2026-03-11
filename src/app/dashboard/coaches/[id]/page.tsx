@@ -8,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, FileDown } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, FileDown, Fingerprint } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -58,10 +58,16 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
         <Card className="lg:col-span-1">
           <CardContent className="pt-6 flex flex-col items-center gap-4">
             <Avatar className="h-32 w-32 border-4 border-primary shadow-sm">
-              <AvatarImage src={coach.photoUrl} />
+              <AvatarImage src={coach.photoUrl} className="object-cover" />
               <AvatarFallback>E</AvatarFallback>
             </Avatar>
-            <h2 className="text-2xl font-bold text-center">{coach.name}</h2>
+            <div className="text-center space-y-1">
+                <h2 className="text-2xl font-bold">{coach.name}</h2>
+                <Badge variant="outline" className="font-mono text-xs flex items-center gap-1 justify-center">
+                    <Fingerprint className="h-3 w-3" />
+                    {coach.professionalId || "ID: N/A"}
+                </Badge>
+            </div>
             <Badge className="bg-green-100 text-green-800">{coach.status}</Badge>
           </CardContent>
         </Card>
@@ -71,8 +77,14 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
             <CardContent className="grid sm:grid-cols-2 gap-6">
               <div className="flex items-center gap-3"><Star className="text-muted-foreground h-5 w-5" /> <span>Spécialité: {coach.specialty}</span></div>
               <div className="flex items-center gap-3"><Shield className="text-muted-foreground h-5 w-5" /> <span>Catégorie: {coach.category}</span></div>
-              <div className="flex items-center gap-3"><Phone className="text-muted-foreground h-5 w-5" /> <span>Tél: {coach.phone || 'N/A'}</span></div>
-              <div className="flex items-center gap-3"><Mail className="text-muted-foreground h-5 w-5" /> <span>Email: {coach.email}</span></div>
+              <div className="flex items-center gap-3">
+                  <Phone className="text-muted-foreground h-5 w-5" /> 
+                  <a href={`tel:${coach.phone}`} className="hover:text-primary hover:underline">{coach.phone || 'N/A'}</a>
+              </div>
+              <div className="flex items-center gap-3">
+                  <Mail className="text-muted-foreground h-5 w-5" /> 
+                  <a href={`mailto:${coach.email}`} className="hover:text-primary hover:underline">{coach.email}</a>
+              </div>
             </CardContent>
           </Card>
 

@@ -30,6 +30,7 @@ interface Coach {
   nationality?: string;
   cin?: string;
   address?: string;
+  professionalId?: string;
 }
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
@@ -176,7 +177,8 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
-  const displayId = `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
+  // Professional ID stored in doc, with a stable fallback based on ID if missing
+  const displayId = coach.professionalId || `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
 
 
   return (
