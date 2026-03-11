@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 
 export default function SalaryDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
   const salaryId = params.id;
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);
@@ -43,6 +42,7 @@ export default function SalaryDetailPage(props: { params: Promise<{ id: string }
   if (!salary) return null;
 
   const totalPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
+  const remaining = salary.totalAmount - totalPaid;
 
   return (
     <div className="space-y-6">
@@ -76,7 +76,15 @@ export default function SalaryDetailPage(props: { params: Promise<{ id: string }
           <CardContent className="space-y-4">
             <div className="flex justify-between"><span>Salaire Total :</span><span className="font-bold">{salary.totalAmount.toFixed(2)} MAD</span></div>
             <div className="flex justify-between"><span>Déjà Payé :</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>
-            <div className="flex justify-between"><span>Reste :</span><span className="font-bold text-red-600">{(salary.totalAmount - totalPaid).toFixed(2)} MAD</span></div>
+            <div className="flex justify-between">
+                <span>Reste :</span>
+                <span className={cn(
+                    "font-bold",
+                    remaining > 0.01 ? "text-red-600" : "text-muted-foreground"
+                )}>
+                    {remaining.toFixed(2)} MAD
+                </span>
+            </div>
             <Badge className={cn("w-full justify-center text-base py-1", salary.status === 'Payé' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700')}>{salary.status}</Badge>
           </CardContent>
         </Card>

@@ -15,9 +15,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
+const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
+  <div className="flex items-start gap-3">
+    <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+    <div>
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline break-all">
+          {value || "Non renseigné"}
+        </a>
+      ) : (
+        <p className="text-sm font-semibold">{value || "Non renseigné"}</p>
+      )}
+    </div>
+  </div>
+);
+
 export default function PaymentDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
   const paymentId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -48,6 +63,7 @@ export default function PaymentDetailPage(props: { params: Promise<{ id: string 
   if (!payment) return null;
 
   const totalPaid = payment.transactions?.reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
+  const remaining = payment.totalAmount - totalPaid;
 
   return (
     <div className="space-y-6">
@@ -81,7 +97,15 @@ export default function PaymentDetailPage(props: { params: Promise<{ id: string 
           <CardContent className="space-y-4">
             <div className="flex justify-between"><span>Total Dû:</span><span className="font-bold">{payment.totalAmount.toFixed(2)} MAD</span></div>
             <div className="flex justify-between"><span>Total Payé:</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>
-            <div className="flex justify-between"><span>Reste:</span><span className="font-bold text-red-600">{(payment.totalAmount - totalPaid).toFixed(2)} MAD</span></div>
+            <div className="flex justify-between">
+                <span>Reste :</span>
+                <span className={cn(
+                    "font-bold",
+                    remaining > 0.01 ? "text-red-600" : "text-muted-foreground"
+                )}>
+                    {remaining.toFixed(2)} MAD
+                </span>
+            </div>
             <Badge className={cn("w-full justify-center text-base py-1", payment.status === 'Payé' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700')}>{payment.status}</Badge>
           </CardContent>
         </Card>
