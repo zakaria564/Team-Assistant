@@ -140,7 +140,7 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
                                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <Loader2 className="h-4 w-4" />
+                                        <FileDown className="h-4 w-4" />
                                     </a>
                                 </Button>
                             </div>

@@ -1,46 +1,50 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, UserPlus } from "lucide-react";
-import { format } from "date-fns";
+import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, UserPlus, Pencil } from "lucide-react";
+import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AddScoreForm } from "@/components/events/add-score-form";
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = React.use(params);
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
+
+  const fetchEvent = useCallback(async () => {
+    if (!eventId) return;
+    setLoading(true);
+    try {
+      const snap = await getDoc(doc(db, "events", eventId));
+      if (snap.exists()) {
+          const data = snap.data();
+          setEvent({ id: snap.id, ...data, date: data.date.toDate() });
+      }
+      else router.push('/dashboard/events');
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [eventId, router]);
 
   useEffect(() => {
-    if (!eventId) return;
-    const fetchEvent = async () => {
-      setLoading(true);
-      try {
-        const snap = await getDoc(doc(db, "events", eventId));
-        if (snap.exists()) {
-            const data = snap.data();
-            setEvent({ id: snap.id, ...data, date: data.date.toDate() });
-        }
-        else router.push('/dashboard/events');
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
     fetchEvent();
-  }, [eventId, router]);
+  }, [fetchEvent]);
 
   if (loading) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!event) return null;
 
   const isMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
+  const isMatchPast = isPast(event.date);
 
   // Combine scorers and assisters for timeline
   const timelineEvents = [
@@ -50,9 +54,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-        <h1 className="text-3xl font-bold tracking-tight">Feuille de Match</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
+          <h1 className="text-3xl font-bold tracking-tight">Feuille de Match</h1>
+        </div>
+        {!isFinished && isMatch && isMatchPast && (
+            <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2">
+                <Pencil className="h-4 w-4" /> Saisir le résultat
+            </Button>
+        )}
       </div>
 
       <div className="grid gap-6">
@@ -126,6 +137,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </CardContent>
         </Card>
 
+        {!isFinished && isMatch && isMatchPast && (
+            <Button 
+                variant="default" 
+                size="lg" 
+                onClick={() => setIsScoreDialogOpen(true)}
+                className="w-full h-16 bg-primary text-white font-black text-xl uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform"
+            >
+                <Pencil className="mr-3 h-6 w-6" /> Saisir le résultat final
+            </Button>
+        )}
+
         {isFinished && isMatch && timelineEvents.length > 0 && (
             <Card className="shadow-lg">
                 <CardHeader className="border-b"><CardTitle className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3"><Clock className="h-4 w-4 text-primary" /> Chronologie des Actions</CardTitle></CardHeader>
@@ -165,6 +187,19 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </CardContent>
         </Card>
       </div>
+
+      <Dialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
+        <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Résultat & Statistiques</DialogTitle>
+                <DialogDescription>Enregistrez le score et les buteurs du match.</DialogDescription>
+            </DialogHeader>
+            {event && <AddScoreForm event={event} onFinished={() => {
+                setIsScoreDialogOpen(false);
+                fetchEvent();
+            }} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
