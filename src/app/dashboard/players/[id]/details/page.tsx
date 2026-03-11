@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -200,7 +201,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                     <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
                         <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Unique</p>
                         <div className="w-full text-center">
-                            <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold">
+                            <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold leading-none">
                                 <Fingerprint className="h-3 w-3" />
                                 {displayId}
                             </div>

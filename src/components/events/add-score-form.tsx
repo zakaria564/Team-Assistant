@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Trash2, Clock } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Clock, UserPlus } from "lucide-react";
 import { collection, doc, updateDoc, getDocs, query, where, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Separator } from "../ui/separator";
-import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
+import { Badge } from "../ui/badge";
 
 interface Player {
     id: string;
@@ -47,35 +47,29 @@ const formSchema = z.object({
   scorers: z.array(z.object({
       playerId: z.string().min(1, "Veuillez sélectionner un joueur ou une équipe."),
       playerName: z.string().optional(),
-      goals: z.coerce.number().min(1, "Minimum 1 but."),
+      isOpponent: z.boolean().default(false),
       minute: z.coerce.number().min(1).max(120).optional(),
   })).optional(),
   assisters: z.array(z.object({
-      playerId: z.string().min(1, "Veuillez sélectionner un joueur ou une équipe."),
+      playerId: z.string().min(1, "Veuillez sélectionner un joueur."),
       playerName: z.string().optional(),
-      assists: z.coerce.number().min(1, "Minimum 1 passe."),
+      isOpponent: z.boolean().default(false),
       minute: z.coerce.number().min(1).max(120).optional(),
   })).optional(),
 });
-
-const normalizeString = (str: string | null | undefined): string => {
-    if (!str) return '';
-    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '').replace(/\(f\)/g, '');
-};
 
 export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
-    const [opponents, setOpponents] = useState<Opponent[]>([]);
     const [clubName, setClubName] = useState("Votre Club");
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            scoreHome: undefined,
-            scoreAway: undefined,
+            scoreHome: 0,
+            scoreAway: 0,
             scorers: [],
             assisters: [],
         }
@@ -91,9 +85,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     });
 
     const watchScorers = form.watch("scorers");
-    const watchAssisters = form.watch("assisters");
-    
-     useEffect(() => {
+
+    useEffect(() => {
         const fetchInitialData = async () => {
             if (!user || !event.category) return;
             try {
@@ -102,14 +95,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                 const currentClubName = clubDoc.exists() ? clubDoc.data().clubName : "Votre Club";
                 setClubName(currentClubName);
                 
-                const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
-                const opponentsSnapshot = await getDocs(opponentsQuery);
-                setOpponents(opponentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Opponent)));
-
-                const relatedCategories = [event.category];
-                if (event.category.endsWith(" F")) relatedCategories.push(event.category.replace(" F", ""));
-                
-                const q = query(collection(db, "players"), where("userId", "==", user.uid), where("category", "in", relatedCategories));
+                const q = query(collection(db, "players"), where("userId", "==", user.uid), where("category", "==", event.category));
                 const querySnapshot = await getDocs(q);
                 setPlayers(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player)).sort((a,b) => a.name.localeCompare(b.name)));
 
@@ -118,20 +104,19 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
             }
         };
         fetchInitialData();
-    }, [user, event]);
+    }, [user, event.category]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
         setLoading(true);
         try {
             const processStats = (items: any[]) => {
-                return (items || []).filter(item => item.playerId).map(item => {
-                    const opponent = opponents.find(o => o.id === item.playerId);
-                    if (opponent) {
-                        return { ...item, playerName: item.playerName || opponent.name, playerId: `opponent_${(item.playerName || opponent.name).replace(/\s/g, '_')}` };
+                return (items || []).map(item => {
+                    if (item.playerId === "opponent") {
+                        return { ...item, playerName: item.playerName || "Adversaire", isOpponent: true };
                     }
                     const player = players.find(p => p.id === item.playerId);
-                    return {...item, playerName: player?.name || 'Joueur inconnu' };
+                    return { ...item, playerName: player?.name || 'Joueur inconnu', isOpponent: false };
                 });
             };
             
@@ -140,11 +125,11 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
               scoreAway: values.scoreAway,
               scorers: processStats(values.scorers || []),
               assisters: processStats(values.assisters || []),
-              status: "Terminé" // Mise à jour automatique du statut
+              status: "Terminé"
             };
 
             await updateDoc(doc(db, "events", event.id), dataToSave);
-            toast({ title: "Score et événements enregistrés !" });
+            toast({ title: "Résultat enregistré !" });
             onFinished();
         } catch (error) {
             console.error(error);
@@ -157,18 +142,20 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <ScrollArea className="max-h-[65vh] p-1 pr-4">
+                <ScrollArea className="max-h-[70vh] pr-4">
                     <div className="space-y-6">
-                        <div className="space-y-4 rounded-md border p-4 bg-muted/20">
-                            <h4 className="font-bold text-center uppercase tracking-tight">{event.teamHome} vs {event.teamAway}</h4>
-                            <div className="grid grid-cols-2 gap-4 items-end">
+                        <div className="space-y-4 rounded-xl border-2 border-primary/10 p-6 bg-primary/5">
+                            <h4 className="font-black text-center uppercase tracking-tighter text-lg">{event.teamHome} <span className="text-primary mx-2">vs</span> {event.teamAway}</h4>
+                            <div className="grid grid-cols-2 gap-8">
                                 <FormField
                                     control={form.control}
                                     name="scoreHome"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-xs">Score {event.teamHome}</FormLabel>
-                                            <FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} /></FormControl>
+                                        <FormItem className="text-center">
+                                            <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamHome}</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -177,9 +164,11 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                     control={form.control}
                                     name="scoreAway"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-xs">Score {event.teamAway}</FormLabel>
-                                            <FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} /></FormControl>
+                                        <FormItem className="text-center">
+                                            <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamAway}</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -187,22 +176,28 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h4 className="font-bold text-sm uppercase flex items-center gap-2"><Clock className="h-4 w-4" /> Timeline des Buts</h4>
-                            <div className="space-y-4">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><Clock className="h-4 w-4 text-primary" /> Buteurs du Match</h4>
+                                <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendScorer({ playerId: '', playerName: '', minute: undefined, isOpponent: false })}>
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter
+                                </Button>
+                            </div>
+                            
+                            <div className="space-y-3">
                                 {scorerFields.map((field, index) => (
-                                    <div key={field.id} className="flex flex-col gap-2 p-3 border rounded-md bg-slate-50 relative">
-                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm border" onClick={() => removeScorer(index)}>
-                                            <Trash2 className="h-3 w-3 text-destructive" />
+                                    <div key={field.id} className="p-4 border rounded-xl bg-slate-50 relative group">
+                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeScorer(index)}>
+                                            <Trash2 className="h-3 w-3" />
                                         </Button>
-                                        <div className="grid grid-cols-12 gap-2">
+                                        <div className="grid grid-cols-12 gap-3 items-end">
                                             <FormField
                                                 control={form.control}
                                                 name={`scorers.${index}.minute`}
                                                 render={({ field }) => (
                                                     <FormItem className="col-span-3">
-                                                        <FormLabel className="text-[10px] uppercase font-bold">Min'</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="--" {...field} /></FormControl>
+                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="--" {...field} className="h-9 font-bold text-center" /></FormControl>
                                                     </FormItem>
                                                 )}
                                             />
@@ -211,67 +206,100 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                 name={`scorers.${index}.playerId`}
                                                 render={({ field }) => (
                                                     <FormItem className="col-span-9">
-                                                        <FormLabel className="text-[10px] uppercase font-bold">Buteur</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                            <FormControl><SelectTrigger className="h-9"><SelectValue placeholder="Joueur" /></SelectTrigger></FormControl>
+                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Sélection Joueur</FormLabel>
+                                                        <Select onValueChange={field.onChange} value={field.value}>
+                                                            <FormControl><SelectTrigger className="h-9 font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                             <SelectContent>
-                                                                <SelectGroup><SelectLabel>{clubName}</SelectLabel>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectGroup>
-                                                                <SelectGroup><SelectLabel>Adversaires</SelectLabel>{opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}</SelectGroup>
+                                                                <SelectGroup>
+                                                                    <SelectLabel>{clubName}</SelectLabel>
+                                                                    {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                </SelectGroup>
+                                                                <Separator className="my-1" />
+                                                                <SelectGroup>
+                                                                    <SelectLabel>Adversaire</SelectLabel>
+                                                                    <SelectItem value="opponent">Joueur Adverse</SelectItem>
+                                                                </SelectGroup>
                                                             </SelectContent>
                                                         </Select>
                                                     </FormItem>
                                                 )}
                                             />
                                         </div>
-                                        {opponents.some(o => o.id === watchScorers?.[index]?.playerId) && (
+                                        {watchScorers?.[index]?.playerId === "opponent" && (
                                             <FormField
                                                 control={form.control}
                                                 name={`scorers.${index}.playerName`}
                                                 render={({ field }) => (
-                                                    <FormItem><FormControl><Input placeholder="Nom du buteur adverse..." {...field} className="h-8 text-xs" /></FormControl></FormItem>
+                                                    <FormItem className="mt-3">
+                                                        <FormControl><Input placeholder="Nom du buteur adverse..." {...field} className="h-8 text-xs italic" /></FormControl>
+                                                    </FormItem>
                                                 )}
                                             />
                                         )}
                                     </div>
                                 ))}
-                                <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={() => appendScorer({ playerId: '', playerName: '', goals: 1, minute: undefined })}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un but
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><UserPlus className="h-4 w-4 text-accent" /> Passes Décisives</h4>
+                                <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendAssister({ playerId: '', playerName: '', minute: undefined, isOpponent: false })}>
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter
                                 </Button>
                             </div>
-
-                            <Separator className="my-6" />
-
-                            <h4 className="font-bold text-sm uppercase">Passes décisives</h4>
-                            <div className="space-y-4">
+                            
+                            <div className="space-y-3">
                                 {assisterFields.map((field, index) => (
-                                    <div key={field.id} className="flex items-end gap-2">
-                                        <FormField
-                                            control={form.control}
-                                            name={`assisters.${index}.playerId`}
-                                            render={({ field }) => (
-                                                <FormItem className="flex-1">
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger className="h-9"><SelectValue placeholder="Passeur" /></SelectTrigger></FormControl>
-                                                        <SelectContent>
-                                                            <SelectGroup><SelectLabel>{clubName}</SelectLabel>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectGroup>
-                                                            <SelectGroup><SelectLabel>Adversaires</SelectLabel>{opponents.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}</SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAssister(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <div key={field.id} className="p-4 border rounded-xl bg-slate-50 relative group">
+                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeAssister(index)}>
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                        <div className="grid grid-cols-12 gap-3 items-end">
+                                            <FormField
+                                                control={form.control}
+                                                name={`assisters.${index}.minute`}
+                                                render={({ field }) => (
+                                                    <FormItem className="col-span-3">
+                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="--" {...field} className="h-9 font-bold text-center" /></FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name={`assisters.${index}.playerId`}
+                                                render={({ field }) => (
+                                                    <FormItem className="col-span-9">
+                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Passeur</FormLabel>
+                                                        <Select onValueChange={field.onChange} value={field.value}>
+                                                            <FormControl><SelectTrigger className="h-9 font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
+                                                            <SelectContent>
+                                                                <SelectGroup>
+                                                                    <SelectLabel>{clubName}</SelectLabel>
+                                                                    {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                </SelectGroup>
+                                                                <Separator className="my-1" />
+                                                                <SelectGroup>
+                                                                    <SelectLabel>Adversaire</SelectLabel>
+                                                                    <SelectItem value="opponent">Joueur Adverse</SelectItem>
+                                                                </SelectGroup>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
                                     </div>
                                 ))}
-                                <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={() => appendAssister({ playerId: '', playerName: '', assists: 1, minute: undefined })}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une passe
-                                </Button>
                             </div>
                         </div>
                     </div>
                 </ScrollArea>
-                <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) : "Enregistrer et Terminer le Match"}
+                <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest rounded-xl">
+                    {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) : "Valider le Résultat"}
                 </Button>
             </form>
         </Form>

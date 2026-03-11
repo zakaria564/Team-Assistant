@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ArrowLeft, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, Trophy, UserPlus, Star } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -32,8 +32,15 @@ interface Scorer {
     playerName: string;
     playerPhotoUrl?: string;
     teamName: string;
-    teamLogoUrl?: string;
     goals: number;
+}
+
+interface Assister {
+    playerId: string;
+    playerName: string;
+    playerPhotoUrl?: string;
+    teamName: string;
+    assists: number;
 }
 
 const playerCategories = [
@@ -50,8 +57,6 @@ const competitionTypes = [
 
 const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName: string }) => {
     if (rankings.length === 0) return <div className="text-center text-muted-foreground py-20"><p>Aucun match terminé pour cette sélection.</p></div>;
-    const clubNameFeminine = `${clubName} (F)`;
-
     return (
         <Table>
             <TableHeader>
@@ -68,7 +73,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
             </TableHeader>
             <TableBody>
                 {rankings.map((team, index) => (
-                    <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() || team.name.toLowerCase() === clubNameFeminine.toLowerCase() ? "bg-primary/10" : ""}>
+                    <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() ? "bg-primary/10" : ""}>
                         <TableCell className="font-bold text-center">{index + 1}</TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2 font-medium">
@@ -93,22 +98,25 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
 };
 
 const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
-    if (scorers.length === 0) return <div className="text-center text-muted-foreground py-20"><p>Aucun buteur trouvé.</p></div>;
+    if (scorers.length === 0) return <div className="text-center text-muted-foreground py-20"><p>Aucun buteur enregistré.</p></div>;
     return (
         <Table>
-            <TableHeader><TableRow><TableHead className="w-[40px] text-center">Pos</TableHead><TableHead>Joueur</TableHead><TableHead className="hidden sm:table-cell">Équipe</TableHead><TableHead className="text-right">Buts</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="w-[40px] text-center">Rang</TableHead><TableHead>Joueur</TableHead><TableHead className="hidden sm:table-cell">Équipe</TableHead><TableHead className="text-right">Buts</TableHead></TableRow></TableHeader>
             <TableBody>
                 {scorers.map((scorer, index) => (
                     <TableRow key={scorer.playerId + index}>
-                        <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                        <TableCell className="font-black text-center text-lg italic text-slate-300">#{index + 1}</TableCell>
                         <TableCell>
-                            <div className="flex items-center gap-3 font-medium">
-                                <Avatar className="h-8 w-8"><AvatarImage src={scorer.playerPhotoUrl} /><AvatarFallback>{scorer.playerName.charAt(0)}</AvatarFallback></Avatar>
-                                <div className="flex flex-col"><span>{scorer.playerName}</span><span className="text-[10px] text-muted-foreground sm:hidden">{scorer.teamName}</span></div>
+                            <div className="flex items-center gap-4 font-medium">
+                                <Avatar className="h-10 w-10 border-2 border-primary/20"><AvatarImage src={scorer.playerPhotoUrl} /><AvatarFallback>{scorer.playerName.charAt(0)}</AvatarFallback></Avatar>
+                                <div className="flex flex-col">
+                                    <span className="font-bold uppercase tracking-tight text-sm">{scorer.playerName}</span>
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase sm:hidden">{scorer.teamName}</span>
+                                </div>
                             </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-xs">{scorer.teamName}</TableCell>
-                        <TableCell className="font-black text-right text-primary italic">{scorer.goals}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs font-bold uppercase text-muted-foreground">{scorer.teamName}</TableCell>
+                        <TableCell className="font-black text-right text-2xl text-primary italic pr-6">{scorer.goals}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
@@ -119,7 +127,7 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
 export default function RankingsPage() {
     const [user] = useAuthState(auth);
     const router = useRouter();
-    const [rankings, setRankings] = useState<any>({ general: [], scorers: [] });
+    const [rankings, setRankings] = useState<any>({ general: [], scorers: [], assisters: [] });
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
@@ -149,6 +157,7 @@ export default function RankingsPage() {
 
                 const stats: Record<string, TeamStats> = {};
                 const scorers: Record<string, Scorer> = {};
+                const assisters: Record<string, Assister> = {};
 
                 const initTeam = (n: string) => {
                     if (!stats[n]) {
@@ -170,18 +179,30 @@ export default function RankingsPage() {
                     else { stats[ev.teamHome].draws++; stats[ev.teamHome].points++; stats[ev.teamAway].draws++; stats[ev.teamAway].points++; }
 
                     ev.scorers?.forEach((s: any) => {
-                        const scorerId = s.playerId;
+                        const scorerId = s.playerId || `temp_${s.playerName}`;
                         if (!scorers[scorerId]) {
-                            const p = playersMap.get(scorerId);
-                            const isUserClub = !!p;
-                            scorers[scorerId] = { playerId: scorerId, playerName: s.playerName, playerPhotoUrl: p?.photoUrl, teamName: isUserClub ? localClubName : (ev.teamHome === localClubName ? ev.teamAway : ev.teamHome), teamLogoUrl: isUserClub ? clubLogo : undefined, goals: 0 };
+                            const p = playersMap.get(s.playerId);
+                            scorers[scorerId] = { playerId: scorerId, playerName: s.playerName, playerPhotoUrl: p?.photoUrl, teamName: s.isOpponent ? 'Adversaire' : localClubName, goals: 0 };
                         }
-                        scorers[scorerId].goals += s.goals || 1;
+                        scorers[scorerId].goals++;
+                    });
+
+                    ev.assisters?.forEach((a: any) => {
+                        const assisterId = a.playerId || `temp_${a.playerName}`;
+                        if (!assisters[assisterId]) {
+                            const p = playersMap.get(a.playerId);
+                            assisters[assisterId] = { playerId: assisterId, playerName: a.playerName, playerPhotoUrl: p?.photoUrl, teamName: a.isOpponent ? 'Adversaire' : localClubName, assists: 0 };
+                        }
+                        assisters[assisterId].assists++;
                     });
                 });
 
                 const sorted = Object.values(stats).map(t => ({...t, goalDifference: t.goalsFor - t.goalsAgainst})).sort((a,b) => b.points - a.points || b.goalDifference - a.goalDifference);
-                setRankings({ general: sorted, scorers: Object.values(scorers).sort((a,b) => b.goals - a.goals) });
+                setRankings({ 
+                    general: sorted, 
+                    scorers: Object.values(scorers).sort((a,b) => b.goals - a.goals),
+                    assisters: Object.values(assisters).sort((a,b) => b.assists - a.assists)
+                });
             } finally { setLoading(false); }
         };
         fetchRankings();
@@ -191,22 +212,26 @@ export default function RankingsPage() {
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-                <h1 className="text-3xl font-bold tracking-tight">Classement Professionnel</h1>
+                <h1 className="text-3xl font-black uppercase tracking-tighter italic text-primary">Tableau des Performances</h1>
             </div>
-            <Card>
+            <Card className="shadow-lg border-t-4 border-primary">
                 <CardHeader>
                     <div className="flex flex-col md:flex-row gap-4">
-                        <Select onValueChange={setSelectedCompetition} value={selectedCompetition}><SelectTrigger className="w-full md:w-[280px]"><SelectValue /></SelectTrigger><SelectContent>{competitionTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-                        <Select onValueChange={setSelectedCategory} value={selectedCategory}><SelectTrigger className="w-full md:w-[280px]"><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={setSelectedCompetition} value={selectedCompetition}><SelectTrigger className="w-full md:w-[280px] font-bold"><SelectValue /></SelectTrigger><SelectContent>{competitionTypes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={setSelectedCategory} value={selectedCategory}><SelectTrigger className="w-full md:w-[280px] font-bold"><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div> : selectedCategory ? (
-                        <Tabs defaultValue="general"><TabsList className="grid w-full grid-cols-2"><TabsTrigger value="general">Équipes</TabsTrigger><TabsTrigger value="scorers">Buteurs</TabsTrigger></TabsList>
+                    {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div> : selectedCategory ? (
+                        <Tabs defaultValue="general" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50 p-1 rounded-xl">
+                                <TabsTrigger value="general" className="rounded-lg font-black uppercase text-[10px] tracking-widest"><Trophy className="h-3 w-3 mr-2" /> Classement Équipes</TabsTrigger>
+                                <TabsTrigger value="scorers" className="rounded-lg font-black uppercase text-[10px] tracking-widest"><Star className="h-3 w-3 mr-2" /> Top Buteurs</TabsTrigger>
+                            </TabsList>
                             <TabsContent value="general"><RankingTable rankings={rankings.general} clubName={clubName} /></TabsContent>
                             <TabsContent value="scorers"><ScorersTable scorers={rankings.scorers} /></TabsContent>
                         </Tabs>
-                    ) : <div className="text-center py-20 text-muted-foreground italic">Sélectionnez une catégorie pour afficher les données.</div>}
+                    ) : <div className="text-center py-24 text-muted-foreground italic font-medium">Sélectionnez une catégorie pour afficher les données.</div>}
                 </CardContent>
             </Card>
         </div>
