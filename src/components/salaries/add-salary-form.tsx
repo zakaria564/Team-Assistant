@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -178,7 +177,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Description</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
+                            <FormControl><Input {...field} value={field.value ?? ""} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -189,7 +188,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Salaire Total (MAD)</FormLabel>
-                            <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                            <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -9,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
@@ -51,22 +50,11 @@ interface AddPaymentFormProps {
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
-const normalizeString = (str: string | null | undefined): string => {
-    if (!str) return '';
-    return str
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, '');
-};
-
-
-export function AddPaymentForm({ payment }: AddPaymentFormProps) {
+function FormContent({ payment }: AddPaymentFormProps) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
-    const [allPayments, setAllPayments] = useState<Payment[]>([]);
     const [loadingPlayers, setLoadingPlayers] = useState(true);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -122,7 +110,6 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
     const watchNewTransactionAmount = form.watch("newTransactionAmount") || 0;
     const newTotalPaid = amountAlreadyPaid + watchNewTransactionAmount;
     const amountRemainingOnTotal = (watchTotalAmount || 0) - newTotalPaid;
-    const watchPlayerId = form.watch("playerId");
 
     useEffect(() => {
         if ((watchTotalAmount || 0) > 0) {
@@ -142,7 +129,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             if (!user) return;
             setLoadingPlayers(true);
              try {
-                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid), where("isDeleted", "==", false));
+                const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
                 const [playersSnapshot] = await Promise.all([getDocs(playersQuery)]);
                 const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
                 setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
@@ -204,7 +191,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                     transactions: initialTransactions,
                     isDeleted: false,
                 });
-                toast({ title: "Paiement enregistré avec copie !" });
+                toast({ title: "Paiement enregistré avec succès !" });
             }
             router.push("/dashboard/payments");
             router.refresh();
@@ -248,7 +235,7 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -382,4 +369,12 @@ export function AddPaymentForm({ payment }: AddPaymentFormProps) {
             </form>
         </Form>
     );
+}
+
+export function AddPaymentForm(props: AddPaymentFormProps) {
+    return (
+        <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>}>
+            <FormContent {...props} />
+        </Suspense>
+    )
 }

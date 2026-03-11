@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -148,7 +147,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                         <FormItem className="text-center">
                                             <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamHome}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                                <Input type="number" {...field} value={field.value ?? ""} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -161,7 +160,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                         <FormItem className="text-center">
                                             <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamAway}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                                <Input type="number" {...field} value={field.value ?? ""} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -191,7 +190,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                 render={({ field }) => (
                                                     <FormItem className="col-span-3">
                                                         <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="--" {...field} className="h-9 font-bold text-center" /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-9 font-bold text-center" /></FormControl>
                                                     </FormItem>
                                                 )}
                                             />
@@ -225,7 +224,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                 name={`scorers.${index}.playerName`}
                                                 render={({ field }) => (
                                                     <FormItem className="mt-3">
-                                                        <FormControl><Input placeholder="Nom du buteur adverse..." {...field} className="h-8 text-xs italic" /></FormControl>
+                                                        <FormControl><Input placeholder="Nom du buteur adverse..." {...field} value={field.value ?? ""} className="h-8 text-xs italic" /></FormControl>
                                                     </FormItem>
                                                 )}
                                             />
@@ -258,7 +257,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                 render={({ field }) => (
                                                     <FormItem className="col-span-3">
                                                         <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="--" {...field} className="h-9 font-bold text-center" /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-9 font-bold text-center" /></FormControl>
                                                     </FormItem>
                                                 )}
                                             />

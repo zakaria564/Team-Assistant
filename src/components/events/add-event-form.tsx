@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -302,7 +301,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Heure</FormLabel>
-                            <FormControl><Input type="time" {...field} /></FormControl>
+                            <FormControl><Input type="time" {...field} value={field.value ?? ""} /></FormControl>
                             <FormMessage />
                             </FormItem>
                         )}
@@ -315,7 +314,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Lieu / Stade</FormLabel>
-                        <FormControl><Input {...field} placeholder="Ex: Stade Municipal" /></FormControl>
+                        <FormControl><Input {...field} value={field.value ?? ""} placeholder="Ex: Stade Municipal" /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
