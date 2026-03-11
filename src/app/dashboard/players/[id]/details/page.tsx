@@ -43,8 +43,7 @@ const toTitleCase = (str: string) => {
 
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const { params: paramsPromise } = props;
-  const params = React.use(paramsPromise);
+  const params = React.use(props.params);
   const playerId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -201,9 +200,11 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 inline-flex flex-col items-center justify-center bg-white shadow-sm min-w-[150px]">
-                        <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-0.5">Identifiant Unique</p>
-                        <p className="text-xs font-mono font-bold text-primary leading-none">{displayId}</p>
+                    <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
+                        <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Unique</p>
+                        <div className="w-full text-center">
+                            <p className="text-xs font-mono font-bold text-primary leading-none inline-block">{displayId}</p>
+                        </div>
                     </div>
                     <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
@@ -230,9 +231,11 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                         )}
                     </div>
-                    <div className="flex items-center justify-center gap-2 text-primary font-mono text-[10px] bg-white w-fit px-3 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[130px]">
-                        <Fingerprint className="h-3.5 w-3.5" />
-                        <span className="leading-none mt-0.5">{displayId}</span>
+                    <div className="bg-white w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
+                        <div className="inline-flex items-center justify-center w-full">
+                            <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
+                            <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
+                        </div>
                     </div>
                 </div>
             </section>
