@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Shield, Banknote } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Calendar, Settings, ClipboardList, CreditCard, Shield, Banknote, Trophy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -15,6 +15,7 @@ const links = [
   { href: "/dashboard/coaches", label: "Entraîneurs", icon: ClipboardList },
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
+  { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
   { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
   { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
@@ -39,7 +40,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     const updateBadgeCount = () => {
       const uniquePlayersWithPending = new Set();
       pendingPaymentData.forEach(payment => {
-        // On ne compte que si le joueur existe encore dans la liste des joueurs actifs
         if (payment.status !== "Payé" && activePlayerIds.has(payment.playerId)) {
           uniquePlayersWithPending.add(payment.playerId);
         }
@@ -47,7 +47,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       setPendingCount(uniquePlayersWithPending.size);
     };
 
-    // Écouter les joueurs pour savoir qui existe réellement
     const unsubscribePlayers = onSnapshot(
       query(collection(db, "players"), where("userId", "==", user.uid)),
       (snapshot) => {
@@ -56,7 +55,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    // Écouter les paiements en attente
     const unsubscribePayments = onSnapshot(
       query(
         collection(db, "payments"),
