@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, Trash2, Clock, UserPlus, Shield } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Clock, UserPlus } from "lucide-react";
 import { collection, doc, updateDoc, getDocs, query, where, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -141,9 +141,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <ScrollArea className="max-h-[70vh] pr-4">
-                    <div className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full max-h-[80vh]">
+                <ScrollArea className="flex-1 pr-4">
+                    <div className="space-y-6 pb-6">
                         {/* Score Section */}
                         <div className="space-y-4 rounded-xl border-2 border-primary/10 p-6 bg-primary/5">
                             <h4 className="font-black text-center uppercase tracking-tighter text-lg">{event.teamHome} <span className="text-primary mx-2">vs</span> {event.teamAway}</h4>
@@ -204,7 +204,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
-                                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                                 <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     <SelectItem value={event.teamHome || 'Home'}>{event.teamHome}</SelectItem>
@@ -233,7 +233,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Joueur du club</FormLabel>
-                                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                                 <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
@@ -289,7 +289,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
-                                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                                 <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     <SelectItem value={event.teamHome || 'Home'}>{event.teamHome}</SelectItem>
@@ -318,7 +318,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Passeur du club</FormLabel>
-                                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                                 <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
@@ -346,9 +346,11 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                         </div>
                     </div>
                 </ScrollArea>
-                <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest rounded-xl">
-                    {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) : "Valider le Résultat"}
-                </Button>
+                <div className="pt-4 border-t mt-auto">
+                    <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest rounded-xl">
+                        {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) : "Valider le Résultat"}
+                    </Button>
+                </div>
             </form>
         </Form>
     );

@@ -18,20 +18,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
+import React from "react";
 
 interface Player {
   id: string;
   name: string;
 }
-
-interface Payment {
-  id: string;
-  playerId: string;
-  status: 'Payé' | 'Partiel' | 'En attente' | 'En retard';
-  description: string;
-  totalAmount: number;
-}
-
 
 interface PaymentData {
     id: string;
@@ -140,7 +132,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
             }
         }
         fetchPlayersAndPayments();
-    }, [user, isEditMode, urlPlayerId]);
+    }, [user, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -211,7 +203,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Joueur</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue />
@@ -305,7 +297,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                                       type="number" 
                                       step="0.01" 
                                       {...field}
-                                      value={field.value ?? ''}
+                                      value={field.value ?? ""}
                                       onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                                   />
                                 </FormControl>
@@ -319,7 +311,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Méthode</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                   <FormControl>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -345,7 +337,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Statut</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value ?? ""}>
                             <FormControl>
                             <SelectTrigger className="bg-muted">
                                 <SelectValue />
