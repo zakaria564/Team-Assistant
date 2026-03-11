@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,25 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
-  <div className="flex items-start gap-3">
-    <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-    <div>
-      <p className="text-xs text-muted-foreground font-medium">{label}</p>
-      {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline break-all">
-          {value || "Non renseigné"}
-        </a>
-      ) : (
-        <p className="text-sm font-semibold">{value || "Non renseigné"}</p>
-      )}
-    </div>
-  </div>
-);
-
-export default function PaymentDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+export default function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [payment, setPayment] = useState<any>(null);

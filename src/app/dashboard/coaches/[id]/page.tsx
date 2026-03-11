@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, FileDown, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -30,9 +29,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function CoachDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [coach, setCoach] = useState<any>(null);
@@ -141,7 +139,7 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                                 </div>
                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
                                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <FileDown className="h-4 w-4" />
+                                        <Loader2 className="h-4 w-4" />
                                     </a>
                                 </Button>
                             </div>

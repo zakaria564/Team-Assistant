@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -33,14 +32,14 @@ interface Coach {
   professionalId?: string;
 }
 
-const DetailItem = ({ icon: Icon, label, value, children, isBlue }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode, isBlue?: boolean }) => (
+const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 mb-4">
     <div className="mt-0.5 bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-center shrink-0">
         <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
-      <div className={`text-sm font-bold break-words leading-tight ${isBlue ? 'text-primary' : 'text-slate-800'}`}>
+      <div className={`text-sm font-bold break-words leading-tight text-slate-800`}>
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -54,9 +53,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -216,7 +214,10 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
                         <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Coach</p>
                         <div className="w-full text-center">
-                            <p className="text-xs font-mono font-bold text-primary leading-none inline-block">{displayId}</p>
+                            <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold">
+                                <Fingerprint className="h-3 w-3" />
+                                {displayId}
+                            </div>
                         </div>
                     </div>
                     <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>

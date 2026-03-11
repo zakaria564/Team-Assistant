@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,10 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-export default function EditSalaryPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
-  const salaryId = params.id;
+export default function EditSalaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: salaryId } = React.use(params);
   const router = useRouter();
   
   const [salary, setSalary] = useState<any>(null);

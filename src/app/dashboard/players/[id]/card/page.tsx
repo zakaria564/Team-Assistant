@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,10 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
-  const playerId = params.id;
+export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);
@@ -139,7 +136,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
                         <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
                     </Avatar>
                     <div className="absolute -bottom-2 -right-2 bg-black text-white px-2 py-0.5 rounded font-mono text-[10px] border border-white">
-                        ID: {player.professionalId?.split('-').pop() || "????"}
+                        ID: {player.professionalId?.split('-').pop() || player.id.substring(0, 4).toUpperCase()}
                     </div>
                 </div>
                 

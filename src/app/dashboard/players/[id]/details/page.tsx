@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -42,10 +41,8 @@ const toTitleCase = (str: string) => {
 };
 
 
-export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
-  const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
-  const playerId = params.id;
+export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   
@@ -203,7 +200,10 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
                         <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Unique</p>
                         <div className="w-full text-center">
-                            <p className="text-xs font-mono font-bold text-primary leading-none inline-block">{displayId}</p>
+                            <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold">
+                                <Fingerprint className="h-3 w-3" />
+                                {displayId}
+                            </div>
                         </div>
                     </div>
                     <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
