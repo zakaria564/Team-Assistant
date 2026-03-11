@@ -8,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
