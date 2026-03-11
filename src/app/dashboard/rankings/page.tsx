@@ -35,14 +35,6 @@ interface Scorer {
     goals: number;
 }
 
-interface Assister {
-    playerId: string;
-    playerName: string;
-    playerPhotoUrl?: string;
-    teamName: string;
-    assists: number;
-}
-
 const playerCategories = [
     "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
     "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
@@ -73,7 +65,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
             </TableHeader>
             <TableBody>
                 {rankings.map((team, index) => (
-                    <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() ? "bg-primary/10" : ""}>
+                    <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() ? "bg-primary/5 border-l-4 border-l-primary" : ""}>
                         <TableCell className="font-bold text-center">{index + 1}</TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2 font-medium">
@@ -81,7 +73,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                                     <AvatarImage src={team.logoUrl} alt={team.name} />
                                     <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <span>{team.name}</span>
+                                <span className="truncate max-w-[150px]">{team.name}</span>
                             </div>
                         </TableCell>
                         <TableCell className="font-bold text-center">{team.points}</TableCell>
@@ -89,7 +81,7 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
                         <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
                         <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
                         <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
-                        <TableCell className="text-center">{team.goalDifference}</TableCell>
+                        <TableCell className="text-center font-semibold">{team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
@@ -127,7 +119,7 @@ const ScorersTable = ({ scorers }: { scorers: Scorer[] }) => {
 export default function RankingsPage() {
     const [user] = useAuthState(auth);
     const router = useRouter();
-    const [rankings, setRankings] = useState<any>({ general: [], scorers: [], assisters: [] });
+    const [rankings, setRankings] = useState<any>({ general: [], scorers: [] });
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedCompetition, setSelectedCompetition] = useState<string>("Match de Championnat");
@@ -157,7 +149,6 @@ export default function RankingsPage() {
 
                 const stats: Record<string, TeamStats> = {};
                 const scorers: Record<string, Scorer> = {};
-                const assisters: Record<string, Assister> = {};
 
                 const initTeam = (n: string) => {
                     if (!stats[n]) {
@@ -167,7 +158,7 @@ export default function RankingsPage() {
                 };
 
                 events.forEach(ev => {
-                    if (ev.scoreHome === undefined || ev.status === "Prévu") return;
+                    if (ev.scoreHome === undefined || ev.status !== "Terminé") return;
                     initTeam(ev.teamHome); initTeam(ev.teamAway);
                     
                     stats[ev.teamHome].played++; stats[ev.teamAway].played++;
@@ -179,30 +170,31 @@ export default function RankingsPage() {
                     else { stats[ev.teamHome].draws++; stats[ev.teamHome].points++; stats[ev.teamAway].draws++; stats[ev.teamAway].points++; }
 
                     ev.scorers?.forEach((s: any) => {
-                        const scorerId = s.playerId || `temp_${s.playerName}`;
+                        const scorerId = s.playerId === "opponent" ? `opp_${s.playerName}` : s.playerId;
                         if (!scorers[scorerId]) {
                             const p = playersMap.get(s.playerId);
-                            scorers[scorerId] = { playerId: scorerId, playerName: s.playerName, playerPhotoUrl: p?.photoUrl, teamName: s.isOpponent ? 'Adversaire' : localClubName, goals: 0 };
+                            scorers[scorerId] = { 
+                                playerId: scorerId, 
+                                playerName: s.playerName, 
+                                playerPhotoUrl: p?.photoUrl, 
+                                teamName: s.isOpponent ? 'Adversaire' : localClubName, 
+                                goals: 0 
+                            };
                         }
                         scorers[scorerId].goals++;
                     });
-
-                    ev.assisters?.forEach((a: any) => {
-                        const assisterId = a.playerId || `temp_${a.playerName}`;
-                        if (!assisters[assisterId]) {
-                            const p = playersMap.get(a.playerId);
-                            assisters[assisterId] = { playerId: assisterId, playerName: a.playerName, playerPhotoUrl: p?.photoUrl, teamName: a.isOpponent ? 'Adversaire' : localClubName, assists: 0 };
-                        }
-                        assisters[assisterId].assists++;
-                    });
                 });
 
-                const sorted = Object.values(stats).map(t => ({...t, goalDifference: t.goalsFor - t.goalsAgainst})).sort((a,b) => b.points - a.points || b.goalDifference - a.goalDifference);
+                const sortedTable = Object.values(stats)
+                    .map(t => ({...t, goalDifference: t.goalsFor - t.goalsAgainst}))
+                    .sort((a,b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
+
                 setRankings({ 
-                    general: sorted, 
-                    scorers: Object.values(scorers).sort((a,b) => b.goals - a.goals),
-                    assisters: Object.values(assisters).sort((a,b) => b.assists - a.assists)
+                    general: sortedTable, 
+                    scorers: Object.values(scorers).sort((a,b) => b.goals - a.goals)
                 });
+            } catch (error) {
+                console.error("Error calculating rankings:", error);
             } finally { setLoading(false); }
         };
         fetchRankings();
@@ -212,7 +204,7 @@ export default function RankingsPage() {
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-                <h1 className="text-3xl font-black uppercase tracking-tighter italic text-primary">Tableau des Performances</h1>
+                <h1 className="text-3xl font-black uppercase tracking-tighter italic text-primary">Classements Officiels</h1>
             </div>
             <Card className="shadow-lg border-t-4 border-primary">
                 <CardHeader>
@@ -225,13 +217,13 @@ export default function RankingsPage() {
                     {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div> : selectedCategory ? (
                         <Tabs defaultValue="general" className="w-full">
                             <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50 p-1 rounded-xl">
-                                <TabsTrigger value="general" className="rounded-lg font-black uppercase text-[10px] tracking-widest"><Trophy className="h-3 w-3 mr-2" /> Classement Équipes</TabsTrigger>
+                                <TabsTrigger value="general" className="rounded-lg font-black uppercase text-[10px] tracking-widest"><Trophy className="h-3 w-3 mr-2" /> Championnat</TabsTrigger>
                                 <TabsTrigger value="scorers" className="rounded-lg font-black uppercase text-[10px] tracking-widest"><Star className="h-3 w-3 mr-2" /> Top Buteurs</TabsTrigger>
                             </TabsList>
                             <TabsContent value="general"><RankingTable rankings={rankings.general} clubName={clubName} /></TabsContent>
                             <TabsContent value="scorers"><ScorersTable scorers={rankings.scorers} /></TabsContent>
                         </Tabs>
-                    ) : <div className="text-center py-24 text-muted-foreground italic font-medium">Sélectionnez une catégorie pour afficher les données.</div>}
+                    ) : <div className="text-center py-24 text-muted-foreground italic font-medium">Veuillez sélectionner une catégorie et une compétition pour afficher les statistiques.</div>}
                 </CardContent>
             </Card>
         </div>

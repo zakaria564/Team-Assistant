@@ -16,17 +16,11 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
-import { Badge } from "../ui/badge";
 
 interface Player {
     id: string;
     name: string;
     category: string;
-}
-
-interface Opponent {
-    id: string;
-    name: string;
 }
 
 interface EventData {
@@ -129,7 +123,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
             };
 
             await updateDoc(doc(db, "events", event.id), dataToSave);
-            toast({ title: "Résultat enregistré !" });
+            toast({ title: "Résultat et statistiques enregistrés !" });
             onFinished();
         } catch (error) {
             console.error(error);
@@ -178,9 +172,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><Clock className="h-4 w-4 text-primary" /> Buteurs du Match</h4>
+                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><Clock className="h-4 w-4 text-primary" /> Chronologie des Buts</h4>
                                 <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendScorer({ playerId: '', playerName: '', minute: undefined, isOpponent: false })}>
-                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter un but
                                 </Button>
                             </div>
                             
@@ -206,12 +200,12 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                 name={`scorers.${index}.playerId`}
                                                 render={({ field }) => (
                                                     <FormItem className="col-span-9">
-                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Sélection Joueur</FormLabel>
+                                                        <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Équipe & Joueur</FormLabel>
                                                         <Select onValueChange={field.onChange} value={field.value}>
                                                             <FormControl><SelectTrigger className="h-9 font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                             <SelectContent>
                                                                 <SelectGroup>
-                                                                    <SelectLabel>{clubName}</SelectLabel>
+                                                                    <SelectLabel>{clubName} (Local)</SelectLabel>
                                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                                                 </SelectGroup>
                                                                 <Separator className="my-1" />
@@ -247,7 +241,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                             <div className="flex items-center justify-between">
                                 <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><UserPlus className="h-4 w-4 text-accent" /> Passes Décisives</h4>
                                 <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendAssister({ playerId: '', playerName: '', minute: undefined, isOpponent: false })}>
-                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter une passe
                                 </Button>
                             </div>
                             
