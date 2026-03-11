@@ -93,7 +93,7 @@ export default function DashboardAppLayout({
     <div className="grid h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block shadow-inner">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex flex-col items-center border-b border-sidebar-border/50 px-4 py-10 lg:px-6 bg-black/10">
+          <div className="flex flex-col items-center border-b border-sidebar-border/50 px-4 py-6 lg:px-6 bg-black/10">
             <ClubBrand />
           </div>
           <div className="flex-1 py-6 overflow-y-auto custom-scrollbar">
@@ -116,7 +116,7 @@ export default function DashboardAppLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="flex flex-col p-0 w-full max-w-xs bg-sidebar text-sidebar-foreground border-r-0">
-                 <SheetHeader className="flex flex-col items-center border-b border-sidebar-border/50 px-4 py-10 bg-black/10">
+                 <SheetHeader className="flex flex-col items-center border-b border-sidebar-border/50 px-4 py-6 bg-black/10">
                     <ClubBrand />
                      <SheetTitle className="sr-only">Navigation Principale</SheetTitle>
                   </SheetHeader>
