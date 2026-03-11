@@ -8,14 +8,30 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, FileDown, Fingerprint } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, FileDown, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
+  <div className="flex items-start gap-3">
+    <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+    <div>
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline break-all">
+          {value || "Non renseigné"}
+        </a>
+      ) : (
+        <p className="text-sm font-semibold">{value || "Non renseigné"}</p>
+      )}
+    </div>
+  </div>
+);
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
   const coachId = params.id;
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -42,8 +58,11 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
   if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!coach) return null;
 
+  const entryDate = coach.entryDate ? format(new Date(coach.entryDate), "dd/MM/yyyy", { locale: fr }) : undefined;
+  const exitDate = coach.exitDate ? format(new Date(coach.exitDate), "dd/MM/yyyy", { locale: fr }) : undefined;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
@@ -55,35 +74,48 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Avatar className="h-32 w-32 border-4 border-primary shadow-sm">
+        <Card className="lg:col-span-1 h-fit">
+          <CardContent className="pt-8 flex flex-col items-center gap-4">
+            <Avatar className="h-40 w-40 border-4 border-primary shadow-lg">
               <AvatarImage src={coach.photoUrl} className="object-cover" />
-              <AvatarFallback>E</AvatarFallback>
+              <AvatarFallback className="text-4xl text-slate-400">E</AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
-                <h2 className="text-2xl font-bold">{coach.name}</h2>
+                <h2 className="text-2xl font-bold uppercase tracking-tight">{coach.name}</h2>
                 <Badge variant="outline" className="font-mono text-xs flex items-center gap-1 justify-center">
                     <Fingerprint className="h-3 w-3" />
                     {coach.professionalId || "ID: N/A"}
                 </Badge>
             </div>
-            <Badge className="bg-green-100 text-green-800">{coach.status}</Badge>
+            <Badge className="bg-green-100 text-green-800 text-base px-4 py-1">{coach.status}</Badge>
           </CardContent>
         </Card>
+        
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader><CardTitle>Informations Professionnelles</CardTitle></CardHeader>
-            <CardContent className="grid sm:grid-cols-2 gap-6">
-              <div className="flex items-center gap-3"><Star className="text-muted-foreground h-5 w-5" /> <span>Spécialité: {coach.specialty}</span></div>
-              <div className="flex items-center gap-3"><Shield className="text-muted-foreground h-5 w-5" /> <span>Catégorie: {coach.category}</span></div>
-              <div className="flex items-center gap-3">
-                  <Phone className="text-muted-foreground h-5 w-5" /> 
-                  <a href={`tel:${coach.phone}`} className="hover:text-primary hover:underline">{coach.phone || 'N/A'}</a>
-              </div>
-              <div className="flex items-center gap-3">
-                  <Mail className="text-muted-foreground h-5 w-5" /> 
-                  <a href={`mailto:${coach.email}`} className="hover:text-primary hover:underline">{coach.email}</a>
+            <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><Shield className="h-5 w-5" /> Informations Professionnelles</CardTitle></CardHeader>
+            <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
+              <DetailItem icon={Star} label="Spécialité" value={coach.specialty} />
+              <DetailItem icon={Shield} label="Catégorie assignée" value={coach.category} />
+              <DetailItem icon={LogIn} label="Date d'entrée au club" value={entryDate} />
+              <DetailItem icon={LogOut} label="Fin de mission" value={exitDate || "En poste"} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><User className="h-5 w-5" /> État Civil & Contact</CardTitle></CardHeader>
+            <CardContent className="grid sm:grid-cols-2 gap-y-6 gap-x-4">
+              <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
+              <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
+              <DetailItem icon={Mail} label="Email personnel" value={coach.email} href={coach.email ? `mailto:${coach.email}` : undefined} />
+              <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} href={coach.phone ? `tel:${coach.phone}` : undefined} />
+              <div className="sm:col-span-2">
+                <DetailItem 
+                    icon={Home} 
+                    label="Adresse Résidentielle" 
+                    value={coach.address} 
+                    href={coach.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}` : undefined}
+                />
               </div>
             </CardContent>
           </Card>

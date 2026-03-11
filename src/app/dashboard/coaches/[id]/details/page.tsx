@@ -33,14 +33,14 @@ interface Coach {
   professionalId?: string;
 }
 
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value, children, isBlue }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode, isBlue?: boolean }) => (
   <div className="flex items-start gap-3 mb-4">
     <div className="mt-0.5 bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-center shrink-0">
         <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
-      <div className="text-sm font-bold text-slate-800 break-words leading-tight">
+      <div className={`text-sm font-bold break-words leading-tight ${isBlue ? 'text-primary' : 'text-slate-800'}`}>
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -56,7 +56,6 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
 
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }>, searchParams: Promise<any> }) {
   const params = React.use(props.params);
-  const searchParams = React.use(props.searchParams);
   const coachId = params.id;
   
   const router = useRouter();
@@ -257,9 +256,9 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         <SectionTitle title="État Civil & Contact" icon={User} />
                         <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
                         <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
-                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
-                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
-                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
+                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} isBlue />
+                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} isBlue />
+                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} isBlue />
                     </div>
                 </div>
 
