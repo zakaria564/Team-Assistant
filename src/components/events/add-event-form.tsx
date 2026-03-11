@@ -21,18 +21,16 @@ import { collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where } fro
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-interface Opponent {
-    id: string;
-    name: string;
-}
-
 const eventTypes = [
     "Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi", "Entraînement", "Stage", "Détection", "Réunion", "Événement Spécial"
 ] as const;
 
+const eventStatuses = ["Prévu", "En cours", "Terminé", "Annulé", "Reporté"] as const;
+
 const formSchema = z.object({
   type: z.enum(eventTypes, { required_error: "Le type d'événement est requis." }),
   category: z.string({ required_error: "La catégorie est requise." }),
+  status: z.enum(eventStatuses).default("Prévu"),
   date: z.date({ required_error: "La date est requise."}).optional(),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide (HH:mm)."),
   location: z.string().optional(),
@@ -49,29 +47,17 @@ const formSchema = z.object({
     path: ["teamHome"],
 });
 
-
 const playerCategories = [
-    "Seniors", "Seniors F",
-    "U19", "U19 F",
-    "U18", "U18 F",
-    "U17", "U17 F",
-    "U16", "U16 F",
-    "U15", "U15 F",
-    "U14", "U14 F",
-    "U13", "U13 F",
-    "U12", "U12 F",
-    "U11", "U11 F",
-    "U10", "U10 F",
-    "U9", "U9 F",
-    "U8", "U8 F",
-    "U7", "U7 F",
-    "Vétérans"
+    "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
+    "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
+    "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"
 ];
 
 interface EventData {
   id: string;
   type: typeof eventTypes[number];
   category: string;
+  status: typeof eventStatuses[number];
   date: Date;
   location?: string;
   teamHome?: string;
@@ -97,6 +83,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
         defaultValues: {
             type: undefined,
             category: "",
+            status: "Prévu",
             date: undefined,
             time: "",
             location: "",
@@ -108,6 +95,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
     const selectedCategory = form.watch("category");
     const teamHome = form.watch("teamHome");
     const teamAway = form.watch("teamAway");
+    const eventType = form.watch("type");
+    const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -115,35 +104,39 @@ export function AddEventForm({ event }: AddEventFormProps) {
             try {
                 const clubDocRef = doc(db, "clubs", user.uid);
                 const opponentsQuery = query(collection(db, "opponents"), where("userId", "==", user.uid));
-                
                 const [clubDoc, opponentsSnapshot] = await Promise.all([getDoc(clubDocRef), getDocs(opponentsQuery)]);
                 
+                let currentClub = "Votre Club";
                 if (clubDoc.exists() && clubDoc.data().clubName) {
-                    setClubName(clubDoc.data().clubName);
+                    currentClub = clubDoc.data().clubName;
+                    setClubName(currentClub);
                 }
 
                 const opponentsData = opponentsSnapshot.docs.map(doc => doc.data().name as string);
                 setOpponents(opponentsData.sort());
+
+                // Pré-sélection intelligente de l'équipe à domicile
+                if (!isEditMode && eventTypeIsMatch && !form.getValues("teamHome")) {
+                    form.setValue("teamHome", currentClub);
+                }
 
             } catch (error) {
                 console.error("Error fetching initial data: ", error);
             }
         };
         fetchInitialData();
-    }, [user]);
+    }, [user, eventTypeIsMatch, isEditMode, form]);
 
     useEffect(() => {
-        // We just combine the club name and opponents, regardless of category.
-        // This keeps team names consistent.
         setAvailableTeams([clubName, ...opponents].sort());
     }, [clubName, opponents]);
-
 
     useEffect(() => {
         if(isEditMode && event) {
             form.reset({
                 type: event.type,
                 category: event.category,
+                status: event.status || "Prévu",
                 date: event.date ? new Date(event.date) : undefined,
                 time: event.date ? format(new Date(event.date), "HH:mm") : "",
                 location: event.location || "",
@@ -153,14 +146,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
         }
     }, [event, isEditMode, form]);
 
-    const eventType = form.watch("type");
-    const eventTypeIsMatch = eventType?.includes("Match") || eventType?.includes("Tournoi");
-    
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!user) {
-            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
-            return;
-        }
+        if (!user) return;
         if (!values.date) {
             toast({ variant: "destructive", title: "Date manquante", description: "Veuillez sélectionner une date." });
             return;
@@ -176,6 +163,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 type: values.type,
                 date: combinedDate,
                 category: values.category,
+                status: values.status,
                 location: values.location || null,
             };
 
@@ -185,63 +173,57 @@ export function AddEventForm({ event }: AddEventFormProps) {
             }
 
             if(isEditMode && event) {
-                const eventDocRef = doc(db, "events", event.id);
-                await updateDoc(eventDocRef, dataToSave);
-                toast({
-                    title: "Événement modifié !",
-                    description: `L'événement a été mis à jour avec succès.`
-                });
+                await updateDoc(doc(db, "events", event.id), dataToSave);
+                toast({ title: "Événement mis à jour !" });
             } else {
-                 await addDoc(collection(db, "events"), dataToSave);
-                toast({
-                    title: "Événement ajouté !",
-                    description: `L'événement a été planifié avec succès.`
-                });
+                await addDoc(collection(db, "events"), dataToSave);
+                toast({ title: "Événement planifié !" });
             }
            
             router.push("/dashboard/events");
             router.refresh();
-
         } catch (error) {
-            console.error("Error saving event:", error);
-             toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible d'enregistrer l'événement."
-            });
+            console.error(error);
+            toast({ variant: "destructive", title: "Erreur lors de l'enregistrement" });
         } finally {
             setLoading(false);
         }
     }
     
-    const availableTeamsForHome = availableTeams.filter(team => team !== teamAway);
-    const availableTeamsForAway = availableTeams.filter(team => team !== teamHome);
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
-                <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Type d'événement</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {eventTypes.map(type => (
-                                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Type d'événement</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>{eventTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Statut</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>{eventStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
                  <FormField
                     control={form.control}
                     name="category"
@@ -249,16 +231,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         <FormItem>
                             <FormLabel>Catégorie</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {playerCategories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                    ))}
-                                </SelectContent>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormMessage />
                         </FormItem>
@@ -266,16 +240,16 @@ export function AddEventForm({ event }: AddEventFormProps) {
                 />
 
                 {eventTypeIsMatch && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-lg bg-primary/5">
                         <FormField
                             control={form.control}
                             name="teamHome"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à Domicile</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                        <SelectContent>{availableTeamsForHome.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeams.filter(t => t !== teamAway).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
@@ -287,9 +261,9 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Équipe à l'Extérieur</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                        <SelectContent>{availableTeamsForAway.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{availableTeams.filter(t => t !== teamHome).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
@@ -308,11 +282,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
                             <Popover>
                                 <PopoverTrigger asChild>
                                 <FormControl>
-                                    <Button
-                                    variant={"outline"}
-                                    className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                    >
-                                    {field.value ? format(field.value, "PPP", { locale: fr }) : <span></span>}
+                                    <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                    {field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisir une date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                     </Button>
                                 </FormControl>
@@ -331,9 +302,7 @@ export function AddEventForm({ event }: AddEventFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Heure</FormLabel>
-                            <FormControl>
-                                <Input type="time" {...field} />
-                            </FormControl>
+                            <FormControl><Input type="time" {...field} /></FormControl>
                             <FormMessage />
                             </FormItem>
                         )}
@@ -345,10 +314,8 @@ export function AddEventForm({ event }: AddEventFormProps) {
                     name="location"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Lieu</FormLabel>
-                        <FormControl>
-                            <Input {...field} />
-                        </FormControl>
+                        <FormLabel>Lieu / Stade</FormLabel>
+                        <FormControl><Input {...field} placeholder="Ex: Stade Municipal" /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
