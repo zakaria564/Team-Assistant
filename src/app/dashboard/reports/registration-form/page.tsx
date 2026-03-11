@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, CheckSquare } from "lucide-react";
+import { ArrowLeft, Download, Loader2, User, Users, ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
@@ -252,7 +252,7 @@ export default function RegistrationFormPage() {
                             <>
                                 {/* Section I */}
                                 <div className="space-y-4">
-                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">I. INFORMATIONS DU JOUEUR</h3>
+                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-4 py-2 w-fit rounded inline-flex items-center justify-center leading-none text-center min-h-[32px]">I. INFORMATIONS DU JOUEUR</h3>
                                     <div className="space-y-4 text-sm">
                                         <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
                                         <div className="flex items-center"><div>Date et Lieu de naissance :</div><DottedLine /></div>
@@ -275,7 +275,7 @@ export default function RegistrationFormPage() {
                                 {/* Section II - Uniquement Junior */}
                                 {formType === 'junior' && (
                                     <div className="space-y-4">
-                                        <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
+                                        <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-4 py-2 w-fit rounded inline-flex items-center justify-center leading-none text-center min-h-[32px]">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
                                         <div className="space-y-4 text-sm">
                                             <div className="flex items-center"><div>Nom et Prénom :</div><DottedLine /></div>
                                             <div className="grid grid-cols-2 gap-x-8">
@@ -292,7 +292,7 @@ export default function RegistrationFormPage() {
 
                                 {/* Section III */}
                                 <div className="space-y-4">
-                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-3 py-1.5 w-fit rounded">III. AUTORISATION ET DÉCLARATION</h3>
+                                    <h3 className="font-black text-sm uppercase tracking-wider bg-slate-900 text-white px-4 py-2 w-fit rounded inline-flex items-center justify-center leading-none text-center min-h-[32px]">III. AUTORISATION ET DÉCLARATION</h3>
                                     <div className="space-y-4 text-xs sm:text-sm leading-relaxed italic text-slate-700">
                                         {formType === 'junior' ? (
                                             <p>
