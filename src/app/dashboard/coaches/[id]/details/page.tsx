@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, FileText, ShieldCheck } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface Coach {
   id: string;
@@ -33,28 +34,26 @@ interface Coach {
   documents?: { name: string; url: string; validityDate?: string }[];
 }
 
-const DetailItem = ({ icon: Icon, label, value, href, children }: { icon: React.ElementType, label: string, value?: string, href?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3 break-inside-avoid">
-    <Icon className="h-5 w-5 text-muted-foreground mt-1" />
-    <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <div className="text-base font-medium text-gray-800">
-        {href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
-            {value || children}
-          </a>
-        ) : (
-          value || children || "Non spécifié"
-        )}
+const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+  <div className="flex items-start gap-3 mb-4">
+    <div className="mt-0.5 bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-center shrink-0">
+        <Icon className="h-3.5 w-3.5 text-slate-600" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
+      <div className="text-sm font-bold text-slate-800 break-words leading-tight">
+        {value || children || "Non spécifié"}
       </div>
     </div>
   </div>
 );
 
-const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-lg font-semibold text-gray-800 border-b-2 border-primary/20 pb-2 mb-4 col-span-full">{title}</h2>
+const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
+    <div className="mb-6 flex items-center gap-2 border-b-2 border-slate-100 pb-2">
+        {Icon && <Icon className="h-4 w-4 text-primary" />}
+        <h2 className="text-xs font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
+    </div>
 );
-
 
 const toTitleCase = (str: string) => {
   if (!str) return '';
@@ -65,6 +64,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   const { params: paramsPromise } = props;
   const params = React.use(paramsPromise);
   const coachId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -128,7 +128,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             backgroundColor: '#ffffff',
             logging: false
         }).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'pt',
@@ -148,16 +147,14 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             }
 
             const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
-
-            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-            pdf.save(`fiche_entraineur_${coach?.name?.replace(/ /g, "_")}.pdf`);
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
+            pdf.save(`fiche_officielle_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
         }).catch((err) => {
             console.error("Erreur PDF:", err);
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Le PDF n'a pas pu être généré. Vérifiez les photos configurées."
+                description: "Le PDF n'a pas pu être généré."
             });
         }).finally(() => {
             if (cardElement) {
@@ -171,7 +168,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
 
   if (loading || loadingUser) {
     return (
-      <div className="flex justify-center items-center h-screen bg-muted/40">
+      <div className="flex justify-center items-center h-screen bg-slate-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -181,11 +178,12 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
+  const displayId = `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
 
 
   return (
-    <div className="bg-muted/40 min-h-screen p-4 sm:p-8">
-       <div className="w-full max-w-4xl mx-auto space-y-4">
+    <div className="bg-slate-100 min-h-screen p-4 sm:p-8">
+       <div className="w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center print:hidden">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -194,74 +192,125 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Téléchargement...
+                Génération...
               </>
             ) : (
               <>
                 <FileDown className="mr-2 h-4 w-4" />
-                Télécharger
+                Télécharger la Fiche
               </>
             )}
           </Button>
         </div>
 
-        <div id="printable-details" className="bg-white p-6 sm:p-8 rounded-lg shadow-sm text-gray-900">
-            <header className="flex flex-col sm:flex-row justify-between items-start pb-6 mb-6 border-b-2 border-gray-200">
-                 <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage src={clubLogoUrl || ''} alt={clubName} />
-                        <AvatarFallback className="text-xl">{clubInitial}</AvatarFallback>
-                    </Avatar>
+        <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto" style={{ width: '800px', minHeight: '1120px' }}>
+            
+            <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
+                 <div className="flex items-center gap-5">
+                    <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
+                        {clubLogoUrl ? (
+                            <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                        ) : (
+                            <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>
+                        )}
+                    </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-primary">{toTitleCase(clubName)}</h1>
-                        <p className="text-muted-foreground">Fiche d'information de l'entraîneur</p>
+                        <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
+                        <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
                     </div>
                 </div>
-                <div className="text-left sm:text-right mt-4 sm:mt-0">
-                    <p className="text-sm">Généré le: {format(new Date(), 'dd/MM/yyyy')}</p>
+                <div className="text-right">
+                    <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
+                        <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Coach</p>
+                        <div className="w-full text-center">
+                            <p className="text-xs font-mono font-bold text-primary leading-none inline-block">{displayId}</p>
+                        </div>
+                    </div>
+                    <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                 </div>
             </header>
             
-            <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
-                 <Avatar className="h-32 w-32 border-4 border-primary shadow-md">
-                    <AvatarImage src={coach.photoUrl} alt={coach.name} />
-                    <AvatarFallback className="text-5xl">{coachInitial}</AvatarFallback>
-                </Avatar>
-                <div className="text-center sm:text-left">
-                    <h1 className="text-4xl font-bold text-gray-800">{toTitleCase(coach.name)}</h1>
+            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
+                 <div className="relative">
+                    <Avatar className="h-32 w-32 border-4 border-white shadow-md">
+                        <AvatarImage src={coach.photoUrl} alt={coach.name} className="object-cover" />
+                        <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
+                        {coach.status}
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{coach.name}</h1>
+                    <div className="flex items-center gap-3">
+                        <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{coach.category}</Badge>
+                        <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
+                        </span>
+                    </div>
+                    <div className="bg-white w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
+                        <div className="inline-flex items-center justify-center w-full">
+                            <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
+                            <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
+                        </div>
+                    </div>
                 </div>
             </section>
-            
-            <Separator className="my-6" />
 
-            <main className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <SectionTitle title="Informations Personnelles" />
-                    <DetailItem icon={User} label="Nom complet" value={toTitleCase(coach.name)} />
-                    <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
-                    <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
-                    <DetailItem icon={Home} label="Adresse" value={coach.address} />
-                    <DetailItem icon={Phone} label="Téléphone" value={coach.phone} />
-                    <DetailItem icon={Mail} label="Email" value={coach.email}/>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <SectionTitle title="Informations Sportives" />
-                    <DetailItem icon={Star} label="Spécialité" value={coach.specialty} />
-                    <DetailItem icon={Shield} label="Catégorie Entraînée" value={coach.category} />
-                    <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                    <DetailItem icon={LogOut} label="Date de sortie du club" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                </div>
-
-                {coach.documents && coach.documents.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <SectionTitle title="Documents Enregistrés" />
-                        {coach.documents.map((doc: any, index: number) => (
-                            <DetailItem key={index} icon={FileText} label={doc.name} value={doc.validityDate ? `Expire le ${format(new Date(doc.validityDate), 'dd/MM/yyyy')}` : "Document archivé"} />
-                        ))}
+            <main className="flex flex-row gap-12 flex-grow">
+                {/* COLUMN LEFT: PERSO & CONTACT */}
+                <div className="w-1/2 space-y-10">
+                    <div>
+                        <SectionTitle title="État Civil & Contact" icon={User} />
+                        <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
+                        <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
+                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
+                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
+                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                     </div>
-                )}
+                </div>
+
+                {/* COLUMN RIGHT: SPORT & PARCOURS */}
+                <div className="w-1/2 space-y-10">
+                    <div>
+                        <SectionTitle title="Parcours Sportif" icon={Shield} />
+                        <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
+                        <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
+                        <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                        <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
+                    </div>
+
+                    {coach.documents && coach.documents.length > 0 && (
+                        <div className="pt-4">
+                            <SectionTitle title="Documents Qualifiants" icon={FileText} />
+                            <div className="space-y-2">
+                                {coach.documents.map((doc: any, index: number) => (
+                                    <div key={index} className="flex flex-col mb-3">
+                                        <span className="text-xs font-bold text-slate-800">{doc.name}</span>
+                                        {doc.validityDate && (
+                                            <span className="text-[10px] text-slate-400">Expire le : {format(new Date(doc.validityDate), "dd/MM/yyyy")}</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </main>
+
+            <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-slate-300">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
+                    </div>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                </div>
+                <div className="text-center">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
+                    <div className="w-40 border-b-2 border-slate-200"></div>
+                </div>
+            </footer>
         </div>
       </div>
     </div>
