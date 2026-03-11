@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -164,7 +163,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                     <div className="flex flex-col">
                                         <span className="font-black text-slate-800 uppercase text-sm tracking-tight">{item.playerName}</span>
                                         <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">
-                                            {item.type === 'goal' ? 'But Marqué' : 'Passé décisive'}
+                                            {item.teamName} • {item.type === 'goal' ? 'But Marqué' : 'Passé décisive'}
                                         </span>
                                     </div>
                                     {item.type === 'goal' ? (
