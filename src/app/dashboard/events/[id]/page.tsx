@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, UserPlus, Pencil } from "lucide-react";
@@ -13,13 +13,17 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddScoreForm } from "@/components/events/add-score-form";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = React.use(params);
   const router = useRouter();
+  const [user] = useAuthState(auth);
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
+  const [teamLogos, setTeamLogos] = useState<{ [key: string]: string | null }>({});
 
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;
@@ -39,6 +43,36 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     fetchEvent();
   }, [fetchEvent]);
 
+  useEffect(() => {
+    if (!event || !user) return;
+
+    const fetchLogos = async () => {
+        const logos: { [key: string]: string | null } = {};
+        
+        // Fetch club logo
+        const clubDoc = await getDoc(doc(db, "clubs", user.uid));
+        if (clubDoc.exists()) {
+            const clubData = clubDoc.data();
+            logos[clubData.clubName] = clubData.logoUrl || null;
+        }
+
+        // Fetch opponent logos if they exist in the 'opponents' collection
+        const teams = [event.teamHome, event.teamAway];
+        for (const teamName of teams) {
+            if (logos[teamName] === undefined) {
+                const q = query(collection(db, "opponents"), where("userId", "==", user.uid), where("name", "==", teamName));
+                const oppSnap = await getDocs(q);
+                if (!oppSnap.empty) {
+                    logos[teamName] = oppSnap.docs[0].data().logoUrl || null;
+                }
+            }
+        }
+        setTeamLogos(logos);
+    };
+
+    fetchLogos();
+  }, [event, user]);
+
   if (loading) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!event) return null;
 
@@ -46,11 +80,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
   const isMatchPast = isPast(event.date);
 
-  // Combine scorers and assisters for timeline
   const timelineEvents = [
       ...(event.scorers || []).map((s: any) => ({ ...s, type: 'goal' })),
       ...(event.assisters || []).map((a: any) => ({ ...a, type: 'assist' }))
   ].sort((a, b) => (a.minute || 0) - (b.minute || 0));
+
+  const TeamLogo = ({ name }: { name: string }) => (
+    <div className="h-24 w-24 bg-white shadow-md rounded-full flex items-center justify-center border-4 border-slate-100 overflow-hidden p-2">
+        {teamLogos[name] ? (
+            <img src={teamLogos[name]!} alt={name} className="h-full w-full object-contain" />
+        ) : (
+            <Trophy className="h-10 w-10 text-slate-300" />
+        )}
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -82,9 +125,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-8 py-4">
                         <div className="flex items-center justify-center gap-10 w-full">
                             <div className="flex flex-col items-center flex-1 space-y-3">
-                                <div className="h-20 w-20 bg-white shadow-md rounded-full flex items-center justify-center border-4 border-slate-100">
-                                    <Trophy className="h-10 w-10 text-slate-300" />
-                                </div>
+                                <TeamLogo name={event.teamHome} />
                                 <span className="text-xl font-black uppercase text-center leading-tight tracking-tighter">{event.teamHome}</span>
                             </div>
                             
@@ -100,9 +141,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
 
                             <div className="flex flex-col items-center flex-1 space-y-3">
-                                <div className="h-20 w-20 bg-white shadow-md rounded-full flex items-center justify-center border-4 border-slate-100">
-                                    <Trophy className="h-10 w-10 text-slate-300" />
-                                </div>
+                                <TeamLogo name={event.teamAway} />
                                 <span className="text-xl font-black uppercase text-center leading-tight tracking-tighter">{event.teamAway}</span>
                             </div>
                         </div>
