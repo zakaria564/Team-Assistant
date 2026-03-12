@@ -222,9 +222,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
                         </div>
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
-                            {player.status}
-                        </div>
                     </div>
                     <div className="space-y-3">
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{player.name}</h1>

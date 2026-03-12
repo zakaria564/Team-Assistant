@@ -236,9 +236,6 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
                         </div>
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
-                            {coach.status}
-                        </div>
                     </div>
                     <div className="space-y-3">
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{coach.name}</h1>
@@ -282,7 +279,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
 
                 <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-10">
                     <div className="space-y-3 text-center sm:text-left">
-                        <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-300">
+                        <div className="flex items-center gap-2 text-slate-300">
                             <ShieldCheck className="h-4 w-4" />
                             <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
                         </div>
