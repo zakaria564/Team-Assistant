@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -421,7 +421,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <img 
                                 src={photoDataUrl} 
                                 alt="Photo du joueur" 
-                                className="w-full h-full object-contain absolute inset-0" 
+                                className="w-full h-full object-contain absolute inset-0 p-1" 
                             />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
