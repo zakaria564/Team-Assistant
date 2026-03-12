@@ -70,32 +70,43 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
-        const originalWidth = element.style.width;
-        element.style.width = '800px';
-
-        html2canvas(element, { 
-            scale: 2, 
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            logging: false
-        }).then((canvas) => {
-            const pdf = new jsPDF('p', 'pt', 'a4');
-            const imgData = canvas.toDataURL('image/png', 1.0);
-            const imgWidth = 595.28; 
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`recu_${payment?.playerName.replace(/ /g, "_")}.pdf`);
-        }).catch((err) => {
-            console.error("Erreur PDF:", err);
-            toast({
-                variant: "destructive",
-                title: "Erreur de génération",
-                description: "Le PDF n'a pas pu être généré."
+        const images = Array.from(element.getElementsByTagName('img'));
+        const imagePromises = images.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
             });
-        }).finally(() => {
-            element.style.width = originalWidth;
-            setLoadingPdf(false);
+        });
+
+        Promise.all(imagePromises).then(() => {
+            const originalWidth = element.style.width;
+            element.style.width = '800px';
+
+            html2canvas(element, { 
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                logging: false
+            }).then((canvas) => {
+                const pdf = new jsPDF('p', 'pt', 'a4');
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const imgWidth = 595.28; 
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save(`recu_${payment?.playerName.replace(/ /g, "_")}.pdf`);
+            }).catch((err) => {
+                console.error("Erreur PDF:", err);
+                toast({
+                    variant: "destructive",
+                    title: "Erreur de génération",
+                    description: "Le PDF n'a pas pu être généré."
+                });
+            }).finally(() => {
+                element.style.width = originalWidth;
+                setLoadingPdf(false);
+            });
         });
     }
   };

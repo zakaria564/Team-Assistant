@@ -106,50 +106,61 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        window.scrollTo(0, 0);
-        
-        const originalWidth = cardElement.style.width;
-        cardElement.style.width = '800px';
-
-        setTimeout(() => {
-            html2canvas(cardElement, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: false,
-                backgroundColor: '#ffffff',
-                logging: false,
-            }).then((canvas) => {
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'pt',
-                    format: 'a4'
-                });
-
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const canvasAspectRatio = canvas.width / canvas.height;
-
-                let imgWidth = pdfWidth;
-                let imgHeight = pdfWidth / canvasAspectRatio;
-                
-                if (imgHeight > pdfHeight) {
-                    imgHeight = pdfHeight;
-                    imgWidth = imgHeight * canvasAspectRatio;
-                }
-
-                const x = (pdfWidth - imgWidth) / 2;
-                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
-                pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
-            }).catch((err) => {
-                console.error("Erreur PDF:", err);
-                toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
-            }).finally(() => {
-                if (cardElement) {
-                    cardElement.style.width = originalWidth;
-                }
-                setLoadingPdf(false);
+        // Ensure all images are loaded before capture
+        const images = Array.from(cardElement.getElementsByTagName('img'));
+        const imagePromises = images.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
             });
-        }, 500);
+        });
+
+        Promise.all(imagePromises).then(() => {
+            window.scrollTo(0, 0);
+            const originalWidth = cardElement.style.width;
+            cardElement.style.width = '800px';
+
+            setTimeout(() => {
+                html2canvas(cardElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                }).then((canvas) => {
+                    const pdf = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'pt',
+                        format: 'a4'
+                    });
+
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const canvasAspectRatio = canvas.width / canvas.height;
+
+                    let imgWidth = pdfWidth;
+                    let imgHeight = pdfWidth / canvasAspectRatio;
+                    
+                    if (imgHeight > pdfHeight) {
+                        imgHeight = pdfHeight;
+                        imgWidth = imgHeight * canvasAspectRatio;
+                    }
+
+                    const x = (pdfWidth - imgWidth) / 2;
+                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
+                    pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
+                }).catch((err) => {
+                    console.error("Erreur PDF:", err);
+                    toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
+                }).finally(() => {
+                    if (cardElement) {
+                        cardElement.style.width = originalWidth;
+                    }
+                    setLoadingPdf(false);
+                });
+            }, 500);
+        });
     }
   };
 
@@ -214,7 +225,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
                     <div className="flex flex-col items-center gap-4">
-                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center relative">
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
                                 <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
