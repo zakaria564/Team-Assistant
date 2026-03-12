@@ -342,7 +342,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                 toast({
                     variant: "destructive",
                     title: "Nom déjà utilisé",
-                    description: "Un joueur avec un nom similaire existe déjà. Veuillez choisir un autre nom.",
+                    description: "Un joueur avec un nom similaire existe déjà.",
                 });
                 setLoading(false);
                 return;
@@ -392,7 +392,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
       toast({
           variant: "destructive",
           title: "Erreur",
-          description: isEditMode ? "Impossible de modifier le joueur." : "Une erreur est survenue lors de l'ajout du joueur.",
+          description: "Une erreur est survenue.",
       });
       console.error(e);
     } finally {

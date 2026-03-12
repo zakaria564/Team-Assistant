@@ -7,13 +7,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Shirt, Cake, Shield, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, VenetianMask, MapPin, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Badge } from "@/components/ui/badge";
 import { AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 mb-4">
@@ -41,11 +42,11 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-
 export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
+  const { toast } = useToast();
   
   const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -111,7 +112,8 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
             scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            allowTaint: true
         }).then((canvas) => {
             const pdf = new jsPDF({
                 orientation: 'portrait',
@@ -136,6 +138,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
             pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
         }).catch((err) => {
             console.error("Erreur PDF:", err);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
         }).finally(() => {
             if (cardElement) {
                 cardElement.style.width = originalWidth;
@@ -144,7 +147,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
         });
     }
   };
-
 
   if (loading || loadingUser) {
     return (
@@ -159,7 +161,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
   const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 6).toUpperCase()}`;
-
 
   return (
     <div className="bg-slate-100 min-h-screen p-2 sm:p-8">
@@ -207,7 +208,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                 </header>
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
-                    <div className="relative">
+                    <div className="flex flex-col items-center gap-4">
                         <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center">
                             {player.photoUrl ? (
                                 <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
@@ -215,23 +216,21 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
                         </div>
+                        <div className="bg-white px-3 py-1 rounded border border-slate-300 font-mono text-[9px] font-bold text-slate-600 shadow-sm flex items-center gap-1.5">
+                            <Fingerprint className="h-3 w-3 text-primary" />
+                            {displayId}
+                        </div>
                     </div>
                     <div className="space-y-3 flex-1 min-w-0">
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none truncate">{player.name}</h1>
                         <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
                             <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{player.category}</Badge>
                             <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
-                                <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {player.position || "N/A"}
+                                <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {player.position || "Joueur"}
                             </span>
                             {player.number && (
                                 <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded font-black text-xs">MAILLOT #{player.number}</span>
                             )}
-                        </div>
-                        <div className="bg-white mx-auto sm:mx-0 w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
-                            <div className="inline-flex items-center justify-center w-full">
-                                <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
-                                <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
-                            </div>
                         </div>
                     </div>
                 </section>

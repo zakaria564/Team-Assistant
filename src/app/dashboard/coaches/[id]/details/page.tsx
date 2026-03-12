@@ -92,7 +92,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
         const clubDoc = await getDoc(clubDocRef);
         if (clubDoc.exists()) {
           const clubData = clubDoc.data();
-          setClubName(clubData.clubName || "Votre Club");
+          setClubName(clubName || "Votre Club");
           setClubLogoUrl(clubData.logoUrl || null);
         }
 
@@ -105,7 +105,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     };
 
     fetchCoachAndClub();
-  }, [coachId, user, loadingUser, router]);
+  }, [coachId, user, loadingUser, router, clubName]);
   
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
@@ -118,7 +118,8 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
             scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            allowTaint: true
         }).then((canvas) => {
             const pdf = new jsPDF({
                 orientation: 'portrait',
@@ -145,7 +146,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
             console.error("Erreur PDF:", err);
             toast({
                 variant: "destructive",
-                title: "Erreur de génération",
+                title: "Erreur",
                 description: "Le PDF n'a pas pu être généré."
             });
         }).finally(() => {
@@ -219,13 +220,17 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                 </header>
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
-                    <div className="relative">
+                    <div className="flex flex-col items-center gap-4">
                         <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center">
                             {coach.photoUrl ? (
                                 <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
+                        </div>
+                        <div className="bg-white px-3 py-1 rounded border border-slate-300 font-mono text-[9px] font-bold text-slate-600 shadow-sm flex items-center gap-1.5">
+                            <Fingerprint className="h-3 w-3 text-primary" />
+                            {displayId}
                         </div>
                     </div>
                     <div className="space-y-3 flex-1 min-w-0">
@@ -235,12 +240,6 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                             <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
                                 <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                             </span>
-                        </div>
-                        <div className="bg-white mx-auto sm:mx-0 w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
-                            <div className="inline-flex items-center justify-center w-full">
-                                <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
-                                <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
-                            </div>
                         </div>
                     </div>
                 </section>
