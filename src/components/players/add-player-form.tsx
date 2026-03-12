@@ -419,7 +419,13 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 playsInline 
                             />
                         ) : photoDataUrl ? (
-                            <Image src={photoDataUrl} alt="Photo du joueur" layout="fill" objectFit="cover" />
+                            <Image 
+                                src={photoDataUrl} 
+                                alt="Photo du joueur" 
+                                fill 
+                                className="object-cover" 
+                                unoptimized 
+                            />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
                         )
@@ -455,7 +461,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input {...field} value={field.value || ''} />
+                                <Input {...field} value={field.value || ''} placeholder="https://..." />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -879,9 +885,9 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                <FormControl>
                                    <Input 
                                       type="text" 
-                                      
                                       {...field}
                                       value={field.value || ''}
+                                      placeholder="https://..."
                                     />
                                </FormControl>
                                <FormMessage />

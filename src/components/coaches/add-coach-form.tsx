@@ -71,7 +71,7 @@ const coachCategories = [
     "U12", "U12 F",
     "U11", "U11 F",
     "U10", "U10 F",
-    "U9", "U9 F",
+    "U19", "U9 F",
     "U8", "U8 F",
     "U7", "U7 F",
     "Vétérans"
@@ -346,7 +346,13 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 playsInline 
                             />
                         ) : photoDataUrl ? (
-                            <Image src={photoDataUrl} alt="Photo de l'entraîneur" layout="fill" objectFit="cover" />
+                            <Image 
+                                src={photoDataUrl} 
+                                alt="Photo de l'entraîneur" 
+                                fill 
+                                className="object-cover" 
+                                unoptimized 
+                            />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p>
                         )
@@ -373,7 +379,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input {...field} value={field.value || ""} />
+                                <Input {...field} value={field.value || ""} placeholder="https://..." />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -563,7 +569,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                                <FormLabel>URL du Document</FormLabel>
                                <FormControl>
-                                   <Input type="text" {...field} value={field.value || ""} />
+                                   <Input type="text" {...field} value={field.value || ""} placeholder="https://..." />
                                </FormControl>
                                <FormMessage />
                             </FormItem>
