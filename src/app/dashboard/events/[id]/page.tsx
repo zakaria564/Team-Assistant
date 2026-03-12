@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -87,7 +86,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const TeamLogo = ({ name }: { name: string }) => (
     <div className="h-16 w-16 sm:h-24 sm:w-24 bg-white shadow-md rounded-full flex items-center justify-center border-2 sm:border-4 border-slate-100 overflow-hidden p-1.5 sm:p-2">
         {teamLogos[name] ? (
-            <img src={teamLogos[name]!} alt={name} className="h-full w-full object-contain" />
+            <img src={teamLogos[name]!} alt={name} className="h-full w-full object-contain" crossOrigin="anonymous" />
         ) : (
             <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
         )}

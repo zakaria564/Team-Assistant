@@ -70,7 +70,6 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
-        // Fix width for high quality capture
         const originalWidth = element.style.width;
         element.style.width = '800px';
 
@@ -133,6 +132,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                             src={clubInfo.logoUrl} 
                             alt="Logo" 
                             className="h-full w-full object-contain"
+                            crossOrigin="anonymous"
                         />
                     ) : (
                         <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">

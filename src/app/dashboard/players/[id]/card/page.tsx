@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -132,10 +131,13 @@ export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: st
 
             <div className="p-4 flex-grow flex flex-col items-center justify-center gap-3">
                 <div className="relative">
-                    <Avatar className="h-28 w-28 border-4 border-primary shadow-md">
-                        <AvatarImage src={player.photoUrl} alt={player.name} />
-                        <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
-                    </Avatar>
+                    <div className="h-28 w-28 border-4 border-primary shadow-md rounded-full overflow-hidden flex items-center justify-center bg-slate-100">
+                        {player.photoUrl ? (
+                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                        ) : (
+                            <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
+                        )}
+                    </div>
                     <div className="absolute -bottom-2 -right-2 bg-black text-white px-2 py-0.5 rounded font-mono text-[10px] border border-white">
                         ID: {player.professionalId?.split('-').pop() || player.id.substring(0, 4).toUpperCase()}
                     </div>

@@ -111,7 +111,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
         const originalWidth = cardElement.style.width;
         cardElement.style.width = '800px';
 
-        // Délai pour assurer le chargement complet du DOM et des images
         setTimeout(() => {
             html2canvas(cardElement, {
                 scale: 2,
@@ -215,7 +214,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
                     <div className="flex flex-col items-center gap-4">
-                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center">
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center relative">
                             {player.photoUrl ? (
                                 <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -77,7 +76,7 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
           <CardContent className="pt-8 flex flex-col items-center gap-4">
             <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
               {coach.photoUrl ? (
-                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
+                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
               ) : (
                 <AvatarFallback className="text-4xl text-slate-400">E</AvatarFallback>
               )}
