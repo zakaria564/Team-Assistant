@@ -51,42 +51,44 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
     if (rankings.length === 0) return <div className="text-center text-muted-foreground py-20"><p>Aucun match terminé pour cette sélection.</p></div>;
     return (
         <div className="rounded-xl border overflow-hidden">
-            <Table>
-                <TableHeader className="bg-slate-50">
-                    <TableRow>
-                        <TableHead className="w-[50px] text-center font-black">POS</TableHead>
-                        <TableHead className="font-black">ÉQUIPE</TableHead>
-                        <TableHead className="text-center font-black">MJ</TableHead>
-                        <TableHead className="text-center font-black hidden sm:table-cell">G</TableHead>
-                        <TableHead className="text-center font-black hidden sm:table-cell">N</TableHead>
-                        <TableHead className="text-center font-black hidden sm:table-cell">P</TableHead>
-                        <TableHead className="text-center font-black">DIFF</TableHead>
-                        <TableHead className="text-center font-black bg-primary/10 text-primary">PTS</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {rankings.map((team, index) => (
-                        <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() ? "bg-primary/5 border-l-4 border-l-primary font-bold" : ""}>
-                            <TableCell className="text-center font-mono">{index + 1}</TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="h-8 w-8 border">
-                                        <AvatarImage src={team.logoUrl} alt={team.name} />
-                                        <AvatarFallback className="text-[10px]">{team.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="truncate max-w-[120px] sm:max-w-none uppercase tracking-tighter">{team.name}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-center">{team.played}</TableCell>
-                            <TableCell className="text-center hidden sm:table-cell">{team.wins}</TableCell>
-                            <TableCell className="text-center hidden sm:table-cell">{team.draws}</TableCell>
-                            <TableCell className="text-center hidden sm:table-cell">{team.losses}</TableCell>
-                            <TableCell className="text-center font-medium">{team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}</TableCell>
-                            <TableCell className="text-center font-black text-lg bg-primary/5 text-primary">{team.points}</TableCell>
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader className="bg-slate-50">
+                        <TableRow>
+                            <TableHead className="w-[40px] sm:w-[50px] text-center font-black px-2">POS</TableHead>
+                            <TableHead className="font-black min-w-[120px]">ÉQUIPE</TableHead>
+                            <TableHead className="text-center font-black px-2">MJ</TableHead>
+                            <TableHead className="text-center font-black hidden sm:table-cell px-2">G</TableHead>
+                            <TableHead className="text-center font-black hidden sm:table-cell px-2">N</TableHead>
+                            <TableHead className="text-center font-black hidden sm:table-cell px-2">P</TableHead>
+                            <TableHead className="text-center font-black px-2">DIFF</TableHead>
+                            <TableHead className="text-center font-black bg-primary/10 text-primary px-2">PTS</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {rankings.map((team, index) => (
+                            <TableRow key={team.name} className={team.name.toLowerCase() === clubName.toLowerCase() ? "bg-primary/5 border-l-4 border-l-primary font-bold" : ""}>
+                                <TableCell className="text-center font-mono text-xs sm:text-sm px-2">{index + 1}</TableCell>
+                                <TableCell className="px-2 sm:px-4">
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8 border shrink-0">
+                                            <AvatarImage src={team.logoUrl} alt={team.name} />
+                                            <AvatarFallback className="text-[8px] sm:text-[10px]">{team.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="truncate max-w-[80px] sm:max-w-none uppercase tracking-tighter text-xs sm:text-sm">{team.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-center text-xs sm:text-sm px-2">{team.played}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell text-xs sm:text-sm px-2">{team.wins}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell text-xs sm:text-sm px-2">{team.draws}</TableCell>
+                                <TableCell className="text-center hidden sm:table-cell text-xs sm:text-sm px-2">{team.losses}</TableCell>
+                                <TableCell className="text-center font-medium text-xs sm:text-sm px-2">{team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}</TableCell>
+                                <TableCell className="text-center font-black text-sm sm:text-lg bg-primary/5 text-primary px-2">{team.points}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 };
@@ -94,37 +96,39 @@ const RankingTable = ({ rankings, clubName }: { rankings: TeamStats[], clubName:
 const PlayerStatsTable = ({ stats, label }: { stats: PlayerStat[], label: string }) => {
     if (stats.length === 0) return <div className="text-center text-muted-foreground py-20"><p>Aucune donnée enregistrée.</p></div>;
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[60px] text-center font-black">RANG</TableHead>
-                    <TableHead className="font-black">JOUEUR</TableHead>
-                    <TableHead className="hidden md:table-cell font-black">ÉQUIPE</TableHead>
-                    <TableHead className="text-right font-black">{label.toUpperCase()}</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {stats.map((item, index) => (
-                    <TableRow key={item.playerId + index}>
-                        <TableCell className="font-black text-center text-xl italic text-slate-200">#{index + 1}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 border-2 border-primary/10 shadow-sm">
-                                    <AvatarImage src={item.playerPhotoUrl} />
-                                    <AvatarFallback>{item.playerName.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                    <span className="font-black uppercase tracking-tighter text-sm leading-none mb-1">{item.playerName}</span>
-                                    <span className="text-[10px] text-muted-foreground font-bold uppercase md:hidden">{item.teamName}</span>
-                                </div>
-                            </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-xs font-bold uppercase text-muted-foreground">{item.teamName}</TableCell>
-                        <TableCell className="font-black text-right text-3xl text-primary italic pr-6 tabular-nums">{item.value}</TableCell>
+        <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[50px] sm:w-[60px] text-center font-black">RANG</TableHead>
+                        <TableHead className="font-black">JOUEUR</TableHead>
+                        <TableHead className="hidden md:table-cell font-black">ÉQUIPE</TableHead>
+                        <TableHead className="text-right font-black">{label.toUpperCase()}</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {stats.map((item, index) => (
+                        <TableRow key={item.playerId + index}>
+                            <TableCell className="font-black text-center text-lg sm:text-xl italic text-slate-200">#{index + 1}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2 sm:gap-4">
+                                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-primary/10 shadow-sm shrink-0">
+                                        <AvatarImage src={item.playerPhotoUrl} />
+                                        <AvatarFallback className="text-xs">{item.playerName.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-black uppercase tracking-tighter text-xs sm:text-sm leading-none mb-1 truncate">{item.playerName}</span>
+                                        <span className="text-[8px] sm:text-[10px] text-muted-foreground font-bold uppercase truncate md:hidden">{item.teamName}</span>
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-xs font-bold uppercase text-muted-foreground">{item.teamName}</TableCell>
+                            <TableCell className="font-black text-right text-2xl sm:text-3xl text-primary italic pr-4 sm:pr-6 tabular-nums">{item.value}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 };
 
@@ -249,21 +253,21 @@ export default function RankingsPage() {
     }, [user, selectedCategory, selectedCompetition]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 px-2 sm:px-0">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-                <h1 className="text-3xl font-black uppercase tracking-tighter italic text-primary">Classements & Stats</h1>
+                <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0"><ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" /></Button>
+                <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter italic text-primary truncate">Classements & Stats</h1>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="shadow-sm">
-                    <CardHeader className="pb-3">
-                        <CardDescription className="font-bold uppercase text-[10px] tracking-widest text-primary">Configuration</CardDescription>
-                        <CardTitle className="text-lg font-black uppercase tracking-tight">Compétition</CardTitle>
+                    <CardHeader className="pb-3 p-4 sm:p-6">
+                        <CardDescription className="font-bold uppercase text-[8px] sm:text-[10px] tracking-widest text-primary">Configuration</CardDescription>
+                        <CardTitle className="text-base sm:text-lg font-black uppercase tracking-tight">Compétition</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                         <Select onValueChange={setSelectedCompetition} value={selectedCompetition}>
-                            <SelectTrigger className="w-full font-bold">
+                            <SelectTrigger className="w-full font-bold h-9 sm:h-10 text-xs sm:text-sm">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -274,13 +278,13 @@ export default function RankingsPage() {
                 </Card>
 
                 <Card className="shadow-sm">
-                    <CardHeader className="pb-3">
-                        <CardDescription className="font-bold uppercase text-[10px] tracking-widest text-primary">Groupe</CardDescription>
-                        <CardTitle className="text-lg font-black uppercase tracking-tight">Catégorie d'âge</CardTitle>
+                    <CardHeader className="pb-3 p-4 sm:p-6">
+                        <CardDescription className="font-bold uppercase text-[8px] sm:text-[10px] tracking-widest text-primary">Groupe</CardDescription>
+                        <CardTitle className="text-base sm:text-lg font-black uppercase tracking-tight">Catégorie d'âge</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                         <Select onValueChange={setSelectedCategory} value={selectedCategory}>
-                            <SelectTrigger className="w-full font-bold">
+                            <SelectTrigger className="w-full font-bold h-9 sm:h-10 text-xs sm:text-sm">
                                 <SelectValue placeholder="Choisir une catégorie" />
                             </SelectTrigger>
                             <SelectContent>
@@ -291,21 +295,21 @@ export default function RankingsPage() {
                 </Card>
             </div>
 
-            <Card className="shadow-xl border-t-8 border-primary">
-                <CardContent className="pt-6">
+            <Card className="shadow-xl border-t-8 border-primary overflow-hidden">
+                <CardContent className="p-2 sm:p-6 pt-4 sm:pt-6">
                     {loading ? (
-                        <div className="flex justify-center py-24"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>
+                        <div className="flex justify-center py-24"><Loader2 className="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-primary" /></div>
                     ) : selectedCategory ? (
                         <Tabs defaultValue="general" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 mb-10 bg-muted/50 p-1.5 rounded-xl h-auto">
-                                <TabsTrigger value="general" className="rounded-lg font-black uppercase text-[10px] tracking-widest py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                                    <Trophy className="h-3.5 w-3.5 mr-2 text-yellow-500" /> Ligue
+                            <TabsList className="grid w-full grid-cols-3 mb-6 sm:mb-10 bg-muted/50 p-1 rounded-lg sm:rounded-xl h-auto">
+                                <TabsTrigger value="general" className="rounded-md sm:rounded-lg font-black uppercase text-[8px] sm:text-[10px] tracking-widest py-2 sm:py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    <Trophy className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2 text-yellow-500 shrink-0" /> <span className="truncate">Ligue</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="scorers" className="rounded-lg font-black uppercase text-[10px] tracking-widest py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                                    <Star className="h-3.5 w-3.5 mr-2 text-primary fill-primary" /> Buteurs
+                                <TabsTrigger value="scorers" className="rounded-md sm:rounded-lg font-black uppercase text-[8px] sm:text-[10px] tracking-widest py-2 sm:py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2 text-primary fill-primary shrink-0" /> <span className="truncate">Buteurs</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="assisters" className="rounded-lg font-black uppercase text-[10px] tracking-widest py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                                    <Award className="h-3.5 w-3.5 mr-2 text-accent fill-accent" /> Passeurs
+                                <TabsTrigger value="assisters" className="rounded-md sm:rounded-lg font-black uppercase text-[8px] sm:text-[10px] tracking-widest py-2 sm:py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    <Award className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2 text-accent fill-accent shrink-0" /> <span className="truncate">Passes</span>
                                 </TabsTrigger>
                             </TabsList>
                             
@@ -322,11 +326,11 @@ export default function RankingsPage() {
                             </TabsContent>
                         </Tabs>
                     ) : (
-                        <div className="text-center py-24 space-y-4">
-                            <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto">
-                                <Trophy className="h-10 w-10 text-muted-foreground opacity-20" />
+                        <div className="text-center py-16 sm:py-24 space-y-4 px-4">
+                            <div className="h-16 w-16 sm:h-20 sm:w-20 bg-muted rounded-full flex items-center justify-center mx-auto">
+                                <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground opacity-20" />
                             </div>
-                            <p className="text-muted-foreground italic font-medium max-w-xs mx-auto">
+                            <p className="text-muted-foreground italic font-medium text-sm sm:text-base max-w-xs mx-auto">
                                 Veuillez sélectionner une catégorie et une compétition pour générer les statistiques.
                             </p>
                         </div>
