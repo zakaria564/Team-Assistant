@@ -42,7 +42,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -102,64 +103,59 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     fetchPlayerAndClub();
   }, [playerId, user, loadingUser, router]);
   
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        const images = Array.from(cardElement.getElementsByTagName('img'));
-        const imagePromises = images.map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-        });
-
-        Promise.all(imagePromises).then(() => {
-            window.scrollTo(0, 0);
-            const originalWidth = cardElement.style.width;
-            cardElement.style.width = '800px';
-
-            setTimeout(() => {
-                html2canvas(cardElement, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                }).then((canvas) => {
-                    const pdf = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'pt',
-                        format: 'a4'
-                    });
-
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    const canvasAspectRatio = canvas.width / canvas.height;
-
-                    let imgWidth = pdfWidth;
-                    let imgHeight = pdfWidth / canvasAspectRatio;
-                    
-                    if (imgHeight > pdfHeight) {
-                        imgHeight = pdfHeight;
-                        imgWidth = imgHeight * canvasAspectRatio;
-                    }
-
-                    const x = (pdfWidth - imgWidth) / 2;
-                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
-                    pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
-                }).catch((err) => {
-                    console.error("Erreur PDF:", err);
-                    toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
-                }).finally(() => {
-                    if (cardElement) {
-                        cardElement.style.width = originalWidth;
-                    }
-                    setLoadingPdf(false);
+        try {
+            // Force wait for all images to load
+            const images = Array.from(cardElement.getElementsByTagName('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = resolve; // Continue even if one fails
                 });
-            }, 800);
-        });
+            }));
+
+            // Small delay to ensure rendering context
+            await new Promise(r => setTimeout(r, 500));
+
+            const canvas = await html2canvas(cardElement, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                logging: false,
+            });
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const canvasAspectRatio = canvas.width / canvas.height;
+
+            let imgWidth = pdfWidth;
+            let imgHeight = pdfWidth / canvasAspectRatio;
+            
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = imgHeight * canvasAspectRatio;
+            }
+
+            const x = (pdfWidth - imgWidth) / 2;
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
+            pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
+        } catch (err) {
+            console.error("Erreur PDF:", err);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
+        } finally {
+            setLoadingPdf(false);
+        }
     }
   };
 
@@ -201,7 +197,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
         </div>
 
         <div className="w-full overflow-x-auto">
-            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl min-w-[320px]" style={{ width: '100%', maxWidth: '800px', minHeight: '1120px' }}>
+            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl min-w-[320px]" style={{ width: '800px', minHeight: '1120px' }}>
                 
                 <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
                     <div className="flex items-center gap-3 sm:gap-5">

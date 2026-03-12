@@ -67,7 +67,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
     }).superRefine((data, ctx) => {
         const totalAmount = data.totalAmount || 0;
         const amountRemaining = isEditMode ? (payment?.totalAmount || 0) - amountAlreadyPaid : totalAmount;
-        if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining) {
+        if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining + 0.01) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
@@ -105,9 +105,9 @@ function FormContent({ payment }: AddPaymentFormProps) {
 
     useEffect(() => {
         if ((watchTotalAmount || 0) > 0) {
-            if (amountRemainingOnTotal <= 0) {
+            if (amountRemainingOnTotal <= 0.01) {
                 form.setValue("status", "Payé");
-            } else if (newTotalPaid > 0 && amountRemainingOnTotal > 0) {
+            } else if (newTotalPaid > 0 && amountRemainingOnTotal > 0.01) {
                 form.setValue("status", "Partiel");
             } else if (newTotalPaid === 0) {
                  form.setValue("status", "En attente");
@@ -122,7 +122,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
             setLoadingPlayers(true);
              try {
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const [playersSnapshot] = await Promise.all([getDocs(playersQuery)]);
+                const [playersSnapshot] = await getDocs(playersQuery);
                 const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
                 setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) {
@@ -282,7 +282,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                   </Card>
                 )}
                
-                 {(watchTotalAmount !== undefined && (watchTotalAmount > amountAlreadyPaid)) || !isEditMode ? (
+                 {(watchTotalAmount !== undefined && (watchTotalAmount > amountAlreadyPaid + 0.01)) || !isEditMode ? (
                   <div className="space-y-4 rounded-md border p-4">
                     <h4 className="font-medium">Nouveau versement</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

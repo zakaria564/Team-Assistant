@@ -17,8 +17,10 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(params);
+export default function SalaryReceiptPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const salaryId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -52,46 +54,41 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
     fetchDetails();
   }, [salaryId, user, loadingUser, router]);
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
-        const images = Array.from(element.getElementsByTagName('img'));
-        const imagePromises = images.map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-        });
+        try {
+            const images = Array.from(element.getElementsByTagName('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
 
-        Promise.all(imagePromises).then(() => {
-            const originalWidth = element.style.width;
-            element.style.width = '800px';
+            await new Promise(r => setTimeout(r, 500));
 
-            html2canvas(element, { 
+            const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true, 
+                allowTaint: false,
                 backgroundColor: "#ffffff",
                 logging: false
-            }).then((canvas) => {
-                const pdf = new jsPDF('p', 'pt', 'a4');
-                const imgWidth = 595.28;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
-                pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
-            }).catch((err) => {
-                console.error("Erreur PDF:", err);
-                toast({
-                    variant: "destructive",
-                    title: "Erreur de génération",
-                    description: "Une erreur est survenue lors de la création du PDF."
-                });
-            }).finally(() => {
-                element.style.width = originalWidth;
-                setLoadingPdf(false);
             });
-        });
+
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const imgWidth = 595.28;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
+        } catch (err) {
+            console.error("Erreur PDF:", err);
+            toast({ variant: "destructive", title: "Erreur de génération", description: "Une erreur est survenue lors de la création du PDF." });
+        } finally {
+            setLoadingPdf(false);
+        }
     }
   };
 
@@ -118,7 +115,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
             </div>
             
             <div className="w-full overflow-x-auto shadow-2xl rounded-xl">
-                <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '100%', maxWidth: '800px' }}>
+                <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '800px' }}>
                     <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6">
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                             <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">

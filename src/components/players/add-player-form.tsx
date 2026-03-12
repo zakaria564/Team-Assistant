@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -422,6 +421,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 src={photoDataUrl} 
                                 alt="Photo du joueur" 
                                 className="w-full h-full object-contain absolute inset-0 p-1" 
+                                crossOrigin="anonymous"
                             />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
