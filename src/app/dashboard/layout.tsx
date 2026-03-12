@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, RefreshCw } from "lucide-react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import { useState, useEffect } from "react";
@@ -137,7 +137,16 @@ export default function DashboardAppLayout({
             )}
           </div>
 
-          <div className="flex items-center z-10">
+          <div className="flex items-center gap-2 z-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.location.reload()}
+              title="Actualiser l'application"
+              className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors hidden md:flex"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
             <UserNav />
           </div>
         </header>
