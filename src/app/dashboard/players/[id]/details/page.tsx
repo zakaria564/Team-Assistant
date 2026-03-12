@@ -106,7 +106,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        // Ensure all images are loaded before capture
+        // PRE-LOAD ALL IMAGES (Profile + Logo)
         const images = Array.from(cardElement.getElementsByTagName('img'));
         const imagePromises = images.map(img => {
             if (img.complete) return Promise.resolve();
@@ -159,7 +159,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                     }
                     setLoadingPdf(false);
                 });
-            }, 500);
+            }, 800); // Slight delay to ensure decoding
         });
     }
   };

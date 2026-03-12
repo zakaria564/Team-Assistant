@@ -110,7 +110,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        // Pre-load images
+        // PRE-LOAD ALL IMAGES
         const images = Array.from(cardElement.getElementsByTagName('img'));
         const imagePromises = images.map(img => {
             if (img.complete) return Promise.resolve();
@@ -167,7 +167,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                     }
                     setLoadingPdf(false);
                 });
-            }, 500);
+            }, 800);
         });
     }
   };
