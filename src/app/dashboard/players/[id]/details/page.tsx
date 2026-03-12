@@ -215,10 +215,13 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
                     <div className="relative">
-                        <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md">
-                            <AvatarImage src={player.photoUrl} alt={player.name} className="object-cover" />
-                            <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
-                        </Avatar>
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center">
+                            {player.photoUrl ? (
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                            ) : (
+                                <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
+                            )}
+                        </div>
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
                             {player.status}
                         </div>

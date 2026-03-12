@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -335,7 +335,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             
             <div className="space-y-6">
                 <div className="space-y-4">
-                    <div className="aspect-square bg-muted rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
+                    <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
                          {!photoDataUrl && hasCameraPermission ? (
                              <video 
                                 ref={videoRef} 
@@ -348,7 +348,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <img 
                                 src={photoDataUrl} 
                                 alt="Photo de l'entraîneur" 
-                                className="w-full h-full object-cover absolute inset-0" 
+                                className="w-full h-full object-contain absolute inset-0" 
                             />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p>
@@ -376,7 +376,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Ou coller l'URL de la photo</FormLabel>
                             <FormControl>
-                                <Input {...field} value={field.value || ""} placeholder="https://..." />
+                                <Input {...field} value={field.value ?? ""} placeholder="https://..." />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -400,7 +400,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                     <FormLabel>ID Professionnel (Généré)</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ""} disabled className="bg-muted font-mono font-bold" />
+                                        <Input {...field} value={field.value ?? ""} disabled className="bg-muted font-mono font-bold" />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -483,7 +483,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date d'entrée</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} value={field.value || ''} />
+                                  <Input type="date" {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -496,7 +496,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date de sortie</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} value={field.value || ''} />
+                                  <Input type="date" {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -552,7 +552,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                               <FormItem>
                                 <FormLabel>Date d'expiration</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} value={field.value || ''} />
+                                  <Input type="date" {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -566,7 +566,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                                <FormLabel>URL du Document</FormLabel>
                                <FormControl>
-                                   <Input type="text" {...field} value={field.value || ""} placeholder="https://..." />
+                                   <Input type="text" {...field} value={field.value ?? ""} placeholder="https://..." />
                                </FormControl>
                                <FormMessage />
                             </FormItem>
@@ -591,7 +591,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Nom complet</FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value || ""} />
+                            <Input {...field} value={field.value ?? ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -627,7 +627,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                                 <FormItem>
                                 <FormLabel>N° CIN</FormLabel>
                                 <FormControl>
-                                    <Input {...field} value={field.value || ""} />
+                                    <Input {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -641,7 +641,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                         <FormItem>
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
-                            <Textarea {...field} value={field.value || ""} />
+                            <Textarea {...field} value={field.value ?? ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -654,7 +654,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" {...field} value={field.value || ""} />
+                                <Input type="email" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -667,7 +667,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                             <FormItem>
                             <FormLabel>Téléphone</FormLabel>
                             <FormControl>
-                                <Input type="tel" {...field} value={field.value || ""} />
+                                <Input type="tel" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
