@@ -61,26 +61,26 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
   const exitDate = coach.exitDate ? format(new Date(coach.exitDate), "dd/MM/yyyy", { locale: fr }) : undefined;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-5xl mx-auto px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-          <h1 className="text-3xl font-bold tracking-tight">Fiche Entraîneur</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Fiche Entraîneur</h1>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push(`/dashboard/coaches/${coach.id}/details`)}>Exporter PDF</Button>
-            <Button onClick={() => router.push(`/dashboard/coaches/${coach.id}/edit`)}>Modifier</Button>
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => router.push(`/dashboard/coaches/${coach.id}/details`)}>Exporter PDF</Button>
+            <Button size="sm" className="flex-1 sm:flex-none" onClick={() => router.push(`/dashboard/coaches/${coach.id}/edit`)}>Modifier</Button>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1 h-fit">
           <CardContent className="pt-8 flex flex-col items-center gap-4">
-            <Avatar className="h-40 w-40 border-4 border-primary shadow-lg">
+            <Avatar className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg">
               <AvatarImage src={coach.photoUrl} className="object-cover" />
               <AvatarFallback className="text-4xl text-slate-400">E</AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
-                <h2 className="text-2xl font-bold uppercase tracking-tight">{coach.name}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight">{coach.name}</h2>
                 <Badge variant="outline" className="font-mono text-xs flex items-center gap-1 justify-center">
                     <Fingerprint className="h-3 w-3" />
                     {coach.professionalId || "ID: N/A"}
@@ -130,15 +130,15 @@ export default function CoachDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                         {coach.documents.map((doc: any, index: number) => (
                             <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 group hover:border-primary transition-colors">
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-sm">{doc.name}</span>
+                                <div className="flex flex-col min-w-0 pr-2">
+                                    <span className="font-bold text-sm truncate">{doc.name}</span>
                                     {doc.validityDate && (
                                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                                             Expire le : {format(new Date(doc.validityDate), "dd/MM/yyyy")}
                                         </span>
                                     )}
                                 </div>
-                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary shrink-0">
                                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                         <FileDown className="h-4 w-4" />
                                     </a>

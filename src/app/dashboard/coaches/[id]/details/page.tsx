@@ -195,7 +195,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
           </Button>
         </div>
 
-        <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto" style={{ width: '800px', minHeight: '1120px' }}>
+        <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl" style={{ width: '800px', minHeight: '1120px' }}>
             
             <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
                  <div className="flex items-center gap-5">

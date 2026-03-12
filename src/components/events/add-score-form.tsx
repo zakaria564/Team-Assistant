@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -141,21 +142,21 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
     
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full max-h-[80vh]">
-                <ScrollArea className="flex-1 pr-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full max-h-[75vh]">
+                <ScrollArea className="flex-1 pr-2 sm:pr-4">
                     <div className="space-y-6 pb-6">
                         {/* Score Section */}
-                        <div className="space-y-4 rounded-xl border-2 border-primary/10 p-6 bg-primary/5">
-                            <h4 className="font-black text-center uppercase tracking-tighter text-lg">{event.teamHome} <span className="text-primary mx-2">vs</span> {event.teamAway}</h4>
-                            <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-4 rounded-xl border-2 border-primary/10 p-4 sm:p-6 bg-primary/5">
+                            <h4 className="font-black text-center uppercase tracking-tighter text-sm sm:text-lg line-clamp-2">{event.teamHome} <span className="text-primary mx-1 sm:mx-2">vs</span> {event.teamAway}</h4>
+                            <div className="grid grid-cols-2 gap-4 sm:gap-8">
                                 <FormField
                                     control={form.control}
                                     name="scoreHome"
                                     render={({ field }) => (
                                         <FormItem className="text-center">
-                                            <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamHome}</FormLabel>
+                                            <FormLabel className="text-[8px] sm:text-[10px] font-black uppercase text-muted-foreground truncate block">{event.teamHome}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} value={field.value ?? ""} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                                <Input type="number" {...field} value={field.value ?? ""} className="text-2xl sm:text-3xl font-black text-center h-12 sm:h-16 rounded-xl border-2 focus:border-primary" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -166,9 +167,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                     name="scoreAway"
                                     render={({ field }) => (
                                         <FormItem className="text-center">
-                                            <FormLabel className="text-[10px] font-black uppercase text-muted-foreground">{event.teamAway}</FormLabel>
+                                            <FormLabel className="text-[8px] sm:text-[10px] font-black uppercase text-muted-foreground truncate block">{event.teamAway}</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} value={field.value ?? ""} className="text-3xl font-black text-center h-16 rounded-xl border-2 focus:border-primary" />
+                                                <Input type="number" {...field} value={field.value ?? ""} className="text-2xl sm:text-3xl font-black text-center h-12 sm:h-16 rounded-xl border-2 focus:border-primary" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -180,9 +181,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                         {/* Scorers Section */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><Clock className="h-4 w-4 text-primary" /> Buteurs</h4>
-                                <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendScorer({ teamName: event.teamHome || '', playerId: '', playerName: '', minute: '' })}>
-                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter un but
+                                <h4 className="font-black text-[10px] sm:text-xs uppercase flex items-center gap-2 tracking-widest"><Clock className="h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Buteurs</h4>
+                                <Button type="button" variant="outline" size="sm" className="h-7 text-[8px] sm:text-[10px] uppercase font-bold px-2" onClick={() => appendScorer({ teamName: event.teamHome || '', playerId: '', playerName: '', minute: '' })}>
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter but
                                 </Button>
                             </div>
                             
@@ -192,8 +193,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                     const isClubTeam = selectedTeam === clubName;
 
                                     return (
-                                        <div key={field.id} className="p-4 border rounded-xl bg-slate-50 relative group space-y-3">
-                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive" onClick={() => removeScorer(index)}>
+                                        <div key={field.id} className="p-3 sm:p-4 border rounded-xl bg-slate-50 relative group space-y-3">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => removeScorer(index)}>
                                                 <Trash2 className="h-3 w-3" />
                                             </Button>
                                             
@@ -203,9 +204,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`scorers.${index}.teamName`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
                                                             <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                                                <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
+                                                                <FormControl><SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     <SelectItem value={event.teamHome || 'Home'}>{event.teamHome}</SelectItem>
                                                                     <SelectItem value={event.teamAway || 'Away'}>{event.teamAway}</SelectItem>
@@ -219,8 +220,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`scorers.${index}.minute`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
-                                                            <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-9 font-bold text-center" /></FormControl>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
+                                                            <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-8 sm:h-9 font-bold text-center text-xs" /></FormControl>
                                                         </FormItem>
                                                     )}
                                                 />
@@ -232,9 +233,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`scorers.${index}.playerId`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Joueur du club</FormLabel>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Joueur du club</FormLabel>
                                                             <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                                                <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger></FormControl>
+                                                                <FormControl><SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                                                 </SelectContent>
@@ -248,8 +249,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`scorers.${index}.playerName`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Nom du buteur adverse</FormLabel>
-                                                            <FormControl><Input placeholder="Ex: Jean Dupont" {...field} value={field.value ?? ""} className="h-9 text-xs font-bold" /></FormControl>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Nom buteur adverse</FormLabel>
+                                                            <FormControl><Input placeholder="Ex: Joueur A" {...field} value={field.value ?? ""} className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold" /></FormControl>
                                                         </FormItem>
                                                     )}
                                                 />
@@ -265,9 +266,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                         {/* Assisters Section */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-black text-xs uppercase flex items-center gap-2 tracking-widest"><UserPlus className="h-4 w-4 text-accent" /> Passeurs</h4>
-                                <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => appendAssister({ teamName: event.teamHome || '', playerId: '', playerName: '', minute: '' })}>
-                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter une passe
+                                <h4 className="font-black text-[10px] sm:text-xs uppercase flex items-center gap-2 tracking-widest"><UserPlus className="h-3 w-3 sm:h-4 sm:w-4 text-accent" /> Passeurs</h4>
+                                <Button type="button" variant="outline" size="sm" className="h-7 text-[8px] sm:text-[10px] uppercase font-bold px-2" onClick={() => appendAssister({ teamName: event.teamHome || '', playerId: '', playerName: '', minute: '' })}>
+                                    <PlusCircle className="mr-1 h-3 w-3" /> Ajouter passe
                                 </Button>
                             </div>
                             
@@ -277,8 +278,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                     const isClubTeam = selectedTeam === clubName;
 
                                     return (
-                                        <div key={field.id} className="p-4 border rounded-xl bg-slate-50 relative group space-y-3">
-                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive" onClick={() => removeAssister(index)}>
+                                        <div key={field.id} className="p-3 sm:p-4 border rounded-xl bg-slate-50 relative group space-y-3">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => removeAssister(index)}>
                                                 <Trash2 className="h-3 w-3" />
                                             </Button>
                                             
@@ -288,9 +289,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`assisters.${index}.teamName`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Équipe</FormLabel>
                                                             <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                                                <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
+                                                                <FormControl><SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold"><SelectValue /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     <SelectItem value={event.teamHome || 'Home'}>{event.teamHome}</SelectItem>
                                                                     <SelectItem value={event.teamAway || 'Away'}>{event.teamAway}</SelectItem>
@@ -304,8 +305,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`assisters.${index}.minute`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
-                                                            <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-9 font-bold text-center" /></FormControl>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Minute</FormLabel>
+                                                            <FormControl><Input type="number" placeholder="--" {...field} value={field.value ?? ""} className="h-8 sm:h-9 font-bold text-center text-xs" /></FormControl>
                                                         </FormItem>
                                                     )}
                                                 />
@@ -317,9 +318,9 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`assisters.${index}.playerId`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Passeur du club</FormLabel>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Passeur du club</FormLabel>
                                                             <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                                                <FormControl><SelectTrigger className="h-9 text-xs font-bold"><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger></FormControl>
+                                                                <FormControl><SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl>
                                                                 <SelectContent>
                                                                     {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                                                 </SelectContent>
@@ -333,8 +334,8 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                                                     name={`assisters.${index}.playerName`}
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[9px] uppercase font-black text-muted-foreground">Nom du passeur adverse</FormLabel>
-                                                            <FormControl><Input placeholder="Ex: Marc Kevin" {...field} value={field.value ?? ""} className="h-9 text-xs font-bold" /></FormControl>
+                                                            <FormLabel className="text-[8px] sm:text-[9px] uppercase font-black text-muted-foreground">Nom passeur adverse</FormLabel>
+                                                            <FormControl><Input placeholder="Ex: Passeur A" {...field} value={field.value ?? ""} className="h-8 sm:h-9 text-[10px] sm:text-xs font-bold" /></FormControl>
                                                         </FormItem>
                                                     )}
                                                 />
@@ -347,7 +348,7 @@ export function AddScoreForm({ event, onFinished }: AddScoreFormProps) {
                     </div>
                 </ScrollArea>
                 <div className="pt-4 border-t mt-auto">
-                    <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest rounded-xl">
+                    <Button type="submit" disabled={loading} className="w-full h-10 sm:h-12 font-black uppercase tracking-widest rounded-xl text-xs sm:text-sm">
                         {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>) : "Valider le Résultat"}
                     </Button>
                 </div>

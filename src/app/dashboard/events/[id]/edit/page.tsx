@@ -58,15 +58,15 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
 
   return (
-    <div>
+    <div className="px-2 sm:px-0">
       <div className="flex items-center gap-4 mb-6">
          <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-6 w-6" />
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier l'événement</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Modifier l'événement</h1>
+            <p className="text-sm text-muted-foreground">
               Mettez à jour les informations de l'événement.
             </p>
         </div>

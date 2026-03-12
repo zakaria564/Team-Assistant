@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddScoreForm } from "@/components/events/add-score-form";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = React.use(params);
@@ -86,91 +85,91 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   ].sort((a, b) => (a.minute || 0) - (b.minute || 0));
 
   const TeamLogo = ({ name }: { name: string }) => (
-    <div className="h-24 w-24 bg-white shadow-md rounded-full flex items-center justify-center border-4 border-slate-100 overflow-hidden p-2">
+    <div className="h-16 w-16 sm:h-24 sm:w-24 bg-white shadow-md rounded-full flex items-center justify-center border-2 sm:border-4 border-slate-100 overflow-hidden p-1.5 sm:p-2">
         {teamLogos[name] ? (
             <img src={teamLogos[name]!} alt={name} className="h-full w-full object-contain" />
         ) : (
-            <Trophy className="h-10 w-10 text-slate-300" />
+            <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
         )}
     </div>
   );
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto px-2 sm:px-0">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-          <h1 className="text-3xl font-bold tracking-tight">Feuille de Match</h1>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" /></Button>
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Feuille de Match</h1>
         </div>
         {!isFinished && isMatch && isMatchPast && (
-            <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2">
-                <Pencil className="h-4 w-4" /> Saisir le résultat
+            <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2 text-[10px] sm:text-sm px-3 h-9 sm:h-10">
+                <Pencil className="h-3 w-3 sm:h-4 sm:w-4" /> Saisir le score
             </Button>
         )}
       </div>
 
       <div className="grid gap-6">
         <Card className="overflow-hidden border-t-8 border-primary shadow-xl">
-            <CardHeader className="bg-muted/30 pb-10">
-                <div className="flex justify-between items-center mb-6">
-                    <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] font-black px-3 py-1">{event.type}</Badge>
+            <CardHeader className="bg-muted/30 pb-6 sm:pb-10">
+                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                    <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[8px] sm:text-[10px] font-black px-2 sm:px-3 py-1">{event.type}</Badge>
                     {isFinished ? (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 gap-1 font-black"><CheckCircle2 className="h-3 w-3" /> TERMINÉ</Badge>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 gap-1 font-black text-[10px] sm:text-sm"><CheckCircle2 className="h-3 w-3" /> TERMINÉ</Badge>
                     ) : (
-                        <Badge variant="outline" className="font-bold">{event.status || "PRÉVU"}</Badge>
+                        <Badge variant="outline" className="font-bold text-[10px] sm:text-sm">{event.status || "PRÉVU"}</Badge>
                     )}
                 </div>
                 
                 {isMatch ? (
-                    <div className="flex flex-col items-center gap-8 py-4">
-                        <div className="flex items-center justify-center gap-10 w-full">
-                            <div className="flex flex-col items-center flex-1 space-y-3">
+                    <div className="flex flex-col items-center gap-4 sm:gap-8 py-2 sm:py-4">
+                        <div className="flex items-center justify-center gap-4 sm:gap-10 w-full">
+                            <div className="flex flex-col items-center flex-1 space-y-2 sm:space-y-3">
                                 <TeamLogo name={event.teamHome} />
-                                <span className="text-xl font-black uppercase text-center leading-tight tracking-tighter">{event.teamHome}</span>
+                                <span className="text-sm sm:text-xl font-black uppercase text-center leading-tight tracking-tighter line-clamp-2">{event.teamHome}</span>
                             </div>
                             
-                            <div className="flex flex-col items-center gap-3">
+                            <div className="flex flex-col items-center gap-2 sm:gap-3">
                                 {isFinished ? (
-                                    <div className="bg-slate-900 text-white text-6xl font-black px-8 py-4 rounded-2xl shadow-2xl italic tracking-tighter border-b-4 border-primary">
+                                    <div className="bg-slate-900 text-white text-3xl sm:text-6xl font-black px-4 sm:px-8 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl italic tracking-tighter border-b-2 sm:border-b-4 border-primary">
                                         {event.scoreHome} - {event.scoreAway}
                                     </div>
                                 ) : (
-                                    <div className="text-4xl font-black text-slate-300 italic">VS</div>
+                                    <div className="text-2xl sm:text-4xl font-black text-slate-300 italic">VS</div>
                                 )}
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Score Officiel</span>
+                                <span className="text-[7px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] text-center">Score Officiel</span>
                             </div>
 
-                            <div className="flex flex-col items-center flex-1 space-y-3">
+                            <div className="flex flex-col items-center flex-1 space-y-2 sm:space-y-3">
                                 <TeamLogo name={event.teamAway} />
-                                <span className="text-xl font-black uppercase text-center leading-tight tracking-tighter">{event.teamAway}</span>
+                                <span className="text-sm sm:text-xl font-black uppercase text-center leading-tight tracking-tighter line-clamp-2">{event.teamAway}</span>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <CardTitle className="text-4xl font-black uppercase tracking-tighter text-center py-6">{event.type}</CardTitle>
+                    <CardTitle className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-center py-4 sm:py-6">{event.type}</CardTitle>
                 )}
             </CardHeader>
             
-            <CardContent className="grid sm:grid-cols-3 gap-8 pt-10 border-t">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-xl"><CalendarIcon className="h-6 w-6 text-primary" /></div>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 pt-6 sm:pt-10 border-t">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl"><CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /></div>
                     <div>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Date</p>
-                        <p className="font-bold text-lg">{format(event.date, "dd MMMM yyyy", { locale: fr })}</p>
+                        <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Date</p>
+                        <p className="font-bold text-sm sm:text-lg">{format(event.date, "dd MMM yyyy", { locale: fr })}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-xl"><Clock className="h-6 w-6 text-primary" /></div>
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl"><Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /></div>
                     <div>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Coup d'envoi</p>
-                        <p className="font-bold text-lg">{format(event.date, "HH:mm")}</p>
+                        <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Coup d'envoi</p>
+                        <p className="font-bold text-sm sm:text-lg">{format(event.date, "HH:mm")}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-xl"><MapPin className="h-6 w-6 text-primary" /></div>
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl"><MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /></div>
                     <div>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Lieu</p>
-                        <p className="font-bold text-lg">{event.location || 'Non spécifié'}</p>
+                        <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">Lieu</p>
+                        <p className="font-bold text-sm sm:text-lg truncate max-w-[120px] sm:max-w-none">{event.location || 'Non spécifié'}</p>
                     </div>
                 </div>
             </CardContent>
@@ -181,35 +180,35 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 variant="default" 
                 size="lg" 
                 onClick={() => setIsScoreDialogOpen(true)}
-                className="w-full h-16 bg-primary text-white font-black text-xl uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform"
+                className="w-full h-12 sm:h-16 bg-primary text-white font-black text-lg sm:text-xl uppercase tracking-widest shadow-lg hover:scale-[1.01] transition-transform"
             >
-                <Pencil className="mr-3 h-6 w-6" /> Saisir le résultat final
+                <Pencil className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" /> Saisir le résultat
             </Button>
         )}
 
         {isFinished && isMatch && timelineEvents.length > 0 && (
             <Card className="shadow-lg">
-                <CardHeader className="border-b"><CardTitle className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3"><Clock className="h-4 w-4 text-primary" /> Chronologie des Actions</CardTitle></CardHeader>
-                <CardContent className="pt-8">
-                    <div className="space-y-6 max-w-lg mx-auto">
+                <CardHeader className="border-b"><CardTitle className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2 sm:gap-3"><Clock className="h-4 w-4 text-primary" /> Chronologie des Actions</CardTitle></CardHeader>
+                <CardContent className="pt-6 sm:pt-8">
+                    <div className="space-y-4 sm:space-y-6 max-w-lg mx-auto">
                         {timelineEvents.map((item: any, idx: number) => (
-                            <div key={idx} className="flex items-center gap-6 group">
-                                <div className="w-12 text-right font-black text-primary text-xl italic tracking-tighter">{item.minute ? `${item.minute}'` : "--'"}</div>
+                            <div key={idx} className="flex items-center gap-3 sm:gap-6 group">
+                                <div className="w-8 sm:w-12 text-right font-black text-primary text-base sm:text-xl italic tracking-tighter">{item.minute ? `${item.minute}'` : "--'"}</div>
                                 <div className="relative flex flex-col items-center">
-                                    <div className={`h-4 w-4 rounded-full border-2 border-white shadow-sm ${item.type === 'goal' ? 'bg-primary' : 'bg-accent'}`} />
-                                    {idx !== timelineEvents.length - 1 && <div className="w-0.5 h-12 bg-slate-100" />}
+                                    <div className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 border-white shadow-sm ${item.type === 'goal' ? 'bg-primary' : 'bg-accent'}`} />
+                                    {idx !== timelineEvents.length - 1 && <div className="w-0.5 h-10 sm:h-12 bg-slate-100" />}
                                 </div>
-                                <div className={`flex-1 flex items-center justify-between p-4 rounded-xl border-2 transition-all ${item.type === 'goal' ? 'bg-primary/5 border-primary/10' : 'bg-accent/5 border-accent/10'}`}>
-                                    <div className="flex flex-col">
-                                        <span className="font-black text-slate-800 uppercase text-sm tracking-tight">{item.playerName}</span>
-                                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">
-                                            {item.teamName} • {item.type === 'goal' ? 'But Marqué' : 'Passé décisive'}
+                                <div className={`flex-1 flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${item.type === 'goal' ? 'bg-primary/5 border-primary/10' : 'bg-accent/5 border-accent/10'}`}>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-black text-slate-800 uppercase text-xs sm:text-sm tracking-tight truncate">{item.playerName}</span>
+                                        <span className="text-[7px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">
+                                            {item.teamName} • {item.type === 'goal' ? 'But' : 'Passé'}
                                         </span>
                                     </div>
                                     {item.type === 'goal' ? (
-                                        <Trophy className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 fill-yellow-500 shrink-0 ml-2" />
                                     ) : (
-                                        <UserPlus className="h-5 w-5 text-accent" />
+                                        <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 text-accent shrink-0 ml-2" />
                                     )}
                                 </div>
                             </div>
@@ -220,23 +219,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         )}
 
         <Card className="shadow-md">
-            <CardHeader className="border-b"><CardTitle className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3"><Users className="h-4 w-4 text-primary" /> Groupe Concerné</CardTitle></CardHeader>
-            <CardContent className="pt-6">
-                <Badge variant="outline" className="text-lg font-black py-2 px-6 border-2">{event.category}</Badge>
+            <CardHeader className="border-b"><CardTitle className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2 sm:gap-3"><Users className="h-4 w-4 text-primary" /> Groupe Concerné</CardTitle></CardHeader>
+            <CardContent className="pt-4 sm:pt-6">
+                <Badge variant="outline" className="text-base sm:text-lg font-black py-1 sm:py-2 px-4 sm:px-6 border-2">{event.category}</Badge>
             </CardContent>
         </Card>
       </div>
 
       <Dialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
-        <DialogContent className="max-w-2xl">
-            <DialogHeader>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden sm:rounded-2xl">
+            <DialogHeader className="p-6 pb-0">
                 <DialogTitle>Résultat & Statistiques</DialogTitle>
                 <DialogDescription>Enregistrez le score et les buteurs du match.</DialogDescription>
             </DialogHeader>
-            {event && <AddScoreForm event={event} onFinished={() => {
-                setIsScoreDialogOpen(false);
-                fetchEvent();
-            }} />}
+            <div className="p-6 pt-2">
+                {event && <AddScoreForm event={event} onFinished={() => {
+                    setIsScoreDialogOpen(false);
+                    fetchEvent();
+                }} />}
+            </div>
         </DialogContent>
       </Dialog>
     </div>

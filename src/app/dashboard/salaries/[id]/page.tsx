@@ -44,38 +44,40 @@ export default function SalaryDetailPage({ params }: { params: Promise<{ id: str
   const remaining = salary.totalAmount - totalPaid;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 sm:px-0">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-6 w-6" /></Button>
-        <h1 className="text-3xl font-bold tracking-tight">Détails du Salaire</h1>
+        <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Détails du Salaire</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Banknote className="text-primary" /> {salary.description}</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl"><Banknote className="text-primary h-5 w-5 sm:h-6 sm:w-6" /> {salary.description}</CardTitle>
             <CardDescription>Entraîneur : {salary.coachName}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {salary.transactions?.map((t: any, i: number) => (
-                  <TableRow key={i}>
-                    <TableCell>{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy", { locale: fr }) : 'N/A'}</TableCell>
-                    <TableCell>{t.method}</TableCell>
-                    <TableCell className="text-right font-medium">{t.amount.toFixed(2)} MAD</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+                <Table>
+                <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
+                <TableBody>
+                    {salary.transactions?.map((t: any, i: number) => (
+                    <TableRow key={i}>
+                        <TableCell className="whitespace-nowrap">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yy", { locale: fr }) : 'N/A'}</TableCell>
+                        <TableCell>{t.method}</TableCell>
+                        <TableCell className="text-right font-medium whitespace-nowrap">{t.amount.toFixed(2)} MAD</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle>Résumé</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between"><span>Salaire Total :</span><span className="font-bold">{salary.totalAmount.toFixed(2)} MAD</span></div>
-            <div className="flex justify-between"><span>Déjà Payé :</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm sm:text-base"><span>Salaire Total :</span><span className="font-bold">{salary.totalAmount.toFixed(2)} MAD</span></div>
+            <div className="flex justify-between text-sm sm:text-base"><span>Déjà Payé :</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>
+            <div className="flex justify-between text-sm sm:text-base">
                 <span>Reste :</span>
                 <span className={cn(
                     "font-bold",
