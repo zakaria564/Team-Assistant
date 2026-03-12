@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -92,7 +91,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
         const clubDoc = await getDoc(clubDocRef);
         if (clubDoc.exists()) {
           const clubData = clubDoc.data();
-          setClubName(clubName || "Votre Club");
+          setClubName(clubData.clubName || "Votre Club");
           setClubLogoUrl(clubData.logoUrl || null);
         }
 
@@ -105,21 +104,35 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     };
 
     fetchCoachAndClub();
-  }, [coachId, user, loadingUser, router, clubName]);
+  }, [coachId, user, loadingUser, router]);
   
   const handleDownloadPdf = () => {
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
+        // Défilement en haut pour une capture correcte
+        window.scrollTo(0, 0);
+
         const originalWidth = cardElement.style.width;
         cardElement.style.width = '800px';
 
         html2canvas(cardElement, {
             scale: 2,
             useCORS: true,
+            allowTaint: true,
             backgroundColor: '#ffffff',
             logging: false,
-            allowTaint: true
+            // Attendre le chargement des images
+            onclone: (clonedDoc) => {
+                const images = clonedDoc.getElementsByTagName('img');
+                return Promise.all(Array.from(images).map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                    });
+                }));
+            }
         }).then((canvas) => {
             const pdf = new jsPDF({
                 orientation: 'portrait',

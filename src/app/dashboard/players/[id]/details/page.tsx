@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -44,6 +43,7 @@ const toTitleCase = (str: string) => {
 
 export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: playerId } = React.use(params);
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -85,9 +85,10 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
         
         const clubDocRef = doc(db, "clubs", user.uid);
         const clubDoc = await getDoc(clubDocRef);
-        if (clubDoc.exists() && clubDoc.data().clubName) {
-          setClubName(clubDoc.data().clubName);
-          setClubLogoUrl(clubDoc.data().logoUrl || null);
+        if (clubDoc.exists()) {
+          const clubData = clubDoc.data();
+          setClubName(clubData.clubName || "Votre Club");
+          setClubLogoUrl(clubData.logoUrl || null);
         }
 
       } catch (error) {
@@ -105,15 +106,29 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
+        // Défilement en haut pour une capture correcte
+        window.scrollTo(0, 0);
+        
         const originalWidth = cardElement.style.width;
         cardElement.style.width = '800px';
 
         html2canvas(cardElement, {
             scale: 2,
             useCORS: true,
+            allowTaint: true,
             backgroundColor: '#ffffff',
             logging: false,
-            allowTaint: true
+            // Attendre que les images soient chargées
+            onclone: (clonedDoc) => {
+                const images = clonedDoc.getElementsByTagName('img');
+                return Promise.all(Array.from(images).map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                    });
+                }));
+            }
         }).then((canvas) => {
             const pdf = new jsPDF({
                 orientation: 'portrait',
