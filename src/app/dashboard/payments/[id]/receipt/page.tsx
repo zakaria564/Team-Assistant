@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -71,12 +70,15 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
+        // Fix width for high quality capture
+        const originalWidth = element.style.width;
+        element.style.width = '800px';
+
         html2canvas(element, { 
             scale: 2, 
             useCORS: true,
             backgroundColor: "#ffffff",
-            logging: false,
-            allowTaint: true,
+            logging: false
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
@@ -90,9 +92,12 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Désolé, une erreur est survenue lors de la création du PDF."
+                description: "Le PDF n'a pas pu être généré."
             });
-        }).finally(() => setLoadingPdf(false));
+        }).finally(() => {
+            element.style.width = originalWidth;
+            setLoadingPdf(false);
+        });
     }
   };
 
@@ -111,18 +116,16 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
       <div className="w-full max-w-4xl space-y-4">
         <div className="flex justify-between items-center print:hidden">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
-                {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                <span className="hidden sm:inline">Télécharger PDF</span>
-                <span className="sm:hidden">PDF</span>
-            </Button>
-          </div>
+          <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
+              {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              <span className="hidden sm:inline ml-2">Télécharger PDF</span>
+              <span className="sm:hidden ml-2">PDF</span>
+          </Button>
         </div>
 
-        <div className="w-full overflow-x-auto">
-            <Card id="printable-receipt" className="bg-white text-slate-900 shadow-2xl border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '842pt', width: '100%', maxWidth: '800px' }}>
-            <header className="p-6 sm:p-10 bg-slate-50 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-6" style={{ backgroundColor: '#f8fafc' }}>
+        <div className="w-full overflow-x-auto shadow-2xl rounded-xl">
+            <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '100%', maxWidth: '800px' }}>
+            <header className="p-6 sm:p-10 bg-slate-50 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                 <div className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-white shadow-md rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                     {clubInfo?.logoUrl ? (
@@ -132,15 +135,15 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                             className="h-full w-full object-contain"
                         />
                     ) : (
-                        <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>
+                        <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">
                             {clubInitial}
                         </div>
                     )}
                 </div>
                 <div className="space-y-1">
-                    <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-primary leading-tight" style={{ color: 'hsl(199, 75%, 53%)' }}>{clubInfo?.clubName || "Votre Club"}</h1>
-                    <div className="text-slate-500 text-xs sm:text-sm font-medium">
-                        <p>{clubInfo?.address || "Adresse non renseignée"}</p>
+                    <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-primary leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
+                    <div className="text-slate-500 text-[10px] sm:text-sm font-medium">
+                        <p className="max-w-[200px] sm:max-w-none truncate">{clubInfo?.address || "Adresse non renseignée"}</p>
                         {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
                     </div>
                 </div>
@@ -167,32 +170,34 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">Détails de la Cotisation</h3>
                     <div>
                         <p className="text-base sm:text-lg font-bold text-slate-800">{payment.description}</p>
-                        <p className="text-slate-500 text-xs sm:text-sm">Saison Sportive</p>
+                        <p className="text-slate-500 text-xs sm:text-sm uppercase font-bold tracking-widest mt-1">Saison Sportive</p>
                     </div>
                 </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
-                    <Table className="min-w-[500px] sm:min-w-full">
-                    <TableHeader className="bg-slate-50">
-                        <TableRow className="border-b border-slate-200">
-                            <TableHead className="font-bold text-slate-700 h-12 px-4 sm:px-6">Désignation</TableHead>
-                            <TableHead className="font-bold text-slate-700 h-12">Date</TableHead>
-                            <TableHead className="font-bold text-slate-700 h-12">Mode</TableHead>
-                            <TableHead className="text-right font-bold text-slate-700 h-12 px-4 sm:px-6">Montant</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {payment.transactions?.map((t: any, i: number) => (
-                        <TableRow key={i} className="border-b border-slate-100 last:border-0">
-                            <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800">Versement partiel #{i+1}</TableCell>
-                            <TableCell className="py-3 sm:py-4 text-slate-600 text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
-                            <TableCell className="py-3 sm:py-4 text-slate-600 font-medium text-xs sm:text-sm">{t.method}</TableCell>
-                            <TableCell className="text-right py-3 sm:py-4 px-4 sm:px-6 font-black text-slate-900 text-sm sm:text-base">{t.amount.toFixed(2)} MAD</TableCell>
-                        </TableRow>
-                        ))}
-                    </TableBody>
-                    </Table>
+                <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <Table className="min-w-[500px] sm:min-w-full">
+                        <TableHeader className="bg-slate-50">
+                            <TableRow className="border-b border-slate-200">
+                                <TableHead className="font-bold text-slate-700 h-12 px-4 sm:px-6">Désignation</TableHead>
+                                <TableHead className="font-bold text-slate-700 h-12">Date</TableHead>
+                                <TableHead className="font-bold text-slate-700 h-12">Mode</TableHead>
+                                <TableHead className="text-right font-bold text-slate-700 h-12 px-4 sm:px-6">Montant</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {payment.transactions?.map((t: any, i: number) => (
+                            <TableRow key={i} className="border-b border-slate-100 last:border-0">
+                                <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800">Versement #{i+1}</TableCell>
+                                <TableCell className="py-3 sm:py-4 text-slate-600 text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                                <TableCell className="py-3 sm:py-4 text-slate-600 font-medium text-xs sm:text-sm">{t.method}</TableCell>
+                                <TableCell className="text-right py-3 sm:py-4 px-4 sm:px-6 font-black text-slate-900 text-sm sm:text-base">{t.amount.toFixed(2)} MAD</TableCell>
+                            </TableRow>
+                            ))}
+                        </TableBody>
+                        </Table>
+                    </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
@@ -210,7 +215,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                         "flex justify-between items-center font-bold text-sm sm:text-base",
                         remaining > 0 ? "text-red-500" : "text-slate-600"
                     )}>
-                        <span>RESTE À PAYER :</span>
+                        <span className="uppercase text-[10px] sm:text-xs tracking-tighter font-black">RESTE À PAYER :</span>
                         <span>{remaining.toFixed(2)} MAD</span>
                     </div>
                 </div>
@@ -222,19 +227,19 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                         <div className="pt-4 flex flex-col items-center gap-2">
                             <div className="flex items-center gap-1 text-slate-300">
                                 <ShieldCheck className="h-4 w-4" />
-                                <span className="text-[8px] font-black uppercase tracking-widest italic">Document certifié par {clubInfo?.clubName || "le club"}</span>
+                                <span className="text-[8px] font-black uppercase tracking-widest italic">Document certifié par l'administration</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <footer className="p-6 sm:p-8 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-4 mt-auto" style={{ backgroundColor: '#0f172a' }}>
+            <footer className="p-6 sm:p-8 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-4 mt-auto">
                 <div className="text-[8px] sm:text-[9px] opacity-40 font-bold uppercase tracking-widest text-center sm:text-left">
-                    <p>© {new Date().getFullYear()} Team Assistant - Système de Gestion Sportive</p>
+                    <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club"} - Team Assistant</p>
                 </div>
                 <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[8px] sm:text-[9px] italic text-center">
-                    Validité garantie par l'administration
+                    Authenticité garantie par le club
                 </div>
             </footer>
             </Card>

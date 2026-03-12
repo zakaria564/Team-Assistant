@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -57,12 +56,15 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
     setLoadingPdf(true);
     const element = document.getElementById("printable-receipt");
     if (element) {
+        // Fix width for high quality capture
+        const originalWidth = element.style.width;
+        element.style.width = '800px';
+
         html2canvas(element, { 
             scale: 2, 
             useCORS: true, 
             backgroundColor: "#ffffff",
-            logging: false,
-            allowTaint: true,
+            logging: false
         }).then((canvas) => {
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgWidth = 595.28;
@@ -74,9 +76,12 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
             toast({
                 variant: "destructive",
                 title: "Erreur de génération",
-                description: "Désolé, une erreur est survenue lors de la création du PDF."
+                description: "Une erreur est survenue lors de la création du PDF."
             });
-        }).finally(() => setLoadingPdf(false));
+        }).finally(() => {
+            element.style.width = originalWidth;
+            setLoadingPdf(false);
+        });
     }
   };
 
@@ -95,18 +100,16 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
         <div className="w-full max-w-4xl space-y-4">
             <div className="flex justify-between items-center print:hidden">
                 <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-                <div className="flex gap-2">
-                    <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
-                        {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                        <span className="hidden sm:inline">Télécharger PDF</span>
-                        <span className="sm:hidden">PDF</span>
-                    </Button>
-                </div>
+                <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
+                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    <span className="hidden sm:inline ml-2">Télécharger PDF</span>
+                    <span className="sm:hidden ml-2">PDF</span>
+                </Button>
             </div>
             
-            <div className="w-full overflow-x-auto">
-                <Card id="printable-receipt" className="bg-white text-slate-900 border-none shadow-2xl overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '842pt', width: '100%', maxWidth: '800px' }}>
-                    <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6" style={{ backgroundColor: '#0f172a' }}>
+            <div className="w-full overflow-x-auto shadow-2xl rounded-xl">
+                <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '100%', maxWidth: '800px' }}>
+                    <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6">
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                             <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubInfo?.logoUrl ? (
@@ -116,22 +119,22 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                         className="h-full w-full object-contain"
                                     />
                                 ) : (
-                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black" style={{ backgroundColor: 'hsl(199, 75%, 53%)' }}>
+                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">
                                         {clubInitial}
                                     </div>
                                 )}
                             </div>
                             <div className="space-y-1">
-                                <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight" style={{ color: '#ffffff' }}>{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                                <div className="text-slate-400 text-xs sm:text-sm font-medium">
-                                    <p>{clubInfo?.address || "Adresse du club"}</p>
+                                <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                                <div className="text-slate-400 text-[10px] sm:text-sm font-medium">
+                                    <p className="max-w-[200px] sm:max-w-none truncate">{clubInfo?.address || "Adresse du club"}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="text-center sm:text-right space-y-1">
                             <h2 className="text-3xl sm:text-4xl font-black uppercase italic tracking-tight text-white">FICHE DE PAIE</h2>
                             <div className="pt-2">
-                                <p className="text-primary font-bold text-xs sm:text-sm tracking-widest" style={{ color: 'hsl(199, 75%, 53%)' }}>REF: {professionalId}</p>
+                                <p className="text-primary font-bold text-xs sm:text-sm tracking-widest">REF: {professionalId}</p>
                                 <p className="text-slate-500 text-[10px] sm:text-xs font-semibold">Généré le {format(new Date(), "dd/MM/yyyy")}</p>
                             </div>
                         </div>
@@ -147,31 +150,33 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                             <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100 text-left sm:text-left">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 sm:mb-4">Période / Motif</h3>
                                 <p className="text-lg sm:text-xl font-bold text-slate-800">{salary.description}</p>
-                                <p className="text-slate-500 font-semibold mt-1 text-[10px] sm:text-xs">Saison Sportive</p>
+                                <p className="text-slate-500 font-semibold mt-1 text-[10px] sm:text-xs uppercase font-bold tracking-widest">Saison Sportive</p>
                             </div>
                         </div>
                         
-                        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm overflow-x-auto">
-                            <Table className="min-w-[500px] sm:min-w-full">
-                                <TableHeader className="bg-slate-50">
-                                    <TableRow className="border-b border-slate-200">
-                                        <TableHead className="px-4 sm:px-6 font-bold text-slate-700">Désignation du paiement</TableHead>
-                                        <TableHead className="font-bold text-slate-700">Date Versement</TableHead>
-                                        <TableHead className="font-bold text-slate-700">Méthode</TableHead>
-                                        <TableHead className="text-right px-4 sm:px-6 font-bold text-slate-700">Montant</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {salary.transactions?.map((t: any, i: number) => (
-                                        <TableRow key={i} className="border-b border-slate-100 last:border-0">
-                                            <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800 text-xs sm:text-sm">Versement #{i+1}</TableCell>
-                                            <TableCell className="text-slate-600 text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
-                                            <TableCell className="text-slate-600 font-medium text-xs sm:text-sm">{t.method}</TableCell>
-                                            <TableCell className="text-right px-4 sm:px-6 font-black text-slate-900 text-sm sm:text-base">{t.amount.toFixed(2)} MAD</TableCell>
+                        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-[500px] sm:min-w-full">
+                                    <TableHeader className="bg-slate-50">
+                                        <TableRow className="border-b border-slate-200">
+                                            <TableHead className="px-4 sm:px-6 font-bold text-slate-700">Désignation du paiement</TableHead>
+                                            <TableHead className="font-bold text-slate-700">Date Versement</TableHead>
+                                            <TableHead className="font-bold text-slate-700">Méthode</TableHead>
+                                            <TableHead className="text-right px-4 sm:px-6 font-bold text-slate-700">Montant</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {salary.transactions?.map((t: any, i: number) => (
+                                            <TableRow key={i} className="border-b border-slate-100 last:border-0">
+                                                <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800 text-xs sm:text-sm">Versement #{i+1}</TableCell>
+                                                <TableCell className="text-slate-600 text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                                                <TableCell className="text-slate-600 font-medium text-xs sm:text-sm">{t.method}</TableCell>
+                                                <TableCell className="text-right px-4 sm:px-6 font-black text-slate-900 text-sm sm:text-base">{t.amount.toFixed(2)} MAD</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
 
                         <div className="flex justify-end">
@@ -189,7 +194,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                     "flex justify-between items-center font-bold text-sm sm:text-base",
                                     remaining > 0 ? "text-red-500" : "text-slate-600"
                                 )}>
-                                    <span className="text-[10px] sm:text-sm uppercase tracking-tighter">RESTE À VERSER :</span>
+                                    <span className="text-[10px] sm:text-sm uppercase tracking-tighter font-black">RESTE À VERSER :</span>
                                     <span>{remaining.toFixed(2)} MAD</span>
                                 </div>
                             </div>
@@ -201,7 +206,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                 <div className="pt-4 flex flex-col items-center gap-2">
                                     <div className="flex items-center gap-1 text-slate-300">
                                         <ShieldCheck className="h-4 w-4" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Document Informatique Certifié</span>
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Document certifié par l'administration</span>
                                     </div>
                                 </div>
                             </div>
@@ -215,7 +220,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                             </div>
                         </div>
                         <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest italic text-center sm:text-right">
-                            Team Assistant v2.0 - Sécurisé par Firebase
+                            Généré via Team Assistant
                         </div>
                     </footer>
                 </Card>
