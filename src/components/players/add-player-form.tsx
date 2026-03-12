@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
-import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db, auth } from "@/lib/firebase";
@@ -409,7 +408,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             
             <div className="space-y-6">
                 <div className="space-y-4">
-                    <div className="aspect-square bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
+                    <div className="aspect-square bg-muted rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
                         {!photoDataUrl && hasCameraPermission ? (
                              <video 
                                 ref={videoRef} 
@@ -419,12 +418,10 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 playsInline 
                             />
                         ) : photoDataUrl ? (
-                            <Image 
+                            <img 
                                 src={photoDataUrl} 
                                 alt="Photo du joueur" 
-                                fill 
-                                className="object-cover" 
-                                unoptimized 
+                                className="w-full h-full object-cover absolute inset-0" 
                             />
                         ) : (
                              <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
