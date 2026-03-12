@@ -212,10 +212,10 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                     </div>
                     <Separator className="bg-slate-200" />
                     <div className={cn(
-                        "flex justify-between items-center font-bold text-sm sm:text-base",
+                        "flex justify-between items-center font-black text-sm sm:text-base",
                         remaining > 0 ? "text-red-500" : "text-slate-600"
                     )}>
-                        <span className="uppercase text-[10px] sm:text-xs tracking-tighter font-black">RESTE À PAYER :</span>
+                        <span className="uppercase tracking-tighter">RESTE À PAYER :</span>
                         <span>{remaining.toFixed(2)} MAD</span>
                     </div>
                 </div>

@@ -191,10 +191,10 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                 </div>
                                 <Separator className="bg-slate-200" />
                                 <div className={cn(
-                                    "flex justify-between items-center font-bold text-sm sm:text-base",
+                                    "flex justify-between items-center font-black text-sm sm:text-base",
                                     remaining > 0 ? "text-red-500" : "text-slate-600"
                                 )}>
-                                    <span className="text-[10px] sm:text-sm uppercase tracking-tighter font-black">RESTE À VERSER :</span>
+                                    <span className="uppercase tracking-tighter">RESTE À VERSER :</span>
                                     <span>{remaining.toFixed(2)} MAD</span>
                                 </div>
                             </div>
