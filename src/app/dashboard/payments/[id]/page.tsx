@@ -62,14 +62,14 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[400px] sm:min-w-full">
                 <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Méthode</TableHead><TableHead className="text-right">Montant</TableHead></TableRow></TableHeader>
                 <TableBody>
                     {payment.transactions?.map((t: any, i: number) => (
                     <TableRow key={i}>
-                        <TableCell className="whitespace-nowrap">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yy", { locale: fr }) : 'N/A'}</TableCell>
-                        <TableCell>{t.method}</TableCell>
-                        <TableCell className="text-right font-medium whitespace-nowrap">{t.amount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yy", { locale: fr }) : 'N/A'}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{t.method}</TableCell>
+                        <TableCell className="text-right font-medium whitespace-nowrap text-xs sm:text-sm">{t.amount.toFixed(2)} MAD</TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
@@ -78,7 +78,7 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Résumé</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg sm:text-xl">Résumé</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between text-sm sm:text-base"><span>Total Dû:</span><span className="font-bold">{payment.totalAmount.toFixed(2)} MAD</span></div>
             <div className="flex justify-between text-sm sm:text-base"><span>Total Payé:</span><span className="font-bold text-green-600">{totalPaid.toFixed(2)} MAD</span></div>

@@ -174,13 +174,13 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
 
 
   return (
-    <div className="bg-slate-100 min-h-screen p-4 sm:p-8">
+    <div className="bg-slate-100 min-h-screen p-2 sm:p-8">
        <div className="w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center print:hidden">
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour
           </Button>
-          <Button onClick={handleDownloadPdf} disabled={loadingPdf}>
+          <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
             {loadingPdf ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -189,105 +189,108 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
             ) : (
               <>
                 <FileDown className="mr-2 h-4 w-4" />
-                Télécharger la Fiche
+                <span className="hidden sm:inline">Télécharger la Fiche</span>
+                <span className="sm:hidden">Télécharger</span>
               </>
             )}
           </Button>
         </div>
 
-        <div id="printable-details" className="bg-white p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl" style={{ width: '800px', minHeight: '1120px' }}>
-            
-            <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
-                 <div className="flex items-center gap-5">
-                    <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
-                        {clubLogoUrl ? (
-                            <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
-                        ) : (
-                            <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>
-                        )}
+        <div className="w-full overflow-x-auto">
+            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl min-w-[320px]" style={{ width: '100%', maxWidth: '800px', minHeight: '1120px' }}>
+                
+                <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
+                    <div className="flex items-center gap-3 sm:gap-5">
+                        <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
+                            {clubLogoUrl ? (
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                            ) : (
+                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
+                            )}
+                        </div>
+                        <div>
+                            <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
+                            <p className="text-primary font-bold text-[8px] sm:text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
-                        <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
+                    <div className="text-right hidden sm:block">
+                        <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
+                            <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Coach</p>
+                            <div className="w-full text-center">
+                                <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold leading-none">
+                                    <Fingerprint className="h-3 w-3" />
+                                    {displayId}
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
                     </div>
-                </div>
-                <div className="text-right">
-                    <div className="border-2 border-slate-800 px-4 py-2 rounded-md mb-1 bg-white shadow-sm min-w-[160px] text-center">
-                        <p className="text-[8px] font-black uppercase text-slate-600 tracking-wider mb-1">Identifiant Coach</p>
-                        <div className="w-full text-center">
-                            <div className="inline-flex items-center justify-center gap-2 text-primary font-mono text-[10px] font-bold leading-none">
-                                <Fingerprint className="h-3 w-3" />
-                                {displayId}
+                </header>
+                
+                <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
+                    <div className="relative">
+                        <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md">
+                            <AvatarImage src={coach.photoUrl} alt={coach.name} className="object-cover" />
+                            <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
+                            {coach.status}
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{coach.name}</h1>
+                        <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
+                            <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{coach.category}</Badge>
+                            <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
+                                <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
+                            </span>
+                        </div>
+                        <div className="bg-white mx-auto sm:mx-0 w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
+                            <div className="inline-flex items-center justify-center w-full">
+                                <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
+                                <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
                             </div>
                         </div>
                     </div>
-                    <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
-                </div>
-            </header>
-            
-            <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
-                 <div className="relative">
-                    <Avatar className="h-32 w-32 border-4 border-white shadow-md">
-                        <AvatarImage src={coach.photoUrl} alt={coach.name} className="object-cover" />
-                        <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full border-2 border-white shadow-sm">
-                        {coach.status}
-                    </div>
-                </div>
-                <div className="space-y-3">
-                    <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{coach.name}</h1>
-                    <div className="flex items-center gap-3">
-                        <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{coach.category}</Badge>
-                        <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
-                            <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
-                        </span>
-                    </div>
-                    <div className="bg-white w-fit px-4 py-1.5 rounded border-2 border-slate-800 font-bold shadow-sm min-w-[150px] text-center">
-                        <div className="inline-flex items-center justify-center w-full">
-                            <Fingerprint className="h-3.5 w-3.5 text-primary mr-2" />
-                            <span className="text-primary font-mono text-[10px] font-bold leading-none">{displayId}</span>
+                </section>
+
+                <main className="flex flex-col sm:flex-row gap-10 sm:gap-12 flex-grow">
+                    <div className="w-full sm:w-1/2 space-y-10">
+                        <div>
+                            <SectionTitle title="État Civil & Contact" icon={User} />
+                            <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
+                            <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
+                            <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
+                            <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
+                            <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <main className="flex flex-row gap-12 flex-grow">
-                <div className="w-1/2 space-y-10">
-                    <div>
-                        <SectionTitle title="État Civil & Contact" icon={User} />
-                        <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
-                        <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
-                        <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
-                        <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
-                        <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
+                    <div className="w-full sm:w-1/2 space-y-10">
+                        <div>
+                            <SectionTitle title="Parcours Sportif" icon={Shield} />
+                            <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
+                            <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
+                            <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                            <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
+                        </div>
                     </div>
-                </div>
+                </main>
 
-                <div className="w-1/2 space-y-10">
-                    <div>
-                        <SectionTitle title="Parcours Sportif" icon={Shield} />
-                        <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
-                        <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
-                        <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                        <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
+                <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-10">
+                    <div className="space-y-3 text-center sm:text-left">
+                        <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-300">
+                            <ShieldCheck className="h-4 w-4" />
+                            <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
+                        </div>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
                     </div>
-                </div>
-            </main>
-
-            <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end">
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-slate-300">
-                        <ShieldCheck className="h-4 w-4" />
-                        <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
+                    <div className="text-center">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-12 sm:mb-16">Cachet du Club & Signature</p>
+                        <div className="w-40 border-b-2 border-slate-200"></div>
                     </div>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
-                    <div className="w-40 border-b-2 border-slate-200"></div>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </div>
       </div>
     </div>
