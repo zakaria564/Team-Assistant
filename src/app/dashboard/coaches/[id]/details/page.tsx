@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -203,7 +203,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -222,14 +222,14 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                     <div className="relative">
                         <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-slate-200 flex items-center justify-center">
                             {coach.photoUrl ? (
-                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
+                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
                         </div>
                     </div>
-                    <div className="space-y-3">
-                        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{coach.name}</h1>
+                    <div className="space-y-3 flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none truncate">{coach.name}</h1>
                         <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
                             <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{coach.category}</Badge>
                             <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
