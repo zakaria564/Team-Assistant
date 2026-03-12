@@ -53,8 +53,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -110,7 +110,6 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        // PRE-LOAD ALL IMAGES
         const images = Array.from(cardElement.getElementsByTagName('img'));
         const imagePromises = images.map(img => {
             if (img.complete) return Promise.resolve();

@@ -30,8 +30,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [player, setPlayer] = useState<any>(null);
@@ -67,6 +67,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
 
   const birthDate = player.birthDate ? format(new Date(player.birthDate), "dd MMMM yyyy", { locale: fr }) : undefined;
   const entryDate = player.entryDate ? format(new Date(player.entryDate), "dd/MM/yyyy", { locale: fr }) : undefined;
+  const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto px-2 sm:px-0">
@@ -84,11 +85,16 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1 h-fit">
           <CardContent className="pt-8 flex flex-col items-center gap-4">
-            <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+            <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-slate-100 flex items-center justify-center relative">
               {player.photoUrl ? (
-                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                <img 
+                  src={player.photoUrl} 
+                  alt={player.name} 
+                  className="h-full w-full object-contain" 
+                  crossOrigin="anonymous" 
+                />
               ) : (
-                <AvatarFallback className="text-4xl">P</AvatarFallback>
+                <div className="text-4xl font-black text-slate-300">{playerInitial}</div>
               )}
             </div>
             <div className="text-center space-y-1">

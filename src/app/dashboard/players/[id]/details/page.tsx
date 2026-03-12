@@ -41,8 +41,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(params);
+export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -106,7 +106,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        // PRE-LOAD ALL IMAGES (Profile + Logo)
         const images = Array.from(cardElement.getElementsByTagName('img'));
         const imagePromises = images.map(img => {
             if (img.complete) return Promise.resolve();
@@ -159,7 +158,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                     }
                     setLoadingPdf(false);
                 });
-            }, 800); // Slight delay to ensure decoding
+            }, 800);
         });
     }
   };
