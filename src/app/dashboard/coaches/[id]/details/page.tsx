@@ -110,64 +110,54 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
-        // Défilement en haut pour une capture correcte
         window.scrollTo(0, 0);
 
         const originalWidth = cardElement.style.width;
         cardElement.style.width = '800px';
 
-        html2canvas(cardElement, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            // Attendre le chargement des images
-            onclone: (clonedDoc) => {
-                const images = clonedDoc.getElementsByTagName('img');
-                return Promise.all(Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
-                    });
-                }));
-            }
-        }).then((canvas) => {
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'pt',
-                format: 'a4'
+        setTimeout(() => {
+            html2canvas(cardElement, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                logging: false,
+            }).then((canvas) => {
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'pt',
+                    format: 'a4'
+                });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasAspectRatio = canvas.width / canvas.height;
+
+                let imgWidth = pdfWidth;
+                let imgHeight = pdfWidth / canvasAspectRatio;
+
+                if (imgHeight > pdfHeight) {
+                    imgHeight = pdfHeight;
+                    imgWidth = imgHeight * canvasAspectRatio;
+                }
+
+                const x = (pdfWidth - imgWidth) / 2;
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
+                pdf.save(`fiche_officielle_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
+            }).catch((err) => {
+                console.error("Erreur PDF:", err);
+                toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: "Le PDF n'a pas pu être généré."
+                });
+            }).finally(() => {
+                if (cardElement) {
+                  cardElement.style.width = originalWidth;
+                }
+                setLoadingPdf(false);
             });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasAspectRatio = canvas.width / canvas.height;
-
-            let imgWidth = pdfWidth;
-            let imgHeight = pdfWidth / canvasAspectRatio;
-
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = imgHeight * canvasAspectRatio;
-            }
-
-            const x = (pdfWidth - imgWidth) / 2;
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
-            pdf.save(`fiche_officielle_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
-        }).catch((err) => {
-            console.error("Erreur PDF:", err);
-            toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Le PDF n'a pas pu être généré."
-            });
-        }).finally(() => {
-            if (cardElement) {
-              cardElement.style.width = originalWidth;
-            }
-            setLoadingPdf(false);
-        });
+        }, 500);
     }
   };
 
