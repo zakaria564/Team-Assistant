@@ -136,7 +136,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                 ) : (
                                     <div className="text-2xl sm:text-4xl font-black text-slate-300 italic">VS</div>
                                 )}
-                                <span className="text-[7px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] text-center">Score Officiel</span>
+                                <span className="text-[7px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em] text-center">Score Final</span>
                             </div>
 
                             <div className="flex flex-col items-center flex-1 space-y-2 sm:space-y-3">
