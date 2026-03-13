@@ -92,7 +92,6 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
                   src={player.photoUrl} 
                   alt={player.name} 
                   className="h-full w-full object-contain" 
-                  crossOrigin="anonymous" 
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{playerInitial}</div>
@@ -154,15 +153,6 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
               </div>
             </CardContent>
           </Card>
-
-          {player.photoUrl && (
-            <Card>
-                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Source de la photo</CardTitle></CardHeader>
-                <CardContent>
-                    <p className="text-[10px] font-mono break-all text-muted-foreground bg-muted p-2 rounded">{player.photoUrl}</p>
-                </CardContent>
-            </Card>
-          )}
 
           {player.tutorName && (
             <Card>

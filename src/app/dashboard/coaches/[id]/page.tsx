@@ -82,7 +82,6 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                   src={coach.photoUrl} 
                   alt={coach.name} 
                   className="h-full w-full object-contain" 
-                  crossOrigin="anonymous" 
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{coachInitial}</div>
@@ -127,15 +126,6 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
               </div>
             </CardContent>
           </Card>
-
-          {coach.photoUrl && (
-            <Card>
-                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Source de la photo</CardTitle></CardHeader>
-                <CardContent>
-                    <p className="text-[10px] font-mono break-all text-muted-foreground bg-muted p-2 rounded">{coach.photoUrl}</p>
-                </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>
