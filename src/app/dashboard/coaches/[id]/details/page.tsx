@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck, FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
@@ -133,31 +132,33 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="text-right"><p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p></div>
                 </header>
                 
-                <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
-                    <div className="flex flex-col items-center gap-3 shrink-0">
-                        <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                            {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
-                        </div>
-                        <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
-                            <Fingerprint className="h-3 w-3 text-primary" />{displayId}
-                        </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{coach.name}</h1>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col items-center justify-center text-center px-2">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie Affectée</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{coach.category}</Badge>
+                <section className="flex flex-col items-center gap-6 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
+                    <div className="flex flex-row items-center gap-10 w-full">
+                        <div className="flex flex-col items-center gap-3 shrink-0">
+                            <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                                {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
                             </div>
-                            <div className="flex flex-col items-center justify-center text-center px-2">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Spécialité Technique</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
+                            <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
+                                <Fingerprint className="h-3 w-3 text-primary" />{displayId}
+                            </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{coach.name}</h1>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col items-center justify-center text-center px-2">
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie Affectée</span>
+                                    <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm flex items-center">{coach.category}</Badge>
+                                </div>
+                                <div className="flex flex-col items-center justify-center text-center px-2">
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Spécialité Technique</span>
+                                    <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-1 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <main className="flex flex-row gap-12 flex-grow">
+                <main className="flex flex-row gap-12 mb-10">
                     <div className="w-1/2 space-y-10">
                         <div>
                             <SectionTitle title="État Civil & Contact" icon={User} />
@@ -178,6 +179,23 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         </div>
                     </div>
                 </main>
+
+                {coach.documents && coach.documents.length > 0 && (
+                    <div className="mb-10">
+                        <SectionTitle title="Documents Numérisés" icon={FileText} />
+                        <div className="grid grid-cols-2 gap-4">
+                            {coach.documents.map((doc: any, i: number) => (
+                                <div key={i} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50">
+                                    <div className="bg-primary/10 p-1.5 rounded"><FileText className="h-3.5 w-3.5 text-primary" /></div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-800 uppercase">{doc.name}</p>
+                                        {doc.validityDate && <p className="text-[8px] text-slate-400 font-bold uppercase">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
                     <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>

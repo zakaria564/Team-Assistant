@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -123,7 +122,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
             setLoadingPlayers(true);
              try {
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const [playersSnapshot] = await getDocs(playersQuery);
+                const playersSnapshot = await getDocs(playersQuery);
                 const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
                 setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) {
