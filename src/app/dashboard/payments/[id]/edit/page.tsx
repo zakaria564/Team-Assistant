@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-export default function EditPaymentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
-  const router = useRouter();
+export default function EditPaymentPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
+  const router = useRouter();
   const [payment, setPayment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [playerName, setPlayerName] = useState("");
