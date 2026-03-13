@@ -11,8 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { isPast } from "date-fns";
 
-export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(params);
+export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const eventId = params.id;
   
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
@@ -84,7 +85,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 </div>
             ) : isLocked ? (
                  <Alert variant="destructive">
-                    <Info className="h-4 w-4" />
+                    <Open className="h-4 w-4" />
                     <AlertTitle>Modification verrouillée</AlertTitle>
                     <AlertDescription>
                         Vous ne pouvez plus modifier un événement qui est déjà passé.

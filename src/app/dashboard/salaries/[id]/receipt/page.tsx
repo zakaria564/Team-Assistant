@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -19,7 +18,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SalaryReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(props.params);
+  const params = React.use(props.params);
+  const salaryId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

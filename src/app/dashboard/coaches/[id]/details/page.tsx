@@ -205,8 +205,8 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     </div>
                 </header>
                 
-                <section className="flex flex-row items-start gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
-                    <div className="flex flex-col items-center gap-4 shrink-0">
+                <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
+                    <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
                                 <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
@@ -219,18 +219,18 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                             {displayId}
                         </div>
                     </div>
-                    <div className="flex-1 min-w-0 pt-2">
-                        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-6 break-words">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-6">
                             {coach.name}
                         </h1>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Catégorie Affectée</span>
-                                <Badge className="bg-slate-900 text-white text-xs px-3 py-1 font-bold uppercase tracking-wider w-fit rounded-sm">{coach.category}</Badge>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-3 py-1 font-bold uppercase tracking-wider w-fit rounded-sm">{coach.category}</Badge>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Spécialité Technique</span>
-                                <span className="text-slate-700 font-bold text-xs uppercase flex items-center gap-1.5 bg-white px-3 py-1 rounded-sm border border-slate-100 shadow-sm">
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center gap-1.5 bg-white px-3 py-1 rounded-sm border border-slate-100 shadow-sm w-fit">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                                 </span>
                             </div>
