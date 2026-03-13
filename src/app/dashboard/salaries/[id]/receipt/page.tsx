@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ShieldCheck, Fingerprint } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -41,7 +41,12 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
           const coachSnap = await getDoc(doc(db, "coaches", data.coachId));
           const clubSnap = await getDoc(doc(db, "clubs", user.uid));
           
-          setSalary({ id: salarySnap.id, ...data, coachName: coachSnap.exists() ? coachSnap.data().name : "Entraîneur" });
+          setSalary({ 
+            id: salarySnap.id, 
+            ...data, 
+            coachName: coachSnap.exists() ? coachSnap.data().name : "Entraîneur",
+            coachProfessionalId: coachSnap.exists() ? coachSnap.data().professionalId : "N/A"
+          });
           if (clubSnap.exists()) setClubInfo(clubSnap.data());
         } else {
           router.push('/dashboard/salaries');
@@ -78,9 +83,10 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
             });
 
             const pdf = new jsPDF('p', 'pt', 'a4');
+            const imgData = canvas.toDataURL('image/png', 1.0);
             const imgWidth = 595.28;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
         } catch (err) {
             console.error("Erreur PDF:", err);
@@ -150,8 +156,16 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12">
                             <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 sm:mb-4">Bénéficiaire</h3>
-                                <p className="text-xl sm:text-2xl font-black text-slate-800">{salary.coachName}</p>
-                                <p className="text-slate-500 font-bold mt-1 uppercase text-[10px] sm:text-xs">Entraîneur du club</p>
+                                <div className="space-y-2">
+                                    <p className="text-xl sm:text-2xl font-black text-slate-800">{salary.coachName}</p>
+                                    <div className="flex flex-col gap-1">
+                                        <p className="text-slate-500 font-bold uppercase text-[10px] sm:text-xs">Entraîneur du club</p>
+                                        <p className="text-slate-500 font-bold text-[10px] sm:text-xs flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 w-fit">
+                                            <Fingerprint className="h-3 w-3 text-primary" />
+                                            <span className="uppercase text-[10px] text-slate-400">ID Coach :</span> {salary.coachProfessionalId}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                             <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100 text-left sm:text-left">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 sm:mb-4">Période / Motif</h3>

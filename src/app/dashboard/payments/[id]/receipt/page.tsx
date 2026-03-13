@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Download, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ShieldCheck, Fingerprint } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -48,7 +48,8 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
             id: paymentSnap.id,
             ...data,
             playerName: playerData?.name || "Joueur inconnu",
-            playerCategory: playerData?.category || "N/A"
+            playerCategory: playerData?.category || "N/A",
+            playerProfessionalId: playerData?.professionalId || "N/A"
           });
         } else {
           router.push('/dashboard/payments');
@@ -115,7 +116,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
 
   const dateObj = payment.createdAt?.seconds ? new Date(payment.createdAt.seconds * 1000) : new Date();
-  const professionalId = `RC-J-${format(dateObj, "yyyyMM")}-${payment.id.substring(0, 4).toUpperCase()}`;
+  const receiptRef = `RC-J-${format(dateObj, "yyyyMM")}-${payment.id.substring(0, 4).toUpperCase()}`;
 
   return (
     <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen">
@@ -157,7 +158,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                 <div className="text-center sm:text-right space-y-1">
                 <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">REÇU</h2>
                 <div className="pt-2">
-                    <p className="text-slate-600 font-bold text-xs sm:text-sm">REF: {professionalId}</p>
+                    <p className="text-slate-600 font-bold text-xs sm:text-sm">REF: {receiptRef}</p>
                     <p className="text-slate-400 text-[10px] sm:text-xs font-semibold">Date : {format(new Date(), "dd/MM/yyyy")}</p>
                 </div>
                 </div>
@@ -167,9 +168,17 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12">
                 <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">Informations Joueur</h3>
-                    <div>
+                    <div className="space-y-2">
                         <p className="text-lg sm:text-xl font-bold text-slate-800">{payment.playerName}</p>
-                        <p className="text-slate-500 font-semibold text-xs sm:text-sm">Catégorie : {payment.playerCategory}</p>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-slate-500 font-semibold text-xs sm:text-sm flex items-center gap-2">
+                                <span className="uppercase text-[10px] text-slate-400">Catégorie :</span> {payment.playerCategory}
+                            </p>
+                            <p className="text-slate-500 font-bold text-[10px] sm:text-xs flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-100 w-fit">
+                                <Fingerprint className="h-3 w-3 text-primary" />
+                                <span className="uppercase text-[10px] text-slate-400">ID Joueur :</span> {payment.playerProfessionalId}
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <div className="space-y-4 text-left sm:text-right">
