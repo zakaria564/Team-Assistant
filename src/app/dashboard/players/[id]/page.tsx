@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, FileText, FileDown } from "lucide-react";
@@ -155,6 +154,15 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
               </div>
             </CardContent>
           </Card>
+
+          {player.photoUrl && (
+            <Card>
+                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Source de la photo</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-[10px] font-mono break-all text-muted-foreground bg-muted p-2 rounded">{player.photoUrl}</p>
+                </CardContent>
+            </Card>
+          )}
 
           {player.tutorName && (
             <Card>

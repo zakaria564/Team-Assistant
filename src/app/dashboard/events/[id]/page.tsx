@@ -14,8 +14,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AddScoreForm } from "@/components/events/add-score-form";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(params);
+export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const eventId = params.id;
+  
   const router = useRouter();
   const [user] = useAuthState(auth);
   const [event, setEvent] = useState<any>(null);
@@ -47,14 +49,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const fetchLogos = async () => {
         const logos: { [key: string]: string | null } = {};
         
-        // Fetch club logo
         const clubDoc = await getDoc(doc(db, "clubs", user.uid));
         if (clubDoc.exists()) {
             const clubData = clubDoc.data();
             logos[clubData.clubName] = clubData.logoUrl || null;
         }
 
-        // Fetch opponent logos if they exist in the 'opponents' collection
         const teams = [event.teamHome, event.teamAway];
         for (const teamName of teams) {
             if (logos[teamName] === undefined) {

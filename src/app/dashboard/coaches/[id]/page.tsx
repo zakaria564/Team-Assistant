@@ -4,10 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut, FileDown } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -129,33 +128,11 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
             </CardContent>
           </Card>
 
-          {coach.documents && coach.documents.length > 0 && (
+          {coach.photoUrl && (
             <Card>
-                <CardHeader className="pb-3 border-b mb-4">
-                    <CardTitle className="text-lg flex items-center gap-2 text-primary">
-                        <FileText className="h-5 w-5" /> Documents du Coach
-                    </CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Source de la photo</CardTitle></CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                        {coach.documents.map((doc: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 group hover:border-primary transition-colors">
-                                <div className="flex flex-col min-w-0 pr-2">
-                                    <span className="font-bold text-sm truncate">{doc.name}</span>
-                                    {doc.validityDate && (
-                                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                            Expire le : {format(new Date(doc.validityDate), "dd/MM/yyyy")}
-                                        </span>
-                                    )}
-                                </div>
-                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary shrink-0">
-                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <FileDown className="h-4 w-4" />
-                                    </a>
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-[10px] font-mono break-all text-muted-foreground bg-muted p-2 rounded">{coach.photoUrl}</p>
                 </CardContent>
             </Card>
           )}

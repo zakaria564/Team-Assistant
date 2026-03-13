@@ -112,7 +112,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
         try {
-            // Force wait for all images to load
             const images = Array.from(cardElement.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
@@ -122,8 +121,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 });
             }));
 
-            // Small delay to ensure rendering context
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 800));
 
             const canvas = await html2canvas(cardElement, {
                 scale: 2,
@@ -279,6 +277,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                             <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
                         </div>
                         <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                        {coach.photoUrl && <p className="text-[6px] text-slate-300 truncate max-w-[300px]">URL Photo: {coach.photoUrl}</p>}
                     </div>
                     <div className="text-center">
                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-12 sm:mb-16">Cachet du Club & Signature</p>

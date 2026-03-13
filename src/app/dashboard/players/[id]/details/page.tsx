@@ -108,18 +108,18 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     const cardElement = document.getElementById("printable-details");
     if (cardElement) {
         try {
-            // Force wait for all images to load
+            // Robust image pre-loading
             const images = Array.from(cardElement.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     img.onload = resolve;
-                    img.onerror = resolve; // Continue even if one fails
+                    img.onerror = resolve; 
                 });
             }));
 
-            // Small delay to ensure rendering context
-            await new Promise(r => setTimeout(r, 500));
+            // Buffer time for layout stability
+            await new Promise(r => setTimeout(r, 800));
 
             const canvas = await html2canvas(cardElement, {
                 scale: 2,
@@ -288,6 +288,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
                         </div>
                         <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                        {player.photoUrl && <p className="text-[6px] text-slate-300 truncate max-w-[300px]">URL Photo: {player.photoUrl}</p>}
                     </div>
                     <div className="text-center">
                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-12 sm:mb-16">Cachet du Club & Signature</p>

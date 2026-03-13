@@ -68,7 +68,7 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 800));
 
             const canvas = await html2canvas(element, { 
                 scale: 2, 
