@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -105,7 +104,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, 1000));
 
             const canvas = await html2canvas(element, {
                 scale: 2,
@@ -208,31 +207,31 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 
                 <section className="flex flex-row items-start gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                     <div className="flex flex-col items-center gap-4 shrink-0">
-                        <div className="h-44 w-44 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                        <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
                                 <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
                             ) : (
-                                <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
+                                <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
                         </div>
-                        <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[10px] font-black tracking-widest flex items-center gap-1.5 shadow-sm border border-slate-700">
+                        <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
                             <Fingerprint className="h-3 w-3 text-primary" />
                             {displayId}
                         </div>
                     </div>
-                    <div className="flex-1 min-w-0 pt-4">
-                        <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-8 break-words border-b-4 border-primary pb-4 w-fit">
+                    <div className="flex-1 min-w-0 pt-2">
+                        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-6 break-words">
                             {coach.name}
                         </h1>
-                        <div className="grid grid-cols-2 gap-8">
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Catégorie Affectée</span>
-                                <Badge className="bg-slate-900 text-white text-base px-4 py-2 font-black uppercase tracking-widest w-fit rounded-none">{coach.category}</Badge>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Catégorie Affectée</span>
+                                <Badge className="bg-slate-900 text-white text-xs px-3 py-1 font-bold uppercase tracking-wider w-fit rounded-sm">{coach.category}</Badge>
                             </div>
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Spécialité Technique</span>
-                                <span className="text-slate-700 font-black text-base uppercase flex items-center gap-2 bg-white px-4 py-2 rounded-none border-l-4 border-primary shadow-sm border border-slate-100">
-                                    <Star className="h-4 w-4 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Spécialité Technique</span>
+                                <span className="text-slate-700 font-bold text-xs uppercase flex items-center gap-1.5 bg-white px-3 py-1 rounded-sm border border-slate-100 shadow-sm">
+                                    <Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                                 </span>
                             </div>
                         </div>
