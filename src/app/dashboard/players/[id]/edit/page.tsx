@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +16,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function EditPlayerPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,7 +11,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function EditPaymentPage(props: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(props.params);
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);

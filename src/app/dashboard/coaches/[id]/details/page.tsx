@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -37,7 +38,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
 );
 
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(props.params);
+  const params = React.use(props.params);
+  const coachId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

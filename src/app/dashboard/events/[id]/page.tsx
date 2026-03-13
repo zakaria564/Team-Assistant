@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -15,7 +16,8 @@ import { AddScoreForm } from "@/components/events/add-score-form";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(props.params);
+  const params = React.use(props.params);
+  const eventId = params.id;
   
   const router = useRouter();
   const [user] = useAuthState(auth);

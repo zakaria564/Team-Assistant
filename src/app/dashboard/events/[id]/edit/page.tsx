@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,7 +13,8 @@ import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { isPast } from "date-fns";
 
 export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(props.params);
+  const params = React.use(props.params);
+  const eventId = params.id;
   
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);

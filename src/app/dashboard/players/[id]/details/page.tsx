@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Home, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -42,7 +43,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -234,20 +236,20 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             {player.name}
                         </h1>
                         <div className="grid grid-cols-3 divide-x-2 divide-slate-200">
-                            <div className="flex flex-col items-center justify-center px-4 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
+                            <div className="flex flex-col items-center justify-center px-2 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Catégorie</span>
                                 <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] flex items-center border-none">
                                     {player.category}
                                 </Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center px-4 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
+                            <div className="flex flex-col items-center justify-center px-2 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Poste</span>
                                 <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px]">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
-                            <div className="flex flex-col items-center justify-center px-4 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro</span>
+                            <div className="flex flex-col items-center justify-center px-2 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Numéro</span>
                                 <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center min-w-[60px] flex items-center justify-center">
                                     #{player.number || "--"}
                                 </span>

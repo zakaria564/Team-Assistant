@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -187,14 +188,15 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
   useEffect(() => {
     if (player) {
       form.reset({
-        ...defaultPlayerValues,
-        ...player,
-        number: player.number || undefined,
-        coachId: player.coachId || "",
+        name: player.name || "",
         photoUrl: player.photoUrl || "",
-        birthDate: player.birthDate ? player.birthDate.split('T')[0] : '',
-        entryDate: player.entryDate ? player.entryDate.split('T')[0] : '',
-        exitDate: player.exitDate ? player.exitDate.split('T')[0] : '',
+        gender: player.gender || "Masculin",
+        category: player.category || "",
+        status: player.status || "Actif",
+        number: player.number || undefined,
+        birthDate: player.birthDate || "",
+        entryDate: player.entryDate || "",
+        exitDate: player.exitDate || "",
         address: player.address || "",
         nationality: player.nationality || "",
         cin: player.cin || "",
@@ -205,12 +207,13 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         tutorCin: player.tutorCin || "",
         tutorPhone: player.tutorPhone || "",
         tutorEmail: player.tutorEmail || "",
+        coachId: player.coachId || "",
+        professionalId: player.professionalId || "",
         documents: (player.documents || []).map(doc => ({
             name: doc.name || "",
             url: doc.url || "",
-            validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
+            validityDate: doc.validityDate || "",
         })),
-        professionalId: player.professionalId || "",
       });
     }
   }, [player, form]);
@@ -226,15 +229,10 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         setCoaches(coachesData);
       } catch (error) {
         console.error("Error fetching coaches: ", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger la liste des entraîneurs.",
-        });
       }
     };
     fetchCoaches();
-  }, [user, toast]);
+  }, [user]);
 
   const getCameraPermission = useCallback(async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -250,13 +248,8 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
     } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        toast({
-            variant: 'destructive',
-            title: 'Accès à la caméra refusé',
-            description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
-        });
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if(!photoDataUrl) {
@@ -314,18 +307,11 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user) {
-        toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
-        return;
-    }
+    if (!user) return;
     setLoading(true);
 
     if (!values.photoUrl) {
-        toast({
-            variant: "destructive",
-            title: "Photo manquante",
-            description: "Veuillez prendre une photo ou fournir une URL avant de continuer.",
-        });
+        toast({ variant: "destructive", title: "Photo manquante", description: "Veuillez prendre une photo ou fournir une URL." });
         setLoading(false);
         return;
     }
@@ -338,11 +324,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
             const isDuplicate = querySnapshot.docs.some(doc => normalizeString(doc.data().name) === normalizedNewName);
 
             if (isDuplicate) {
-                toast({
-                    variant: "destructive",
-                    title: "Nom déjà utilisé",
-                    description: "Un joueur avec un nom similaire existe déjà.",
-                });
+                toast({ variant: "destructive", title: "Nom déjà utilisé", description: "Un joueur avec ce nom existe déjà." });
                 setLoading(false);
                 return;
             }
@@ -368,31 +350,21 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         if (isEditMode && player) {
             const playerDocRef = doc(db, "players", player.id);
             await updateDoc(playerDocRef, dataToSave);
-            toast({
-                title: "Joueur modifié !",
-                description: `Les informations de ${values.name} ont été mises à jour.`,
-            });
+            toast({ title: "Joueur modifié !", description: "Les informations ont été mises à jour." });
             router.push("/dashboard/players");
         } else {
              const docRef = await addDoc(collection(db, "players"), {
                 ...dataToSave,
                 createdAt: new Date(),
             });
-            toast({
-                title: "Joueur ajouté !",
-                description: `${values.name} a été enregistré avec succès.`,
-            });
+            toast({ title: "Joueur ajouté !", description: "Redirection vers le premier paiement..." });
             router.push(`/dashboard/payments/add?playerId=${docRef.id}`);
         }
       
       router.refresh();
 
     } catch (e: any) {
-      toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue.",
-      });
+      toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
       console.error(e);
     } finally {
       setLoading(false);
@@ -421,24 +393,14 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                                 src={photoDataUrl} 
                                 alt="Photo du joueur" 
                                 className="w-full h-full object-contain absolute inset-0 p-1" 
-                                crossOrigin="anonymous"
                             />
                         ) : (
-                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible ou l'accès est refusé.</p>
+                             <p className="text-muted-foreground p-4 text-center">Caméra non disponible.</p>
                         )
                         }
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
 
-                    {hasCameraPermission === false && (
-                        <Alert variant="destructive">
-                        <AlertTitle>Accès à la caméra requis</AlertTitle>
-                        <AlertDescription>
-                            Veuillez autoriser l'accès à la caméra pour utiliser cette fonctionnalité.
-                        </AlertDescription>
-                        </Alert>
-                    )}
-                    
                     <div className="flex gap-4">
                         <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm">
                             <Camera className="mr-2 h-4 w-4"/>
@@ -456,7 +418,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                         name="photoUrl"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Ou coller l'URL de la photo</FormLabel>
+                            <FormLabel>Ou URL photo</FormLabel>
                             <FormControl>
                                 <Input {...field} value={field.value ?? ""} placeholder="https://..." />
                             </FormControl>
@@ -480,7 +442,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             name="professionalId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ID Professionnel (Généré)</FormLabel>
+                                    <FormLabel>ID Professionnel</FormLabel>
                                     <FormControl>
                                         <Input {...field} value={field.value ?? ""} disabled className="bg-muted font-mono font-bold" />
                                     </FormControl>
@@ -762,13 +724,13 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                 <Separator />
 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Informations du Tuteur (Optionnel)</h3>
+                    <h3 className="text-lg font-medium">Informations du Tuteur</h3>
                      <FormField
                       control={form.control}
                       name="tutorName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nom complet du tuteur</FormLabel>
+                          <FormLabel>Nom du tuteur</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} />
                           </FormControl>
@@ -795,7 +757,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           name="tutorPhone"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Téléphone du tuteur</FormLabel>
+                              <FormLabel>Téléphone tuteur</FormLabel>
                               <FormControl>
                                 <Input type="tel" {...field} value={field.value ?? ""} />
                               </FormControl>
@@ -808,7 +770,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           name="tutorEmail"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Email du tuteur</FormLabel>
+                              <FormLabel>Email tuteur</FormLabel>
                               <FormControl>
                                 <Input type="email" {...field} value={field.value ?? ""} />
                               </FormControl>
@@ -824,16 +786,15 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                  <div className="space-y-4">
                     <h3 className="text-lg font-medium">Documents du Joueur</h3>
                     {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                      <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-slate-50">
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive"
                             onClick={() => remove(index)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Supprimer le document</span>
                           </Button>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -842,7 +803,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             name={`documents.${index}.name`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Type du document</FormLabel>
+                                <FormLabel>Type document</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
@@ -864,7 +825,7 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                             name={`documents.${index}.validityDate`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Date d'expiration</FormLabel>
+                                <FormLabel>Expiration</FormLabel>
                                 <FormControl>
                                   <Input type="date" {...field} value={field.value ?? ""} />
                                 </FormControl>
@@ -878,39 +839,25 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
                           name={`documents.${index}.url`}
                           render={({ field }) => (
                             <FormItem>
-                               <FormLabel>URL du Document</FormLabel>
+                               <FormLabel>URL document</FormLabel>
                                <FormControl>
-                                   <Input 
-                                      type="text" 
-                                      {...field}
-                                      value={field.value ?? ""}
-                                      placeholder="https://..."
-                                    />
+                                   <Input type="text" {...field} value={field.value ?? ""} placeholder="https://..." />
                                </FormControl>
                                <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
                       </div>
                     ))}
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Ajouter un document
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter document
                     </Button>
                 </div>
 
-
                 <Button type="submit" disabled={loading} className="w-full !mt-8">
-                {loading ? (
-                    <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
-                    </>
-                ) : isEditMode ? "Enregistrer les modifications" : "Ajouter le joueur"}
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter"}
                 </Button>
             </div>
-
           </form>
         </Form>
       </CardContent>
