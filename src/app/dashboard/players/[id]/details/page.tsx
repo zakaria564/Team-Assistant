@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -122,7 +123,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             const canvas = await html2canvas(cardElement, {
                 scale: 2,
                 useCORS: true,
-                allowTaint: false,
                 backgroundColor: '#ffffff',
                 logging: false,
             });
@@ -201,7 +201,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -220,7 +220,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-4">
                         <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}

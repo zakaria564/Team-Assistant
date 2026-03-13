@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -87,7 +88,6 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true,
-                allowTaint: false,
                 backgroundColor: "#ffffff",
                 logging: false
             });
@@ -140,7 +140,6 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                             src={clubInfo.logoUrl} 
                             alt="Logo" 
                             className="h-full w-full object-contain"
-                            crossOrigin="anonymous"
                         />
                     ) : (
                         <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">
