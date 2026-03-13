@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -202,14 +201,16 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                                     <div className="flex flex-col min-w-0">
                                         <span className="font-black text-slate-800 uppercase text-xs sm:text-sm tracking-tight truncate">{item.playerName}</span>
                                         <span className="text-[7px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">
-                                            {item.teamName} • {item.type === 'goal' ? 'But' : 'Passé'}
+                                            {item.teamName} • {item.type === 'goal' ? 'But' : 'Passe'}
                                         </span>
                                     </div>
-                                    {item.type === 'goal' ? (
-                                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 fill-yellow-500 shrink-0 ml-2" />
-                                    ) : (
-                                        <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 text-accent shrink-0 ml-2" />
-                                    )}
+                                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0 ml-2">
+                                        {teamLogos[item.teamName] ? (
+                                            <img src={teamLogos[item.teamName]!} alt={item.teamName} className="h-full w-full object-contain" />
+                                        ) : (
+                                            <div className="text-[10px] font-black text-slate-300">{item.teamName.charAt(0)}</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
