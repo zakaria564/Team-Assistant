@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,23 +15,6 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-
-interface Coach {
-  id: string;
-  name: string;
-  category: string;
-  status: "Actif" | "Inactif";
-  photoUrl?: string;
-  phone?: string;
-  email: string;
-  specialty?: string;
-  entryDate?: string;
-  exitDate?: string;
-  nationality?: string;
-  cin?: string;
-  address?: string;
-  professionalId?: string;
-}
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-3 mb-4">
@@ -53,14 +37,15 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const coachId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   
-  const [coach, setCoach] = useState<Coach | null>(null);
+  const [coach, setCoach] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
@@ -82,7 +67,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
         const coachSnap = await getDoc(coachRef);
 
         if (coachSnap.exists()) {
-          setCoach({ id: coachSnap.id, ...coachSnap.data() } as Coach);
+          setCoach({ id: coachSnap.id, ...coachSnap.data() });
         } else {
           router.push("/dashboard/coaches");
         }
@@ -120,7 +105,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 2000));
 
             const canvas = await html2canvas(element, {
                 scale: 2,
@@ -221,8 +206,8 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                 </header>
                 
                 <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                    <div className="flex flex-col items-center gap-4 shrink-0">
+                        <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
                                 <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
                             ) : (
@@ -234,11 +219,13 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                             {displayId}
                         </div>
                     </div>
-                    <div className="space-y-3 flex-1 min-w-0">
-                        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none truncate">{coach.name}</h1>
+                    <div className="flex-1 min-w-0 flex flex-col gap-4">
+                        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 uppercase tracking-tighter leading-tight break-words">
+                            {coach.name}
+                        </h1>
                         <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
-                            <Badge className="bg-slate-800 text-white text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-wider">{coach.category}</Badge>
-                            <span className="text-slate-500 font-bold text-xs uppercase flex items-center gap-1.5">
+                            <Badge className="bg-slate-800 text-white text-[11px] px-3 py-1 font-black uppercase tracking-widest">{coach.category}</Badge>
+                            <span className="text-slate-600 font-black text-xs uppercase flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200">
                                 <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                             </span>
                         </div>

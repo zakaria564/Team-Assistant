@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -28,8 +29,9 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const coachId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
