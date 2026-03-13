@@ -43,9 +43,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
-  
+  const { id: playerId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -58,49 +56,28 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!playerId) return;
-
     const fetchPlayerAndClub = async () => {
-      if (!user && !loadingUser) {
-        setLoading(false);
-        return;
-      }
+      if (!user && !loadingUser) { setLoading(false); return; }
       if (!user) return;
-
       setLoading(true);
       try {
-        const playerRef = doc(db, "players", playerId);
-        const playerSnap = await getDoc(playerRef);
-
+        const playerSnap = await getDoc(doc(db, "players", playerId));
         if (playerSnap.exists()) {
-          const playerData = { id: playerSnap.id, ...playerSnap.data() };
-          if(playerData.coachId) {
-            const coachRef = doc(db, "coaches", playerData.coachId);
-            const coachSnap = await getDoc(coachRef);
-            if(coachSnap.exists()) {
-              playerData.coachName = coachSnap.data().name;
-            }
+          const data = { id: playerSnap.id, ...playerSnap.data() };
+          if(data.coachId) {
+            const coachSnap = await getDoc(doc(db, "coaches", data.coachId));
+            if(coachSnap.exists()) data.coachName = coachSnap.data().name;
           }
-          setPlayer(playerData);
-        } else {
-          router.push("/dashboard/players");
-        }
-        
-        const clubDocRef = doc(db, "clubs", user.uid);
-        const clubDoc = await getDoc(clubDocRef);
+          setPlayer(data);
+        } else { router.push("/dashboard/players"); }
+        const clubDoc = await getDoc(doc(db, "clubs", user.uid));
         if (clubDoc.exists()) {
-          const clubData = clubDoc.data();
-          setClubName(clubData.clubName || "Votre Club");
-          setClubLogoUrl(clubData.logoUrl || null);
+          setClubName(clubDoc.data().clubName || "Votre Club");
+          setClubLogoUrl(clubDoc.data().logoUrl || null);
         }
-
-      } catch (error) {
-        console.error("Error fetching player:", error);
-        router.push("/dashboard/players");
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchPlayerAndClub();
   }, [playerId, user, loadingUser, router]);
   
@@ -112,60 +89,21 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
-                return new Promise((resolve) => {
-                    img.onload = resolve;
-                    img.onerror = resolve; 
-                });
+                return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
             }));
-
-            await new Promise(r => setTimeout(r, 1500));
-
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-            });
-
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'pt',
-                format: 'a4'
-            });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasAspectRatio = canvas.width / canvas.height;
-
-            let imgWidth = pdfWidth;
-            let imgHeight = pdfWidth / canvasAspectRatio;
-            
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = imgHeight * canvasAspectRatio;
-            }
-
-            const x = (pdfWidth - imgWidth) / 2;
-            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', x, 0, imgWidth, imgHeight);
+            await new Promise(r => setTimeout(r, 1000));
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const imgWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
-        } catch (err) {
-            console.error("Erreur PDF:", err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de générer le PDF." });
-        } finally {
-            setLoadingPdf(false);
-        }
+        } catch (err) { toast({ variant: "destructive", title: "Erreur PDF" }); }
+        finally { setLoadingPdf(false); }
     }
   };
 
-  if (loading || loadingUser) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-slate-50">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-screen bg-slate-50"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!player) return null;
   
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
@@ -176,83 +114,51 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     <div className="bg-slate-100 min-h-screen p-2 sm:p-8">
        <div className="w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center print:hidden">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
-            {loadingPdf ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Génération...
-              </>
-            ) : (
-              <>
-                <FileDown className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Télécharger la Fiche</span>
-                <span className="sm:hidden">Télécharger</span>
-              </>
-            )}
+            {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+            <span className="ml-2">Télécharger la Fiche</span>
           </Button>
         </div>
 
         <div className="w-full overflow-x-auto">
-            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl min-w-[320px]" style={{ width: '800px', minHeight: '1120px' }}>
-                
+            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl" style={{ width: '800px', minHeight: '1120px' }}>
                 <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
-                    <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
-                            {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
-                            ) : (
-                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
-                            )}
+                    <div className="flex items-center gap-5">
+                        <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
+                            {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>}
                         </div>
                         <div>
-                            <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
-                            <p className="text-primary font-bold tracking-widest text-[8px] sm:text-[10px] uppercase">Fiche Officielle du Joueur</p>
+                            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
+                            <p className="text-primary font-bold tracking-widest text-[10px] uppercase">Fiche Officielle du Joueur</p>
                         </div>
                     </div>
-                    <div className="text-right hidden sm:block">
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
-                    </div>
+                    <div className="text-right"><p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Émis le {format(new Date(), 'dd/MM/yyyy')}</p></div>
                 </header>
                 
                 <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                     <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                            {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
-                            ) : (
-                                <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
-                            )}
+                            {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
                         </div>
                         <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
-                            <Fingerprint className="h-3 w-3 text-primary" />
-                            {displayId}
+                            <Fingerprint className="h-3 w-3 text-primary" />{displayId}
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-8">
-                            {player.name}
-                        </h1>
-                        <div className="grid grid-cols-3 divide-x-2 divide-slate-200">
-                            <div className="flex flex-col items-center justify-center px-2 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] flex items-center border-none">
-                                    {player.category}
-                                </Badge>
+                        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{player.name}</h1>
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="flex flex-col items-center justify-center text-center px-2">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{player.category}</Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center px-2 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Poste</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px]">
-                                    <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}
-                                </span>
+                            <div className="flex flex-col items-center justify-center text-center px-2">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center px-2 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-2">Numéro</span>
-                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center min-w-[60px] flex items-center justify-center">
-                                    #{player.number || "--"}
-                                </span>
+                            <div className="flex flex-col items-center justify-center text-center px-2">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro</span>
+                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center w-full min-h-[24px] flex items-center justify-center">#{player.number || "--"}</span>
                             </div>
                         </div>
                     </div>
@@ -266,45 +172,33 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                             <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                             <DetailItem icon={Fingerprint} label="N° CIN" value={player.cin} />
-                            <DetailItem icon={Mail} label="Email personnel" value={player.email} />
-                            <DetailItem icon={Phone} label="Téléphone mobile" value={player.phone} />
-                            <DetailItem icon={MapPin} label="Adresse Résidentielle" value={player.address} />
+                            <DetailItem icon={Mail} label="Email" value={player.email} />
+                            <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                            <DetailItem icon={MapPin} label="Adresse" value={player.address} />
                         </div>
                     </div>
-
                     <div className="w-1/2 space-y-10">
                         <div>
                             <SectionTitle title="Parcours Sportif" icon={Shield} />
                             <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
-                            <DetailItem icon={ClipboardList} label="Coach référent" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
+                            <DetailItem icon={ClipboardList} label="Entraîneur Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                             <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                            <DetailItem icon={LogOut} label="Fin de validité" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Non renseignée"} />
+                            <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En cours"} />
                         </div>
-
                         {player.tutorName && (
                             <div className="pt-4">
                                 <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                 <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
-                                <DetailItem icon={Fingerprint} label="N° CIN du tuteur" value={player.tutorCin} />
-                                <DetailItem icon={Phone} label="Téléphone d'urgence" value={player.tutorPhone} />
-                                <DetailItem icon={Mail} label="Email de contact" value={player.tutorEmail} />
+                                <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
+                                <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
                             </div>
                         )}
                     </div>
                 </main>
 
                 <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-slate-300">
-                            <ShieldCheck className="h-4 w-4" />
-                            <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
-                        </div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
-                        <div className="w-40 border-b-2 border-slate-200"></div>
-                    </div>
+                    <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
+                    <div className="text-center"><p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p><div className="w-40 border-b-2 border-slate-200"></div></div>
                 </footer>
             </div>
         </div>

@@ -38,9 +38,7 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
 );
 
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
-  
+  const { id: coachId } = React.use(props.params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -53,41 +51,22 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
 
   useEffect(() => {
     if (!coachId) return;
-
     const fetchCoachAndClub = async () => {
-      if (!user && !loadingUser) {
-        setLoading(false);
-        return;
-      }
+      if (!user && !loadingUser) { setLoading(false); return; }
       if (!user) return;
-
       setLoading(true);
       try {
-        const coachRef = doc(db, "coaches", coachId);
-        const coachSnap = await getDoc(coachRef);
-
-        if (coachSnap.exists()) {
-          setCoach({ id: coachSnap.id, ...coachSnap.data() });
-        } else {
-          router.push("/dashboard/coaches");
-        }
-        
-        const clubDocRef = doc(db, "clubs", user.uid);
-        const clubDoc = await getDoc(clubDocRef);
+        const coachSnap = await getDoc(doc(db, "coaches", coachId));
+        if (coachSnap.exists()) { setCoach({ id: coachSnap.id, ...coachSnap.data() }); }
+        else { router.push("/dashboard/coaches"); }
+        const clubDoc = await getDoc(doc(db, "clubs", user.uid));
         if (clubDoc.exists()) {
-          const clubData = clubDoc.data();
-          setClubName(clubData.clubName || "Votre Club");
-          setClubLogoUrl(clubData.logoUrl || null);
+          setClubName(clubDoc.data().clubName || "Votre Club");
+          setClubLogoUrl(clubDoc.data().logoUrl || null);
         }
-
-      } catch (error) {
-        console.error("Error fetching coach:", error);
-        router.push("/dashboard/coaches");
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchCoachAndClub();
   }, [coachId, user, loadingUser, router]);
   
@@ -99,143 +78,72 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
-                return new Promise((resolve) => {
-                    img.onload = resolve;
-                    img.onerror = resolve;
-                });
+                return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
             }));
-
-            await new Promise(r => setTimeout(r, 1500));
-
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-            });
-
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'pt',
-                format: 'a4'
-            });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasAspectRatio = canvas.width / canvas.height;
-
-            let imgWidth = pdfWidth;
-            let imgHeight = pdfWidth / canvasAspectRatio;
-
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = imgHeight * canvasAspectRatio;
-            }
-
-            const x = (pdfWidth - imgWidth) / 2;
-            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', x, 0, imgWidth, imgHeight);
+            await new Promise(r => setTimeout(r, 1000));
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const imgWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_officielle_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
-        } catch (err) {
-            console.error("Erreur PDF:", err);
-            toast({ variant: "destructive", title: "Erreur", description: "Le PDF n'a pas pu être généré." });
-        } finally {
-            setLoadingPdf(false);
-        }
+        } catch (err) { toast({ variant: "destructive", title: "Erreur PDF" }); }
+        finally { setLoadingPdf(false); }
     }
   };
 
-
-  if (loading || loadingUser) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-slate-50">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+  if (loading || loadingUser) return <div className="flex justify-center items-center h-screen bg-slate-50"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!coach) return null;
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
   const displayId = coach.professionalId || `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
 
-
   return (
     <div className="bg-slate-100 min-h-screen p-2 sm:p-8">
        <div className="w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center print:hidden">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
-            {loadingPdf ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Génération...
-              </>
-            ) : (
-              <>
-                <FileDown className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Télécharger la Fiche</span>
-                <span className="sm:hidden">Télécharger</span>
-              </>
-            )}
+            {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+            <span className="ml-2">Télécharger la Fiche</span>
           </Button>
         </div>
 
         <div className="w-full overflow-x-auto">
-            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl min-w-[320px]" style={{ width: '800px', minHeight: '1120px' }}>
-                
+            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl" style={{ width: '800px', minHeight: '1120px' }}>
                 <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
-                    <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
-                            {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
-                            ) : (
-                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
-                            )}
+                    <div className="flex items-center gap-5">
+                        <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
+                            {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>}
                         </div>
                         <div>
-                            <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
-                            <p className="text-primary font-bold text-[8px] sm:text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
+                            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
+                            <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
                         </div>
                     </div>
-                    <div className="text-right hidden sm:block">
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p>
-                    </div>
+                    <div className="text-right"><p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p></div>
                 </header>
                 
                 <section className="flex flex-row items-center gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                     <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                            {coach.photoUrl ? (
-                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
-                            ) : (
-                                <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
-                            )}
+                            {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
                         </div>
                         <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
-                            <Fingerprint className="h-3 w-3 text-primary" />
-                            {displayId}
+                            <Fingerprint className="h-3 w-3 text-primary" />{displayId}
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-8">
-                            {coach.name}
-                        </h1>
-                        <div className="grid grid-cols-2 divide-x-2 divide-slate-200">
-                            <div className="flex flex-col items-center justify-center gap-2 px-4 text-center">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Catégorie Affectée</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] border-none">
-                                    {coach.category}
-                                </Badge>
+                        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{coach.name}</h1>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col items-center justify-center text-center px-2">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie Affectée</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{coach.category}</Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center gap-2 px-4 text-center">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Spécialité Technique</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px]">
-                                    <Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
-                                </span>
+                            <div className="flex flex-col items-center justify-center text-center px-2">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Spécialité Technique</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
                             </div>
                         </div>
                     </div>
@@ -252,7 +160,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                             <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                         </div>
                     </div>
-
                     <div className="w-1/2 space-y-10">
                         <div>
                             <SectionTitle title="Parcours Sportif" icon={Shield} />
@@ -265,17 +172,8 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 </main>
 
                 <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-slate-300">
-                            <ShieldCheck className="h-4 w-4" />
-                            <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
-                        </div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
-                        <div className="w-40 border-b-2 border-slate-200"></div>
-                    </div>
+                    <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
+                    <div className="text-center"><p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p><div className="w-40 border-b-2 border-slate-200"></div></div>
                 </footer>
             </div>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -7,10 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,6 @@ const documentSchema = z.object({
   url: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   validityDate: z.string().optional(),
 });
-
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -56,36 +55,15 @@ interface AddCoachFormProps {
     coach?: CoachData;
 }
 
-
 const coachCategories = [
-    "Seniors", "Seniors F",
-    "U19", "U19 F",
-    "U18", "U18 F",
-    "U17", "U17 F",
-    "U16", "U16 F",
-    "U15", "U15 F",
-    "U14", "U14 F",
-    "U13", "U13 F",
-    "U12", "U12 F",
-    "U11", "U11 F",
-    "U10", "U10 F",
-    "U9", "U9 F",
-    "U8", "U8 F",
-    "U7", "U7 F",
-    "Vétérans"
+    "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
+    "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
+    "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"
 ];
 
 const coachSpecialties = [
-    "Entraîneur Principal",
-    "Entraîneur Adjoint",
-    "Entraîneur Équipe Féminine",
-    "Entraîneur des Gardiens",
-    "Préparateur Physique",
-    "Analyste Vidéo",
-    "Directeur Technique",
-    "Coordinateur des Jeunes",
-    "Responsable École de Foot",
-    "Autre"
+    "Entraîneur Principal", "Entraîneur Adjoint", "Entraîneur Équipe Féminine", "Entraîneur des Gardiens",
+    "Préparateur Physique", "Analyste Vidéo", "Directeur Technique", "Coordinateur des Jeunes", "Responsable École de Foot", "Autre"
 ];
 
 const nationalities = [
@@ -93,14 +71,8 @@ const nationalities = [
 ];
 
 const documentTypes = [
-    "Diplôme d'entraîneur",
-    "Carte d'identité",
-    "Passeport",
-    "Extrait de naissance",
-    "Justificatif de domicile",
-    "Photo d'identité",
-    "Contrat",
-    "Autre"
+    "Diplôme d'entraîneur", "Carte d'identité", "Passeport", "Extrait de naissance", "Justificatif de domicile",
+    "Photo d'identité", "Contrat", "Autre"
 ];
 
 const generateProfessionalId = () => {
@@ -109,14 +81,9 @@ const generateProfessionalId = () => {
     return `CH-${yearMonth}-${random}`;
 };
 
-const normalizeString = (str: string | null | undefined) => {
-    if (!str) return '';
-    return str
-        .trim()
-        .replace(/\s+/g, ' ')
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+const defaultCoachValues = {
+  name: "", photoUrl: "", category: "", status: "Actif" as const, phone: "", email: "", specialty: "",
+  entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
 };
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {
@@ -131,34 +98,22 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: coach?.name || "",
-      photoUrl: coach?.photoUrl || "",
-      category: coach?.category || "",
-      status: coach?.status,
-      phone: coach?.phone || "",
-      email: coach?.email || "",
-      specialty: coach?.specialty || "",
-      entryDate: coach?.entryDate ? coach.entryDate.split('T')[0] : "",
-      exitDate: coach?.exitDate ? coach.exitDate.split('T')[0] : "",
-      nationality: coach?.nationality || "",
-      cin: coach?.cin || "",
-      address: coach?.address || "",
-      documents: (coach?.documents || []).map(doc => ({
-          name: doc.name || "",
-          url: doc.url || "",
-          validityDate: doc.validityDate ? doc.validityDate.split('T')[0] : '',
-      })),
-      professionalId: coach?.professionalId || "",
-    },
+    values: useMemo(() => {
+      if (!coach) return defaultCoachValues;
+      return {
+        ...defaultCoachValues,
+        ...coach,
+        documents: (coach.documents || []).map(doc => ({
+            name: doc.name || "",
+            url: doc.url || "",
+            validityDate: doc.validityDate || "",
+        })),
+      };
+    }, [coach]),
   });
 
   const photoDataUrl = form.watch('photoUrl');
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "documents",
-  });
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   const getCameraPermission = useCallback(async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -167,526 +122,168 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     }
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-        }
+        if (videoRef.current) videoRef.current.srcObject = stream;
         setHasCameraPermission(true);
-    } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-            variant: 'destructive',
-            title: 'Accès à la caméra refusé',
-            description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
-        });
-    }
-  }, [toast]);
+    } catch (error) { setHasCameraPermission(false); }
+  }, []);
 
-  useEffect(() => {
-    if(!photoDataUrl) {
-      getCameraPermission();
-    }
-  }, [photoDataUrl, getCameraPermission]);
-
+  useEffect(() => { if(!photoDataUrl) getCameraPermission(); }, [photoDataUrl, getCameraPermission]);
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-
       if (context) {
-        const targetWidth = 400;
-        const targetHeight = 400;
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
+        canvas.width = 400; canvas.height = 400;
+        const videoWidth = video.videoWidth; const videoHeight = video.videoHeight;
         const aspectRatio = videoWidth / videoHeight;
-        
         let sx, sy, sWidth, sHeight;
-
-        if (aspectRatio > 1) { // landscape
-            sHeight = videoHeight;
-            sWidth = videoHeight;
-            sx = (videoWidth - videoHeight) / 2;
-            sy = 0;
-        } else { // portrait
-            sWidth = videoWidth;
-            sHeight = videoWidth;
-            sx = 0;
-            sy = (videoHeight - videoWidth) / 2;
-        }
-        
-        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        form.setValue('photoUrl', dataUrl);
-
+        if (aspectRatio > 1) { sHeight = videoHeight; sWidth = videoHeight; sx = (videoWidth - videoHeight) / 2; sy = 0; }
+        else { sWidth = videoWidth; sHeight = videoWidth; sx = 0; sy = (videoHeight - videoWidth) / 2; }
+        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, 400, 400);
+        form.setValue('photoUrl', canvas.toDataURL('image/jpeg', 0.8));
         const stream = video.srcObject as MediaStream;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-        if(videoRef.current) {
-          videoRef.current.srcObject = null;
-        }
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        if(videoRef.current) videoRef.current.srcObject = null;
       }
     }
   };
 
-
-  const retakePicture = () => {
-    form.setValue('photoUrl', '');
-  };
+  const retakePicture = () => { form.setValue('photoUrl', ''); };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user) {
-        toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté pour effectuer cette action." });
-        return;
-    }
-
+    if (!user) return;
     setLoading(true);
-
     if (!values.photoUrl) {
-        toast({
-            variant: "destructive",
-            title: "Photo manquante",
-            description: "Veuillez prendre une photo ou fournir une URL avant de continuer.",
-        });
-        setLoading(false);
-        return;
+        toast({ variant: "destructive", title: "Photo manquante" });
+        setLoading(false); return;
     }
-
     try {
-        if (!isEditMode) {
-            const normalizedNewName = normalizeString(values.name);
-            const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-            const querySnapshot = await getDocs(q);
-            const isDuplicate = querySnapshot.docs.some(doc => normalizeString(doc.data().name) === normalizedNewName);
-
-            if (isDuplicate) {
-                toast({
-                    variant: "destructive",
-                    title: "Nom déjà utilisé",
-                    description: "Un entraîneur avec un nom similaire existe déjà.",
-                });
-                setLoading(false);
-                return;
-            }
-        }
-
-        const documentsToSave = (values.documents || [])
-          .filter(doc => doc.name && doc.url)
-          .map(doc => ({
-              name: doc.name,
-              url: doc.url,
-              validityDate: doc.validityDate || null,
-          }));
-
         const dataToSave = {
             ...values,
             userId: user.uid,
-            specialty: values.specialty || '',
-            documents: documentsToSave,
-            isDeleted: false,
             professionalId: values.professionalId || generateProfessionalId(),
+            isDeleted: false,
         };
-
         if (isEditMode && coach) {
-            const coachDocRef = doc(db, "coaches", coach.id);
-            await updateDoc(coachDocRef, dataToSave);
-            toast({
-                title: "Entraîneur modifié !",
-                description: `Les informations de ${values.name} ont été mises à jour.`,
-            });
+            await updateDoc(doc(db, "coaches", coach.id), dataToSave);
+            toast({ title: "Entraîneur modifié !" });
         } else {
-            await addDoc(collection(db, "coaches"), {
-                ...dataToSave,
-                createdAt: new Date(),
-            });
-
-            toast({
-                title: "Entraîneur ajouté !",
-                description: `${values.name} a été enregistré avec succès.`,
-            });
+            await addDoc(collection(db, "coaches"), { ...dataToSave, createdAt: new Date() });
+            toast({ title: "Entraîneur ajouté !" });
         }
-      
-      router.push("/dashboard/coaches");
-      router.refresh();
-
-    } catch (e: any) {
-      toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue.",
-      });
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+        router.push("/dashboard/coaches");
+        router.refresh();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur" });
+    } finally { setLoading(false); }
   }
 
   return (
-    <>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            
-            <div className="space-y-6">
-                <div className="space-y-4">
-                    <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
-                         {!photoDataUrl && hasCameraPermission ? (
-                             <video 
-                                ref={videoRef} 
-                                className="w-full h-full object-cover" 
-                                autoPlay 
-                                muted 
-                                playsInline 
-                            />
-                        ) : photoDataUrl ? (
-                            <img 
-                                src={photoDataUrl} 
-                                alt="Photo de l'entraîneur" 
-                                className="w-full h-full object-contain absolute inset-0 p-1" 
-                                crossOrigin="anonymous"
-                            />
-                        ) : (
-                             <p className="text-muted-foreground p-4 text-center">La caméra n'est pas disponible.</p>
-                        )
-                        }
-                    </div>
-                    <canvas ref={canvasRef} className="hidden" />
-
-                    <div className="flex gap-4">
-                        <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm">
-                            <Camera className="mr-2 h-4 w-4"/>
-                            Prendre
-                        </Button>
-                        {photoDataUrl && (
-                            <Button type="button" variant="secondary" onClick={retakePicture} className="w-full" size="sm">
-                                <RefreshCcw className="mr-2 h-4 w-4" />
-                                Reprendre
-                            </Button>
-                        )}
-                    </div>
-                     <FormField
-                        control={form.control}
-                        name="photoUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Ou coller l'URL de la photo</FormLabel>
-                            <FormControl>
-                                <Input {...field} value={field.value ?? ""} placeholder="https://..." />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                </div>
-
-                <Separator />
-                
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium flex items-center gap-2">
-                        <Fingerprint className="h-5 w-5 text-primary" />
-                        Informations Club
-                    </h3>
-
-                    {isEditMode && (
-                        <FormField
-                            control={form.control}
-                            name="professionalId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>ID Professionnel (Généré)</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} value={field.value ?? ""} disabled className="bg-muted font-mono font-bold" />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    )}
-
-                    <FormField
-                        control={form.control}
-                        name="specialty"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Spécialité</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || ''}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {coachSpecialties.map(spec => (
-                                        <SelectItem key={spec} value={spec}>{spec}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Catégorie</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {coachCategories.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="status"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Statut</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {coachStatuses.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                        />
-                    </div>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="entryDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date d'entrée</FormLabel>
-                                <FormControl>
-                                  <Input type="date" {...field} value={field.value ?? ""} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                           <FormField
-                            control={form.control}
-                            name="exitDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date de sortie</FormLabel>
-                                <FormControl>
-                                  <Input type="date" {...field} value={field.value ?? ""} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                    </div>
-                </div>
-
-                <Separator />
-
-                 <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Documents</h3>
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Supprimer</span>
-                          </Button>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                           <FormField
-                            control={form.control}
-                            name={`documents.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Type du document</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {documentTypes.map(docType => (
-                                      <SelectItem key={docType} value={docType}>{docType}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`documents.${index}.validityDate`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date d'expiration</FormLabel>
-                                <FormControl>
-                                  <Input type="date" {...field} value={field.value ?? ""} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                         <FormField
-                          control={form.control}
-                          name={`documents.${index}.url`}
-                          render={({ field }) => (
-                            <FormItem>
-                               <FormLabel>URL du Document</FormLabel>
-                               <FormControl>
-                                   <Input type="text" {...field} value={field.value ?? ""} placeholder="https://..." />
-                               </FormControl>
-                               <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+    <CardContent>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="space-y-6">
+              <div className="space-y-4">
+                  <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
+                       {!photoDataUrl && hasCameraPermission ? (
+                           <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                      ) : photoDataUrl ? (
+                          <img src={photoDataUrl} alt="Photo" className="w-full h-full object-contain absolute inset-0 p-1" />
+                      ) : (
+                           <p className="text-muted-foreground p-4 text-center">Caméra non disponible.</p>
+                      )}
+                  </div>
+                  <canvas ref={canvasRef} className="hidden" />
+                  <div className="flex gap-4">
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
+                      {photoDataUrl && <Button type="button" variant="secondary" onClick={retakePicture} className="w-full" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Reprendre</Button>}
+                  </div>
+                   <FormField control={form.control} name="photoUrl" render={({ field }) => (
+                      <FormItem><FormLabel>Ou URL photo</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="https://..." /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </div>
+              <Separator />
+              <div className="space-y-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2"><Fingerprint className="h-5 w-5 text-primary" />Informations Club</h3>
+                  {isEditMode && (
+                      <FormField control={form.control} name="professionalId" render={({ field }) => (
+                          <FormItem><FormLabel>ID Professionnel</FormLabel><FormControl><Input {...field} value={field.value ?? ""} disabled className="bg-muted font-mono font-bold" /></FormControl></FormItem>
+                      )} />
+                  )}
+                  <FormField control={form.control} name="specialty" render={({ field }) => (
+                      <FormItem><FormLabel>Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="category" render={({ field }) => (
+                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="status" render={({ field }) => (
+                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      )} />
+                  </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="entryDate" render={({ field }) => (
+                          <FormItem><FormLabel>Date d'entrée</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                         <FormField control={form.control} name="exitDate" render={({ field }) => (
+                          <FormItem><FormLabel>Date de sortie</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                  </div>
+              </div>
+          </div>
+          <div className="space-y-6">
+              <div className="space-y-4">
+                   <h3 className="text-lg font-medium">Informations Personnelles</h3>
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="nationality" render={({ field }) => (
+                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="cin" render={({ field }) => (
+                          <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                  </div>
+                   <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Adresse</FormLabel><FormControl><Textarea {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                   <FormField control={form.control} name="email" render={({ field }) => (
+                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                   <FormField control={form.control} name="phone" render={({ field }) => (
+                      <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </div>
+              <Separator />
+               <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Documents</h3>
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-slate-50">
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
+                            <FormItem><FormLabel>Type document</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentTypes.map(docType => <SelectItem key={docType} value={docType}>{docType}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                          )} />
+                        <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => (
+                            <FormItem><FormLabel>Expiration</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
                       </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Ajouter un document
-                    </Button>
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                <div className="space-y-4">
-                     <h3 className="text-lg font-medium">Informations Personnelles</h3>
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nom complet</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                        control={form.control}
-                        name="nationality"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Nationalité</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || ''}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {nationalities.map(nat => (
-                                        <SelectItem key={nat} value={nat}>{nat}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="cin"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>N° CIN</FormLabel>
-                                <FormControl>
-                                    <Input {...field} value={field.value ?? ""} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                       <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => (
+                          <FormItem><FormLabel>URL document</FormLabel><FormControl><Input type="text" {...field} value={field.value ?? ""} placeholder="https://..." /></FormControl><FormMessage /></FormItem>
+                        )} />
                     </div>
-                     <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Adresse</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} value={field.value ?? ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input type="email" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Téléphone</FormLabel>
-                            <FormControl>
-                                <Input type="tel" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <Button type="submit" disabled={loading} className="w-full !mt-12">
-                {loading ? (
-                    <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
-                    </>
-                ) : isEditMode ? "Enregistrer les modifications" : "Ajouter l'entraîneur"}
-                </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', url: '', validityDate: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter document</Button>
+              </div>
+              <Button type="submit" disabled={loading} className="w-full !mt-12">
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter"}
+              </Button>
+          </div>
+        </form>
+      </Form>
+    </CardContent>
   );
 }
