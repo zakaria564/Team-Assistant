@@ -30,7 +30,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
 );
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(props.params);
+  const params = React.use(props.params);
+  const coachId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -82,7 +83,6 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                   src={coach.photoUrl} 
                   alt={coach.name} 
                   className="h-full w-full object-contain" 
-                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{coachInitial}</div>

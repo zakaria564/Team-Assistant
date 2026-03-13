@@ -43,7 +43,8 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -201,7 +202,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -218,37 +219,37 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 
                 <section className="flex flex-row items-start gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                     <div className="flex flex-col items-center gap-4 shrink-0">
-                        <div className="h-40 w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                        <div className="h-44 w-44 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
                         </div>
-                        <div className="bg-white px-3 py-1 rounded border border-slate-300 font-mono text-[10px] font-bold text-slate-600 shadow-sm flex items-center gap-1.5">
+                        <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[10px] font-black tracking-widest flex items-center gap-1.5 shadow-sm border border-slate-700">
                             <Fingerprint className="h-3 w-3 text-primary" />
                             {displayId}
                         </div>
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-10 pt-4">
-                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-[1.1] break-words">
+                    <div className="flex-1 min-w-0 pt-4">
+                        <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-8 break-words border-b-4 border-primary pb-4 w-fit">
                             {player.name}
                         </h1>
-                        <div className="grid grid-cols-3 gap-6">
-                            <div className="flex flex-col gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Catégorie</span>
-                                <Badge className="bg-slate-800 text-white text-base px-4 py-2 font-black uppercase tracking-widest w-fit rounded-none">{player.category}</Badge>
+                        <div className="grid grid-cols-3 gap-8">
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Catégorie</span>
+                                <Badge className="bg-slate-900 text-white text-base px-4 py-2 font-black uppercase tracking-widest w-fit rounded-none">{player.category}</Badge>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Poste</span>
-                                <span className="text-slate-700 font-black text-base uppercase flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-none border-l-4 border-primary">
-                                    <Star className="h-5 w-5 text-primary fill-primary" /> {player.position || "Joueur"}
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Poste</span>
+                                <span className="text-slate-700 font-black text-base uppercase flex items-center gap-2 bg-white px-4 py-2 rounded-none border-l-4 border-primary shadow-sm border border-slate-100">
+                                    <Star className="h-4 w-4 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
                             {player.number && (
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Numéro</span>
-                                    <span className="bg-primary text-white px-6 py-2 rounded-none font-black text-xl w-fit">#{player.number}</span>
+                                <div className="flex flex-col gap-1.5">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Numéro</span>
+                                    <span className="bg-primary text-white px-6 py-2 rounded-none font-black text-2xl w-fit shadow-sm italic">#{player.number}</span>
                                 </div>
                             )}
                         </div>
