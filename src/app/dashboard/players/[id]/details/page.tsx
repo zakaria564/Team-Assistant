@@ -200,7 +200,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -219,7 +219,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
@@ -234,19 +234,23 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             {player.name}
                         </h1>
                         <div className="grid grid-cols-3 divide-x-2 divide-slate-200">
-                            <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] text-center">{player.category}</Badge>
+                            <div className="flex flex-col items-center justify-center px-4 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] flex items-center border-none">
+                                    {player.category}
+                                </Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Poste</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px] text-center">
+                            <div className="flex flex-col items-center justify-center px-4 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px]">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
-                            <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Numéro</span>
-                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center min-w-[60px]">#{player.number || "--"}</span>
+                            <div className="flex flex-col items-center justify-center px-4 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro</span>
+                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center min-w-[60px] flex items-center justify-center">
+                                    #{player.number || "--"}
+                                </span>
                             </div>
                         </div>
                     </div>

@@ -189,7 +189,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -208,7 +208,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
-                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
@@ -223,13 +223,15 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                             {coach.name}
                         </h1>
                         <div className="grid grid-cols-2 divide-x-2 divide-slate-200">
-                            <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400 text-center">Catégorie Affectée</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] text-center">{coach.category}</Badge>
+                            <div className="flex flex-col items-center justify-center gap-2 px-4 text-center">
+                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Catégorie Affectée</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] border-none">
+                                    {coach.category}
+                                </Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400 text-center">Spécialité Technique</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px] text-center">
+                            <div className="flex flex-col items-center justify-center gap-2 px-4 text-center">
+                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Spécialité Technique</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px]">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                                 </span>
                             </div>
