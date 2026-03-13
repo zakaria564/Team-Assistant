@@ -109,6 +109,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
+                allowTaint: true,
                 backgroundColor: '#ffffff',
                 logging: false,
             });
@@ -189,7 +190,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -208,7 +209,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex flex-col items-center gap-4 shrink-0">
                         <div className="h-40 w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
-                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
+                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}
@@ -219,7 +220,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         </div>
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-10 pt-4">
-                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-tight break-words">
+                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-[1.1] break-words">
                             {coach.name}
                         </h1>
                         <div className="grid grid-cols-2 gap-6">

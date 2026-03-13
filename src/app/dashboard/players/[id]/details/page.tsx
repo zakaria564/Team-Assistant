@@ -122,6 +122,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
             const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
+                allowTaint: true,
                 backgroundColor: '#ffffff',
                 logging: false,
             });
@@ -200,7 +201,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -219,7 +220,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-4 shrink-0">
                         <div className="h-40 w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
@@ -230,7 +231,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         </div>
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-10 pt-4">
-                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-tight break-words">
+                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-[1.1] break-words">
                             {player.name}
                         </h1>
                         <div className="grid grid-cols-3 gap-6">
@@ -239,7 +240,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                                 <Badge className="bg-slate-800 text-white text-base px-4 py-2 font-black uppercase tracking-widest w-fit rounded-none">{player.category}</Badge>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Poste de prédilection</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Poste</span>
                                 <span className="text-slate-700 font-black text-base uppercase flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-none border-l-4 border-primary">
                                     <Star className="h-5 w-5 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>

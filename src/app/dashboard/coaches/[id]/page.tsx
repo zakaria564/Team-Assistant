@@ -82,6 +82,7 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                   src={coach.photoUrl} 
                   alt={coach.name} 
                   className="h-full w-full object-contain" 
+                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{coachInitial}</div>
