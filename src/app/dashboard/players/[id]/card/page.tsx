@@ -62,15 +62,28 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
     fetchPlayerAndClub();
   }, [playerId, user, loadingUser, router]);
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setLoadingPdf(true);
     const cardElement = document.getElementById("printable-card");
     if (cardElement) {
-      html2canvas(cardElement, {
-        scale: 2.5,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      }).then((canvas) => {
+      try {
+        const images = Array.from(cardElement.getElementsByTagName('img'));
+        await Promise.all(images.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+            });
+        }));
+
+        await new Promise(r => setTimeout(r, 1000));
+
+        const canvas = await html2canvas(cardElement, {
+            scale: 2.5,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+        });
+
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({
           orientation: 'portrait',
@@ -83,9 +96,11 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
         
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`carte-${player?.name?.replace(/ /g, "_")}.pdf`);
-      }).finally(() => {
+      } catch (err) {
+        console.error(err);
+      } finally {
         setLoadingPdf(false);
-      });
+      }
     } else {
       setLoadingPdf(false);
     }
@@ -124,7 +139,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
           </Button>
         </div>
 
-        <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col mx-auto max-w-sm">
+        <div id="printable-card" className="w-full aspect-[1/1.414] bg-white text-black shadow-lg rounded-xl overflow-hidden flex flex-col mx-auto max-sm">
             <header className="bg-primary text-primary-foreground p-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                     <Trophy className="h-6 w-6" />
@@ -136,7 +151,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
                 <div className="relative">
                     <div className="h-28 w-28 border-4 border-primary shadow-md rounded-full overflow-hidden flex items-center justify-center bg-slate-100">
                         {player.photoUrl ? (
-                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                         ) : (
                             <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
                         )}

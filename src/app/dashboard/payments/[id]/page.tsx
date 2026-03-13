@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,8 +15,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
+export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const paymentId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const [payment, setPayment] = useState<any>(null);

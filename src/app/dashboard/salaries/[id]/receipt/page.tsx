@@ -69,7 +69,7 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 800));
+            await new Promise(r => setTimeout(r, 1000));
 
             const canvas = await html2canvas(element, { 
                 scale: 2, 
@@ -124,6 +124,7 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                                         src={clubInfo.logoUrl} 
                                         alt="Logo" 
                                         className="h-full w-full object-contain"
+                                        crossOrigin="anonymous"
                                     />
                                 ) : (
                                     <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">
