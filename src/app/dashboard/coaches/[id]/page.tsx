@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, Fingerprint, User, Flag, Home, LogIn, LogOut, FileText, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -92,7 +92,7 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                 <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight">{coach.name}</h2>
                 <div className="flex flex-col items-center gap-3">
                     <Badge variant="outline" className="font-mono text-xs py-1 px-3 bg-muted/50 flex items-center gap-2">
-                        <Fingerprint className="h-3 w-3" />
+                        <Fingerprint className="h-3.5 w-3.5 text-primary" />
                         {coach.professionalId || "ID: N/A"}
                     </Badge>
                     <Badge className="bg-green-100 text-green-800 text-sm font-bold px-6 py-1.5 shadow-sm">{coach.status}</Badge>
@@ -129,6 +129,36 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
               </div>
             </CardContent>
           </Card>
+
+          {coach.documents && coach.documents.length > 0 && (
+            <Card>
+                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Documents Numérisés</CardTitle></CardHeader>
+                <CardContent className="pt-4">
+                    <div className="space-y-3">
+                        {coach.documents.map((doc: any, i: number) => (
+                            <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors group">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-primary/10 p-2 rounded">
+                                        <FileText className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">{doc.name}</p>
+                                        {doc.validityDate && (
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4 mr-2" /> Ouvrir
+                                    </a>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
