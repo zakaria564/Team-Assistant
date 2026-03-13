@@ -224,11 +224,11 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         </h1>
                         <div className="grid grid-cols-2 divide-x-2 divide-slate-200">
                             <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Catégorie Affectée</span>
+                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400 text-center">Catégorie Affectée</span>
                                 <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] text-center">{coach.category}</Badge>
                             </div>
                             <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400">Spécialité Technique</span>
+                                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-400 text-center">Spécialité Technique</span>
                                 <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px] text-center">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}
                                 </span>

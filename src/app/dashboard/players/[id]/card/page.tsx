@@ -14,8 +14,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

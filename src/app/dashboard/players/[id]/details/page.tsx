@@ -235,18 +235,18 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         </h1>
                         <div className="grid grid-cols-3 divide-x-2 divide-slate-200">
                             <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[80px] text-center">{player.category}</Badge>
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Catégorie</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[100px] text-center">{player.category}</Badge>
                             </div>
                             <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Poste</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[80px] text-center">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Poste</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[100px] text-center">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
                             <div className="flex flex-col items-center justify-center gap-2 px-4">
-                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Numéro</span>
-                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center">#{player.number || "--"}</span>
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Numéro</span>
+                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center min-w-[60px]">#{player.number || "--"}</span>
                             </div>
                         </div>
                     </div>
