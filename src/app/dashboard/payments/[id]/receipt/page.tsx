@@ -17,9 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function PaymentReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -73,7 +72,6 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
     const element = document.getElementById("printable-receipt");
     if (element) {
         try {
-            // Préchargement des images
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
@@ -140,7 +138,6 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                             src={clubInfo.logoUrl} 
                             alt="Logo" 
                             className="h-full w-full object-contain"
-                            crossOrigin="anonymous"
                         />
                     ) : (
                         <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">

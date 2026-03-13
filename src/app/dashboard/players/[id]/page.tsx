@@ -29,9 +29,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function PlayerDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+export default function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

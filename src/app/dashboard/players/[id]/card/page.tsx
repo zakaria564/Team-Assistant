@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,9 +13,8 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+export default function PlayerCardPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -151,7 +149,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
                 <div className="relative">
                     <div className="h-28 w-28 border-4 border-primary shadow-md rounded-full overflow-hidden flex items-center justify-center bg-slate-100">
                         {player.photoUrl ? (
-                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
                         ) : (
                             <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
                         )}

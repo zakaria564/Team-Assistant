@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, FileText, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, Fingerprint, User, Flag, Home, LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -28,9 +28,8 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
   </div>
 );
 
-export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

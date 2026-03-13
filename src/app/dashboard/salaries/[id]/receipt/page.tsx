@@ -17,9 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SalaryReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const salaryId = params.id;
+export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: salaryId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -123,7 +122,6 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                                         src={clubInfo.logoUrl} 
                                         alt="Logo" 
                                         className="h-full w-full object-contain"
-                                        crossOrigin="anonymous"
                                     />
                                 ) : (
                                     <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl font-black">

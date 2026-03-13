@@ -53,9 +53,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -112,7 +111,6 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            // Attendre le chargement de toutes les images
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
@@ -207,7 +205,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -226,7 +224,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                     <div className="flex flex-col items-center gap-4">
                         <div className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {coach.photoUrl ? (
-                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
                             )}

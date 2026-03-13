@@ -11,9 +11,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { isPast } from "date-fns";
 
-export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const eventId = params.id;
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = React.use(params);
   
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
