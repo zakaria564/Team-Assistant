@@ -42,8 +42,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -117,7 +116,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1500));
 
             const canvas = await html2canvas(element, {
                 scale: 2,
@@ -201,7 +200,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -220,7 +219,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-3 shrink-0">
                         <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
@@ -231,26 +230,24 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-6">
+                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-8">
                             {player.name}
                         </h1>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-3 py-1 font-bold uppercase tracking-wider w-fit rounded-sm">{player.category}</Badge>
+                        <div className="grid grid-cols-3 divide-x-2 divide-slate-200">
+                            <div className="flex flex-col items-center justify-center gap-2 px-4">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Catégorie</span>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center min-w-[80px] text-center">{player.category}</Badge>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Poste</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center gap-1.5 bg-white px-3 py-1 rounded-sm border border-slate-100 shadow-sm w-fit">
+                            <div className="flex flex-col items-center justify-center gap-2 px-4">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Poste</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm min-w-[80px] text-center">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
-                            {player.number && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Numéro</span>
-                                    <span className="bg-primary text-white px-4 py-0.5 rounded-sm font-black text-base w-fit shadow-sm italic">#{player.number}</span>
-                                </div>
-                            )}
+                            <div className="flex flex-col items-center justify-center gap-2 px-4">
+                                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400">Numéro</span>
+                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center">#{player.number || "--"}</span>
+                            </div>
                         </div>
                     </div>
                 </section>

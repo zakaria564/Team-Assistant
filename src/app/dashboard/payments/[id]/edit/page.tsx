@@ -10,8 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function EditPaymentPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+  const { id: paymentId } = React.use(props.params);
   
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);

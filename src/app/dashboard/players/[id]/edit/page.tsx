@@ -15,8 +15,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function EditPlayerPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);

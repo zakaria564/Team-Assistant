@@ -15,8 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+  const { id: paymentId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
