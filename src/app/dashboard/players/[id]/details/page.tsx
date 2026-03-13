@@ -50,7 +50,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   
-  const [player, setPlayer] = useState<any>(null);
+  const [player, setPlayer] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
@@ -109,6 +109,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     const element = document.getElementById("printable-details");
     if (element) {
         try {
+            // Force wait for all images to load and decode
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
@@ -118,6 +119,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 });
             }));
 
+            // Extra buffer time for browser to finish rendering
             await new Promise(r => setTimeout(r, 2000));
 
             const canvas = await html2canvas(element, {
@@ -201,7 +203,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -216,13 +218,13 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </header>
                 
-                <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 mb-12 bg-slate-50 p-6 sm:p-8 rounded-xl border-2 border-slate-100 text-center sm:text-left">
+                <section className="flex flex-row items-start gap-10 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
                     <div className="flex flex-col items-center gap-4 shrink-0">
-                        <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                        <div className="h-40 w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
                             ) : (
-                                <AvatarFallback className="text-4xl sm:text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
+                                <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
                         </div>
                         <div className="bg-white px-3 py-1 rounded border border-slate-300 font-mono text-[10px] font-bold text-slate-600 shadow-sm flex items-center gap-1.5">
@@ -230,24 +232,33 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             {displayId}
                         </div>
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-4">
-                        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 uppercase tracking-tighter leading-tight break-words">
+                    <div className="flex-1 min-w-0 flex flex-col gap-6 pt-2">
+                        <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-[0.9] break-words">
                             {player.name}
                         </h1>
-                        <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
-                            <Badge className="bg-slate-800 text-white text-[11px] px-3 py-1 font-black uppercase tracking-widest">{player.category}</Badge>
-                            <span className="text-slate-600 font-black text-xs uppercase flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-200">
-                                <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {player.position || "Joueur"}
-                            </span>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Catégorie</span>
+                                <Badge className="bg-slate-800 text-white text-sm px-4 py-1.5 font-black uppercase tracking-widest w-fit">{player.category}</Badge>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Poste</span>
+                                <span className="text-slate-600 font-black text-sm uppercase flex items-center gap-1.5 bg-white px-3 py-1.5 rounded border border-slate-200">
+                                    <Star className="h-4 w-4 text-primary fill-primary" /> {player.position || "Joueur"}
+                                </span>
+                            </div>
                             {player.number && (
-                                <span className="bg-primary text-white px-3 py-1 rounded font-black text-xs">#{player.number}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Numéro</span>
+                                    <span className="bg-primary text-white px-4 py-1.5 rounded font-black text-sm">#{player.number}</span>
+                                </div>
                             )}
                         </div>
                     </div>
                 </section>
 
-                <main className="flex flex-col sm:flex-row gap-10 sm:gap-12 flex-grow">
-                    <div className="w-full sm:w-1/2 space-y-10">
+                <main className="flex flex-row gap-12 flex-grow">
+                    <div className="w-1/2 space-y-10">
                         <div>
                             <SectionTitle title="État Civil & Contact" icon={User} />
                             <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -260,7 +271,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         </div>
                     </div>
 
-                    <div className="w-full sm:w-1/2 space-y-10">
+                    <div className="w-1/2 space-y-10">
                         <div>
                             <SectionTitle title="Parcours Sportif" icon={Shield} />
                             <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
@@ -281,16 +292,16 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                 </main>
 
-                <footer className="mt-12 pt-8 border-t-2 border-slate-100 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-10">
-                    <div className="space-y-3 text-center sm:text-left">
-                        <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-300">
+                <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-slate-300">
                             <ShieldCheck className="h-4 w-4" />
                             <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique par l'administration</span>
                         </div>
                         <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
                     </div>
                     <div className="text-center">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-12 sm:mb-16">Cachet du Club & Signature</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p>
                         <div className="w-40 border-b-2 border-slate-200"></div>
                     </div>
                 </footer>

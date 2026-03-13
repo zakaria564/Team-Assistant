@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -11,14 +12,15 @@ import { Loader2, ArrowLeft, Download, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import jsPDF from "jspdf";
+import jsPDF from "jsPDF";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
+export default function PaymentReceiptPage(props: { params: Promise<{ id: string }> }) {
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -138,6 +140,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                             src={clubInfo.logoUrl} 
                             alt="Logo" 
                             className="h-full w-full object-contain"
+                            crossOrigin="anonymous"
                         />
                     ) : (
                         <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">
