@@ -43,8 +43,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -109,7 +108,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            // Force wait for all images to load and decode
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
@@ -119,7 +117,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 });
             }));
 
-            // Extra buffer time for browser to finish rendering
             await new Promise(r => setTimeout(r, 2000));
 
             const canvas = await html2canvas(element, {
@@ -203,7 +200,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex items-center gap-3 sm:gap-5">
                         <div className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
                             {clubLogoUrl ? (
-                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" />
                             ) : (
                                 <div className="h-full w-full bg-primary text-white flex items-center justify-center text-xl sm:text-2xl font-black">{clubInitial}</div>
                             )}
@@ -222,7 +219,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     <div className="flex flex-col items-center gap-4 shrink-0">
                         <div className="h-40 w-40 border-4 border-white shadow-md rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                             {player.photoUrl ? (
-                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" crossOrigin="anonymous" />
+                                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
                             ) : (
                                 <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                             )}
@@ -232,25 +229,25 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             {displayId}
                         </div>
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-6 pt-2">
-                        <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-[0.9] break-words">
+                    <div className="flex-1 min-w-0 flex flex-col gap-10 pt-4">
+                        <h1 className="text-6xl font-black text-slate-900 uppercase tracking-tighter leading-tight break-words">
                             {player.name}
                         </h1>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Catégorie</span>
-                                <Badge className="bg-slate-800 text-white text-sm px-4 py-1.5 font-black uppercase tracking-widest w-fit">{player.category}</Badge>
+                        <div className="grid grid-cols-3 gap-6">
+                            <div className="flex flex-col gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Catégorie</span>
+                                <Badge className="bg-slate-800 text-white text-base px-4 py-2 font-black uppercase tracking-widest w-fit rounded-none">{player.category}</Badge>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Poste</span>
-                                <span className="text-slate-600 font-black text-sm uppercase flex items-center gap-1.5 bg-white px-3 py-1.5 rounded border border-slate-200">
-                                    <Star className="h-4 w-4 text-primary fill-primary" /> {player.position || "Joueur"}
+                            <div className="flex flex-col gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Poste de prédilection</span>
+                                <span className="text-slate-700 font-black text-base uppercase flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-none border-l-4 border-primary">
+                                    <Star className="h-5 w-5 text-primary fill-primary" /> {player.position || "Joueur"}
                                 </span>
                             </div>
                             {player.number && (
-                                <div className="flex flex-col">
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Numéro</span>
-                                    <span className="bg-primary text-white px-4 py-1.5 rounded font-black text-sm">#{player.number}</span>
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Numéro</span>
+                                    <span className="bg-primary text-white px-6 py-2 rounded-none font-black text-xl w-fit">#{player.number}</span>
                                 </div>
                             )}
                         </div>

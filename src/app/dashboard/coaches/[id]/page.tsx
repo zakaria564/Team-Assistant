@@ -30,8 +30,7 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
 );
 
 export default function CoachDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+  const { id: coachId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -76,7 +75,7 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1 h-fit">
-          <CardContent className="pt-8 flex flex-col items-center gap-4">
+          <CardContent className="pt-8 flex flex-col items-center gap-6">
             <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-slate-100 flex items-center justify-center relative">
               {coach.photoUrl ? (
                 <img 
@@ -88,14 +87,16 @@ export default function CoachDetailPage(props: { params: Promise<{ id: string }>
                 <div className="text-4xl font-black text-slate-300">{coachInitial}</div>
               )}
             </div>
-            <div className="text-center space-y-1">
-                <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight">{coach.name}</h2>
-                <Badge variant="outline" className="font-mono text-xs flex items-center gap-1 justify-center">
-                    <Fingerprint className="h-3 w-3" />
-                    {coach.professionalId || "ID: N/A"}
-                </Badge>
+            <div className="text-center space-y-3 w-full">
+                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight">{coach.name}</h2>
+                <div className="flex flex-col items-center gap-3">
+                    <Badge variant="outline" className="font-mono text-xs py-1 px-3 bg-muted/50 flex items-center gap-2">
+                        <Fingerprint className="h-3 w-3" />
+                        {coach.professionalId || "ID: N/A"}
+                    </Badge>
+                    <Badge className="bg-green-100 text-green-800 text-sm font-bold px-6 py-1.5 shadow-sm">{coach.status}</Badge>
+                </div>
             </div>
-            <Badge className="bg-green-100 text-green-800 text-base px-4 py-1">{coach.status}</Badge>
           </CardContent>
         </Card>
         
