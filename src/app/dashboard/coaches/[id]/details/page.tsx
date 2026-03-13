@@ -110,10 +110,11 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   
   const handleDownloadPdf = async () => {
     setLoadingPdf(true);
-    const cardElement = document.getElementById("printable-details");
-    if (cardElement) {
+    const element = document.getElementById("printable-details");
+    if (element) {
         try {
-            const images = Array.from(cardElement.getElementsByTagName('img'));
+            // Attendre le chargement de toutes les images
+            const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve) => {
@@ -124,7 +125,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
 
             await new Promise(r => setTimeout(r, 1000));
 
-            const canvas = await html2canvas(cardElement, {
+            const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
@@ -150,7 +151,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
             }
 
             const x = (pdfWidth - imgWidth) / 2;
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, imgWidth, imgHeight);
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', x, 0, imgWidth, imgHeight);
             pdf.save(`fiche_officielle_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
         } catch (err) {
             console.error("Erreur PDF:", err);

@@ -74,6 +74,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
     const element = document.getElementById("printable-receipt");
     if (element) {
         try {
+            // Préchargement des images
             const images = Array.from(element.getElementsByTagName('img'));
             await Promise.all(images.map(img => {
                 if (img.complete) return Promise.resolve();
