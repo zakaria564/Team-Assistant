@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, FileText, FileDown } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -173,37 +172,6 @@ export default function PlayerDetailPage(props: { params: Promise<{ id: string }
                         value={player.tutorPhone} 
                         href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} 
                     />
-                </CardContent>
-            </Card>
-          )}
-
-          {player.documents && player.documents.length > 0 && (
-            <Card>
-                <CardHeader className="pb-3 border-b mb-4">
-                    <CardTitle className="text-lg flex items-center gap-2 text-primary">
-                        <FileText className="h-5 w-5" /> Documents Enregistrés
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {player.documents.map((doc: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30 group hover:border-primary transition-colors">
-                                <div className="flex flex-col min-w-0 pr-2">
-                                    <span className="font-bold text-sm truncate">{doc.name}</span>
-                                    {doc.validityDate && (
-                                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                            Valide jusqu'au : {format(new Date(doc.validityDate), "dd/MM/yyyy")}
-                                        </span>
-                                    )}
-                                </div>
-                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 hover:text-primary shrink-0">
-                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <FileDown className="h-4 w-4" />
-                                    </a>
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
                 </CardContent>
             </Card>
           )}

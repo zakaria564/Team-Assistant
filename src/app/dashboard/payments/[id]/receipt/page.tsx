@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -84,7 +83,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1500));
 
             const canvas = await html2canvas(element, { 
                 scale: 2, 

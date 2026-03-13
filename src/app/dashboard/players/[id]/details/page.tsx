@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -119,8 +118,8 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 });
             }));
 
-            // Délai de sécurité pour le rendu complet
-            await new Promise(r => setTimeout(r, 1000));
+            // Délai supplémentaire pour s'assurer que le rendu est stable
+            await new Promise(r => setTimeout(r, 1500));
 
             const canvas = await html2canvas(element, {
                 scale: 2,
