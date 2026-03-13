@@ -43,7 +43,9 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+  const params = React.use(props.params);
+  const playerId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -91,8 +93,14 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
             }));
-            await new Promise(r => setTimeout(r, 1000));
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+            await new Promise(r => setTimeout(r, 1500));
+            const canvas = await html2canvas(element, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: '#ffffff', 
+                logging: false,
+                allowTaint: true
+            });
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -147,18 +155,18 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                     </div>
                     <div className="flex-1 min-w-0">
                         <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{player.name}</h1>
-                        <div className="grid grid-cols-3 gap-2">
-                            <div className="flex flex-col items-center justify-center text-center px-2">
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="flex flex-col items-center justify-center text-center">
                                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-4 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{player.category}</Badge>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{player.category}</Badge>
                             </div>
-                            <div className="flex flex-col items-center justify-center text-center px-2">
+                            <div className="flex flex-col items-center justify-center text-center">
                                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
-                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-4 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}</span>
+                                <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-1 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center text-center px-2">
+                            <div className="flex flex-col items-center justify-center text-center">
                                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro</span>
-                                <span className="bg-primary text-white px-6 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center w-full min-h-[24px] flex items-center justify-center">#{player.number || "--"}</span>
+                                <span className="bg-primary text-white px-1 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center w-full min-h-[24px] flex items-center justify-center">#{player.number || "--"}</span>
                             </div>
                         </div>
                     </div>

@@ -8,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -38,7 +38,9 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
 );
 
 export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(props.params);
+  const params = React.use(props.params);
+  const coachId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -80,8 +82,14 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
             }));
-            await new Promise(r => setTimeout(r, 1000));
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+            await new Promise(r => setTimeout(r, 1500));
+            const canvas = await html2canvas(element, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: '#ffffff', 
+                logging: false,
+                allowTaint: true
+            });
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;

@@ -261,7 +261,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                <div className="space-y-4">
                   <h3 className="text-lg font-medium">Documents</h3>
                   {fields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-slate-50">
+                    <div key={field.id} className="p-4 border border-primary/20 rounded-md space-y-4 relative bg-primary/5">
                         <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
