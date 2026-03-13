@@ -132,7 +132,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
             }
         }
         fetchPlayersAndPayments();
-    }, [user, isEditMode]);
+    }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) {
@@ -283,8 +283,8 @@ function FormContent({ payment }: AddPaymentFormProps) {
                 )}
                
                  {(watchTotalAmount !== undefined && (watchTotalAmount > amountAlreadyPaid + 0.01)) || !isEditMode ? (
-                  <div className="space-y-4 rounded-md border p-4">
-                    <h4 className="font-medium">Nouveau versement</h4>
+                  <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
+                    <h4 className="font-bold text-primary">Nouveau versement</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
