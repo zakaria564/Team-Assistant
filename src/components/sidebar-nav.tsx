@@ -61,16 +61,25 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    // 2. Logic for Player Payments (any payment not 'Payé')
+    // 2. Logic for Player Payments (Calculated based on actual debt)
     const unsubscribePayments = onSnapshot(
       query(collection(db, "payments"), where("userId", "==", user.uid)),
       (paymentSnap) => {
-        const uniquePlayersWithPending = new Set(
-          paymentSnap.docs
-            .filter(d => d.data().status !== 'Payé')
-            .map(d => d.data().playerId)
-        );
-        setPendingPaymentsCount(uniquePlayersWithPending.size);
+        const pendingPlayerIds = new Set<string>();
+        
+        paymentSnap.docs.forEach(doc => {
+          const p = doc.data();
+          const transactions = p.transactions || [];
+          const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+          const total = p.totalAmount || 0;
+          const isActuallyUnpaid = (total - paid) > 0.01;
+          
+          if (p.status !== 'Payé' && isActuallyUnpaid && p.playerId) {
+            pendingPlayerIds.add(p.playerId);
+          }
+        });
+        
+        setPendingPaymentsCount(pendingPlayerIds.size);
       }
     );
 
