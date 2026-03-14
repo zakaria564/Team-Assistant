@@ -91,12 +91,16 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    values: useMemo(() => {
-      if (!coach) return {
-        name: "", photoUrl: "", category: "", status: "Actif" as const, phone: "", email: "", specialty: "",
+    defaultValues: {
+        name: "", photoUrl: "", category: "", status: "Actif", phone: "", email: "", specialty: "",
         entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
-      };
-      return {
+    }
+  });
+
+  // Effect to reset form when coach data is loaded (crucial for pre-filling)
+  useEffect(() => {
+    if (coach) {
+      form.reset({
         name: coach.name || "",
         photoUrl: coach.photoUrl || "",
         category: coach.category || "",
@@ -115,9 +119,9 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             url: d.url || "",
             validityDate: d.validityDate || "",
         })),
-      };
-    }, [coach]),
-  });
+      });
+    }
+  }, [coach, form]);
 
   const photoDataUrl = form.watch('photoUrl');
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });

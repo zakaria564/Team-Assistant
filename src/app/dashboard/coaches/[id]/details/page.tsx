@@ -37,8 +37,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(props.params);
+export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

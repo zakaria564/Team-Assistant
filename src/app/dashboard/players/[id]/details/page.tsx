@@ -42,8 +42,8 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

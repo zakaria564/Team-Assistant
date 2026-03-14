@@ -105,14 +105,18 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    values: useMemo(() => {
-      if (!player) return {
-        name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
+    defaultValues: {
+        name: "", photoUrl: "", gender: "Masculin", category: "", status: "Actif",
         number: "", birthDate: "", entryDate: "", exitDate: "", address: "", nationality: "",
         cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
-      };
-      return {
+    }
+  });
+
+  // Effect to reset form when player data is loaded (crucial for pre-filling)
+  useEffect(() => {
+    if (player) {
+      form.reset({
         name: player.name || "",
         photoUrl: player.photoUrl || "",
         gender: player.gender || "Masculin",
@@ -139,9 +143,9 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
             url: d.url || "",
             validityDate: d.validityDate || "",
         })),
-      };
-    }, [player]),
-  });
+      });
+    }
+  }, [player, form]);
 
   const photoDataUrl = form.watch('photoUrl');
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
