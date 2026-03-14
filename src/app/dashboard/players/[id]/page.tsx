@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -174,6 +173,36 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
                         value={player.tutorPhone} 
                         href={player.tutorPhone ? `tel:${player.tutorPhone}` : undefined} 
                     />
+                </CardContent>
+            </Card>
+          )}
+
+          {player.documents && player.documents.length > 0 && (
+            <Card>
+                <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Documents Numérisés</CardTitle></CardHeader>
+                <CardContent className="pt-4">
+                    <div className="space-y-3">
+                        {player.documents.map((doc: any, i: number) => (
+                            <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors group">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-primary/10 p-2 rounded">
+                                        <FileText className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">{doc.name}</p>
+                                        {doc.validityDate && (
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4 mr-2" /> Ouvrir
+                                    </a>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
           )}

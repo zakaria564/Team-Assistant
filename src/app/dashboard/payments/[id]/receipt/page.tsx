@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -238,7 +237,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 <div className="flex justify-center pt-16 sm:pt-24">
-                    <div className="text-center space-y-16 sm:space-y-24 w-full max-md border-t-2 border-slate-100 pt-8">
+                    <div className="text-center space-y-16 sm:space-y-24 w-full max-w-md border-t-2 border-slate-100 pt-8">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet et Signature</p>
                         <div className="pt-4 flex flex-col items-center gap-2">
                             <div className="flex items-center gap-1 text-slate-300">
