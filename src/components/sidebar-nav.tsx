@@ -24,11 +24,7 @@ const links = [
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
-interface SidebarNavProps {
-  onLinkClick?: () => void;
-}
-
-export function SidebarNav({ onLinkClick }: SidebarNavProps) {
+export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
@@ -37,67 +33,36 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
 
   useEffect(() => {
     if (!user) return;
-    const unsubscribe = onSnapshot(
-      query(collection(db, "players"), where("userId", "==", user.uid)),
-      (snap) => {
-        setActivePlayerIds(new Set(snap.docs.map(d => d.id)));
-      }
-    );
-    return () => unsubscribe();
+    return onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (snap) => {
+      setActivePlayerIds(new Set(snap.docs.map(d => d.id)));
+    });
   }, [user]);
 
   useEffect(() => {
-    if (!user || activePlayerIds.size === 0) {
-      setPendingPaymentsCount(0);
-      return;
-    }
-
-    const unsubscribe = onSnapshot(
-      query(collection(db, "payments"), where("userId", "==", user.uid)),
-      (snapshot) => {
-        const playersWithDebt = new Set();
-        snapshot.docs.forEach(doc => {
-          const data = doc.data();
-          if (!activePlayerIds.has(data.playerId)) return;
-
-          const transactions = data.transactions || [];
-          const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-          const totalAmount = data.totalAmount || 0;
-          
-          // Seuil de dette stricte (Meryem Labib unique)
-          const debt = totalAmount - amountPaid;
-          if (debt > 10) {
-            playersWithDebt.add(data.playerId);
-          }
-        });
-        setPendingPaymentsCount(playersWithDebt.size);
-      }
-    );
-
-    return () => unsubscribe();
+    if (!user || activePlayerIds.size === 0) { setPendingPaymentsCount(0); return; }
+    return onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (snapshot) => {
+      const playersWithDebt = new Set();
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (!activePlayerIds.has(data.playerId)) return;
+        const total = data.totalAmount || 0;
+        const paid = (data.transactions || []).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+        if (total - paid > 10) playersWithDebt.add(data.playerId);
+      });
+      setPendingPaymentsCount(playersWithDebt.size);
+    });
   }, [user, activePlayerIds]);
 
   useEffect(() => {
     if (!user) return;
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-    const unsubscribeCoaches = onSnapshot(
-      query(collection(db, "coaches"), where("userId", "==", user.uid)),
-      (coachSnap) => {
-        const coachIds = coachSnap.docs.map(d => d.id);
-        const qSalaries = query(
-          collection(db, "salaries"), 
-          where("userId", "==", user.uid),
-          where("description", "==", currentMonthDesc)
-        );
-        const unsubscribeMonthlySalaries = onSnapshot(qSalaries, (salarySnap) => {
-          const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
-          const unpaidCount = coachIds.filter(id => !paidCoachIds.has(id)).length;
-          setPendingSalariesCount(unpaidCount);
-        });
-        return () => unsubscribeMonthlySalaries();
-      }
-    );
-    return () => unsubscribeCoaches();
+    return onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachSnap) => {
+      const coachIds = coachSnap.docs.map(d => d.id);
+      onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
+        const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
+        setPendingSalariesCount(coachIds.filter(id => !paidCoachIds.has(id)).length);
+      });
+    });
   }, [user]);
 
   return (
@@ -105,15 +70,10 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       {links.map(({ href, label, icon: Icon, hasAlert, alertType }) => {
         const count = alertType === 'salaries' ? pendingSalariesCount : (alertType === 'payments' ? pendingPaymentsCount : 0);
         return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onLinkClick}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative",
-              pathname === href || (pathname.startsWith(href) && href !== "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm" : ""
-            )}
-          >
+          <Link key={href} href={href} onClick={onLinkClick} className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative",
+            pathname === href || (pathname.startsWith(href) && href !== "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm" : ""
+          )}>
             <Icon className="h-4 w-4" />
             {label}
             {hasAlert && count > 0 && (
