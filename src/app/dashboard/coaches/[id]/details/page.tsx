@@ -201,7 +201,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                     </main>
 
                     <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                        <div className="text-center space-y-20 mb-16">
+                        <div className="text-center space-y-20 mb-16 pt-8">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
                             <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
                         </div>
