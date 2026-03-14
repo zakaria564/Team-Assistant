@@ -50,6 +50,7 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [clubName, setClubName] = useState("Votre Club");
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
+  const [clubAddress, setClubAddress] = useState("");
 
   useEffect(() => {
     if (!coachId) return;
@@ -63,8 +64,10 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
         else { router.push("/dashboard/coaches"); }
         const clubDoc = await getDoc(doc(db, "clubs", user.uid));
         if (clubDoc.exists()) {
-          setClubName(clubDoc.data().clubName || "Votre Club");
-          setClubLogoUrl(clubDoc.data().logoUrl || null);
+          const clubData = clubDoc.data();
+          setClubName(clubData.clubName || "Votre Club");
+          setClubLogoUrl(clubData.logoUrl || null);
+          setClubAddress(clubData.address || "");
         }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
@@ -119,89 +122,109 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
         </div>
 
         <div className="w-full overflow-x-auto">
-            <div id="printable-details" className="bg-white p-6 sm:p-12 text-slate-900 border-t-8 border-primary flex flex-col mx-auto shadow-xl" style={{ width: '800px', minHeight: '1120px' }}>
-                <header className="flex flex-row justify-between items-start mb-10 border-b-2 border-slate-100 pb-6">
-                    <div className="flex items-center gap-5">
-                        <div className="h-16 w-16 border-2 border-slate-200 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0">
-                            {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-2xl font-black">{clubInitial}</div>}
+            <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto shadow-xl overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
+                <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6 mb-10">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
+                        <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                            {clubLogoUrl ? (
+                                <img 
+                                    src={clubLogoUrl} 
+                                    alt="Logo" 
+                                    className="h-full w-full object-contain"
+                                />
+                            ) : (
+                                <div className="h-full w-full bg-primary text-white flex items-center justify-center text-3xl sm:text-4xl font-black">
+                                    {clubInitial}
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{clubName}</h1>
-                            <p className="text-primary font-bold text-[10px] uppercase tracking-widest">Fiche Officielle de l'Entraîneur</p>
+                        <div className="space-y-1">
+                            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubName}</h1>
+                            <div className="text-slate-400 text-[10px] sm:text-sm font-medium leading-tight">
+                                <p className="max-w-[350px] break-words">{clubAddress || "Adresse du club"}</p>
+                            </div>
                         </div>
                     </div>
-                    <div className="text-right"><p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Document émis le {format(new Date(), 'dd/MM/yyyy')}</p></div>
+                    <div className="text-center sm:text-right space-y-1">
+                        <h2 className="text-3xl sm:text-4xl font-black uppercase italic tracking-tight text-white">FICHE</h2>
+                        <div className="pt-2">
+                            <p className="text-primary font-bold text-[10px] uppercase tracking-widest">OFFICIELLE DE L'ENTRAÎNEUR</p>
+                            <p className="text-slate-500 text-[10px] sm:text-xs font-semibold">Émise le {format(new Date(), 'dd/MM/yyyy')}</p>
+                        </div>
+                    </div>
                 </header>
                 
-                <section className="flex flex-col items-center gap-6 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
-                    <div className="flex flex-row items-center gap-10 w-full">
-                        <div className="flex flex-col items-center gap-3 shrink-0">
-                            <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                                {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
-                            </div>
-                            <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
-                                <Fingerprint className="h-3 w-3 text-primary" />{displayId}
-                            </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{coach.name}</h1>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex flex-col items-center justify-center text-center px-2">
-                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie Affectée</span>
-                                    <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm flex items-center">{coach.category}</Badge>
+                <div className="px-6 sm:px-12 pb-12 flex-grow flex flex-col">
+                    <section className="flex flex-col items-center gap-6 mb-12 bg-slate-50 p-8 rounded-xl border-2 border-slate-100">
+                        <div className="flex flex-row items-center gap-10 w-full">
+                            <div className="flex flex-col items-center gap-3 shrink-0">
+                                <div className="h-32 w-32 border-4 border-white shadow-sm rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                                    {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
                                 </div>
-                                <div className="flex flex-col items-center justify-center text-center px-2">
-                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Spécialité Technique</span>
-                                    <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-1 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
+                                <div className="bg-slate-800 text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
+                                    <Fingerprint className="h-3 w-3 text-primary" />{displayId}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </section>
-
-                <main className="flex flex-row gap-12 mb-10">
-                    <div className="w-1/2 space-y-10">
-                        <div>
-                            <SectionTitle title="État Civil & Contact" icon={User} />
-                            <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
-                            <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
-                            <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
-                            <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
-                            <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
-                        </div>
-                    </div>
-                    <div className="w-1/2 space-y-10">
-                        <div>
-                            <SectionTitle title="Parcours Sportif" icon={Shield} />
-                            <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
-                            <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
-                            <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                            <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
-                        </div>
-                    </div>
-                </main>
-
-                {coach.documents && coach.documents.length > 0 && (
-                    <div className="mb-10">
-                        <SectionTitle title="Documents Numérisés" icon={FileText} />
-                        <div className="grid grid-cols-2 gap-4">
-                            {coach.documents.map((doc: any, i: number) => (
-                                <div key={i} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50">
-                                    <div className="bg-primary/10 p-1.5 rounded"><FileText className="h-3.5 w-3.5 text-primary" /></div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-800 uppercase">{doc.name}</p>
-                                        {doc.validityDate && <p className="text-[8px] text-slate-400 font-bold uppercase">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>}
+                            <div className="flex-1 min-w-0">
+                                <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{coach.name}</h1>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex flex-col items-center justify-center text-center px-2">
+                                        <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie Affectée</span>
+                                        <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm flex items-center">{coach.category}</Badge>
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center text-center px-2">
+                                        <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Spécialité Technique</span>
+                                        <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-1 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    </section>
 
-                <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
-                    <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
-                    <div className="text-center"><p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p><div className="w-40 border-b-2 border-slate-200"></div></div>
-                </footer>
+                    <main className="flex flex-row gap-12 mb-10">
+                        <div className="w-1/2 space-y-10">
+                            <div>
+                                <SectionTitle title="État Civil & Contact" icon={User} />
+                                <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
+                                <DetailItem icon={Fingerprint} label="N° CIN" value={coach.cin} />
+                                <DetailItem icon={Mail} label="Email personnel" value={coach.email} />
+                                <DetailItem icon={Phone} label="Téléphone mobile" value={coach.phone} />
+                                <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
+                            </div>
+                        </div>
+                        <div className="w-1/2 space-y-10">
+                            <div>
+                                <SectionTitle title="Parcours Sportif" icon={Shield} />
+                                <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
+                                <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
+                                <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                                <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
+                            </div>
+                        </div>
+                    </main>
+
+                    {coach.documents && coach.documents.length > 0 && (
+                        <div className="mb-10">
+                            <SectionTitle title="Documents Numérisés" icon={FileText} />
+                            <div className="grid grid-cols-2 gap-4">
+                                {coach.documents.map((doc: any, i: number) => (
+                                    <div key={i} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50">
+                                        <div className="bg-primary/10 p-1.5 rounded"><FileText className="h-3.5 w-3.5 text-primary" /></div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-800 uppercase">{doc.name}</p>
+                                            {doc.validityDate && <p className="text-[8px] text-slate-400 font-bold uppercase">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
+                        <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
+                        <div className="text-center"><p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p><div className="w-40 border-b-2 border-slate-200"></div></div>
+                    </footer>
+                </div>
             </div>
         </div>
       </div>
