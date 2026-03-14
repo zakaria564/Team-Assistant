@@ -18,7 +18,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
   { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
@@ -31,21 +31,10 @@ interface SidebarNavProps {
 export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
   const [user] = useAuthState(auth);
-  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-
-    // Logic for Player Payments
-    const unsubscribePayments = onSnapshot(
-      query(collection(db, "payments"), where("userId", "==", user.uid)),
-      (snapshot) => {
-        const pending = snapshot.docs.filter(d => d.data().status !== "Payé");
-        const uniquePlayers = new Set(pending.map(d => d.data().playerId));
-        setPendingPaymentsCount(uniquePlayers.size);
-      }
-    );
 
     // Logic for Coach Salaries (unpaid for current month)
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
@@ -71,18 +60,14 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    return () => {
-      unsubscribePayments();
-      unsubscribeCoaches();
-    };
+    return () => unsubscribeCoaches();
   }, [user]);
 
   return (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
       {links.map(({ href, label, icon: Icon, hasAlert }) => {
-        const isPayments = href === "/dashboard/payments";
         const isSalaries = href === "/dashboard/salaries";
-        const count = isPayments ? pendingPaymentsCount : isSalaries ? pendingSalariesCount : 0;
+        const count = isSalaries ? pendingSalariesCount : 0;
 
         return (
           <Link
