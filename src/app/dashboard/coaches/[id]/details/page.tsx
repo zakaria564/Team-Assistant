@@ -200,9 +200,21 @@ export default function CoachDetailsPdfPage(props: { params: Promise<{ id: strin
                         </div>
                     </main>
 
-                    <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
-                        <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
-                        <div className="text-center"><p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-16">Cachet du Club & Signature</p><div className="w-40 border-b-2 border-slate-200"></div></div>
+                    <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
+                        <div className="text-center space-y-20 mb-16">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
+                            <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
+                        </div>
+                        <div className="w-full flex flex-row justify-between items-end gap-10">
+                            <div className="space-y-2 text-left">
+                                <div className="flex items-center gap-2 text-slate-300">
+                                    <ShieldCheck className="h-4 w-4" />
+                                    <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span>
+                                </div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                            </div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-primary italic">Document Officiel</div>
+                        </div>
                     </footer>
                 </div>
             </div>
