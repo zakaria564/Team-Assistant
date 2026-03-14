@@ -191,7 +191,6 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                         <div className="w-1/2 space-y-10">
                             <div>
                                 <SectionTitle title="Parcours Sportif" icon={Shield} />
-                                <DetailItem icon={Star} label="Spécialité Technique" value={coach.specialty} />
                                 <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
                                 <DetailItem icon={LogIn} label="Date d'entrée au club" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                                 <DetailItem icon={LogOut} label="Date de fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />

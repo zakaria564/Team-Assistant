@@ -17,7 +17,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: false },
   { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
@@ -31,12 +31,11 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
-  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
 
-    // 1. Logic for Coach Salaries (unpaid for current month)
+    // Logic for Coach Salaries (unpaid for current month)
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
     const unsubscribeCoaches = onSnapshot(
@@ -60,31 +59,8 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    // 2. Logic for Player Payments (Precise calculation based on actual debt)
-    const unsubscribePayments = onSnapshot(
-      query(collection(db, "payments"), where("userId", "==", user.uid)),
-      (paymentSnap) => {
-        const pendingPlayerIds = new Set<string>();
-        
-        paymentSnap.docs.forEach(doc => {
-          const p = doc.data();
-          const transactions = p.transactions || [];
-          const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-          const total = p.totalAmount || 0;
-          const hasDebt = (total - paid) > 0.01; // Strict check for remaining balance
-          
-          if (hasDebt && p.playerId && p.status !== 'Payé') {
-            pendingPlayerIds.add(p.playerId);
-          }
-        });
-        
-        setPendingPaymentsCount(pendingPlayerIds.size);
-      }
-    );
-
     return () => {
       unsubscribeCoaches();
-      unsubscribePayments();
     };
   }, [user]);
 
@@ -92,8 +68,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
       {links.map(({ href, label, icon: Icon, hasAlert }) => {
         const isSalaries = href === "/dashboard/salaries";
-        const isPayments = href === "/dashboard/payments";
-        const count = isSalaries ? pendingSalariesCount : isPayments ? pendingPaymentsCount : 0;
+        const count = isSalaries ? pendingSalariesCount : 0;
 
         return (
           <Link
