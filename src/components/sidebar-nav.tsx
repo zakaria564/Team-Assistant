@@ -18,7 +18,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
   { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
@@ -32,11 +32,12 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
 
-    // Logic for Coach Salaries (unpaid for current month)
+    // 1. Logic for Coach Salaries (unpaid for current month)
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
     const unsubscribeCoaches = onSnapshot(
@@ -60,14 +61,31 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    return () => unsubscribeCoaches();
+    // 2. Logic for Player Payments (any payment not 'Payé')
+    const unsubscribePayments = onSnapshot(
+      query(collection(db, "payments"), where("userId", "==", user.uid)),
+      (paymentSnap) => {
+        const uniquePlayersWithPending = new Set(
+          paymentSnap.docs
+            .filter(d => d.data().status !== 'Payé')
+            .map(d => d.data().playerId)
+        );
+        setPendingPaymentsCount(uniquePlayersWithPending.size);
+      }
+    );
+
+    return () => {
+      unsubscribeCoaches();
+      unsubscribePayments();
+    };
   }, [user]);
 
   return (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
       {links.map(({ href, label, icon: Icon, hasAlert }) => {
         const isSalaries = href === "/dashboard/salaries";
-        const count = isSalaries ? pendingSalariesCount : 0;
+        const isPayments = href === "/dashboard/payments";
+        const count = isSalaries ? pendingSalariesCount : isPayments ? pendingPaymentsCount : 0;
 
         return (
           <Link
@@ -82,7 +100,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
             <Icon className="h-4 w-4" />
             {label}
             {hasAlert && count > 0 && (
-              <span className="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground font-bold">
+              <span className="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground font-bold shadow-sm">
                 {count}
               </span>
             )}
