@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -9,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, CheckCircle2, X } from "lucide-react";
+import { Loader2, Upload, CheckCircle2, X, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -18,6 +17,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
 import { Separator } from "../ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 const formSchema = z.object({
   clubName: z.string().min(2, "Le nom du club est requis."),
@@ -34,6 +34,7 @@ export function ClubSettingsForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -97,12 +98,12 @@ export function ClubSettingsForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Limite augmentée à 3Mo comme demandé
+    // Limite de 3Mo pour les documents officiels
     if (file.size > 3 * 1024 * 1024) {
         toast({
             variant: "destructive",
             title: "Fichier trop volumineux",
-            description: "L'image doit faire moins de 3 Mo pour être acceptée."
+            description: "L'image doit faire moins de 3 Mo."
         });
         return;
     }
@@ -111,16 +112,10 @@ export function ClubSettingsForm() {
     reader.onloadend = () => {
         const base64String = reader.result as string;
         form.setValue(type, base64String);
+        setSaveError(null);
         toast({
             title: "Image chargée",
-            description: "L'image a été préparée avec succès (Prête pour les documents)."
-        });
-    };
-    reader.onerror = () => {
-        toast({
-            variant: "destructive",
-            title: "Erreur de lecture",
-            description: "Impossible de lire le fichier."
+            description: "Prête pour l'enregistrement."
         });
     };
     reader.readAsDataURL(file);
@@ -129,25 +124,44 @@ export function ClubSettingsForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
     setLoading(true);
+    setSaveError(null);
     try {
         const clubDocRef = doc(db, "clubs", user.uid);
-        await setDoc(clubDocRef, {
-            ...values,
+        
+        // Nettoyage des données pour éviter les undefined
+        const dataToSave = {
+            clubName: values.clubName || "",
+            displayTitle: values.displayTitle || "",
+            logoUrl: values.logoUrl || "",
+            adminPhotoUrl: values.adminPhotoUrl || "",
+            contactEmail: values.contactEmail || "",
+            clubPhone: values.clubPhone || "",
+            address: values.address || "",
             userId: user.uid,
             updatedAt: new Date(),
-        }, { merge: true });
+        };
+
+        await setDoc(clubDocRef, dataToSave, { merge: true });
         
         toast({ 
             title: "Configuration enregistrée !", 
-            description: "Vos informations et votre logo sont maintenant à jour." 
+            description: "Vos informations sont maintenant à jour." 
         });
         
         router.refresh();
     } catch (error: any) {
+        console.error("Save error:", error);
+        let message = "Une erreur est survenue lors de la sauvegarde.";
+        
+        if (error.code === 'resource-exhausted' || error.message?.includes('too large')) {
+            message = "Le logo ou la photo est trop volumineux pour la base de données. Essayez une image plus petite (moins de 800 Ko idéalement).";
+        }
+        
+        setSaveError(message);
         toast({ 
             variant: "destructive", 
             title: "Erreur d'enregistrement", 
-            description: "Une erreur est survenue lors de la sauvegarde." 
+            description: "Vérifiez la taille de vos images." 
         });
     } finally {
         setLoading(false);
@@ -173,6 +187,14 @@ export function ClubSettingsForm() {
         ) : (
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {saveError && (
+                        <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Erreur</AlertTitle>
+                            <AlertDescription>{saveError}</AlertDescription>
+                        </Alert>
+                    )}
+
                     <div className="grid sm:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
@@ -246,7 +268,7 @@ export function ClubSettingsForm() {
                                         <Upload className="mr-2 h-4 w-4" />
                                         {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
                                     </Button>
-                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 3Mo).</p>
+                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG (Max 3Mo). Privilégiez les fichiers légers.</p>
                                 </div>
                             </div>
                         </div>

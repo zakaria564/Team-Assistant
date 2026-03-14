@@ -1,4 +1,3 @@
-
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,7 +34,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
   const [activePlayerIds, setActivePlayerIds] = useState<Set<string>>(new Set());
 
-  // 1. Récupérer les IDs des joueurs existants pour filtrer les paiements fantômes
+  // 1. Récupérer les IDs des joueurs actifs uniquement
   useEffect(() => {
     if (!user) return;
     const unsubscribe = onSnapshot(
@@ -47,7 +46,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. Calculer les paiements en retard (Badge précis : 1 pour Meryem Labib)
+  // 2. Calculer les paiements incomplets pour les joueurs actifs (Badge 1 pour Meryem Labib)
   useEffect(() => {
     if (!user || activePlayerIds.size === 0) {
       setPendingPaymentsCount(0);
@@ -60,16 +59,16 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
         const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
-          // Ignorer si le joueur n'existe plus ou si le document est invalide
-          if (!activePlayerIds.has(data.playerId) || !data.totalAmount) return;
+          // Ignorer si le joueur n'existe plus ou si c'est un duplicata
+          if (!activePlayerIds.has(data.playerId)) return;
 
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // Dette réelle significative (on ignore les écarts de moins de 1 MAD pour être sûr d'afficher 1)
+          // Dette significative uniquement (> 5 MAD pour éviter les micro-erreurs)
           const debt = totalAmount - amountPaid;
-          if (debt > 1 && data.status !== 'Payé') {
+          if (debt > 5 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
           }
         });
@@ -80,7 +79,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     return () => unsubscribe();
   }, [user, activePlayerIds]);
 
-  // 3. Calculer les salaires coachs en attente
+  // 3. Calculer les salaires coachs en attente pour le mois en cours
   useEffect(() => {
     if (!user) return;
 
