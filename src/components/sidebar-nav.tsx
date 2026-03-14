@@ -1,4 +1,3 @@
-
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -61,7 +60,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    // 2. Logic for Player Payments (Calculated based on actual debt)
+    // 2. Logic for Player Payments (Precise calculation based on actual debt)
     const unsubscribePayments = onSnapshot(
       query(collection(db, "payments"), where("userId", "==", user.uid)),
       (paymentSnap) => {
@@ -72,9 +71,9 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
           const transactions = p.transactions || [];
           const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const total = p.totalAmount || 0;
-          const isActuallyUnpaid = (total - paid) > 0.01;
+          const hasDebt = (total - paid) > 0.01; // Strict check for remaining balance
           
-          if (p.status !== 'Payé' && isActuallyUnpaid && p.playerId) {
+          if (hasDebt && p.playerId && p.status !== 'Payé') {
             pendingPlayerIds.add(p.playerId);
           }
         });
