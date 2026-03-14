@@ -6,7 +6,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, UserPlus, Pencil } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, Pencil } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,7 @@ import { AddScoreForm } from "@/components/events/add-score-form";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const eventId = params.id;
+  const { id: eventId } = React.use(props.params);
   
   const router = useRouter();
   const [user] = useAuthState(auth);
@@ -49,19 +48,26 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
     const fetchLogos = async () => {
         const logos: { [key: string]: string | null } = {};
         
+        // Fetch current club logo
         const clubDoc = await getDoc(doc(db, "clubs", user.uid));
         if (clubDoc.exists()) {
             const clubData = clubDoc.data();
-            logos[clubData.clubName] = clubData.logoUrl || null;
+            if (clubData.clubName) {
+                logos[clubData.clubName.trim()] = clubData.logoUrl || null;
+            }
         }
 
-        const teams = [event.teamHome, event.teamAway];
+        // Fetch home and away team logos (one might be the club, one might be an opponent)
+        const teams = [event.teamHome, event.teamAway].filter(Boolean);
         for (const teamName of teams) {
-            if (logos[teamName] === undefined) {
-                const q = query(collection(db, "opponents"), where("userId", "==", user.uid), where("name", "==", teamName));
+            const trimmedName = teamName.trim();
+            if (logos[trimmedName] === undefined) {
+                const q = query(collection(db, "opponents"), where("userId", "==", user.uid), where("name", "==", trimmedName));
                 const oppSnap = await getDocs(q);
                 if (!oppSnap.empty) {
-                    logos[teamName] = oppSnap.docs[0].data().logoUrl || null;
+                    logos[trimmedName] = oppSnap.docs[0].data().logoUrl || null;
+                } else {
+                    logos[trimmedName] = null;
                 }
             }
         }
@@ -83,15 +89,31 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
       ...(event.assisters || []).map((a: any) => ({ ...a, type: 'assist' }))
   ].sort((a, b) => (a.minute || 0) - (b.minute || 0));
 
-  const TeamLogo = ({ name }: { name: string }) => (
-    <div className="h-16 w-16 sm:h-24 sm:w-24 bg-white shadow-md rounded-full flex items-center justify-center border-2 sm:border-4 border-slate-100 overflow-hidden p-1.5 sm:p-2">
-        {teamLogos[name] ? (
-            <img src={teamLogos[name]!} alt={name} className="h-full w-full object-contain" />
-        ) : (
-            <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
-        )}
-    </div>
-  );
+  const TeamLogo = ({ name }: { name: string }) => {
+    const trimmedName = name?.trim();
+    return (
+        <div className="h-16 w-16 sm:h-24 sm:w-24 bg-white shadow-md rounded-full flex items-center justify-center border-2 sm:border-4 border-slate-100 overflow-hidden p-1.5 sm:p-2">
+            {teamLogos[trimmedName] ? (
+                <img src={teamLogos[trimmedName]!} alt={name} className="h-full w-full object-contain" />
+            ) : (
+                <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
+            )}
+        </div>
+    );
+  };
+
+  const ActionLogo = ({ teamName }: { teamName: string }) => {
+    const trimmedName = teamName?.trim();
+    return (
+        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0 ml-2">
+            {teamLogos[trimmedName] ? (
+                <img src={teamLogos[trimmedName]!} alt={teamName} className="h-full w-full object-contain" />
+            ) : (
+                <div className="text-[10px] font-black text-slate-300">{teamName?.charAt(0)}</div>
+            )}
+        </div>
+    );
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto px-2 sm:px-0">
@@ -204,13 +226,7 @@ export default function EventDetailPage(props: { params: Promise<{ id: string }>
                                             {item.teamName} • {item.type === 'goal' ? 'But' : 'Passe'}
                                         </span>
                                     </div>
-                                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0 ml-2">
-                                        {teamLogos[item.teamName] ? (
-                                            <img src={teamLogos[item.teamName]!} alt={item.teamName} className="h-full w-full object-contain" />
-                                        ) : (
-                                            <div className="text-[10px] font-black text-slate-300">{item.teamName.charAt(0)}</div>
-                                        )}
-                                    </div>
+                                    <ActionLogo teamName={item.teamName} />
                                 </div>
                             </div>
                         ))}
