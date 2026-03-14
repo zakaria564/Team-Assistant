@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -98,12 +99,11 @@ export function ClubSettingsForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Limite de 3Mo pour les documents officiels
-    if (file.size > 3 * 1024 * 1024) {
+    if (file.size > 1.5 * 1024 * 1024) {
         toast({
             variant: "destructive",
             title: "Fichier trop volumineux",
-            description: "L'image doit faire moins de 3 Mo."
+            description: "Pour des raisons de performance, l'image doit faire moins de 1.5 Mo."
         });
         return;
     }
@@ -113,10 +113,6 @@ export function ClubSettingsForm() {
         const base64String = reader.result as string;
         form.setValue(type, base64String);
         setSaveError(null);
-        toast({
-            title: "Image chargée",
-            description: "Prête pour l'enregistrement."
-        });
     };
     reader.readAsDataURL(file);
   };
@@ -127,42 +123,22 @@ export function ClubSettingsForm() {
     setSaveError(null);
     try {
         const clubDocRef = doc(db, "clubs", user.uid);
-        
-        // Nettoyage des données pour éviter les undefined
         const dataToSave = {
-            clubName: values.clubName || "",
-            displayTitle: values.displayTitle || "",
-            logoUrl: values.logoUrl || "",
-            adminPhotoUrl: values.adminPhotoUrl || "",
-            contactEmail: values.contactEmail || "",
-            clubPhone: values.clubPhone || "",
-            address: values.address || "",
+            ...values,
             userId: user.uid,
             updatedAt: new Date(),
         };
-
         await setDoc(clubDocRef, dataToSave, { merge: true });
-        
-        toast({ 
-            title: "Configuration enregistrée !", 
-            description: "Vos informations sont maintenant à jour." 
-        });
-        
+        toast({ title: "Configuration enregistrée !" });
         router.refresh();
     } catch (error: any) {
         console.error("Save error:", error);
         let message = "Une erreur est survenue lors de la sauvegarde.";
-        
         if (error.code === 'resource-exhausted' || error.message?.includes('too large')) {
-            message = "Le logo ou la photo est trop volumineux pour la base de données. Essayez une image plus petite (moins de 800 Ko idéalement).";
+            message = "Le fichier est trop volumineux pour être stocké. Veuillez utiliser une image plus compressée (moins de 800Ko).";
         }
-        
         setSaveError(message);
-        toast({ 
-            variant: "destructive", 
-            title: "Erreur d'enregistrement", 
-            description: "Vérifiez la taille de vos images." 
-        });
+        toast({ variant: "destructive", title: "Erreur", description: message });
     } finally {
         setLoading(false);
     }
@@ -190,11 +166,10 @@ export function ClubSettingsForm() {
                     {saveError && (
                         <Alert variant="destructive">
                             <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle>Erreur</AlertTitle>
+                            <AlertTitle>Attention</AlertTitle>
                             <AlertDescription>{saveError}</AlertDescription>
                         </Alert>
                     )}
-
                     <div className="grid sm:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
@@ -245,10 +220,7 @@ export function ClubSettingsForm() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <div className="text-center p-4">
-                                            <Upload className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
-                                            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold">Aucun logo</p>
-                                        </div>
+                                        <Upload className="h-8 w-8 text-muted-foreground opacity-50" />
                                     )}
                                 </div>
                                 <div className="flex flex-col gap-2">
@@ -262,13 +234,14 @@ export function ClubSettingsForm() {
                                     <Button 
                                         type="button" 
                                         variant="outline" 
+                                        size="sm"
                                         className="w-full sm:w-auto"
                                         onClick={() => document.getElementById('logo-input')?.click()}
                                     >
                                         <Upload className="mr-2 h-4 w-4" />
                                         {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
                                     </Button>
-                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG (Max 3Mo). Privilégiez les fichiers légers.</p>
+                                    <p className="text-[10px] text-muted-foreground italic font-medium">Format PNG ou JPG conseillé (Max 1.5Mo).</p>
                                 </div>
                             </div>
                         </div>
@@ -305,6 +278,7 @@ export function ClubSettingsForm() {
                                     <Button 
                                         type="button" 
                                         variant="outline" 
+                                        size="sm"
                                         className="w-full sm:w-auto"
                                         onClick={() => document.getElementById('admin-input')?.click()}
                                     >
@@ -355,7 +329,7 @@ export function ClubSettingsForm() {
                                 <FormItem>
                                 <FormLabel>Adresse complète</FormLabel>
                                 <FormControl>
-                                    <Textarea {...field} value={field.value ?? ""} placeholder="Rue, Ville, Code Postal..." />
+                                    <Textarea {...field} value={field.value ?? ""} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -363,8 +337,8 @@ export function ClubSettingsForm() {
                         />
                     </div>
 
-                    <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold">
-                        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
+                    <Button type="submit" disabled={loading} className="w-full font-bold">
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                         Enregistrer les modifications
                     </Button>
                 </form>

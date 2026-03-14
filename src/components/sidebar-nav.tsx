@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -34,7 +35,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
   const [activePlayerIds, setActivePlayerIds] = useState<Set<string>>(new Set());
 
-  // 1. Récupérer les IDs des joueurs actifs uniquement
   useEffect(() => {
     if (!user) return;
     const unsubscribe = onSnapshot(
@@ -46,7 +46,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. Calculer les paiements incomplets pour les joueurs actifs (Badge 1 pour Meryem Labib)
   useEffect(() => {
     if (!user || activePlayerIds.size === 0) {
       setPendingPaymentsCount(0);
@@ -59,16 +58,14 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
         const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
-          // Ignorer si le joueur n'existe plus ou si c'est un duplicata
           if (!activePlayerIds.has(data.playerId)) return;
 
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // Dette significative uniquement (> 5 MAD pour éviter les micro-erreurs)
           const debt = totalAmount - amountPaid;
-          if (debt > 5 && data.status !== 'Payé') {
+          if (debt > 10 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
           }
         });
@@ -79,33 +76,26 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     return () => unsubscribe();
   }, [user, activePlayerIds]);
 
-  // 3. Calculer les salaires coachs en attente pour le mois en cours
   useEffect(() => {
     if (!user) return;
-
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-    
     const unsubscribeCoaches = onSnapshot(
       query(collection(db, "coaches"), where("userId", "==", user.uid)),
       (coachSnap) => {
         const coachIds = coachSnap.docs.map(d => d.id);
-        
         const qSalaries = query(
           collection(db, "salaries"), 
           where("userId", "==", user.uid),
           where("description", "==", currentMonthDesc)
         );
-
         const unsubscribeMonthlySalaries = onSnapshot(qSalaries, (salarySnap) => {
           const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
           const unpaidCount = coachIds.filter(id => !paidCoachIds.has(id)).length;
           setPendingSalariesCount(unpaidCount);
         });
-
         return () => unsubscribeMonthlySalaries();
       }
     );
-
     return () => unsubscribeCoaches();
   }, [user]);
 
@@ -113,7 +103,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
       {links.map(({ href, label, icon: Icon, hasAlert, alertType }) => {
         const count = alertType === 'salaries' ? pendingSalariesCount : (alertType === 'payments' ? pendingPaymentsCount : 0);
-
         return (
           <Link
             key={href}

@@ -39,7 +39,6 @@ interface AddPaymentFormProps {
     payment?: PaymentData;
 }
 
-
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Carte Bancaire", "Virement", "Chèque"];
 
@@ -116,24 +115,37 @@ function FormContent({ payment }: AddPaymentFormProps) {
         }
     }, [amountRemainingOnTotal, newTotalPaid, watchTotalAmount, form]);
 
-
     useEffect(() => {
-        const fetchPlayers = async () => {
+        const fetchUnpaidPlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
              try {
+                const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+                
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const snap = await getDocs(playersQuery);
-                const allPlayers = snap.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
-                setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
+                const paymentsQuery = query(
+                    collection(db, "payments"), 
+                    where("userId", "==", user.uid),
+                    where("description", "==", currentMonthDesc)
+                );
+
+                const [playersSnap, paymentsSnap] = await Promise.all([getDocs(playersQuery), getDocs(paymentsQuery)]);
+                
+                const paidPlayerIds = new Set(paymentsSnap.docs.map(d => d.data().playerId));
+                
+                const filteredPlayers = playersSnap.docs
+                    .map(doc => ({ id: doc.id, name: doc.data().name } as Player))
+                    .filter(p => isEditMode ? true : !paidPlayerIds.has(p.id));
+
+                setPlayers(filteredPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) {
                  console.error(e);
             } finally {
                 setLoadingPlayers(false);
             }
         }
-        fetchPlayers();
-    }, [user]);
+        fetchUnpaidPlayers();
+    }, [user, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
@@ -186,13 +198,17 @@ function FormContent({ payment }: AddPaymentFormProps) {
                         <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur"} />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {players.map(player => (
-                                    <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
-                                ))}
+                                {players.length > 0 ? (
+                                    players.map(player => (
+                                        <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-xs text-muted-foreground">Tous les joueurs ont déjà un dossier pour ce mois.</div>
+                                )}
                             </SelectContent>
                         </Select>
                         <FormMessage />
