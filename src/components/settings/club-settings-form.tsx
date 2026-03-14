@@ -97,12 +97,12 @@ export function ClubSettingsForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Augmentation de la limite à 2Mo pour plus de confort
-    if (file.size > 2 * 1024 * 1024) {
+    // Limite augmentée à 3Mo comme demandé
+    if (file.size > 3 * 1024 * 1024) {
         toast({
             variant: "destructive",
             title: "Fichier trop volumineux",
-            description: "L'image doit faire moins de 2 Mo pour être acceptée."
+            description: "L'image doit faire moins de 3 Mo pour être acceptée."
         });
         return;
     }
@@ -113,7 +113,7 @@ export function ClubSettingsForm() {
         form.setValue(type, base64String);
         toast({
             title: "Image chargée",
-            description: "L'image a été préparée avec succès."
+            description: "L'image a été préparée avec succès (Prête pour les documents)."
         });
     };
     reader.onerror = () => {
@@ -246,7 +246,7 @@ export function ClubSettingsForm() {
                                         <Upload className="mr-2 h-4 w-4" />
                                         {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
                                     </Button>
-                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 2Mo).</p>
+                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 3Mo).</p>
                                 </div>
                             </div>
                         </div>
