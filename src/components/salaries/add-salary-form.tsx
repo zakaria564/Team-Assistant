@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -104,16 +105,45 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     }, [currentPaid, watchTotal, form]);
 
     useEffect(() => {
-        const fetchCoaches = async () => {
+        const fetchUnpaidCoaches = async () => {
             if (!user) return;
+            setLoadingCoaches(true);
             try {
-                const q = query(collection(db, "coaches"), where("userId", "==", user.uid));
-                const snap = await getDocs(q);
-                setCoaches(snap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach)).sort((a,b) => a.name.localeCompare(b.name)));
+                // 1. Get current month description
+                const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+                
+                // 2. Fetch all coaches
+                const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
+                const coachesSnap = await getDocs(coachesQuery);
+                const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
+
+                // 3. Fetch salaries for this month to filter
+                const salariesQuery = query(
+                    collection(db, "salaries"), 
+                    where("userId", "==", user.uid),
+                    where("description", "==", currentMonthDesc)
+                );
+                const salariesSnap = await getDocs(salariesQuery);
+                const paidCoachIds = new Set(salariesSnap.docs.map(d => d.data().coachId));
+
+                // 4. Filter: only unpaid coaches
+                let finalCoaches = allCoaches.filter(c => !paidCoachIds.has(c.id));
+                
+                // In edit mode, ensure the current coach is shown even if they are in the paid list
+                if (isEditMode && salary) {
+                    const currentCoach = allCoaches.find(c => c.id === salary.coachId);
+                    if (currentCoach && !finalCoaches.find(c => c.id === currentCoach.id)) {
+                        finalCoaches.push(currentCoach);
+                    }
+                }
+
+                setCoaches(finalCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+            } catch (error) {
+                console.error("Error fetching unpaid coaches:", error);
             } finally { setLoadingCoaches(false); }
         };
-        fetchCoaches();
-    }, [user]);
+        fetchUnpaidCoaches();
+    }, [user, isEditMode, salary]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
@@ -164,8 +194,14 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                             <FormLabel>Entraîneur</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || loadingCoaches}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un coach" /></SelectTrigger></FormControl>
-                                <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                                <FormControl><SelectTrigger><SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach"} /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    {coaches.length > 0 ? (
+                                        coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
+                                    ) : (
+                                        <div className="p-2 text-xs text-muted-foreground">Tous les coachs sont déjà payés ce mois-ci.</div>
+                                    )}
+                                </SelectContent>
                             </Select>
                             <FormMessage />
                         </FormItem>

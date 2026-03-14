@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -192,7 +193,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                         </div>
                     </section>
 
-                    <main className="flex flex-row gap-12 flex-grow">
+                    <main className="flex flex-row gap-12 mb-10">
                         <div className="w-1/2 space-y-10">
                             <div>
                                 <SectionTitle title="État Civil & Contact" icon={User} />
