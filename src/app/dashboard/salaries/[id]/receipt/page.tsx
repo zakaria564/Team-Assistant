@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SalaryReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(props.params);
+  const params = React.use(props.params);
+  const salaryId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -138,8 +139,8 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                             </div>
                             <div className="space-y-1">
                                 <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                                <div className="text-slate-400 text-[10px] sm:text-sm font-medium">
-                                    <p className="max-w-[200px] sm:max-w-none truncate">{clubInfo?.address || "Adresse du club"}</p>
+                                <div className="text-slate-400 text-[10px] sm:text-sm font-medium leading-tight">
+                                    <p className="max-w-[300px]">{clubInfo?.address || "Adresse du club"}</p>
                                 </div>
                             </div>
                         </div>

@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentReceiptPage(props: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(props.params);
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -149,9 +150,9 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                 </div>
                 <div className="space-y-1">
                     <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-primary leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
-                    <div className="text-slate-500 text-[10px] sm:text-sm font-medium">
-                        <p className="max-w-[200px] sm:max-w-none truncate">{clubInfo?.address || "Adresse non renseignée"}</p>
-                        {clubInfo?.clubPhone && <p>Tél: {clubInfo.clubPhone}</p>}
+                    <div className="text-slate-500 text-[10px] sm:text-sm font-medium leading-tight">
+                        <p className="max-w-[300px]">{clubInfo?.address || "Adresse non renseignée"}</p>
+                        {clubInfo?.clubPhone && <p className="mt-1">Tél: {clubInfo.clubPhone}</p>}
                     </div>
                 </div>
                 </div>
