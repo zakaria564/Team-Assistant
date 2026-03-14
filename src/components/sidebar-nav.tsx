@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,8 +18,8 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
-  { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true, alertType: 'payments' },
+  { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true, alertType: 'salaries' },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
@@ -36,27 +37,26 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   useEffect(() => {
     if (!user) return;
 
-    // Signalement pour les Paiements Joueurs (Cotisations incomplètes / Dette réelle)
+    // 1. Signalement pour les Paiements Joueurs (Uniquement dette réelle > 0)
     const unsubscribePayments = onSnapshot(
       query(collection(db, "payments"), where("userId", "==", user.uid)),
       (snapshot) => {
-        const pendingPlayerIds = new Set();
+        const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // On ne compte le joueur comme "en attente" que s'il y a un reste à payer réel
           if (totalAmount - amountPaid > 0.01) {
-            pendingPlayerIds.add(data.playerId);
+            playersWithDebt.add(data.playerId);
           }
         });
-        setPendingPaymentsCount(pendingPlayerIds.size);
+        setPendingPaymentsCount(playersWithDebt.size);
       }
     );
 
-    // Signalement pour les Salaires Coachs (Non payés pour le mois en cours)
+    // 2. Signalement pour les Salaires Coachs (Non payés pour le mois en cours)
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
     const unsubscribeCoaches = onSnapshot(
@@ -88,10 +88,8 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
 
   return (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-      {links.map(({ href, label, icon: Icon, hasAlert }) => {
-        const isSalaries = href === "/dashboard/salaries";
-        const isPayments = href === "/dashboard/payments";
-        const count = isSalaries ? pendingSalariesCount : (isPayments ? pendingPaymentsCount : 0);
+      {links.map(({ href, label, icon: Icon, hasAlert, alertType }) => {
+        const count = alertType === 'salaries' ? pendingSalariesCount : (alertType === 'payments' ? pendingPaymentsCount : 0);
 
         return (
           <Link
@@ -100,13 +98,13 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
             onClick={onLinkClick}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative",
-              pathname === href || (pathname.startsWith(href) && href !== "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+              pathname === href || (pathname.startsWith(href) && href !== "/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm" : ""
             )}
           >
             <Icon className="h-4 w-4" />
             {label}
             {hasAlert && count > 0 && (
-              <span className="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground font-bold shadow-sm">
+              <span className="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground font-black shadow-lg">
                 {count}
               </span>
             )}

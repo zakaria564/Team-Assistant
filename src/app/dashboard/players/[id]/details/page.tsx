@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -224,7 +225,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                     </main>
 
                     <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                        <div className="text-center space-y-16 mb-16 pt-8 w-full">
+                        <div className="text-center space-y-20 mb-16 pt-8 w-full">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
                             <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
                         </div>
