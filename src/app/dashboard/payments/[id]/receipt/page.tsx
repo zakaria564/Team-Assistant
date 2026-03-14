@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -133,9 +134,9 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
 
         <div className="w-full overflow-x-auto shadow-2xl rounded-xl">
             <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '800px' }}>
-            <header className="p-6 sm:p-10 bg-slate-50 border-b-2 border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
-                <div className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-white shadow-md rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                     {clubInfo?.logoUrl ? (
                         <img 
                             src={clubInfo.logoUrl} 
@@ -149,44 +150,44 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                     )}
                 </div>
                 <div className="space-y-1">
-                    <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-primary leading-tight">{clubInfo?.clubName || "Votre Club"}</h1>
-                    <div className="text-slate-500 text-[10px] sm:text-sm font-medium leading-tight">
-                        <p className="max-w-[300px]">{clubInfo?.address || "Adresse non renseignée"}</p>
+                    <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                    <div className="text-slate-400 text-[10px] sm:text-sm font-medium leading-tight">
+                        <p className="max-w-[350px] break-words">{clubInfo?.address || "Adresse du club"}</p>
                         {clubInfo?.clubPhone && <p className="mt-1">Tél: {clubInfo.clubPhone}</p>}
                     </div>
                 </div>
                 </div>
                 <div className="text-center sm:text-right space-y-1">
-                <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">REÇU</h2>
+                <h2 className="text-3xl sm:text-4xl font-black uppercase italic tracking-tight text-white">REÇU</h2>
                 <div className="pt-2">
-                    <p className="text-slate-600 font-bold text-xs sm:text-sm">REF: {receiptRef}</p>
-                    <p className="text-slate-400 text-[10px] sm:text-xs font-semibold">Date : {format(new Date(), "dd/MM/yyyy")}</p>
+                    <p className="text-primary font-bold text-xs sm:text-sm tracking-widest">REF: {receiptRef}</p>
+                    <p className="text-slate-500 text-[10px] sm:text-xs font-semibold">Date : {format(new Date(), "dd/MM/yyyy")}</p>
                 </div>
                 </div>
             </header>
 
             <div className="p-6 sm:p-10 space-y-8 sm:space-y-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12">
-                <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">Informations Joueur</h3>
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 sm:mb-4">Informations Joueur</h3>
                     <div className="space-y-2">
-                        <p className="text-lg sm:text-xl font-bold text-slate-800">{payment.playerName}</p>
+                        <p className="text-xl sm:text-2xl font-black text-slate-800">{payment.playerName}</p>
                         <div className="flex flex-col gap-1">
                             <p className="text-slate-500 font-semibold text-xs sm:text-sm flex items-center gap-2">
                                 <span className="uppercase text-[10px] text-slate-400">Catégorie :</span> {payment.playerCategory}
                             </p>
-                            <p className="text-slate-500 font-bold text-[10px] sm:text-xs flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-100 w-fit">
+                            <p className="text-slate-500 font-bold text-[10px] sm:text-xs flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 w-fit">
                                 <Fingerprint className="h-3 w-3 text-primary" />
                                 <span className="uppercase text-[10px] text-slate-400">ID Joueur :</span> {payment.playerProfessionalId}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="space-y-4 text-left sm:text-right">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">Détails de la Cotisation</h3>
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 sm:mb-4">Détails de la Cotisation</h3>
                     <div>
-                        <p className="text-base sm:text-lg font-bold text-slate-800">{payment.description}</p>
-                        <p className="text-slate-500 text-xs sm:text-sm uppercase font-bold tracking-widest mt-1">Saison Sportive</p>
+                        <p className="text-lg sm:text-xl font-bold text-slate-800">{payment.description}</p>
+                        <p className="text-slate-500 text-[10px] sm:text-xs uppercase font-bold tracking-widest mt-1">Saison Sportive</p>
                     </div>
                 </div>
                 </div>
@@ -205,7 +206,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                         <TableBody>
                             {payment.transactions?.map((t: any, i: number) => (
                             <TableRow key={i} className="border-b border-slate-100 last:border-0">
-                                <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800">Versement #{i+1}</TableCell>
+                                <TableCell className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-800 text-xs sm:text-sm">Versement #{i+1}</TableCell>
                                 <TableCell className="py-3 sm:py-4 text-slate-600 text-xs sm:text-sm">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                 <TableCell className="py-3 sm:py-4 text-slate-600 font-medium text-xs sm:text-sm">{t.method}</TableCell>
                                 <TableCell className="text-right py-3 sm:py-4 px-4 sm:px-6 font-black text-slate-900 text-sm sm:text-base">{t.amount.toFixed(2)} MAD</TableCell>
@@ -216,7 +217,7 @@ export default function PaymentReceiptPage(props: { params: Promise<{ id: string
                     </div>
                 </div>
 
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end">
                 <div className="w-full sm:max-w-sm space-y-3 bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
                     <div className="flex justify-between text-slate-500 font-bold text-xs sm:text-sm">
                         <span>Montant Total Dû :</span>

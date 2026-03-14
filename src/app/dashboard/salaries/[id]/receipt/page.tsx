@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -140,7 +141,7 @@ export default function SalaryReceiptPage(props: { params: Promise<{ id: string 
                             <div className="space-y-1">
                                 <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                                 <div className="text-slate-400 text-[10px] sm:text-sm font-medium leading-tight">
-                                    <p className="max-w-[300px]">{clubInfo?.address || "Adresse du club"}</p>
+                                    <p className="max-w-[350px] break-words">{clubInfo?.address || "Adresse du club"}</p>
                                 </div>
                             </div>
                         </div>
