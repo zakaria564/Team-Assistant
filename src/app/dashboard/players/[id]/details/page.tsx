@@ -208,7 +208,6 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                         <div className="w-1/2 space-y-10">
                             <div>
                                 <SectionTitle title="Parcours Sportif" icon={Shield} />
-                                <DetailItem icon={Star} label="Poste de prédilection" value={player.position} />
                                 <DetailItem icon={ClipboardList} label="Entraîneur Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                                 <DetailItem icon={LogIn} label="Date d'intégration" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                                 <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En cours"} />
