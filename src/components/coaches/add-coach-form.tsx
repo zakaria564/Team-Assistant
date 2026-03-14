@@ -121,6 +121,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     defaultValues
   });
 
+  // Forcer la synchronisation dès que les données du coach arrivent
   useEffect(() => {
     if (coach) {
       form.reset(defaultValues);

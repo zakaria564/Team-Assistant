@@ -38,6 +38,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     if (!user) return;
 
     // 1. Signalement pour les Paiements Joueurs (Uniquement dette réelle > 0)
+    // On compte le nombre de JOUEURS uniques ayant au moins un impayé
     const unsubscribePayments = onSnapshot(
       query(collection(db, "payments"), where("userId", "==", user.uid)),
       (snapshot) => {
@@ -48,7 +49,8 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          if (totalAmount - amountPaid > 0.01) {
+          // Si le reste à payer est significatif (> 0.01 pour éviter les erreurs d'arrondi)
+          if (totalAmount - amountPaid > 0.01 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
           }
         });
@@ -64,19 +66,20 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       (coachSnap) => {
         const coachIds = coachSnap.docs.map(d => d.id);
         
-        const unsubscribeMonthlySalaries = onSnapshot(
-          query(
-            collection(db, "salaries"), 
-            where("userId", "==", user.uid),
-            where("description", "==", currentMonthDesc)
-          ),
-          (salarySnap) => {
-            const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
-            const unpaidCount = coachIds.filter(id => !paidCoachIds.has(id)).length;
-            setPendingSalariesCount(unpaidCount);
-          }
+        // Listener pour les salaires du mois
+        const qSalaries = query(
+          collection(db, "salaries"), 
+          where("userId", "==", user.uid),
+          where("description", "==", currentMonthDesc)
         );
-        return () => {}; // La gestion interne du second onSnapshot est gérée par React
+
+        const unsubscribeMonthlySalaries = onSnapshot(qSalaries, (salarySnap) => {
+          const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
+          const unpaidCount = coachIds.filter(id => !paidCoachIds.has(id)).length;
+          setPendingSalariesCount(unpaidCount);
+        });
+
+        return () => unsubscribeMonthlySalaries();
       }
     );
 
