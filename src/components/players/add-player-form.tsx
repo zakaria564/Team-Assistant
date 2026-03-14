@@ -103,25 +103,19 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const router = useRouter();
   const isEditMode = !!player;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-        name: "", photoUrl: "", gender: "Masculin", category: "", status: "Actif",
+  const defaultValues = useMemo(() => {
+    if (!player) return {
+        name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
         number: "", birthDate: "", entryDate: "", exitDate: "", address: "", nationality: "",
         cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
-    }
-  });
-
-  // Effect to reset form when player data is loaded (crucial for pre-filling)
-  useEffect(() => {
-    if (player) {
-      form.reset({
+    };
+    return {
         name: player.name || "",
         photoUrl: player.photoUrl || "",
-        gender: player.gender || "Masculin",
+        gender: (player.gender as "Masculin" | "Féminin") || "Masculin",
         category: player.category || "",
-        status: player.status || "Actif",
+        status: (player.status as typeof playerStatuses[number]) || "Actif",
         number: player.number ?? "",
         birthDate: player.birthDate || "",
         entryDate: player.entryDate || "",
@@ -143,9 +137,19 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
             url: d.url || "",
             validityDate: d.validityDate || "",
         })),
-      });
+    };
+  }, [player]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues
+  });
+
+  useEffect(() => {
+    if (player) {
+      form.reset(defaultValues);
     }
-  }, [player, form]);
+  }, [player, defaultValues, form]);
 
   const photoDataUrl = form.watch('photoUrl');
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });

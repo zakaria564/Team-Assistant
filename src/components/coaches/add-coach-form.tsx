@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -89,22 +89,16 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
   const router = useRouter();
   const isEditMode = !!coach;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-        name: "", photoUrl: "", category: "", status: "Actif", phone: "", email: "", specialty: "",
+  const defaultValues = useMemo(() => {
+    if (!coach) return {
+        name: "", photoUrl: "", category: "", status: "Actif" as const, phone: "", email: "", specialty: "",
         entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
-    }
-  });
-
-  // Effect to reset form when coach data is loaded (crucial for pre-filling)
-  useEffect(() => {
-    if (coach) {
-      form.reset({
+    };
+    return {
         name: coach.name || "",
         photoUrl: coach.photoUrl || "",
         category: coach.category || "",
-        status: coach.status || "Actif",
+        status: (coach.status as typeof coachStatuses[number]) || "Actif",
         phone: coach.phone || "",
         email: coach.email || "",
         specialty: coach.specialty || "",
@@ -119,9 +113,19 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
             url: d.url || "",
             validityDate: d.validityDate || "",
         })),
-      });
+    };
+  }, [coach]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues
+  });
+
+  useEffect(() => {
+    if (coach) {
+      form.reset(defaultValues);
     }
-  }, [coach, form]);
+  }, [coach, defaultValues, form]);
 
   const photoDataUrl = form.watch('photoUrl');
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
