@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -111,16 +112,17 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
   return (
     <div className="bg-slate-100 min-h-screen p-2 sm:p-8">
        <div className="w-full max-w-4xl mx-auto space-y-6">
-        <div className="flex justify-between items-center print:hidden">
+        <div className="flex justify-between items-center print:hidden gap-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            <span className="ml-2">Télécharger la Fiche</span>
+            <span className="ml-2 hidden sm:inline">Télécharger la Fiche</span>
+            <span className="ml-2 sm:hidden">PDF</span>
           </Button>
         </div>
 
-        <div className="w-full overflow-x-auto">
-            <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto shadow-xl overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
+        <div className="w-full overflow-x-auto rounded-xl shadow-xl">
+            <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
                 <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6 mb-10">
                     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                         <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">

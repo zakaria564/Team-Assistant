@@ -111,7 +111,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
   return (
     <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen">
         <div className="w-full max-w-4xl space-y-4">
-            <div className="flex justify-between items-center print:hidden">
+            <div className="flex justify-between items-center print:hidden gap-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
                     {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
@@ -121,7 +121,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
             </div>
             
             <div className="w-full overflow-x-auto shadow-2xl rounded-xl">
-                <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto min-w-[320px]" style={{ minHeight: '1120px', width: '800px' }}>
+                <Card id="printable-receipt" className="bg-white text-slate-900 border-none overflow-hidden mx-auto" style={{ minHeight: '1120px', width: '800px' }}>
                     <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6">
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                             <div className="h-20 w-24 border-2 border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">

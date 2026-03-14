@@ -92,7 +92,6 @@ export default function SalariesPage() {
 
     setLoading(true);
     
-    // Écouter les coachs et les salaires en temps réel
     const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
     const unsubscribeCoaches = onSnapshot(coachesQuery, (coachesSnap) => {
         const coachesMap = new Map<string, Coach>();
@@ -106,7 +105,7 @@ export default function SalariesPage() {
                 if (!coach) return null;
 
                 const transactions = data.transactions || [];
-                const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+                const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
                 const totalAmount = data.totalAmount || 0;
 
                 return {
@@ -168,10 +167,10 @@ export default function SalariesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
-          <p className="text-muted-foreground">Gérez les rémunérations et le suivi des paiements du club.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Gérez les rémunérations et le suivi du club.</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/salaries/add">
             <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Salaire
           </Link>
@@ -182,7 +181,7 @@ export default function SalariesPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input 
           placeholder="Rechercher un entraîneur..." 
-          className="pl-10" 
+          className="pl-10 h-11" 
           value={searchTerm} 
           onChange={(e) => setSearchTerm(e.target.value)} 
         />
@@ -194,64 +193,67 @@ export default function SalariesPage() {
             key={group.coachId}
             open={openCollapsibles[group.coachId]}
             onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({ ...prev, [group.coachId]: isOpen }))}
-            className="border rounded-lg bg-card"
+            className="border rounded-lg bg-card overflow-hidden"
           >
-            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-4">
-                <Avatar>
+            <CollapsibleTrigger className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={group.coachPhotoUrl} />
                   <AvatarFallback>{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="text-left">
-                  <p className="font-bold">{group.coachName}</p>
-                  <p className="text-xs text-muted-foreground">{group.salaries.length} fiche(s) de paie</p>
+                <div className="text-left min-w-0">
+                  <p className="font-bold text-sm sm:text-base truncate">{group.coachName}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{group.salaries.length} fiche(s)</p>
                 </div>
-                {group.hasPending && <Badge variant="destructive" className="ml-2">Paiement en attente</Badge>}
+                {group.hasPending && <Badge variant="destructive" className="ml-1 text-[10px] px-1.5 h-5">En attente</Badge>}
               </div>
-              {openCollapsibles[group.coachId] ? <ChevronDown /> : <ChevronRight />}
+              {openCollapsibles[group.coachId] ? <ChevronDown className="h-5 w-5 shrink-0" /> : <ChevronRight className="h-5 w-5 shrink-0" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="border-t">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Montant Total</TableHead>
-                    <TableHead>Déjà Payé</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {group.salaries.map((salary) => (
-                    <TableRow key={salary.id}>
-                      <TableCell className="font-medium">{salary.description}</TableCell>
-                      <TableCell>{salary.totalAmount.toFixed(2)} MAD</TableCell>
-                      <TableCell className="text-green-600 font-semibold">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                      <TableCell>
-                        <Badge className={cn("whitespace-nowrap", getBadgeClass(salary.status))}>
-                          {salary.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <Link href={`/dashboard/salaries/${salary.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
-                            {salary.status !== 'Payé' && (
-                                <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref><DropdownMenuItem className="cursor-pointer text-primary"><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un versement</DropdownMenuItem></Link>
-                            )}
-                            <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref><DropdownMenuItem className="cursor-pointer"><Download className="mr-2 h-4 w-4" /> Reçu de paie</DropdownMenuItem></Link>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => setSalaryToDelete(salary)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="min-w-[140px]">Période</TableHead>
+                        <TableHead className="hidden sm:table-cell">Total</TableHead>
+                        <TableHead>Payé</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                    </TableHeader>
+                    <TableBody>
+                    {group.salaries.map((salary) => (
+                        <TableRow key={salary.id}>
+                        <TableCell className="font-medium text-xs sm:text-sm">{salary.description}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-green-600 font-bold text-xs">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                        <TableCell>
+                            <Badge className={cn("whitespace-nowrap text-[10px] px-1.5", getBadgeClass(salary.status))}>
+                            {salary.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <Link href={`/dashboard/salaries/${salary.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                                {salary.status !== 'Payé' && (
+                                    <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref><DropdownMenuItem className="cursor-pointer text-primary font-bold"><PlusCircle className="mr-2 h-4 w-4" /> Verser</DropdownMenuItem></Link>
+                                )}
+                                <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref><DropdownMenuItem className="cursor-pointer"><Download className="mr-2 h-4 w-4" /> Reçu PDF</DropdownMenuItem></Link>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => setSalaryToDelete(salary)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+              </div>
             </CollapsibleContent>
           </Collapsible>
         ))}
