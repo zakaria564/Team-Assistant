@@ -122,7 +122,10 @@ function FormContent({ payment }: AddPaymentFormProps) {
              try {
                 const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
                 
+                // Récupérer TOUS les joueurs actifs
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+                
+                // Récupérer les paiements DEJA EXISTANTS pour ce mois précis
                 const paymentsQuery = query(
                     collection(db, "payments"), 
                     where("userId", "==", user.uid),
@@ -133,6 +136,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                 
                 const paidPlayerIds = new Set(paymentsSnap.docs.map(d => d.data().playerId));
                 
+                // On ne propose que les joueurs qui n'ont AUCUNE fiche de paiement pour ce mois
                 const filteredPlayers = playersSnap.docs
                     .map(doc => ({ id: doc.id, name: doc.data().name } as Player))
                     .filter(p => isEditMode ? true : !paidPlayerIds.has(p.id));

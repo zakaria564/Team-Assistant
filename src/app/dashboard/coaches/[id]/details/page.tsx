@@ -121,7 +121,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
           </Button>
         </div>
 
-        <div className="w-full overflow-x-auto rounded-xl shadow-xl">
+        <div className="w-full overflow-x-auto rounded-xl shadow-xl scrollbar-hide">
             <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
                 <header className="p-6 sm:p-10 bg-slate-900 text-white flex flex-col sm:flex-row justify-between items-center gap-6 mb-10">
                     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">

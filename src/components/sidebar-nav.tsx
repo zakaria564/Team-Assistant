@@ -58,12 +58,14 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
         const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
+          // On ne compte que si le joueur existe toujours
           if (!activePlayerIds.has(data.playerId)) return;
 
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
+          // Seuil de dette significative (supérieur à 10 MAD) pour éviter les erreurs d'arrondi
           const debt = totalAmount - amountPaid;
           if (debt > 10 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
