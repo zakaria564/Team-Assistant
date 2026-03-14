@@ -30,6 +30,38 @@ const formSchema = z.object({
   address: z.string().optional(),
 });
 
+// Helper to compress image before saving to Firestore (1MB limit)
+const compressImage = (base64Str: string): Promise<string> => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 600;
+            const MAX_HEIGHT = 600;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+    });
+};
+
 export function ClubSettingsForm() {
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -95,23 +127,24 @@ export function ClubSettingsForm() {
     }
   }, [user, loadingUser, form]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'logoUrl' | 'adminPhotoUrl') => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logoUrl' | 'adminPhotoUrl') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1.5 * 1024 * 1024) {
+    if (file.size > 3 * 1024 * 1024) {
         toast({
             variant: "destructive",
             title: "Fichier trop volumineux",
-            description: "Pour des raisons de performance, l'image doit faire moins de 1.5 Mo."
+            description: "L'image doit faire moins de 3 Mo."
         });
         return;
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
         const base64String = reader.result as string;
-        form.setValue(type, base64String);
+        const compressed = await compressImage(base64String);
+        form.setValue(type, compressed);
         setSaveError(null);
     };
     reader.readAsDataURL(file);
@@ -133,12 +166,8 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error("Save error:", error);
-        let message = "Une erreur est survenue lors de la sauvegarde.";
-        if (error.code === 'resource-exhausted' || error.message?.includes('too large')) {
-            message = "Le fichier est trop volumineux pour être stocké. Veuillez utiliser une image plus compressée (moins de 800Ko).";
-        }
-        setSaveError(message);
-        toast({ variant: "destructive", title: "Erreur", description: message });
+        setSaveError("Impossible d'enregistrer. Essayez une image plus légère.");
+        toast({ variant: "destructive", title: "Erreur d'enregistrement" });
     } finally {
         setLoading(false);
     }
@@ -231,17 +260,13 @@ export function ClubSettingsForm() {
                                         className="hidden" 
                                         id="logo-input"
                                     />
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="w-full sm:w-auto"
-                                        onClick={() => document.getElementById('logo-input')?.click()}
-                                    >
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
-                                    </Button>
-                                    <p className="text-[10px] text-muted-foreground italic font-medium">Format PNG ou JPG conseillé (Max 1.5Mo).</p>
+                                    <label htmlFor="logo-input" className="w-full sm:w-auto cursor-pointer">
+                                        <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full">
+                                            <Upload className="h-4 w-4" />
+                                            {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
+                                        </div>
+                                    </label>
+                                    <p className="text-[10px] text-muted-foreground italic font-medium">Format PNG ou JPG (Max 3Mo).</p>
                                 </div>
                             </div>
                         </div>
@@ -275,16 +300,12 @@ export function ClubSettingsForm() {
                                         className="hidden" 
                                         id="admin-input"
                                     />
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="w-full sm:w-auto"
-                                        onClick={() => document.getElementById('admin-input')?.click()}
-                                    >
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        Modifier la photo
-                                    </Button>
+                                    <label htmlFor="admin-input" className="w-full sm:w-auto cursor-pointer">
+                                        <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full">
+                                            <Upload className="h-4 w-4" />
+                                            Modifier la photo
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
                         </div>

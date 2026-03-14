@@ -64,7 +64,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // Seuil de dette stricte pour n'afficher que les cas réels (comme Meryem Labib)
+          // Seuil de dette stricte (Meryem Labib unique)
           const debt = totalAmount - amountPaid;
           if (debt > 10) {
             playersWithDebt.add(data.playerId);
