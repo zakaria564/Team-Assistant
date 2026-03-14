@@ -297,7 +297,7 @@ export default function RegistrationFormPage() {
                                         {formType === 'junior' ? (
                                             <p>
                                                 Je soussigné(e), ....................................................................., certifie que les informations ci-dessus sont exactes. 
-                                                J'autorise mon enfant, ....................................................................., à participer aux activités sportives, aux entraînements et aux matchs organisés par le club.
+                                                J'autorise mon enfant, ....................................................................., à participer aux activités sportives, aux entraènements et aux matchs organisés par le club.
                                             </p>
                                         ) : (
                                             <p>

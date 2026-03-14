@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -157,7 +158,7 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         <div className="grid grid-cols-3 gap-4">
                             <div className="flex flex-col items-center justify-center text-center">
                                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
-                                <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm">{player.category}</Badge>
+                                <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm flex items-center">{player.category}</Badge>
                             </div>
                             <div className="flex flex-col items-center justify-center text-center">
                                 <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
@@ -202,6 +203,23 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                         )}
                     </div>
                 </main>
+
+                {player.documents && player.documents.length > 0 && (
+                    <div className="mb-10">
+                        <SectionTitle title="Documents Numérisés" icon={Shield} />
+                        <div className="grid grid-cols-2 gap-4">
+                            {player.documents.map((doc: any, i: number) => (
+                                <div key={i} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50">
+                                    <div className="bg-primary/10 p-1.5 rounded"><Shield className="h-3.5 w-3.5 text-primary" /></div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-800 uppercase">{doc.name}</p>
+                                        {doc.validityDate && <p className="text-[8px] text-slate-400 font-bold uppercase">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
                     <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>
