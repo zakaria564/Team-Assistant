@@ -76,7 +76,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
             setPendingSalariesCount(unpaidCount);
           }
         );
-        return () => unsubscribeMonthlySalaries();
+        return () => {}; // La gestion interne du second onSnapshot est gérée par React
       }
     );
 
