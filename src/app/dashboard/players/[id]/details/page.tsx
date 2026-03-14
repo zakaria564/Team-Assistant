@@ -66,7 +66,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
         const playerSnap = await getDoc(doc(db, "players", playerId));
         if (playerSnap.exists()) {
           const data = { id: playerSnap.id, ...playerSnap.data() };
-          if(data.coachId && data.coachId !== 'none') {
+          if(data.coachId && data.coachId !== 'none' && data.coachId !== '') {
             const coachSnap = await getDoc(doc(db, "coaches", data.coachId));
             if(coachSnap.exists()) data.coachName = coachSnap.data().name;
           }

@@ -145,7 +145,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     defaultValues
   });
 
-  // Forcer la réinitialisation dès que les données du joueur sont chargées
+  // Forcer la synchronisation des données lors du chargement
   useEffect(() => {
     if (player) {
       form.reset(defaultValues);

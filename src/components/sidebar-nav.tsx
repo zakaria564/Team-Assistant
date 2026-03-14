@@ -33,23 +33,41 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
+  const [activePlayerIds, setActivePlayerIds] = useState<Set<string>>(new Set());
 
+  // 1. Récupérer les IDs des joueurs existants pour filtrer les paiements fantômes
   useEffect(() => {
     if (!user) return;
+    const unsubscribe = onSnapshot(
+      query(collection(db, "players"), where("userId", "==", user.uid)),
+      (snap) => {
+        setActivePlayerIds(new Set(snap.docs.map(d => d.id)));
+      }
+    );
+    return () => unsubscribe();
+  }, [user]);
 
-    // 1. Signalement pour les Paiements Joueurs (Uniquement dette réelle > 0)
-    // On compte le nombre de JOUEURS uniques ayant au moins un impayé
-    const unsubscribePayments = onSnapshot(
+  // 2. Calculer les paiements en retard (Badge précis)
+  useEffect(() => {
+    if (!user || activePlayerIds.size === 0) {
+      setPendingPaymentsCount(0);
+      return;
+    }
+
+    const unsubscribe = onSnapshot(
       query(collection(db, "payments"), where("userId", "==", user.uid)),
       (snapshot) => {
         const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
+          // Ignorer si le joueur n'existe plus
+          if (!activePlayerIds.has(data.playerId)) return;
+
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // Si le reste à payer est significatif (> 0.01 pour éviter les erreurs d'arrondi)
+          // Dette réelle significative
           if (totalAmount - amountPaid > 0.01 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
           }
@@ -58,7 +76,13 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    // 2. Signalement pour les Salaires Coachs (Non payés pour le mois en cours)
+    return () => unsubscribe();
+  }, [user, activePlayerIds]);
+
+  // 3. Calculer les salaires coachs en attente
+  useEffect(() => {
+    if (!user) return;
+
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
     const unsubscribeCoaches = onSnapshot(
@@ -66,7 +90,6 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       (coachSnap) => {
         const coachIds = coachSnap.docs.map(d => d.id);
         
-        // Listener pour les salaires du mois
         const qSalaries = query(
           collection(db, "salaries"), 
           where("userId", "==", user.uid),
@@ -83,10 +106,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
       }
     );
 
-    return () => {
-      unsubscribePayments();
-      unsubscribeCoaches();
-    };
+    return () => unsubscribeCoaches();
   }, [user]);
 
   return (
