@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, CheckCircle2, X, AlertTriangle, Link as LinkIcon } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -77,6 +77,14 @@ export function ClubSettingsForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
+    
+    // Protection contre les chaînes trop longues (limite Firestore 1Mo par document)
+    const totalSize = JSON.stringify(values).length;
+    if (totalSize > 800000) {
+        setSaveError("L'image ou les données sont trop volumineuses. Veuillez utiliser une URL d'image plus courte ou une image compressée.");
+        return;
+    }
+
     setLoading(true);
     setSaveError(null);
     try {
@@ -85,7 +93,8 @@ export function ClubSettingsForm() {
         toast({ title: "Configuration enregistrée !" });
         router.refresh();
     } catch (error: any) {
-        setSaveError("Erreur lors de l'enregistrement. Si vous utilisez une image, elle est peut-être trop lourde.");
+        console.error(error);
+        setSaveError("Erreur technique lors de l'enregistrement. Veuillez vérifier la taille de vos URLs d'images.");
         toast({ variant: "destructive", title: "Erreur" });
     } finally {
         setLoading(false);
@@ -96,7 +105,7 @@ export function ClubSettingsForm() {
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Identité du Club</CardTitle>
-        <CardDescription>Gérez le logo et les informations officielles du club.</CardDescription>
+        <CardDescription>Gérez les informations officielles et les logos de votre plateforme.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -112,7 +121,7 @@ export function ClubSettingsForm() {
                             <FormItem><FormLabel>Nom officiel du club</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="displayTitle" render={({ field }) => (
-                            <FormItem><FormLabel>Titre de l'application</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Titre de l'application (Barre du haut)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                     
@@ -122,24 +131,32 @@ export function ClubSettingsForm() {
                         <div className="space-y-4">
                             <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Logo du Club (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 border rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                                    {form.watch('logoUrl') ? <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-1" alt="Logo" /> : <Upload className="opacity-20" />}
+                                <div className="h-24 w-24 border-2 rounded-lg bg-muted flex items-center justify-center overflow-hidden shadow-inner bg-white">
+                                    {form.watch('logoUrl') ? <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-1" alt="Logo" /> : <div className="text-[10px] text-muted-foreground font-bold text-center p-2">Aucun Logo</div>}
                                 </div>
-                                <FormField control={form.control} name="logoUrl" render={({ field }) => (
-                                    <FormItem><FormControl><Input placeholder="Coller l'URL du logo ici..." {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                                <div className="flex gap-2">
+                                    <FormField control={form.control} name="logoUrl" render={({ field }) => (
+                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL du logo..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => form.setValue('logoUrl', '')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre logo (Format PNG/JPG recommandé).</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Photo Admin (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Photo Profil Admin (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 rounded-full border bg-muted flex items-center justify-center overflow-hidden">
-                                    {form.watch('adminPhotoUrl') ? <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" /> : <Upload className="opacity-20" />}
+                                <div className="h-24 w-24 rounded-full border-2 bg-muted flex items-center justify-center overflow-hidden shadow-inner bg-white">
+                                    {form.watch('adminPhotoUrl') ? <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" /> : <div className="text-[10px] text-muted-foreground font-bold text-center">Aucune Photo</div>}
                                 </div>
-                                <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
-                                    <FormItem><FormControl><Input placeholder="Coller l'URL de la photo ici..." {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                                <div className="flex gap-2">
+                                    <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
+                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL de la photo..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => form.setValue('adminPhotoUrl', '')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre photo de profil.</p>
                             </div>
                         </div>
                     </div>
@@ -148,18 +165,18 @@ export function ClubSettingsForm() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                         <FormField control={form.control} name="contactEmail" render={({ field }) => (
-                            <FormItem><FormLabel>Email officiel</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Email officiel</FormLabel><FormControl><Input type="email" {...field} /></FormControl></FormItem>
                         )} />
                         <FormField control={form.control} name="clubPhone" render={({ field }) => (
-                            <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl></FormItem>
                         )} />
                     </div>
                     <FormField control={form.control} name="address" render={({ field }) => (
-                        <FormItem><FormLabel>Adresse complète</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Adresse complète</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
                     )} />
 
-                    <Button type="submit" disabled={loading} className="w-full font-bold">
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                    <Button type="submit" disabled={loading} className="w-full font-black uppercase tracking-widest h-12">
+                        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
                         Enregistrer les modifications
                     </Button>
                 </form>

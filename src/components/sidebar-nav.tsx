@@ -44,10 +44,13 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
       const playersWithDebt = new Set();
       snapshot.docs.forEach(doc => {
         const data = doc.data();
+        // Filtrer strictement les joueurs actifs qui ont une dette réelle > 10 MAD
         if (!activePlayerIds.has(data.playerId)) return;
         const total = data.totalAmount || 0;
         const paid = (data.transactions || []).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-        if (total - paid > 10) playersWithDebt.add(data.playerId);
+        if (total - paid > 10) {
+            playersWithDebt.add(data.playerId);
+        }
       });
       setPendingPaymentsCount(playersWithDebt.size);
     });
@@ -58,7 +61,11 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     return onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachSnap) => {
       const coachIds = coachSnap.docs.map(d => d.id);
-      onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
+      if (coachIds.length === 0) {
+          setPendingSalariesCount(0);
+          return;
+      }
+      return onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
         const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
         setPendingSalariesCount(coachIds.filter(id => !paidCoachIds.has(id)).length);
       });
