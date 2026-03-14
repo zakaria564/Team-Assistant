@@ -17,7 +17,6 @@ const toTitleCase = (str: string) => {
 
 export default function EditCoachPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: coachId } = React.use(params);
-  
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -50,31 +49,31 @@ export default function EditCoachPage({ params }: { params: Promise<{ id: string
   return (
     <div className="px-2 sm:px-0">
       <div className="flex items-center gap-4 mb-6">
-         <Button variant="ghost" size="icon" onClick={() => router.back()}>
+         <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10">
           <ArrowLeft className="h-6 w-6" />
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Modifier l'entraîneur</h1>
-            <p className="text-sm text-muted-foreground">
-              Mettez à jour les informations de {loading ? "..." : toTitleCase(coach?.name || '')}.
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase italic">Modifier l'entraîneur</h1>
+            <p className="text-sm text-muted-foreground font-semibold">
+              Mise à jour des informations de {loading ? "..." : toTitleCase(coach?.name || '')}.
             </p>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-            <CardTitle>Informations de l'entraîneur</CardTitle>
-            <CardDescription>Modifiez les champs ci-dessous et enregistrez.</CardDescription>
+      <Card className="shadow-lg border-t-4 border-primary">
+        <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Informations de l'entraîneur</CardTitle>
+            <CardDescription className="text-xs">Modifiez les champs ci-dessous et enregistrez.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
             {loading ? (
-                <div className="flex justify-center items-center py-20">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="flex justify-center items-center py-24">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
                 </div>
             ) : coach ? (
                 <AddCoachForm coach={coach} />
             ) : (
-                <p className="p-6">Entraîneur non trouvé.</p>
+                <p className="p-10 text-center text-muted-foreground italic">Entraîneur non trouvé.</p>
             )}
         </CardContent>
       </Card>

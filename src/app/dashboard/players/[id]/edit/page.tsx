@@ -17,7 +17,6 @@ const toTitleCase = (str: string) => {
 
 export default function EditPlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: playerId } = React.use(params);
-  
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -48,32 +47,32 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
 
 
   return (
-    <div>
+    <div className="px-2 sm:px-0">
       <div className="flex items-center gap-4 mb-6">
-         <Button variant="ghost" size="icon" onClick={() => router.back()}>
+         <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10">
           <ArrowLeft className="h-6 w-6" />
           <span className="sr-only">Retour</span>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Modifier le joueur</h1>
-            <p className="text-muted-foreground">
-              Mettez à jour les informations de {loading ? "..." : toTitleCase(player?.name || '')}.
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase italic">Modifier le joueur</h1>
+            <p className="text-sm text-muted-foreground font-semibold">
+              Mise à jour des informations de {loading ? "..." : toTitleCase(player?.name || '')}.
             </p>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-            <CardTitle>Informations du Joueur</CardTitle>
-            <CardDescription>Modifiez les champs ci-dessous et enregistrez.</CardDescription>
+      <Card className="shadow-lg border-t-4 border-primary">
+        <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Informations du Joueur</CardTitle>
+            <CardDescription className="text-xs">Modifiez les champs ci-dessous et enregistrez.</CardDescription>
         </CardHeader>
         {loading ? (
-             <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             <div className="flex justify-center items-center py-24">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
               </div>
         ) : player ? (
             <AddPlayerForm player={player} />
         ) : (
-            <p className="p-6">Joueur non trouvé.</p>
+            <p className="p-10 text-center text-muted-foreground italic">Joueur non trouvé ou supprimé.</p>
         )}
       </Card>
     </div>

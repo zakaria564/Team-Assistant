@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel,
+  DropdownMenuLabel, 
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
@@ -170,9 +170,9 @@ export default function SalariesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Gérez les rémunérations et le suivi du club.</p>
         </div>
-        <Button asChild className="w-full sm:w-auto">
+        <Button asChild className="w-full sm:w-auto h-12 md:h-10 text-base md:text-sm">
           <Link href="/dashboard/salaries/add">
-            <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Salaire
+            <PlusCircle className="mr-2 h-5 w-5 md:h-4 md:w-4" /> Nouveau Salaire
           </Link>
         </Button>
       </div>
@@ -181,7 +181,7 @@ export default function SalariesPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input 
           placeholder="Rechercher un entraîneur..." 
-          className="pl-10 h-11" 
+          className="pl-10 h-12 md:h-11 text-base md:text-sm" 
           value={searchTerm} 
           onChange={(e) => setSearchTerm(e.target.value)} 
         />
@@ -195,57 +195,73 @@ export default function SalariesPage() {
             onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({ ...prev, [group.coachId]: isOpen }))}
             className="border rounded-lg bg-card overflow-hidden"
           >
-            <CollapsibleTrigger className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Avatar className="h-10 w-10 shrink-0">
+            <CollapsibleTrigger className="w-full p-4 md:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors min-h-[70px]">
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                <Avatar className="h-12 w-12 shrink-0 border-2 border-primary/10">
                   <AvatarImage src={group.coachPhotoUrl} />
-                  <AvatarFallback>{group.coachName.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="font-bold">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="font-bold text-sm sm:text-base truncate">{group.coachName}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{group.salaries.length} fiche(s)</p>
+                  <p className="font-bold text-base md:text-base truncate text-slate-900">{group.coachName}</p>
+                  <p className="text-xs text-muted-foreground font-semibold">{group.salaries.length} fiche(s) enregistrée(s)</p>
                 </div>
-                {group.hasPending && <Badge variant="destructive" className="ml-1 text-[10px] px-1.5 h-5">En attente</Badge>}
+                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">En attente</Badge>}
               </div>
-              {openCollapsibles[group.coachId] ? <ChevronDown className="h-5 w-5 shrink-0" /> : <ChevronRight className="h-5 w-5 shrink-0" />}
+              {openCollapsibles[group.coachId] ? <ChevronDown className="h-6 w-6 shrink-0 text-slate-400" /> : <ChevronRight className="h-6 w-6 shrink-0 text-slate-400" />}
             </CollapsibleTrigger>
-            <CollapsibleContent className="border-t">
-              <div className="overflow-x-auto">
+            <CollapsibleContent className="border-t bg-slate-50/30">
+              <div className="overflow-x-auto w-full">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-muted/20">
                     <TableRow>
-                        <TableHead className="min-w-[140px]">Période</TableHead>
-                        <TableHead className="hidden sm:table-cell">Total</TableHead>
-                        <TableHead>Payé</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="min-w-[140px] font-bold">Période</TableHead>
+                        <TableHead className="hidden sm:table-cell font-bold">Total</TableHead>
+                        <TableHead className="font-bold">Payé</TableHead>
+                        <TableHead className="font-bold">Statut</TableHead>
+                        <TableHead className="text-right font-bold pr-4">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {group.salaries.map((salary) => (
-                        <TableRow key={salary.id}>
-                        <TableCell className="font-medium text-xs sm:text-sm">{salary.description}</TableCell>
-                        <TableCell className="hidden sm:table-cell text-xs">{salary.totalAmount.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-green-600 font-bold text-xs">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                        <TableRow key={salary.id} className="hover:bg-muted/10 h-16 md:h-auto">
+                        <TableCell className="font-bold text-xs sm:text-sm pl-4">{salary.description}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs font-medium">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-green-600 font-black text-xs">{salary.amountPaid.toFixed(2)} MAD</TableCell>
                         <TableCell>
-                            <Badge className={cn("whitespace-nowrap text-[10px] px-1.5", getBadgeClass(salary.status))}>
+                            <Badge className={cn("whitespace-nowrap text-[10px] px-2 py-0.5 font-bold uppercase", getBadgeClass(salary.status))}>
                             {salary.status}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right pr-4">
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 hover:bg-white shadow-sm border border-slate-100">
+                                    <MoreHorizontal className="h-5 w-5 md:h-4 md:w-4 text-slate-600" />
+                                </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/salaries/${salary.id}`} passHref><DropdownMenuItem className="cursor-pointer"><FileText className="mr-2 h-4 w-4" /> Détails</DropdownMenuItem></Link>
+                            <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl border-2">
+                                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions Disponibles</DropdownMenuLabel>
+                                <Link href={`/dashboard/salaries/${salary.id}`} passHref>
+                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
+                                        <FileText className="mr-3 h-4 w-4 text-primary" /> Détails de la fiche
+                                    </DropdownMenuItem>
+                                </Link>
                                 {salary.status !== 'Payé' && (
-                                    <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref><DropdownMenuItem className="cursor-pointer text-primary font-bold"><PlusCircle className="mr-2 h-4 w-4" /> Verser</DropdownMenuItem></Link>
+                                    <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
+                                        <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-sm text-primary bg-primary/5">
+                                            <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
+                                        </DropdownMenuItem>
+                                    </Link>
                                 )}
-                                <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref><DropdownMenuItem className="cursor-pointer"><Download className="mr-2 h-4 w-4" /> Reçu PDF</DropdownMenuItem></Link>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => setSalaryToDelete(salary)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
+                                <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
+                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
+                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu PDF (Fiche de paie)
+                                    </DropdownMenuItem>
+                                </Link>
+                                <DropdownMenuSeparator className="my-1" />
+                                <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-sm text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
+                                    <Trash2 className="mr-3 h-4 w-4" /> Supprimer définitivement
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -258,21 +274,21 @@ export default function SalariesPage() {
           </Collapsible>
         ))}
         {groupedSalaries.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground border rounded-lg bg-card">
-            Aucun salaire enregistré.
+          <div className="text-center py-24 text-muted-foreground border rounded-lg bg-card bg-slate-50/50 italic">
+            Aucun salaire enregistré pour le moment.
           </div>
         )}
       </div>
 
       <AlertDialog open={!!salaryToDelete} onOpenChange={() => setSalaryToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95%] rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette fiche de paie ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est irréversible. Toutes les transactions associées seront effacées.</AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-black">Supprimer cette fiche ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600">Cette action est irréversible. L'historique des versements sera totalement effacé pour cette période.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive text-white hover:bg-destructive/90">Supprimer définitivement</AlertDialogAction>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="h-12 md:h-10 font-bold">Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive text-white hover:bg-destructive/90 h-12 md:h-10 font-black">Supprimer définitivement</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
