@@ -17,7 +17,7 @@ const links = [
   { href: "/dashboard/events", label: "Événements", icon: Calendar },
   { href: "/dashboard/opponents", label: "Adversaires", icon: Shield },
   { href: "/dashboard/rankings", label: "Classements", icon: Trophy },
-  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: false },
+  { href: "/dashboard/payments", label: "Paiements Joueurs", icon: CreditCard, hasAlert: true },
   { href: "/dashboard/salaries", label: "Salaires Coachs", icon: Banknote, hasAlert: true },
   { href: "/dashboard/reports", label: "Rapports", icon: FileText },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
@@ -31,11 +31,32 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
 
-    // Logic for Coach Salaries (unpaid for current month)
+    // Signalement pour les Paiements Joueurs (Cotisations incomplètes / Dette réelle)
+    const unsubscribePayments = onSnapshot(
+      query(collection(db, "payments"), where("userId", "==", user.uid)),
+      (snapshot) => {
+        const pendingPlayerIds = new Set();
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const transactions = data.transactions || [];
+          const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+          const totalAmount = data.totalAmount || 0;
+          
+          // On ne compte le joueur comme "en attente" que s'il y a un reste à payer réel
+          if (totalAmount - amountPaid > 0.01) {
+            pendingPlayerIds.add(data.playerId);
+          }
+        });
+        setPendingPaymentsCount(pendingPlayerIds.size);
+      }
+    );
+
+    // Signalement pour les Salaires Coachs (Non payés pour le mois en cours)
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
     const unsubscribeCoaches = onSnapshot(
@@ -60,6 +81,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     );
 
     return () => {
+      unsubscribePayments();
       unsubscribeCoaches();
     };
   }, [user]);
@@ -68,7 +90,8 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
       {links.map(({ href, label, icon: Icon, hasAlert }) => {
         const isSalaries = href === "/dashboard/salaries";
-        const count = isSalaries ? pendingSalariesCount : 0;
+        const isPayments = href === "/dashboard/payments";
+        const count = isSalaries ? pendingSalariesCount : (isPayments ? pendingPaymentsCount : 0);
 
         return (
           <Link
