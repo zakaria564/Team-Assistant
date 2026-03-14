@@ -113,13 +113,33 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
       };
       return {
-        ...player,
-        documents: (player.documents || []).map(doc => ({
-            name: doc.name || "",
-            url: doc.url || "",
-            validityDate: doc.validityDate || "",
+        name: player.name || "",
+        photoUrl: player.photoUrl || "",
+        gender: player.gender || "Masculin",
+        category: player.category || "",
+        status: player.status || "Actif",
+        number: player.number ?? "",
+        birthDate: player.birthDate || "",
+        entryDate: player.entryDate || "",
+        exitDate: player.exitDate || "",
+        address: player.address || "",
+        nationality: player.nationality || "",
+        cin: player.cin || "",
+        phone: player.phone || "",
+        email: player.email || "",
+        position: player.position || "",
+        tutorName: player.tutorName || "",
+        tutorCin: player.tutorCin || "",
+        tutorPhone: player.tutorPhone || "",
+        tutorEmail: player.tutorEmail || "",
+        coachId: player.coachId || "",
+        professionalId: player.professionalId || "",
+        documents: (player.documents || []).map((d: any) => ({
+            name: d.name || "",
+            url: d.url || "",
+            validityDate: d.validityDate || "",
         })),
-      } as z.infer<typeof formSchema>;
+      };
     }, [player]),
   });
 

@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -97,13 +97,25 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
       };
       return {
-        ...coach,
-        documents: (coach.documents || []).map(doc => ({
-            name: doc.name || "",
-            url: doc.url || "",
-            validityDate: doc.validityDate || "",
+        name: coach.name || "",
+        photoUrl: coach.photoUrl || "",
+        category: coach.category || "",
+        status: coach.status || "Actif",
+        phone: coach.phone || "",
+        email: coach.email || "",
+        specialty: coach.specialty || "",
+        entryDate: coach.entryDate || "",
+        exitDate: coach.exitDate || "",
+        nationality: coach.nationality || "",
+        cin: coach.cin || "",
+        address: coach.address || "",
+        professionalId: coach.professionalId || "",
+        documents: (coach.documents || []).map((d: any) => ({
+            name: d.name || "",
+            url: d.url || "",
+            validityDate: d.validityDate || "",
         })),
-      } as z.infer<typeof formSchema>;
+      };
     }, [coach]),
   });
 
