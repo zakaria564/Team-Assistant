@@ -109,15 +109,11 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
             if (!user) return;
             setLoadingCoaches(true);
             try {
-                // 1. Get current month description
                 const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                
-                // 2. Fetch all coaches
                 const coachesQuery = query(collection(db, "coaches"), where("userId", "==", user.uid));
                 const coachesSnap = await getDocs(coachesQuery);
                 const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
 
-                // 3. Fetch salaries for this month to filter
                 const salariesQuery = query(
                     collection(db, "salaries"), 
                     where("userId", "==", user.uid),
@@ -126,20 +122,16 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                 const salariesSnap = await getDocs(salariesQuery);
                 const paidCoachIds = new Set(salariesSnap.docs.map(d => d.data().coachId));
 
-                // 4. Filter: only unpaid coaches
                 let finalCoaches = allCoaches.filter(c => !paidCoachIds.has(c.id));
-                
-                // In edit mode, ensure the current coach is shown even if they are in the paid list
                 if (isEditMode && salary) {
                     const currentCoach = allCoaches.find(c => c.id === salary.coachId);
                     if (currentCoach && !finalCoaches.find(c => c.id === currentCoach.id)) {
                         finalCoaches.push(currentCoach);
                     }
                 }
-
                 setCoaches(finalCoaches.sort((a,b) => a.name.localeCompare(b.name)));
             } catch (error) {
-                console.error("Error fetching unpaid coaches:", error);
+                console.error(error);
             } finally { setLoadingCoaches(false); }
         };
         fetchUnpaidCoaches();

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -45,7 +46,7 @@ export default function PlayerDetailPage({ params }: { params: Promise<{ id: str
         const playerSnap = await getDoc(doc(db, "players", playerId));
         if (playerSnap.exists()) {
           const data = { id: playerSnap.id, ...playerSnap.data() };
-          if(data.coachId && data.coachId !== 'none') {
+          if(data.coachId && data.coachId !== 'none' && data.coachId !== '') {
             const cSnap = await getDoc(doc(db, "coaches", data.coachId));
             if(cSnap.exists()) data.coachName = cSnap.data().name;
           }

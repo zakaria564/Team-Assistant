@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -139,7 +140,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                         <div className="space-y-1">
                             <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubName}</h1>
                             <div className="text-slate-400 text-[10px] sm:text-sm font-medium leading-tight">
-                                <p className="max-w-[350px] break-words">{clubAddress || "Adresse du club"}</p>
+                                <p className="max-w-none break-words">{clubAddress || "Stade Oulfa Casablanca"}</p>
                             </div>
                         </div>
                     </div>
@@ -200,7 +201,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
                     </main>
 
                     <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                        <div className="text-center space-y-20 mb-16 pt-8">
+                        <div className="text-center space-y-20 mb-16 pt-8 w-full">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
                             <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
                         </div>

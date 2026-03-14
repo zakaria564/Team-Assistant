@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -117,13 +118,13 @@ function FormContent({ payment }: AddPaymentFormProps) {
 
 
     useEffect(() => {
-        const fetchPlayersAndPayments = async () => {
+        const fetchPlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
              try {
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                const playersSnapshot = await getDocs(playersQuery);
-                const allPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
+                const snap = await getDocs(playersQuery);
+                const allPlayers = snap.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Player));
                 setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) {
                  console.error(e);
@@ -131,46 +132,27 @@ function FormContent({ payment }: AddPaymentFormProps) {
                 setLoadingPlayers(false);
             }
         }
-        fetchPlayersAndPayments();
+        fetchPlayers();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!user) {
-            toast({ variant: "destructive", title: "Non connecté", description: "Vous devez être connecté." });
-            return;
-        }
-
+        if (!user) return;
         if (values.totalAmount === undefined) {
-             toast({ variant: "destructive", title: "Montant manquant", description: "Veuillez spécifier un montant total." });
+             toast({ variant: "destructive", title: "Montant manquant" });
             return;
         }
-
         setLoading(true);
-
         const newTransactionData = (values.newTransactionAmount && values.newTransactionAmount > 0 && values.newTransactionMethod) 
-            ? {
-                amount: values.newTransactionAmount,
-                date: new Date(),
-                method: values.newTransactionMethod,
-              }
+            ? { amount: values.newTransactionAmount, date: new Date(), method: values.newTransactionMethod }
             : null;
 
         try {
             if (isEditMode && payment) {
                 const paymentDocRef = doc(db, "payments", payment.id);
-                const updateData: any = {
-                    totalAmount: values.totalAmount,
-                    status: values.status,
-                    description: values.description,
-                    userId: user.uid
-                };
-                if(newTransactionData){
-                    updateData.transactions = arrayUnion(newTransactionData);
-                }
-                
+                const updateData: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };
+                if(newTransactionData) updateData.transactions = arrayUnion(newTransactionData);
                 await updateDoc(paymentDocRef, updateData);
                 toast({ title: "Paiement mis à jour !" });
-
             } else { 
                  const initialTransactions = newTransactionData ? [newTransactionData] : [];
                  await addDoc(collection(db, "payments"), {
@@ -183,15 +165,13 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     transactions: initialTransactions,
                     isDeleted: false,
                 });
-                toast({ title: "Paiement enregistré avec succès !" });
+                toast({ title: "Paiement enregistré !" });
             }
             router.push("/dashboard/payments");
             router.refresh();
         } catch (e) {
-             toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
-        } finally {
-            setLoading(false);
-        }
+             toast({ variant: "destructive", title: "Erreur" });
+        } finally { setLoading(false); }
     }
     
     return (
@@ -226,9 +206,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Description</FormLabel>
-                        <FormControl>
-                            <Input {...field} value={field.value ?? ""} />
-                        </FormControl>
+                        <FormControl><Input {...field} value={field.value ?? ""} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -241,13 +219,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                   <FormItem>
                       <FormLabel>Montant total (MAD)</FormLabel>
                       <FormControl>
-                        <Input
-                            type="number"
-                            step="0.01"
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                        />
+                        <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
@@ -256,9 +228,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
 
                 {isEditMode && payment && (
                   <Card className="bg-muted/30">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Historique</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle className="text-lg">Historique</CardTitle></CardHeader>
                     <CardContent className="text-sm">
                       <div className="w-full overflow-x-auto">
                         {(payment.transactions || []).length > 0 ? (
@@ -293,13 +263,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                             <FormItem>
                                 <FormLabel>Montant (MAD)</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      {...field}
-                                      value={field.value ?? ""}
-                                      onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
-                                  />
+                                  <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -312,18 +276,9 @@ function FormContent({ payment }: AddPaymentFormProps) {
                               <FormItem>
                                 <FormLabel>Méthode</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {paymentMethods.map(method => (
-                                          <SelectItem key={method} value={method}>{method}</SelectItem>
-                                      ))}
-                                  </SelectContent>
+                                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                  <SelectContent>{paymentMethods.map(method => <SelectItem key={method} value={method}>{method}</SelectItem>)}</SelectContent>
                                 </Select>
-                                <FormMessage />
                               </FormItem>
                             )}
                         />
@@ -338,22 +293,12 @@ function FormContent({ payment }: AddPaymentFormProps) {
                         <FormItem>
                         <FormLabel>Statut</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                            <FormControl>
-                            <SelectTrigger className="bg-muted">
-                                <SelectValue />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {paymentStatuses.map(status => (
-                                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                                ))}
-                            </SelectContent>
+                            <FormControl><SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{paymentStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
                         </Select>
-                        <FormMessage />
                         </FormItem>
                     )}
                 />
-
 
                 <Button type="submit" disabled={loading || loadingPlayers} className="w-full !mt-8">
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}
