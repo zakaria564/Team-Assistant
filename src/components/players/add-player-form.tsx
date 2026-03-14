@@ -55,8 +55,6 @@ const formSchema = z.object({
 
 interface PlayerData extends z.infer<typeof formSchema> {
     id: string;
-    photoUrl?: string;
-    documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 interface Coach {
@@ -94,13 +92,6 @@ const generateProfessionalId = () => {
     return `PL-${yearMonth}-${random}`;
 };
 
-const defaultPlayerValues = {
-  name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
-  number: "", birthDate: "", entryDate: "", exitDate: "", address: "", nationality: "",
-  cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
-  tutorEmail: "", coachId: "", documents: [], professionalId: "",
-};
-
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
@@ -115,16 +106,20 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     values: useMemo(() => {
-      if (!player) return defaultPlayerValues;
+      if (!player) return {
+        name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
+        number: "", birthDate: "", entryDate: "", exitDate: "", address: "", nationality: "",
+        cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
+        tutorEmail: "", coachId: "", documents: [], professionalId: "",
+      };
       return {
-        ...defaultPlayerValues,
         ...player,
         documents: (player.documents || []).map(doc => ({
             name: doc.name || "",
             url: doc.url || "",
             validityDate: doc.validityDate || "",
         })),
-      };
+      } as z.infer<typeof formSchema>;
     }, [player]),
   });
 

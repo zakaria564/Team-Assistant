@@ -43,8 +43,7 @@ const toTitleCase = (str: string) => {
 };
 
 export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: string }> }) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -176,18 +175,18 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words">{player.name}</h1>
+                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none mb-8 break-words text-center sm:text-left">{player.name}</h1>
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="flex flex-col items-center justify-center text-center px-2">
                                     <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
                                     <Badge className="bg-slate-900 text-white text-[10px] px-1 py-1 font-bold uppercase tracking-wider rounded-sm justify-center w-full min-h-[24px] border-none shadow-sm flex items-center">{player.category}</Badge>
                                 </div>
                                 <div className="flex flex-col items-center justify-center text-center px-2">
-                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste de prédilection</span>
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
                                     <span className="text-slate-700 font-bold text-[10px] uppercase flex items-center justify-center gap-1.5 bg-white px-1 py-1 rounded-sm border border-slate-100 shadow-sm w-full min-h-[24px]"><Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                                 </div>
                                 <div className="flex flex-col items-center justify-center text-center px-2">
-                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro de Maillot</span>
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Numéro</span>
                                     <span className="bg-primary text-white px-1 py-0.5 rounded-sm font-black text-lg shadow-sm italic text-center w-full min-h-[24px] flex items-center justify-center">#{player.number || "--"}</span>
                                 </div>
                             </div>
@@ -225,23 +224,6 @@ export default function PlayerDetailsPdfPage(props: { params: Promise<{ id: stri
                             )}
                         </div>
                     </main>
-
-                    {player.documents && player.documents.length > 0 && (
-                        <div className="mb-10">
-                            <SectionTitle title="Documents Numérisés" icon={Shield} />
-                            <div className="grid grid-cols-2 gap-4">
-                                {player.documents.map((doc: any, i: number) => (
-                                    <div key={i} className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50">
-                                        <div className="bg-primary/10 p-1.5 rounded"><Shield className="h-3.5 w-3.5 text-primary" /></div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-800 uppercase">{doc.name}</p>
-                                            {doc.validityDate && <p className="text-[8px] text-slate-400 font-bold uppercase">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     <footer className="mt-auto pt-8 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10">
                         <div className="space-y-3"><div className="flex items-center gap-2 text-slate-300"><ShieldCheck className="h-4 w-4" /><span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span></div><p className="text-[8px] font-bold text-slate-400 uppercase">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p></div>

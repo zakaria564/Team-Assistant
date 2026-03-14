@@ -47,8 +47,6 @@ const formSchema = z.object({
 
 interface CoachData extends z.infer<typeof formSchema> {
     id: string;
-    photoUrl?: string;
-    documents?: { name: string; url: string; validityDate?: string }[];
 }
 
 interface AddCoachFormProps {
@@ -81,11 +79,6 @@ const generateProfessionalId = () => {
     return `CH-${yearMonth}-${random}`;
 };
 
-const defaultCoachValues = {
-  name: "", photoUrl: "", category: "", status: "Actif" as const, phone: "", email: "", specialty: "",
-  entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
-};
-
 export function AddCoachForm({ coach }: AddCoachFormProps) {
   const [user] = useAuthState(auth);
   const [loading, setLoading] = useState(false);
@@ -99,16 +92,18 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     values: useMemo(() => {
-      if (!coach) return defaultCoachValues;
+      if (!coach) return {
+        name: "", photoUrl: "", category: "", status: "Actif" as const, phone: "", email: "", specialty: "",
+        entryDate: "", exitDate: "", nationality: "", cin: "", address: "", documents: [], professionalId: "",
+      };
       return {
-        ...defaultCoachValues,
         ...coach,
         documents: (coach.documents || []).map(doc => ({
             name: doc.name || "",
             url: doc.url || "",
             validityDate: doc.validityDate || "",
         })),
-      };
+      } as z.infer<typeof formSchema>;
     }, [coach]),
   });
 
