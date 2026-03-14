@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -96,12 +97,12 @@ export function ClubSettingsForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validation de la taille (max 1Mo pour rester fluide dans Firestore)
-    if (file.size > 1024 * 1024) {
+    // Augmentation de la limite à 2Mo pour plus de confort
+    if (file.size > 2 * 1024 * 1024) {
         toast({
             variant: "destructive",
             title: "Fichier trop volumineux",
-            description: "Le logo doit faire moins de 1 Mo pour une performance optimale."
+            description: "L'image doit faire moins de 2 Mo pour être acceptée."
         });
         return;
     }
@@ -245,7 +246,7 @@ export function ClubSettingsForm() {
                                         <Upload className="mr-2 h-4 w-4" />
                                         {form.watch('logoUrl') ? "Remplacer le logo" : "Choisir un logo"}
                                     </Button>
-                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 1Mo).</p>
+                                    <p className="text-[10px] text-muted-foreground italic">Format PNG ou JPG conseillé (Max 2Mo).</p>
                                 </div>
                             </div>
                         </div>

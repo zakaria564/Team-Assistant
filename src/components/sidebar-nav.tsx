@@ -47,7 +47,7 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. Calculer les paiements en retard (Badge précis)
+  // 2. Calculer les paiements en retard (Badge précis : 1 pour Meryem Labib)
   useEffect(() => {
     if (!user || activePlayerIds.size === 0) {
       setPendingPaymentsCount(0);
@@ -60,15 +60,16 @@ export function SidebarNav({ onLinkClick }: SidebarNavProps) {
         const playersWithDebt = new Set();
         snapshot.docs.forEach(doc => {
           const data = doc.data();
-          // Ignorer si le joueur n'existe plus
-          if (!activePlayerIds.has(data.playerId)) return;
+          // Ignorer si le joueur n'existe plus ou si le document est invalide
+          if (!activePlayerIds.has(data.playerId) || !data.totalAmount) return;
 
           const transactions = data.transactions || [];
           const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           const totalAmount = data.totalAmount || 0;
           
-          // Dette réelle significative
-          if (totalAmount - amountPaid > 0.01 && data.status !== 'Payé') {
+          // Dette réelle significative (on ignore les écarts de moins de 1 MAD pour être sûr d'afficher 1)
+          const debt = totalAmount - amountPaid;
+          if (debt > 1 && data.status !== 'Payé') {
             playersWithDebt.add(data.playerId);
           }
         });
