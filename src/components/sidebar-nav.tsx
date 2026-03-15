@@ -30,45 +30,58 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
   const [activePlayerIds, setActivePlayerIds] = useState<Set<string>>(new Set());
 
+  // Récupérer les IDs des joueurs actifs uniquement
   useEffect(() => {
     if (!user) return;
     return onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (snap) => {
-      setActivePlayerIds(new Set(snap.docs.map(d => d.id)));
+      const activeIds = new Set(snap.docs.map(d => d.id));
+      setActivePlayerIds(activeIds);
     });
   }, [user]);
 
+  // Calculer le badge des paiements (Dettes réelles des joueurs actifs)
   useEffect(() => {
-    if (!user || activePlayerIds.size === 0) { setPendingPaymentsCount(0); return; }
+    if (!user || activePlayerIds.size === 0) { 
+        setPendingPaymentsCount(0); 
+        return; 
+    }
+    
     return onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (snapshot) => {
       const playersWithDebt = new Set();
       snapshot.docs.forEach(doc => {
         const data = doc.data();
+        
+        // Uniquement si le joueur existe toujours
         if (!activePlayerIds.has(data.playerId)) return;
         
         const transactions = data.transactions || [];
         const total = data.totalAmount || 0;
         const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
         
-        // Seuil strict pour éviter les erreurs d'affichage : dette > 10 MAD
-        if (total - paid > 10) {
+        // Seuil strict pour éviter les erreurs d'affichage (dette > 1 MAD)
+        if (total - paid > 1) {
             playersWithDebt.add(data.playerId);
         }
       });
+      // Cela devrait afficher 1 si seule Meryem Labib a une dette > 1 MAD
       setPendingPaymentsCount(playersWithDebt.size);
     });
   }, [user, activePlayerIds]);
 
+  // Calculer le badge des salaires (Fiches non payées ce mois-ci)
   useEffect(() => {
     if (!user) return;
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
+    
     return onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachSnap) => {
       const coachIds = coachSnap.docs.map(d => d.id);
       if (coachIds.length === 0) {
           setPendingSalariesCount(0);
           return;
       }
+      
       return onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
-        const paidCoachIds = new Set(salarySnap.docs.map(d => d.data().coachId));
+        const paidCoachIds = new Set(salarySnap.docs.filter(d => d.data().status === 'Payé').map(d => d.data().coachId));
         setPendingSalariesCount(coachIds.filter(id => !paidCoachIds.has(id)).length);
       });
     });

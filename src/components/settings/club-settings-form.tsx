@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, AlertTriangle, Link as LinkIcon, Trash2, Upload, Image as ImageIcon } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Trash2, Upload, Image as ImageIcon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -120,7 +120,7 @@ export function ClubSettingsForm() {
       setLoading(true);
       const compressed = await compressImage(file);
       form.setValue(fieldName, compressed);
-      toast({ title: "Image chargée", description: "L'image a été optimisée pour le système." });
+      toast({ title: "Image optimisée", description: "L'image a été compressée pour garantir l'enregistrement." });
     } catch (error) {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible de traiter l'image." });
     } finally {
@@ -131,16 +131,24 @@ export function ClubSettingsForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
     
+    // Sécurité supplémentaire : vérifier la taille totale des données
+    const dataSize = JSON.stringify(values).length;
+    if (dataSize > 800000) { // Environ 800 Ko
+        setSaveError("Les images sont encore trop volumineuses. Veuillez utiliser le champ URL ou des fichiers plus petits.");
+        toast({ variant: "destructive", title: "Document trop volumineux" });
+        return;
+    }
+
     setLoading(true);
     setSaveError(null);
     try {
         const clubDocRef = doc(db, "clubs", user.uid);
         await setDoc(clubDocRef, { ...values, userId: user.uid, updatedAt: new Date() }, { merge: true });
-        toast({ title: "Configuration enregistrée !", description: "Vos modifications sont appliquées sur tous vos appareils." });
+        toast({ title: "Configuration enregistrée !", description: "Vos modifications sont appliquées." });
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Erreur lors de l'enregistrement. Vérifiez vos URLs d'images.");
+        setSaveError("Erreur lors de l'enregistrement. Cela est souvent dû à une image trop lourde.");
         toast({ variant: "destructive", title: "Erreur technique" });
     } finally {
         setLoading(false);
@@ -151,7 +159,7 @@ export function ClubSettingsForm() {
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Identité du Club</CardTitle>
-        <CardDescription>Gérez l'image de marque et les contacts de votre club.</CardDescription>
+        <CardDescription>Gérez l'image de marque et les contacts officiels.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -191,16 +199,33 @@ export function ClubSettingsForm() {
                                         </>
                                     ) : <div className="text-[10px] text-muted-foreground font-bold">Aucun Logo</div>}
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="space-y-2">
                                     <div className="flex gap-2">
-                                        <Button type="button" variant="outline" className="flex-1" onClick={() => logoInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4" /> Choisir fichier
+                                        <Button type="button" variant="outline" className="flex-1 h-9 text-xs" onClick={() => logoInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-3.5 w-3.5" /> Choisir fichier
                                         </Button>
                                         <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoUrl')} />
                                     </div>
-                                    <FormField control={form.control} name="logoUrl" render={({ field }) => (
-                                        <FormItem><FormControl><Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-xs h-8" /></FormControl></FormItem>
-                                    )} />
+                                    <div className="relative group">
+                                        <FormField control={form.control} name="logoUrl" render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-[10px] h-8 pr-8" />
+                                                </FormControl>
+                                            </FormItem>
+                                        )} />
+                                        {form.watch('logoUrl') && (
+                                            <Button 
+                                                type="button" 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="absolute right-1 top-1 h-6 w-6 text-destructive" 
+                                                onClick={() => form.setValue('logoUrl', '')}
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -222,16 +247,33 @@ export function ClubSettingsForm() {
                                         </>
                                     ) : <div className="text-[10px] text-muted-foreground font-bold">Aucune Photo</div>}
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="space-y-2">
                                     <div className="flex gap-2">
-                                        <Button type="button" variant="outline" className="flex-1" onClick={() => adminInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4" /> Choisir fichier
+                                        <Button type="button" variant="outline" className="flex-1 h-9 text-xs" onClick={() => adminInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-3.5 w-3.5" /> Choisir fichier
                                         </Button>
                                         <input type="file" ref={adminInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'adminPhotoUrl')} />
                                     </div>
-                                    <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
-                                        <FormItem><FormControl><Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-xs h-8" /></FormControl></FormItem>
-                                    )} />
+                                    <div className="relative group">
+                                        <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-[10px] h-8 pr-8" />
+                                                </FormControl>
+                                            </FormItem>
+                                        )} />
+                                        {form.watch('adminPhotoUrl') && (
+                                            <Button 
+                                                type="button" 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="absolute right-1 top-1 h-6 w-6 text-destructive" 
+                                                onClick={() => form.setValue('adminPhotoUrl', '')}
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
