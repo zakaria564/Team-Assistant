@@ -19,12 +19,11 @@ import { useToast } from "@/hooks/use-toast";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function PaymentReceiptPage(props: PageProps) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+export default function PaymentReceiptPage({ params }: PageProps) {
+  const resolvedParams = React.use(params);
+  const paymentId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

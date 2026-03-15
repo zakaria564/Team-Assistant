@@ -38,12 +38,11 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function CoachDetailsPdfPage(props: PageProps) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+export default function CoachDetailsPdfPage({ params }: PageProps) {
+  const resolvedParams = React.use(params);
+  const coachId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

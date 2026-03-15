@@ -43,12 +43,11 @@ const toTitleCase = (str: string) => {
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function PlayerDetailsPdfPage(props: PageProps) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+export default function PlayerDetailsPdfPage({ params }: PageProps) {
+  const resolvedParams = React.use(params);
+  const playerId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
