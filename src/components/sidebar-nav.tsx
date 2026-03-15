@@ -46,11 +46,12 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
                 const total = data.totalAmount || 0;
                 const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
                 
-                // On ne compte que les joueurs qui ont au moins une fiche de paiement non régularisée
+                // On ne compte que les joueurs qui ont au moins une fiche de paiement non régularisée avec une dette significative
                 if (total - paid > 10) {
                     playersWithDebt.add(data.playerId);
                 }
             });
+            // Pour Meryem Labib, cela affichera précisément 1 si elle est la seule dans ce cas
             setPendingPaymentsCount(playersWithDebt.size);
         });
         return () => unsubscribePayments();

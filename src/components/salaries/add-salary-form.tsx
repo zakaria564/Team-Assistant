@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Badge } from "../ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 interface Coach {
   id: string;
@@ -207,7 +208,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Description</FormLabel>
+                            <FormLabel>Description (Période)</FormLabel>
                             <FormControl><Input {...field} value={field.value ?? ""} /></FormControl>
                             <FormMessage />
                         </FormItem>
@@ -218,34 +219,37 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="totalAmount"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Salaire Total (MAD)</FormLabel>
-                            <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} /></FormControl>
+                            <FormLabel>Salaire Total Fixé (MAD)</FormLabel>
+                            <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg" /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
                 {isEditMode && (
-                    <div className="bg-muted p-4 rounded-md space-y-2">
-                        <p className="text-sm font-semibold">Historique : {amountAlreadyPaid.toFixed(2)} MAD déjà versés.</p>
+                    <div className="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 flex justify-between items-center">
+                        <span className="text-sm font-semibold text-slate-500 uppercase tracking-widest">Déjà versé à ce jour</span>
+                        <span className="text-lg font-black text-slate-900">{amountAlreadyPaid.toFixed(2)} MAD</span>
                     </div>
                 )}
 
-                {(remaining > 0 || !isEditMode) && (
-                    <div className="p-4 border-2 border-primary/20 rounded-xl space-y-4 bg-primary/5">
+                {(remaining > 0 || !isEditMode) ? (
+                    <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-black text-primary uppercase text-xs tracking-widest">Nouveau Versement</h4>
-                            <Badge variant="outline" className="bg-white text-primary border-primary font-black">
-                                RESTE : {remaining.toFixed(2)} MAD
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" /> Nouveau Versement
+                            </h4>
+                            <Badge variant="outline" className={cn("bg-white font-black text-sm px-3 py-1 shadow-sm", remaining > 0 ? "text-red-600 border-red-200" : "text-green-600 border-green-200")}>
+                                SOLDE RESTANT : {remaining.toFixed(2)} MAD
                             </Badge>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control}
                                 name="newTransactionAmount"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-bold">Montant à verser</FormLabel>
+                                        <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à payer</FormLabel>
                                         <FormControl>
                                             <Input 
                                                 type="number" 
@@ -253,8 +257,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                                 max={remaining}
                                                 {...field} 
                                                 value={field.value ?? ""} 
-                                                placeholder={`Max ${remaining.toFixed(2)}`} 
-                                                className="font-black text-lg"
+                                                placeholder={`Maximum ${remaining.toFixed(2)} MAD`} 
+                                                className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -266,15 +270,30 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                 name="newTransactionMethod"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-bold">Méthode</FormLabel>
+                                        <FormLabel className="font-black text-[10px] uppercase text-slate-500">Méthode de règlement</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl><SelectTrigger className="font-bold"><SelectValue /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="h-12 font-bold shadow-sm"><SelectValue /></SelectTrigger></FormControl>
                                             <SelectContent>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
                                 )}
                             />
                         </div>
+                        {watchNew > remaining + 0.01 && (
+                            <Alert variant="destructive" className="bg-red-50">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>Montant non autorisé</AlertTitle>
+                                <AlertDescription>
+                                    Le montant versé ({watchNew} MAD) ne peut pas être supérieur au solde dû ({remaining.toFixed(2)} MAD).
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </div>
+                ) : (
+                    <div className="p-6 bg-green-50 border-2 border-green-200 rounded-2xl text-center">
+                        <p className="font-black text-green-700 uppercase tracking-widest flex items-center justify-center gap-2">
+                            <ShieldCheck className="h-5 w-5" /> Salaire Intégralement Réglé
+                        </p>
                     </div>
                 )}
 
@@ -283,17 +302,17 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="status"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Statut final après versement</FormLabel>
+                            <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger className="bg-muted font-bold"><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="bg-slate-50 font-black tracking-widest text-xs h-10"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         </FormItem>
                     )}
                 />
 
-                <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest text-lg shadow-xl">
-                    {loading ? <Loader2 className="animate-spin mr-2" /> : "Enregistrer le versement"}
+                <Button type="submit" disabled={loading || (watchNew > remaining + 0.01)} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
+                    {loading ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : "Valider le Versement"}
                 </Button>
             </form>
         </Form>
