@@ -60,7 +60,6 @@ export default function CoachDetailsPdfPage(props: PageProps) {
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
-      // Adaptation dynamique basée sur 1000px pour le Redmi 12C
       if (containerWidth < 1000) {
         setScale(Math.min(containerWidth / 1000, 1));
       } else {
