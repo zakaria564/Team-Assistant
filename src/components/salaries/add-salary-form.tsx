@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -64,8 +63,10 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
         const total = data.totalAmount || 0;
-        const remaining = total - amountAlreadyPaid;
-        if (data.newTransactionAmount && data.newTransactionAmount > remaining + 0.01) {
+        const alreadyPaid = isEditMode ? amountAlreadyPaid : 0;
+        const remaining = total - alreadyPaid;
+        
+        if (data.newTransactionAmount && data.newTransactionAmount > (remaining + 0.01)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
@@ -96,7 +97,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const watchTotal = form.watch("totalAmount") || 0;
     const watchNew = form.watch("newTransactionAmount") || 0;
     const currentPaid = amountAlreadyPaid + watchNew;
-    const remaining = watchTotal - amountAlreadyPaid;
+    const remaining = Math.max(0, watchTotal - amountAlreadyPaid);
 
     useEffect(() => {
         if (watchTotal > 0) {
@@ -230,57 +231,69 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     </div>
                 )}
 
-                <div className="p-4 border rounded-md space-y-4 bg-primary/5">
-                    <div className="flex justify-between items-center">
-                        <h4 className="font-bold text-primary">Nouveau Versement</h4>
-                        <Badge variant="outline" className="bg-white text-primary border-primary">
-                            Solde dû: {remaining.toFixed(2)} MAD
-                        </Badge>
+                {(remaining > 0 || !isEditMode) && (
+                    <div className="p-4 border-2 border-primary/20 rounded-xl space-y-4 bg-primary/5">
+                        <div className="flex justify-between items-center">
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest">Nouveau Versement</h4>
+                            <Badge variant="outline" className="bg-white text-primary border-primary font-black">
+                                RESTE : {remaining.toFixed(2)} MAD
+                            </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="newTransactionAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold">Montant à verser</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                type="number" 
+                                                step="0.01" 
+                                                max={remaining}
+                                                {...field} 
+                                                value={field.value ?? ""} 
+                                                placeholder={`Max ${remaining.toFixed(2)}`} 
+                                                className="font-black text-lg"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="newTransactionMethod"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold">Méthode</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl><SelectTrigger className="font-bold"><SelectValue /></SelectTrigger></FormControl>
+                                            <SelectContent>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="newTransactionAmount"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Montant</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder={`Max ${remaining.toFixed(2)}`} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="newTransactionMethod"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Méthode</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                        <SelectContent>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </div>
+                )}
 
                 <FormField
                     control={form.control}
                     name="status"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Statut final</FormLabel>
+                            <FormLabel>Statut final après versement</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="bg-muted font-bold"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         </FormItem>
                     )}
                 />
 
-                <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? <Loader2 className="animate-spin" /> : "Enregistrer le paiement"}
+                <Button type="submit" disabled={loading} className="w-full h-12 font-black uppercase tracking-widest text-lg shadow-xl">
+                    {loading ? <Loader2 className="animate-spin mr-2" /> : "Enregistrer le versement"}
                 </Button>
             </form>
         </Form>

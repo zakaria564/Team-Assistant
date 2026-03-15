@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -36,7 +35,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
-        setScale(containerWidth / 800);
+        setScale(Math.min(containerWidth / 800, 1));
       } else {
         setScale(1);
       }
@@ -125,8 +124,8 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
   const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
-        <div className="w-full max-w-4xl space-y-4 text-center">
+    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen overflow-x-hidden w-full">
+        <div className="w-full max-w-4xl space-y-4 text-center overflow-x-hidden">
             <div className="flex justify-between items-center print:hidden gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="font-bold uppercase">
@@ -144,7 +143,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                         height: `${1120 * scale}px`,
                         transition: 'transform 0.2s ease-out'
                     }}
-                    className="bg-white shadow-2xl rounded-xl"
+                    className="bg-white shadow-2xl rounded-xl overflow-hidden"
                 >
                     <div id="printable-receipt" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
                         <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center gap-6">
@@ -242,12 +241,12 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
 
                             <div className="flex flex-col items-center pt-24 mt-auto">
                                 <div className="text-center space-y-20 w-full max-w-md border-t-2 border-slate-100 pt-10">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Cachet du Club & Signature Administrative</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Cachet & Signature Administrative</p>
                                     <div className="w-full flex flex-col items-center gap-4">
                                         <div className="w-64 border-b-2 border-slate-200"></div>
                                         <div className="flex items-center gap-2 text-slate-300">
                                             <ShieldCheck className="h-4 w-4" />
-                                            <span className="text-[8px] font-black uppercase tracking-[0.2em] italic">Document certifié conforme pour valoir ce que de droit</span>
+                                            <span className="text-[8px] font-black uppercase tracking-[0.2em] italic">Document certifié conforme</span>
                                         </div>
                                     </div>
                                 </div>

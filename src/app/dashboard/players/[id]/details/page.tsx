@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -62,7 +61,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
-        setScale(containerWidth / 800);
+        setScale(Math.min(containerWidth / 800, 1));
       } else {
         setScale(1);
       }
@@ -137,8 +136,8 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
   const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 6).toUpperCase()}`;
 
   return (
-    <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center overflow-x-hidden">
-       <div className="w-full max-w-4xl space-y-6 text-center">
+    <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center overflow-x-hidden w-full">
+       <div className="w-full max-w-4xl space-y-6 text-center overflow-x-hidden">
         <div className="flex justify-between items-center print:hidden gap-4 mb-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="font-bold">
@@ -156,7 +155,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                     height: `${1120 * scale}px`,
                     transition: 'transform 0.2s ease-out'
                 }}
-                className="bg-white shadow-2xl rounded-xl"
+                className="bg-white shadow-2xl rounded-xl overflow-hidden"
             >
                 <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
                     <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-10">

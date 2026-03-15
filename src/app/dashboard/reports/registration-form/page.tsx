@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ export default function RegistrationFormPage() {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
-        setScale(containerWidth / 800);
+        setScale(Math.min(containerWidth / 800, 1));
       } else {
         setScale(1);
       }
@@ -87,23 +86,12 @@ export default function RegistrationFormPage() {
             });
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const ratio = canvasWidth / canvasHeight;
-            
+            const imgData = canvas.toDataURL('image/png');
+            const ratio = canvas.width / canvas.height;
             const width = pdfWidth - 40; 
             const height = width / ratio;
-            
-            let finalHeight = height;
-            if (height > pdfHeight - 40) {
-              finalHeight = pdfHeight - 40;
-            }
 
-            const x = (pdfWidth - width) / 2;
-            const y = (pdfHeight - finalHeight) / 2;
-
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, width, finalHeight);
+            pdf.addImage(imgData, 'PNG', 20, 20, width, height);
             
             let fileName = "document.pdf";
             if (formType === 'junior') fileName = "fiche-inscription-junior.pdf";
@@ -124,9 +112,9 @@ export default function RegistrationFormPage() {
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
-    <div className="overflow-x-hidden">
-        <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
-            <div className="w-full max-w-3xl space-y-6 text-center">
+    <div className="overflow-x-hidden w-full">
+        <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
+            <div className="w-full max-w-3xl space-y-6 text-center overflow-x-hidden">
                 
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 print:hidden">
                     <Button variant="outline" size="sm" onClick={() => router.back()} className="w-full sm:w-auto h-10 font-bold">
@@ -172,7 +160,7 @@ export default function RegistrationFormPage() {
                             height: `${1120 * scale}px`,
                             transition: 'transform 0.2s ease-out'
                         }}
-                        className="bg-white shadow-2xl rounded-xl"
+                        className="bg-white shadow-2xl rounded-xl overflow-hidden"
                     >
                         <Card className="mx-auto print:shadow-none print:border-none bg-white text-black border-none" id="printable-form" style={{ width: '800px', minHeight: '1120px' }}>
                             <CardHeader className="text-center space-y-4 p-10 border-b">
