@@ -125,7 +125,7 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Erreur d'enregistrement. Vérifiez que les URLs sont valides.");
+        setSaveError("Erreur d'enregistrement. Vérifiez que les données ne sont pas trop volumineuses.");
         toast({ variant: "destructive", title: "Erreur" });
     } finally { setLoading(false); }
   };

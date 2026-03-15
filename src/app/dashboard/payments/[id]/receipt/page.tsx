@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
-import html2canvas from "canvas";
+import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -33,8 +33,9 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
 
   useEffect(() => {
     const handleResize = () => {
-      // Ajustement dynamique Redmi 12C (largeur document 800px)
-      const containerWidth = window.innerWidth - 32;
+      // Optimisation Redmi 12C (Largeur 76.41mm / ~360-400px CSS)
+      const containerWidth = window.innerWidth - 32; 
+      // Le document fait 800px de large
       if (containerWidth < 800) {
         setScale(containerWidth / 800);
       } else {
@@ -104,7 +105,6 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true,
-                allowTaint: true,
                 backgroundColor: "#ffffff",
                 logging: false
             });
