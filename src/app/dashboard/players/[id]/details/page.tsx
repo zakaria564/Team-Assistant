@@ -17,12 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
   <div className="flex items-start gap-4 mb-6 text-left">
-    <div className="mt-1 bg-slate-100 p-2 rounded-lg border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+    <div className="mt-1 bg-slate-100 p-2.5 rounded-lg border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
         <Icon className="h-4 w-4 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label}</p>
-      <div className="text-base font-bold text-slate-900 break-words leading-snug">
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">{label}</p>
+      <div className="text-base font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -122,7 +122,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`fiche_officielle_${player?.name?.replace(/ /g, "_")}.pdf`);
+            pdf.save(`fiche_${player?.name?.replace(/ /g, "_")}.pdf`);
         } catch (err) { toast({ variant: "destructive", title: "Erreur PDF" }); }
         finally { setLoadingPdf(false); }
     }
@@ -142,7 +142,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter PDF (Haute Qualité)
+            Exporter Fiche HD
           </Button>
         </div>
 
@@ -158,7 +158,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                 className="bg-white shadow-2xl rounded-xl overflow-hidden"
             >
                 <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
-                    <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-12">
+                    <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
                         <div className="flex flex-row items-center gap-8 text-left">
                             <div className="h-24 w-28 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubLogoUrl ? (
@@ -172,21 +172,21 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                             <div className="space-y-2">
                                 <h1 className="text-3xl font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
                                 <div className="text-slate-400 text-base font-semibold leading-tight max-w-[350px]">
-                                    <p className="break-words">{clubAddress || "Siège Social Officiel"}</p>
+                                    <p className="break-words">{clubAddress || "Siège Social"}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="text-right space-y-2">
                             <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white">FICHE</h2>
                             <div className="pt-2">
-                                <p className="text-primary font-black text-xs uppercase tracking-[0.3em]">DOSSIER JOUEUR</p>
-                                <p className="text-slate-500 text-sm font-bold mt-1">Émise le {format(new Date(), 'dd/MM/yyyy')}</p>
+                                <p className="text-primary font-black text-xs uppercase tracking-[0.3em]">OFFICIELLE JOUEUR</p>
+                                <p className="text-slate-500 text-sm font-bold mt-1">Saison {new Date().getFullYear()}</p>
                             </div>
                         </div>
                     </header>
                     
-                    <div className="px-14 pb-14 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-12 mb-14 bg-slate-50 p-10 rounded-2xl border-2 border-slate-100 shadow-sm">
+                    <div className="px-12 pb-12 flex-grow flex flex-col">
+                        <section className="flex flex-row items-center gap-12 mb-12 bg-slate-50 p-10 rounded-2xl border-2 border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-4 shrink-0">
                                 <div className="h-40 w-40 border-4 border-white shadow-xl rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                                     {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-cover" /> : <AvatarFallback className="text-5xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
@@ -196,7 +196,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-10 break-words text-left">{player.name}</h1>
+                                <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-8 break-words text-left">{player.name}</h1>
                                 <div className="grid grid-cols-3 gap-6">
                                     <div className="flex flex-col items-center justify-center text-center p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
                                         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
@@ -214,8 +214,8 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                             </div>
                         </section>
 
-                        <main className="flex flex-row gap-16 mb-12">
-                            <div className="w-1/2 space-y-12">
+                        <main className="flex flex-row gap-12 mb-8">
+                            <div className="w-1/2 space-y-10">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -227,7 +227,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                                     <DetailItem icon={MapPin} label="Adresse Résidentielle" value={player.address} />
                                 </div>
                             </div>
-                            <div className="w-1/2 space-y-12">
+                            <div className="w-1/2 space-y-10">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Entraîneur Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
@@ -235,7 +235,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                                     <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En cours"} />
                                 </div>
                                 {player.tutorName && (
-                                    <div className="pt-6">
+                                    <div className="pt-4">
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                         <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                                         <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
@@ -245,18 +245,18 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                             </div>
                         </main>
 
-                        <footer className="mt-auto pt-14 border-t-2 border-slate-100 flex flex-col items-center">
-                            <div className="text-center space-y-24 mb-20 pt-10 w-full flex flex-col items-center">
+                        <footer className="mt-auto pt-10 border-t-2 border-slate-100 flex flex-col items-center">
+                            <div className="text-center space-y-20 mb-16 pt-8 w-full flex flex-col items-center">
                                 <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400 italic">Cachet du Club & Signature Administrative</p>
                                 <div className="w-72 border-b-4 border-slate-200 shadow-sm"></div>
                             </div>
                             <div className="w-full flex flex-row justify-between items-end gap-12 text-left">
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div className="flex items-center gap-3 text-slate-300">
                                         <ShieldCheck className="h-5 w-5" />
                                         <span className="text-[10px] font-black uppercase tracking-widest italic">Certification Électronique Certifiée</span>
                                     </div>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système de Gestion Team Assistant</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                                 </div>
                                 <div className="text-xs font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
                             </div>

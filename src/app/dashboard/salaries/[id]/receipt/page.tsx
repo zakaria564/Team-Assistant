@@ -130,7 +130,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
                     {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    Exporter Reçu (HD)
+                    Exporter Fiche HD
                 </Button>
             </div>
             
@@ -146,7 +146,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                     className="bg-white shadow-2xl rounded-xl overflow-hidden"
                 >
                     <div id="printable-receipt" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
-                        <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8">
+                        <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
                             <div className="flex flex-row items-center gap-8 text-left">
                                 <div className="h-24 w-28 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
                                     {clubInfo?.logoUrl ? (
@@ -173,8 +173,8 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                             </div>
                         </header>
 
-                        <div className="p-14 space-y-12 text-left">
-                            <div className="grid grid-cols-2 gap-14">
+                        <div className="p-12 space-y-10 text-left flex-grow">
+                            <div className="grid grid-cols-2 gap-12">
                                 <div className="bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Bénéficiaire (Entraîneur)</h3>
                                     <div className="space-y-3">
@@ -197,7 +197,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                                 </div>
                             </div>
                             
-                            <div className="rounded-2xl border-2 border-slate-200 overflow-hidden shadow-xl">
+                            <div className="rounded-2xl border-2 border-slate-200 overflow-hidden shadow-lg">
                                 <Table className="w-full">
                                     <TableHeader className="bg-slate-100">
                                         <TableRow className="border-b-2 border-slate-200">
@@ -220,7 +220,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                                 </Table>
                             </div>
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-end pt-4">
                                 <div className="w-full max-w-sm space-y-4 bg-slate-900 p-8 rounded-2xl shadow-2xl text-left border-b-8 border-primary">
                                     <div className="flex justify-between text-slate-400 font-bold text-xs uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
@@ -241,8 +241,8 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-center pt-24 mt-auto">
-                                <div className="text-center space-y-20 w-full max-w-md border-t-2 border-slate-100 pt-12">
+                            <div className="flex flex-col items-center pt-12">
+                                <div className="text-center space-y-20 w-full max-w-md border-t-2 border-slate-100 pt-10">
                                     <p className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-400 italic">Signature Administrative & Cachet</p>
                                     <div className="w-full flex flex-col items-center gap-6">
                                         <div className="w-72 border-b-4 border-slate-200 shadow-sm"></div>

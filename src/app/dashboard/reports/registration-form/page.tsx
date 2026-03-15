@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import jsPDF from "jspdf";
+import jsPDF from "jsPDF";
 import html2canvas from "html2canvas";
 import { db, auth } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -75,7 +75,7 @@ export default function RegistrationFormPage() {
     const formElement = document.getElementById("printable-form");
     if (formElement) {
         html2canvas(formElement, {
-            scale: 2,
+            scale: 3,
             useCORS: true,
             backgroundColor: "#ffffff"
         }).then((canvas) => {
@@ -86,7 +86,7 @@ export default function RegistrationFormPage() {
             });
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/png', 1.0);
             const ratio = canvas.width / canvas.height;
             const width = pdfWidth - 40; 
             const height = width / ratio;
@@ -145,7 +145,7 @@ export default function RegistrationFormPage() {
                         ) : (
                             <>
                                 <Download className="mr-2 h-4 w-4" />
-                                <span className="ml-2 font-black">Exporter</span>
+                                <span className="ml-2 font-black">Exporter HD</span>
                             </>
                         )}
                     </Button>
