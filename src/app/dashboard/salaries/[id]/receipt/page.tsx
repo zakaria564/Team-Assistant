@@ -138,7 +138,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                 </Button>
             </div>
             
-            <div className="w-full flex justify-center overflow-hidden">
+            <div className="w-full flex justify-center">
                 <div 
                     style={{ 
                         transform: `scale(${scale})`, 

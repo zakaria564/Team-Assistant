@@ -139,7 +139,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full flex justify-center overflow-hidden">
+        <div className="w-full flex justify-center">
             <div 
                 style={{ 
                     transform: `scale(${scale})`, 
@@ -182,7 +182,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                         <section className="flex flex-row items-center gap-16 mb-12 bg-slate-50 p-12 rounded-3xl border-2 border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-6 shrink-0">
                                 <div className="h-48 w-48 border-4 border-white shadow-xl rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                                    {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-cover" /> : <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
+                                    {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
                                 </div>
                                 <div className="bg-slate-900 text-white px-6 py-2 rounded-full font-mono text-xs font-black tracking-widest flex items-center gap-3 shadow-lg border border-slate-700">
                                     <Fingerprint className="h-4 w-4 text-primary" />{displayId}
