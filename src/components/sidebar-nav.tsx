@@ -32,22 +32,29 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
-    // Uniquement les joueurs avec une dette réelle > 10 MAD (Affiche 1 pour Meryem Labib)
-    const unsubscribe = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
-        const playersWithDebt = new Set();
-        paySnap.docs.forEach(doc => {
-          const data = doc.data();
-          const transactions = data.transactions || [];
-          const total = data.totalAmount || 0;
-          const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-          
-          if (total - paid > 10) {
-            playersWithDebt.add(data.playerId);
-          }
+    // Filtre strict : Joueurs actifs avec dette > 10 MAD (Résultat attendu : 1 pour Meryem Labib)
+    const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("status", "==", "Actif")), (playerSnap) => {
+        const activePlayerIds = new Set(playerSnap.docs.map(d => d.id));
+        
+        const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+            const playersWithRealDebt = new Set();
+            paySnap.docs.forEach(doc => {
+                const data = doc.data();
+                if (!activePlayerIds.has(data.playerId)) return;
+
+                const transactions = data.transactions || [];
+                const total = data.totalAmount || 0;
+                const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+                
+                if (total - paid > 10) {
+                    playersWithRealDebt.add(data.playerId);
+                }
+            });
+            setPendingPaymentsCount(playersWithRealDebt.size);
         });
-        setPendingPaymentsCount(playersWithDebt.size);
+        return () => unsubscribePayments();
     });
-    return () => unsubscribe();
+    return () => unsubscribePlayers();
   }, [user]);
 
   useEffect(() => {

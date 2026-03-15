@@ -158,7 +158,14 @@ export function ClubSettingsForm() {
 
                     <div className="grid sm:grid-cols-2 gap-10">
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Logo du Club (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center justify-between">
+                                <span className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Logo du Club</span>
+                                {form.watch('logoUrl') && (
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 text-destructive hover:text-destructive hover:bg-destructive/10 px-2" onClick={() => form.setValue('logoUrl', '')}>
+                                        <Trash2 className="h-3 w-3 mr-1" /> Effacer
+                                    </Button>
+                                )}
+                            </FormLabel>
                             <div className="flex flex-col gap-4">
                                 <div className="h-32 w-32 border-2 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
                                     {form.watch('logoUrl') ? (
@@ -166,23 +173,16 @@ export function ClubSettingsForm() {
                                     ) : <div className="text-[10px] text-muted-foreground font-black uppercase">Aucun Logo</div>}
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex gap-2">
-                                        <Button type="button" variant="outline" className="flex-1 h-10 text-xs font-bold" onClick={() => logoInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4" /> Charger
-                                        </Button>
-                                        <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoUrl')} />
-                                        {form.watch('logoUrl') && (
-                                            <Button type="button" variant="destructive" size="icon" className="h-10 w-10 shrink-0" onClick={() => form.setValue('logoUrl', '')}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
+                                    <Button type="button" variant="outline" className="w-full h-10 text-xs font-bold" onClick={() => logoInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" /> Charger un fichier
+                                    </Button>
+                                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoUrl')} />
                                     <FormField control={form.control} name="logoUrl" render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
                                                 <div className="relative">
                                                     <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                                                    <Input placeholder="Coller l'URL du logo ici..." {...field} value={field.value || ''} className="pl-9 text-xs h-9" />
+                                                    <Input placeholder="Ou coller une URL web..." {...field} value={field.value || ''} className="pl-9 text-xs h-9" />
                                                 </div>
                                             </FormControl>
                                         </FormItem>
@@ -192,7 +192,14 @@ export function ClubSettingsForm() {
                         </div>
 
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Photo Profil Admin (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center justify-between">
+                                <span className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Photo Profil Admin</span>
+                                {form.watch('adminPhotoUrl') && (
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 text-destructive hover:text-destructive hover:bg-destructive/10 px-2" onClick={() => form.setValue('adminPhotoUrl', '')}>
+                                        <Trash2 className="h-3 w-3 mr-1" /> Effacer
+                                    </Button>
+                                )}
+                            </FormLabel>
                             <div className="flex flex-col gap-4">
                                 <div className="h-32 w-32 rounded-full border-2 bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
                                     {form.watch('adminPhotoUrl') ? (
@@ -200,23 +207,16 @@ export function ClubSettingsForm() {
                                     ) : <div className="text-[10px] text-muted-foreground font-black uppercase">Pas de Photo</div>}
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex gap-2">
-                                        <Button type="button" variant="outline" className="flex-1 h-10 text-xs font-bold" onClick={() => adminInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4" /> Charger
-                                        </Button>
-                                        <input type="file" ref={adminInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'adminPhotoUrl')} />
-                                        {form.watch('adminPhotoUrl') && (
-                                            <Button type="button" variant="destructive" size="icon" className="h-10 w-10 shrink-0" onClick={() => form.setValue('adminPhotoUrl', '')}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
+                                    <Button type="button" variant="outline" className="w-full h-10 text-xs font-bold" onClick={() => adminInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" /> Charger un fichier
+                                    </Button>
+                                    <input type="file" ref={adminInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'adminPhotoUrl')} />
                                     <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
                                                 <div className="relative">
                                                     <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                                                    <Input placeholder="Coller l'URL de la photo ici..." {...field} value={field.value || ''} className="pl-9 text-xs h-9" />
+                                                    <Input placeholder="Ou coller une URL web..." {...field} value={field.value || ''} className="pl-9 text-xs h-9" />
                                                 </div>
                                             </FormControl>
                                         </FormItem>
