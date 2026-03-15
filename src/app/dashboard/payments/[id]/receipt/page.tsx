@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -33,9 +33,13 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
 
   useEffect(() => {
     const handleResize = () => {
+      // Ajustement dynamique Redmi 12C (largeur document 800px)
       const containerWidth = window.innerWidth - 32;
-      if (containerWidth < 800) setScale(containerWidth / 800);
-      else setScale(1);
+      if (containerWidth < 800) {
+        setScale(containerWidth / 800);
+      } else {
+        setScale(1);
+      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);

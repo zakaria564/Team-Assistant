@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, AlertTriangle, Trash2, Upload, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Upload, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
@@ -108,7 +108,7 @@ export function ClubSettingsForm() {
       setLoading(true);
       const compressed = await compressImage(file);
       form.setValue(fieldName, compressed);
-      toast({ title: "Image chargée", description: "L'image a été compressée pour les performances mobile." });
+      toast({ title: "Image chargée", description: "L'image a été remplacée et optimisée." });
     } catch (error) {
       toast({ variant: "destructive", title: "Erreur d'image" });
     } finally { setLoading(false); }
@@ -125,7 +125,7 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Erreur d'enregistrement. Vérifiez la taille des images (max 1Mo après compression).");
+        setSaveError("Erreur d'enregistrement. Vérifiez que les URLs sont valides.");
         toast({ variant: "destructive", title: "Erreur" });
     } finally { setLoading(false); }
   };
@@ -160,11 +160,6 @@ export function ClubSettingsForm() {
                         <div className="space-y-4">
                             <FormLabel className="text-base flex items-center justify-between">
                                 <span className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Logo du Club</span>
-                                {form.watch('logoUrl') && (
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 text-destructive hover:text-destructive hover:bg-destructive/10 px-2" onClick={() => form.setValue('logoUrl', '')}>
-                                        <Trash2 className="h-3 w-3 mr-1" /> Effacer
-                                    </Button>
-                                )}
                             </FormLabel>
                             <div className="flex flex-col gap-4">
                                 <div className="h-32 w-32 border-2 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
@@ -174,7 +169,7 @@ export function ClubSettingsForm() {
                                 </div>
                                 <div className="space-y-2">
                                     <Button type="button" variant="outline" className="w-full h-10 text-xs font-bold" onClick={() => logoInputRef.current?.click()}>
-                                        <Upload className="mr-2 h-4 w-4" /> Charger un fichier
+                                        <Upload className="mr-2 h-4 w-4" /> Remplacer le fichier
                                     </Button>
                                     <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoUrl')} />
                                     <FormField control={form.control} name="logoUrl" render={({ field }) => (
@@ -194,11 +189,6 @@ export function ClubSettingsForm() {
                         <div className="space-y-4">
                             <FormLabel className="text-base flex items-center justify-between">
                                 <span className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Photo Profil Admin</span>
-                                {form.watch('adminPhotoUrl') && (
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 text-destructive hover:text-destructive hover:bg-destructive/10 px-2" onClick={() => form.setValue('adminPhotoUrl', '')}>
-                                        <Trash2 className="h-3 w-3 mr-1" /> Effacer
-                                    </Button>
-                                )}
                             </FormLabel>
                             <div className="flex flex-col gap-4">
                                 <div className="h-32 w-32 rounded-full border-2 bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
@@ -208,7 +198,7 @@ export function ClubSettingsForm() {
                                 </div>
                                 <div className="space-y-2">
                                     <Button type="button" variant="outline" className="w-full h-10 text-xs font-bold" onClick={() => adminInputRef.current?.click()}>
-                                        <Upload className="mr-2 h-4 w-4" /> Charger un fichier
+                                        <Upload className="mr-2 h-4 w-4" /> Remplacer le fichier
                                     </Button>
                                     <input type="file" ref={adminInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'adminPhotoUrl')} />
                                     <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
