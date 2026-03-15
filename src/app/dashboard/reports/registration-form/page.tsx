@@ -22,21 +22,6 @@ export default function RegistrationFormPage() {
   const [loadingClub, setLoadingClub] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [formType, setFormType] = useState<"junior" | "adult" | "checklist">("junior");
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const containerWidth = window.innerWidth - 32;
-      if (containerWidth < 1000) {
-        setScale(Math.min(containerWidth / 1000, 1));
-      } else {
-        setScale(1);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const fetchClubInfo = async () => {
@@ -150,18 +135,10 @@ export default function RegistrationFormPage() {
                 </Button>
             </div>
             
-            <div className="w-full flex justify-center overflow-hidden">
-                <div 
-                    style={{ 
-                        transform: `scale(${scale})`, 
-                        transformOrigin: 'top center',
-                        width: '1000px',
-                        height: `${1414 * scale}px`,
-                        transition: 'transform 0.2s ease-out'
-                    }}
-                    className="bg-white shadow-2xl rounded-xl overflow-hidden"
-                >
-                    <Card className="mx-auto bg-white text-black border-none" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
+            {/* Conteneur avec défilement horizontal pour Redmi 12C */}
+            <div className="w-full overflow-x-auto pb-8">
+                <div className="min-w-[1000px] flex justify-center">
+                    <Card className="mx-auto bg-white text-black border shadow-2xl" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
                         <CardHeader className="text-center space-y-6 p-12 border-b">
                             {loadingClub || loadingUser ? (
                             <div className="flex flex-col items-center gap-6">

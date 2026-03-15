@@ -54,21 +54,6 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
   const [clubName, setClubName] = useState("Votre Club");
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [clubAddress, setClubAddress] = useState("");
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const containerWidth = window.innerWidth - 32;
-      if (containerWidth < 1000) {
-        setScale(Math.min(containerWidth / 1000, 1));
-      } else {
-        setScale(1);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     if (!coachId) return;
@@ -139,18 +124,10 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full flex justify-center">
-            <div 
-                style={{ 
-                    transform: `scale(${scale})`, 
-                    transformOrigin: 'top center',
-                    width: '1000px',
-                    height: `${1414 * scale}px`,
-                    transition: 'transform 0.2s ease-out'
-                }}
-                className="bg-white shadow-2xl rounded-xl overflow-hidden"
-            >
-                <div id="printable-details" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
+        {/* Conteneur avec défilement horizontal pour Redmi 12C */}
+        <div className="w-full overflow-x-auto pb-8">
+            <div className="min-w-[1000px] flex justify-center">
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
                     <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
                         <div className="flex flex-row items-center gap-8 text-left">
                             <div className="h-28 w-32 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
@@ -182,7 +159,11 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                         <section className="flex flex-row items-center gap-16 mb-12 bg-slate-50 p-12 rounded-3xl border-2 border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-6 shrink-0">
                                 <div className="h-48 w-48 border-4 border-white shadow-xl rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                                    {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain" /> : <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
+                                    {coach.photoUrl ? (
+                                        <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain bg-white" />
+                                    ) : (
+                                        <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
+                                    )}
                                 </div>
                                 <div className="bg-slate-900 text-white px-6 py-2 rounded-full font-mono text-xs font-black tracking-widest flex items-center gap-3 shadow-lg border border-slate-700">
                                     <Fingerprint className="h-4 w-4 text-primary" />{displayId}

@@ -33,22 +33,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
   const [clubInfo, setClubInfo] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
-  const [scale, setScale] = useState(1);
 
-  useEffect(() => {
-    const handleResize = () => {
-      const containerWidth = window.innerWidth - 32; 
-      if (containerWidth < 1000) {
-        setScale(Math.min(containerWidth / 1000, 1));
-      } else {
-        setScale(1);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
   useEffect(() => {
     if (!paymentId || loadingUser) return;
 
@@ -149,18 +134,10 @@ export default function PaymentReceiptPage({ params }: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full flex justify-center">
-            <div 
-                style={{ 
-                    transform: `scale(${scale})`, 
-                    transformOrigin: 'top center',
-                    width: '1000px',
-                    height: `${1414 * scale}px`,
-                    transition: 'transform 0.2s ease-out'
-                }}
-                className="bg-white shadow-2xl rounded-xl overflow-hidden"
-            >
-                <div id="printable-receipt" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
+        {/* Conteneur avec défilement horizontal pour Redmi 12C */}
+        <div className="w-full overflow-x-auto pb-8">
+            <div className="min-w-[1000px] flex justify-center">
+                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
                     <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-10">
                         <div className="flex flex-row items-center gap-10 text-left">
                             <div className="h-28 w-32 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
