@@ -24,7 +24,6 @@ export default function RegistrationFormPage() {
   const [formType, setFormType] = useState<"junior" | "adult" | "checklist">("junior");
   const [scale, setScale] = useState(1);
 
-  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;

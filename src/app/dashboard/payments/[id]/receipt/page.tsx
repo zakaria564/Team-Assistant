@@ -31,7 +31,6 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [scale, setScale] = useState(1);
 
-  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
@@ -115,7 +114,7 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
             pdf.save(`recu_${payment?.playerName.replace(/ /g, "_")}.pdf`);
         } catch (err) {
             console.error("Erreur PDF:", err);
-            toast({ variant: "destructive", title: "Erreur de génération", description: "Le PDF n'a pas pu être généré." });
+            toast({ variant: "destructive", title: "Erreur de génération" });
         } finally {
             setLoadingPdf(false);
         }
@@ -170,7 +169,6 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
                                 <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                                 <div className="text-slate-400 text-sm font-medium leading-tight">
                                     <p className="max-w-[350px] break-words">{clubInfo?.address || "Siège Social"}</p>
-                                    {clubInfo?.clubPhone && <p className="mt-1">Tél: {clubInfo.clubPhone}</p>}
                                 </div>
                             </div>
                         </div>

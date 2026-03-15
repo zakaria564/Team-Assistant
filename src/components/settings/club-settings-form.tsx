@@ -108,7 +108,7 @@ export function ClubSettingsForm() {
       setLoading(true);
       const compressed = await compressImage(file);
       form.setValue(fieldName, compressed);
-      toast({ title: "Image chargée", description: "L'image a été compressée pour les performances." });
+      toast({ title: "Image chargée", description: "L'image a été compressée pour les performances mobile." });
     } catch (error) {
       toast({ variant: "destructive", title: "Erreur d'image" });
     } finally { setLoading(false); }
@@ -125,8 +125,8 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Une erreur est survenue lors de l'enregistrement. Veuillez vérifier la taille des images.");
-        toast({ variant: "destructive", title: "Erreur d'enregistrement" });
+        setSaveError("Erreur d'enregistrement. Vérifiez la taille des images (max 1Mo après compression).");
+        toast({ variant: "destructive", title: "Erreur" });
     } finally { setLoading(false); }
   };
 
@@ -160,7 +160,7 @@ export function ClubSettingsForm() {
                         <div className="space-y-4">
                             <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Logo du Club (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-32 w-32 border-2 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative group mx-auto sm:mx-0">
+                                <div className="h-32 w-32 border-2 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
                                     {form.watch('logoUrl') ? (
                                         <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-2" alt="Logo" />
                                     ) : <div className="text-[10px] text-muted-foreground font-black uppercase">Aucun Logo</div>}
@@ -194,7 +194,7 @@ export function ClubSettingsForm() {
                         <div className="space-y-4">
                             <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Photo Profil Admin (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-32 w-32 rounded-full border-2 bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative group mx-auto sm:mx-0">
+                                <div className="h-32 w-32 rounded-full border-2 bg-slate-50 flex items-center justify-center overflow-hidden shadow-inner relative mx-auto sm:mx-0">
                                     {form.watch('adminPhotoUrl') ? (
                                         <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" />
                                     ) : <div className="text-[10px] text-muted-foreground font-black uppercase">Pas de Photo</div>}

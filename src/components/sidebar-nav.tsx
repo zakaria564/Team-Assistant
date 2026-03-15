@@ -29,52 +29,45 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
-  // Calculer le badge des paiements (Strictement 1 pour Meryem Labib)
   useEffect(() => {
     if (!user) return;
     
-    const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-    
-    return onSnapshot(playersQuery, (playersSnap) => {
-      const activePlayerIds = new Set(playersSnap.docs.map(d => d.id));
-      
-      return onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
-        const playersWithRealDebt = new Set();
+    // Uniquement les joueurs avec une dette réelle > 10 MAD (Affiche 1 pour Meryem Labib)
+    const unsubscribe = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+        const playersWithDebt = new Set();
         paySnap.docs.forEach(doc => {
           const data = doc.data();
-          if (!activePlayerIds.has(data.playerId)) return;
-          
           const transactions = data.transactions || [];
           const total = data.totalAmount || 0;
           const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
           
-          // Seuil de dette significative (> 10 MAD) pour éviter les arrondis
           if (total - paid > 10) {
-            playersWithRealDebt.add(data.playerId);
+            playersWithDebt.add(data.playerId);
           }
         });
-        setPendingPaymentsCount(playersWithRealDebt.size);
-      });
+        setPendingPaymentsCount(playersWithDebt.size);
     });
+    return () => unsubscribe();
   }, [user]);
 
-  // Calculer le badge des salaires
   useEffect(() => {
     if (!user) return;
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     
-    return onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachSnap) => {
+    const unsubscribeCoaches = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachSnap) => {
       const coachIds = coachSnap.docs.map(d => d.id);
       if (coachIds.length === 0) {
           setPendingSalariesCount(0);
           return;
       }
       
-      return onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
+      const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid), where("description", "==", currentMonthDesc)), (salarySnap) => {
         const paidCoachIds = new Set(salarySnap.docs.filter(d => d.data().status === 'Payé').map(d => d.data().coachId));
         setPendingSalariesCount(coachIds.filter(id => !paidCoachIds.has(id)).length);
       });
+      return () => unsubscribeSalaries();
     });
+    return () => unsubscribeCoaches();
   }, [user]);
 
   return (

@@ -31,7 +31,6 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [scale, setScale] = useState(1);
 
-  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
@@ -104,7 +103,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
         } catch (err) {
             console.error("Erreur PDF:", err);
-            toast({ variant: "destructive", title: "Erreur de génération", description: "Une erreur est survenue lors de la création du PDF." });
+            toast({ variant: "destructive", title: "Erreur de génération" });
         } finally {
             setLoadingPdf(false);
         }

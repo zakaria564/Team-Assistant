@@ -52,7 +52,6 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
   const [clubAddress, setClubAddress] = useState("");
   const [scale, setScale] = useState(1);
 
-  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
