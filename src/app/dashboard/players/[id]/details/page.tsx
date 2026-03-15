@@ -134,7 +134,7 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
   const displayId = player.professionalId || `PL-REF-${player.id.substring(0, 6).toUpperCase()}`;
 
   return (
-    <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center">
+    <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center overflow-x-hidden">
        <div className="w-full max-w-4xl space-y-6 text-center">
         <div className="flex justify-between items-center print:hidden gap-4 mb-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>

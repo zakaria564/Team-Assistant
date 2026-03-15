@@ -25,8 +25,8 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
   
-  const [salary, setSalary] = useState<any>(null);
-  const [clubInfo, setClubInfo] = useState<any>(null);
+  const [salary, setSalary] = useState<any | null>(null);
+  const [clubInfo, setClubInfo] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [scale, setScale] = useState(1);
@@ -122,7 +122,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
   const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
   return (
-    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen">
+    <div className="bg-muted/40 p-2 sm:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
         <div className="w-full max-w-4xl space-y-4 text-center">
             <div className="flex justify-between items-center print:hidden gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>

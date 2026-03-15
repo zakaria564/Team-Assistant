@@ -28,47 +28,37 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   const [user] = useAuthState(auth);
   const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
-  const [activePlayerIds, setActivePlayerIds] = useState<Set<string>>(new Set());
 
-  // Récupérer les IDs des joueurs actifs uniquement
+  // Calculer le badge des paiements (Strictement 1 pour Meryem Labib)
   useEffect(() => {
     if (!user) return;
-    return onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (snap) => {
-      const activeIds = new Set(snap.docs.map(d => d.id));
-      setActivePlayerIds(activeIds);
+    
+    const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+    
+    return onSnapshot(playersQuery, (playersSnap) => {
+      const activePlayerIds = new Set(playersSnap.docs.map(d => d.id));
+      
+      return onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+        const playersWithRealDebt = new Set();
+        paySnap.docs.forEach(doc => {
+          const data = doc.data();
+          if (!activePlayerIds.has(data.playerId)) return;
+          
+          const transactions = data.transactions || [];
+          const total = data.totalAmount || 0;
+          const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+          
+          // Seuil de dette significative (> 10 MAD) pour éviter les arrondis
+          if (total - paid > 10) {
+            playersWithRealDebt.add(data.playerId);
+          }
+        });
+        setPendingPaymentsCount(playersWithRealDebt.size);
+      });
     });
   }, [user]);
 
-  // Calculer le badge des paiements (Dettes réelles des joueurs actifs)
-  useEffect(() => {
-    if (!user || activePlayerIds.size === 0) { 
-        setPendingPaymentsCount(0); 
-        return; 
-    }
-    
-    return onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (snapshot) => {
-      const playersWithDebt = new Set();
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        
-        // Uniquement si le joueur existe toujours
-        if (!activePlayerIds.has(data.playerId)) return;
-        
-        const transactions = data.transactions || [];
-        const total = data.totalAmount || 0;
-        const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-        
-        // Seuil strict pour éviter les erreurs d'affichage (dette > 1 MAD)
-        if (total - paid > 1) {
-            playersWithDebt.add(data.playerId);
-        }
-      });
-      // Cela devrait afficher 1 si seule Meryem Labib a une dette > 1 MAD
-      setPendingPaymentsCount(playersWithDebt.size);
-    });
-  }, [user, activePlayerIds]);
-
-  // Calculer le badge des salaires (Fiches non payées ce mois-ci)
+  // Calculer le badge des salaires
   useEffect(() => {
     if (!user) return;
     const currentMonthDesc = `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
