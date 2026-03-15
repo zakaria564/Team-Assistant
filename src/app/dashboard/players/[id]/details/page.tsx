@@ -21,7 +21,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
         <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
+      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
       <div className="text-sm font-bold text-slate-800 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>

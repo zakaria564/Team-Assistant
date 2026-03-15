@@ -71,6 +71,7 @@
     @apply bg-background;
     overflow-x: hidden !important;
     width: 100vw;
+    position: fixed; /* Force stabilization */
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
@@ -88,7 +89,6 @@
     }
   }
 
-  /* Hide arrows from number input */
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;

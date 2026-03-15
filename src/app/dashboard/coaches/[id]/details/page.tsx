@@ -21,7 +21,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
         <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
+      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
       <div className={`text-sm font-bold break-words leading-tight text-slate-800`}>
         {value || children || "Non spécifié"}
       </div>
@@ -55,7 +55,6 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
-      // Precision calculation for Redmi 12C width (approx 360-400px logical)
       if (containerWidth < 800) {
         setScale(Math.min(containerWidth / 800, 1));
       } else {
