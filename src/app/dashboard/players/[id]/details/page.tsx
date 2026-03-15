@@ -136,8 +136,8 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
 
   return (
     <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center">
-       <div className="w-full max-w-4xl space-y-6">
-        <div className="flex justify-between items-center print:hidden gap-4">
+       <div className="w-full max-w-4xl space-y-6 text-center">
+        <div className="flex justify-between items-center print:hidden gap-4 mb-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="font-bold">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
@@ -249,8 +249,8 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
                                 <div className="w-64 border-b-2 border-slate-200"></div>
                             </div>
-                            <div className="w-full flex flex-row justify-between items-end gap-10">
-                                <div className="space-y-2 text-left">
+                            <div className="w-full flex flex-row justify-between items-end gap-10 text-left">
+                                <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-slate-300">
                                         <ShieldCheck className="h-4 w-4" />
                                         <span className="text-[9px] font-black uppercase tracking-wider italic">Certification électronique administrative</span>

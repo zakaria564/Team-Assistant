@@ -45,9 +45,12 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         if (!activePlayerIds.has(data.playerId)) return;
+        
+        const transactions = data.transactions || [];
         const total = data.totalAmount || 0;
-        const paid = (data.transactions || []).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-        // Filtrage strict : dette supérieure à 10 MAD pour éviter les erreurs d'arrondi
+        const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+        
+        // Seuil strict pour éviter les erreurs d'affichage : dette > 10 MAD
         if (total - paid > 10) {
             playersWithDebt.add(data.playerId);
         }

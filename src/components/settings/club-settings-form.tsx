@@ -9,8 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, AlertTriangle, Link as LinkIcon, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Loader2, CheckCircle2, AlertTriangle, Link as LinkIcon, Trash2, Upload, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import { db, auth } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -37,6 +37,9 @@ export function ClubSettingsForm() {
   const [loadingData, setLoadingData] = useState(true);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
+  
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const adminInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,22 +78,66 @@ export function ClubSettingsForm() {
     if (user || !loadingUser) fetchClubData();
   }, [user, loadingUser, form]);
 
+  const compressImage = (file: File, maxSize: number = 400): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height *= maxSize / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width *= maxSize / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'logoUrl' | 'adminPhotoUrl') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const compressed = await compressImage(file);
+      form.setValue(fieldName, compressed);
+      toast({ title: "Image chargée", description: "L'image a été optimisée pour le système." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de traiter l'image." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
     
-    // Firestore limit check (~1MB per doc)
-    const totalSize = JSON.stringify(values).length;
-    if (totalSize > 800000) {
-        setSaveError("Les données sont trop volumineuses pour être enregistrées (limite de la base de données). Veuillez utiliser des URLs d'images plus courtes ou vider les champs URL avec le bouton rouge.");
-        return;
-    }
-
     setLoading(true);
     setSaveError(null);
     try {
         const clubDocRef = doc(db, "clubs", user.uid);
         await setDoc(clubDocRef, { ...values, userId: user.uid, updatedAt: new Date() }, { merge: true });
-        toast({ title: "Configuration enregistrée !" });
+        toast({ title: "Configuration enregistrée !", description: "Vos modifications sont appliquées sur tous vos appareils." });
         router.refresh();
     } catch (error: any) {
         console.error(error);
@@ -101,16 +148,11 @@ export function ClubSettingsForm() {
     }
   };
 
-  const clearField = (fieldName: 'logoUrl' | 'adminPhotoUrl') => {
-      form.setValue(fieldName, '');
-      toast({ title: "Champ vidé", description: "Enregistrez pour confirmer la suppression." });
-  };
-
   return (
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Identité du Club</CardTitle>
-        <CardDescription>Gérez les logos et les informations de votre club.</CardDescription>
+        <CardDescription>Gérez l'image de marque et les contacts de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -134,34 +176,64 @@ export function ClubSettingsForm() {
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4 text-primary" /> Logo du Club (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Logo du Club</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 border-2 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-inner">
-                                    {form.watch('logoUrl') ? <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-1" alt="Logo" /> : <div className="text-[10px] text-muted-foreground font-bold text-center p-2">Aucun Logo</div>}
+                                <div className="h-32 w-32 border-2 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden shadow-sm relative group">
+                                    {form.watch('logoUrl') ? (
+                                        <>
+                                            <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-2" alt="Logo" />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => form.setValue('logoUrl', '')}
+                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 className="h-6 w-6 text-white" />
+                                            </button>
+                                        </>
+                                    ) : <div className="text-[10px] text-muted-foreground font-bold">Aucun Logo</div>}
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2">
+                                        <Button type="button" variant="outline" className="flex-1" onClick={() => logoInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4" /> Choisir fichier
+                                        </Button>
+                                        <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'logoUrl')} />
+                                    </div>
                                     <FormField control={form.control} name="logoUrl" render={({ field }) => (
-                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL du logo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormControl><Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-xs h-8" /></FormControl></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('logoUrl')} title="Vider le champ"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic leading-tight">Collez l'adresse web de votre logo (PNG/JPG).</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4 text-primary" /> Photo Profil Admin (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> Photo Profil Admin</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 rounded-full border-2 bg-white flex items-center justify-center overflow-hidden shadow-inner">
-                                    {form.watch('adminPhotoUrl') ? <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" /> : <div className="text-[10px] text-muted-foreground font-bold text-center">Aucune Photo</div>}
+                                <div className="h-32 w-32 rounded-full border-2 bg-slate-50 flex items-center justify-center overflow-hidden shadow-sm relative group">
+                                    {form.watch('adminPhotoUrl') ? (
+                                        <>
+                                            <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => form.setValue('adminPhotoUrl', '')}
+                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 className="h-6 w-6 text-white" />
+                                            </button>
+                                        </>
+                                    ) : <div className="text-[10px] text-muted-foreground font-bold">Aucune Photo</div>}
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2">
+                                        <Button type="button" variant="outline" className="flex-1" onClick={() => adminInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4" /> Choisir fichier
+                                        </Button>
+                                        <input type="file" ref={adminInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'adminPhotoUrl')} />
+                                    </div>
                                     <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
-                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL de la photo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormControl><Input placeholder="Ou coller l'URL ici..." {...field} value={field.value || ''} className="text-xs h-8" /></FormControl></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('adminPhotoUrl')} title="Vider le champ"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic leading-tight">Collez l'adresse web de votre photo de profil.</p>
                             </div>
                         </div>
                     </div>
