@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,6 @@ export default function RegistrationFormPage() {
 
   useEffect(() => {
     const handleResize = () => {
-      // Ajustement Redmi 12C (largeur document 800px)
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
         setScale(containerWidth / 800);

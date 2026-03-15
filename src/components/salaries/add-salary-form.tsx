@@ -19,6 +19,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Badge } from "../ui/badge";
 
 interface Coach {
   id: string;
@@ -63,12 +64,12 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
         const total = data.totalAmount || 0;
-        const remaining = isEditMode ? (salary?.totalAmount || 0) - amountAlreadyPaid : total;
+        const remaining = total - amountAlreadyPaid;
         if (data.newTransactionAmount && data.newTransactionAmount > remaining + 0.01) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
-                message: `Le versement ne peut pas dépasser le montant restant.`,
+                message: `Le versement ne peut pas dépasser le solde restant de ${remaining.toFixed(2)} MAD.`,
             });
         }
     });
@@ -92,9 +93,10 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
         }
     });
 
-    const watchTotal = form.watch("totalAmount");
+    const watchTotal = form.watch("totalAmount") || 0;
     const watchNew = form.watch("newTransactionAmount") || 0;
     const currentPaid = amountAlreadyPaid + watchNew;
+    const remaining = watchTotal - amountAlreadyPaid;
 
     useEffect(() => {
         if (watchTotal > 0) {
@@ -229,7 +231,12 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                 )}
 
                 <div className="p-4 border rounded-md space-y-4 bg-primary/5">
-                    <h4 className="font-bold text-primary">Nouveau Versement</h4>
+                    <div className="flex justify-between items-center">
+                        <h4 className="font-bold text-primary">Nouveau Versement</h4>
+                        <Badge variant="outline" className="bg-white text-primary border-primary">
+                            Solde dû: {remaining.toFixed(2)} MAD
+                        </Badge>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
@@ -237,7 +244,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Montant</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder={`Max ${remaining.toFixed(2)}`} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -33,9 +34,7 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
 
   useEffect(() => {
     const handleResize = () => {
-      // Optimisation Redmi 12C (Largeur 76.41mm / ~360-400px CSS)
       const containerWidth = window.innerWidth - 32; 
-      // Le document fait 800px de large
       if (containerWidth < 800) {
         setScale(containerWidth / 800);
       } else {
@@ -249,8 +248,7 @@ export default function PaymentReceiptPage({ params: paramsPromise }: { params: 
                                     "flex justify-between items-center font-black text-base",
                                     remaining > 0 ? "text-red-500" : "text-slate-600"
                                 )}>
-                                    <span className="uppercase tracking-tighter italic">RESTE À PAYER :</span>
-                                    <span>{remaining.toFixed(2)} MAD</span>
+                                    <span className="uppercase tracking-tighter italic text-center">CACHE & SIGNATURE</span>
                                 </div>
                             </div>
                         </div>

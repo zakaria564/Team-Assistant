@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -54,7 +55,6 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
 
   useEffect(() => {
     const handleResize = () => {
-      // Ajustement spécial Redmi 12C (largeur 800px document)
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
         setScale(containerWidth / 800);

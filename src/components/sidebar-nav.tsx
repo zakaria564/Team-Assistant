@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,12 +33,12 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
-    // Filtre strict : Joueurs actifs avec dette > 10 MAD (Résultat attendu : 1 pour Meryem Labib)
+    // Filtre strict : Uniquement les joueurs ACTIFS ayant une dette REELLE > 10 MAD
     const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("status", "==", "Actif")), (playerSnap) => {
         const activePlayerIds = new Set(playerSnap.docs.map(d => d.id));
         
         const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
-            const playersWithRealDebt = new Set();
+            const playersWithDebt = new Set();
             paySnap.docs.forEach(doc => {
                 const data = doc.data();
                 if (!activePlayerIds.has(data.playerId)) return;
@@ -46,11 +47,12 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
                 const total = data.totalAmount || 0;
                 const paid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
                 
+                // On ne compte que les joueurs qui ont au moins une fiche de paiement non régularisée
                 if (total - paid > 10) {
-                    playersWithRealDebt.add(data.playerId);
+                    playersWithDebt.add(data.playerId);
                 }
             });
-            setPendingPaymentsCount(playersWithRealDebt.size);
+            setPendingPaymentsCount(playersWithDebt.size);
         });
         return () => unsubscribePayments();
     });

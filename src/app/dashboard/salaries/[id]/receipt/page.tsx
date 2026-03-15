@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -33,7 +34,6 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
 
   useEffect(() => {
     const handleResize = () => {
-      // Ajustement dynamique Redmi 12C (largeur document 800px)
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
         setScale(containerWidth / 800);

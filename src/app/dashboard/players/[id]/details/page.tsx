@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -59,7 +60,6 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
 
   useEffect(() => {
     const handleResize = () => {
-      // Ajustement spécial pour Redmi 12C et mobiles (largeur document 800px)
       const containerWidth = window.innerWidth - 32;
       if (containerWidth < 800) {
         setScale(containerWidth / 800);
