@@ -44,10 +44,10 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
       const playersWithDebt = new Set();
       snapshot.docs.forEach(doc => {
         const data = doc.data();
-        // Filtrer strictement les joueurs actifs qui ont une dette réelle > 10 MAD
         if (!activePlayerIds.has(data.playerId)) return;
         const total = data.totalAmount || 0;
         const paid = (data.transactions || []).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+        // On ne compte que si la dette est réelle et significative (> 10 MAD)
         if (total - paid > 10) {
             playersWithDebt.add(data.playerId);
         }

@@ -244,9 +244,9 @@ export default function PlayerDetailsPdfPage({ params: paramsPromise }: { params
                         </main>
 
                         <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                            <div className="text-center space-y-20 mb-16 pt-8 w-full">
+                            <div className="text-center space-y-20 mb-16 pt-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
-                                <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
+                                <div className="w-64 border-b-2 border-slate-200"></div>
                             </div>
                             <div className="w-full flex flex-row justify-between items-end gap-10">
                                 <div className="space-y-2 text-left">

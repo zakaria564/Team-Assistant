@@ -78,10 +78,10 @@ export function ClubSettingsForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
     
-    // Protection contre les chaînes trop longues (limite Firestore 1Mo par document)
+    // Protection Firestore (1Mo limit)
     const totalSize = JSON.stringify(values).length;
     if (totalSize > 800000) {
-        setSaveError("L'image ou les données sont trop volumineuses. Veuillez utiliser une URL d'image plus courte ou une image compressée.");
+        setSaveError("Les données (probablement une image URL trop longue) sont trop volumineuses pour être enregistrées. Veuillez vider les champs URL et réessayer.");
         return;
     }
 
@@ -94,11 +94,16 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Erreur technique lors de l'enregistrement. Veuillez vérifier la taille de vos URLs d'images.");
+        setSaveError("Erreur technique lors de l'enregistrement. Veuillez vérifier que les URLs ne sont pas trop longues.");
         toast({ variant: "destructive", title: "Erreur" });
     } finally {
         setLoading(false);
     }
+  };
+
+  const clearField = (fieldName: 'logoUrl' | 'adminPhotoUrl') => {
+      form.setValue(fieldName, '');
+      toast({ title: "Champ vidé", description: "N'oubliez pas d'enregistrer les modifications." });
   };
 
   return (
@@ -136,9 +141,9 @@ export function ClubSettingsForm() {
                                 </div>
                                 <div className="flex gap-2">
                                     <FormField control={form.control} name="logoUrl" render={({ field }) => (
-                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL du logo..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL du logo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => form.setValue('logoUrl', '')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('logoUrl')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre logo (Format PNG/JPG recommandé).</p>
                             </div>
@@ -152,9 +157,9 @@ export function ClubSettingsForm() {
                                 </div>
                                 <div className="flex gap-2">
                                     <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
-                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL de la photo..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL de la photo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => form.setValue('adminPhotoUrl', '')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('adminPhotoUrl')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre photo de profil.</p>
                             </div>
