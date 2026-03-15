@@ -117,7 +117,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
     }
   };
 
-  if (loading || loadingUser) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-primary" /></div>;
+  if (loading || loadingUser) return <div className="flex justify-center items-center py-20"><Loader2 className="animate-spin text-primary" /></div>;
   if (!salary) return null;
   
   const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
@@ -128,9 +128,9 @@ export default function SalaryReceiptPage({ params }: PageProps) {
   const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
   return (
-    <div className="bg-slate-100 p-2 sm:p-8 flex flex-col items-center min-h-screen overflow-x-hidden w-full">
-        <div className="w-full max-w-5xl space-y-4 text-center overflow-x-hidden">
-            <div className="flex justify-between items-center print:hidden gap-4 mb-4">
+    <div className="flex flex-col items-center w-full">
+        <div className="w-full max-w-5xl space-y-4 text-center">
+            <div className="flex justify-between items-center gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
                     {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}

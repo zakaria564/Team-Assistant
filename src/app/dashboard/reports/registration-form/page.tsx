@@ -112,190 +112,188 @@ export default function RegistrationFormPage() {
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
-    <div className="overflow-x-hidden w-full">
-        <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
-            <div className="w-full max-w-5xl space-y-6 text-center overflow-x-hidden">
+    <div className="flex flex-col items-center w-full">
+        <div className="w-full max-w-5xl space-y-6 text-center">
+            
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+                <Button variant="outline" size="sm" onClick={() => router.back()} className="w-full sm:w-auto h-10 font-bold">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Retour
+                </Button>
                 
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 print:hidden">
-                    <Button variant="outline" size="sm" onClick={() => router.back()} className="w-full sm:w-auto h-10 font-bold">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Retour
-                    </Button>
-                    
-                    <Tabs value={formType} onValueChange={(v) => setFormType(v as any)} className="w-full sm:w-auto">
-                        <TabsList className="grid w-full grid-cols-3 h-10">
-                            <TabsTrigger value="junior" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
-                                <Users className="h-3 w-3 sm:h-4 sm:w-4" /> Jr
-                            </TabsTrigger>
-                            <TabsTrigger value="adult" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
-                                <User className="h-3 w-3 sm:h-4 sm:w-4" /> Ad
-                            </TabsTrigger>
-                            <TabsTrigger value="checklist" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
-                                <ClipboardList className="h-3 w-3 sm:h-4 sm:w-4" /> Docs
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                <Tabs value={formType} onValueChange={(v) => setFormType(v as any)} className="w-full sm:w-auto">
+                    <TabsList className="grid w-full grid-cols-3 h-10">
+                        <TabsTrigger value="junior" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
+                            <Users className="h-3 w-3 sm:h-4 sm:w-4" /> Jr
+                        </TabsTrigger>
+                        <TabsTrigger value="adult" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
+                            <User className="h-3 w-3 sm:h-4 sm:w-4" /> Ad
+                        </TabsTrigger>
+                        <TabsTrigger value="checklist" className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase">
+                            <ClipboardList className="h-3 w-3 sm:h-4 sm:w-4" /> Docs
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
 
-                    <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-10 font-black uppercase">
-                        {loadingPdf ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ...
-                            </>
-                        ) : (
-                            <>
-                                <Download className="mr-2 h-4 w-4" />
-                                <span className="ml-2 font-black">Exporter HD</span>
-                            </>
-                        )}
-                    </Button>
-                </div>
-                
-                <div className="w-full flex justify-center overflow-hidden">
-                    <div 
-                        style={{ 
-                            transform: `scale(${scale})`, 
-                            transformOrigin: 'top center',
-                            width: '1000px',
-                            height: `${1414 * scale}px`,
-                            transition: 'transform 0.2s ease-out'
-                        }}
-                        className="bg-white shadow-2xl rounded-xl overflow-hidden"
-                    >
-                        <Card className="mx-auto print:shadow-none print:border-none bg-white text-black border-none" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
-                            <CardHeader className="text-center space-y-6 p-12 border-b">
-                                {loadingClub || loadingUser ? (
-                                <div className="flex flex-col items-center gap-6">
-                                        <Skeleton className="h-20 w-20 rounded-full bg-gray-200" />
-                                        <Skeleton className="h-10 w-3/4 mx-auto bg-gray-200" />
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center gap-4">
-                                        <Avatar className="h-24 w-24 border-2 border-primary/20 bg-white shadow-sm p-1">
-                                            <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" className="object-contain" />
-                                            <AvatarFallback className="bg-primary text-white text-4xl font-black">{clubInitial}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-2">
-                                            <CardTitle className="text-3xl font-black uppercase tracking-tight">
-                                                {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
-                                            </CardTitle>
-                                            <p className="text-primary font-black tracking-[0.4em] uppercase text-lg italic">{clubName}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex items-center justify-center font-bold text-base bg-slate-50 py-4 rounded-xl border border-dashed border-slate-300">
-                                    <span className="px-6 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
+                <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-10 font-black uppercase">
+                    {loadingPdf ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ...
+                        </>
+                    ) : (
+                        <>
+                            <Download className="mr-2 h-4 w-4" />
+                            <span className="ml-2 font-black">Exporter Fiche</span>
+                        </>
+                    )}
+                </Button>
+            </div>
+            
+            <div className="w-full flex justify-center overflow-hidden">
+                <div 
+                    style={{ 
+                        transform: `scale(${scale})`, 
+                        transformOrigin: 'top center',
+                        width: '1000px',
+                        height: `${1414 * scale}px`,
+                        transition: 'transform 0.2s ease-out'
+                    }}
+                    className="bg-white shadow-2xl rounded-xl overflow-hidden"
+                >
+                    <Card className="mx-auto bg-white text-black border-none" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
+                        <CardHeader className="text-center space-y-6 p-12 border-b">
+                            {loadingClub || loadingUser ? (
+                            <div className="flex flex-col items-center gap-6">
+                                    <Skeleton className="h-20 w-20 rounded-full bg-gray-200" />
+                                    <Skeleton className="h-10 w-3/4 mx-auto bg-gray-200" />
                                 </div>
-                            </CardHeader>
+                            ) : (
+                                <div className="flex flex-col items-center gap-4">
+                                    <Avatar className="h-24 w-24 border-2 border-primary/20 bg-white shadow-sm p-1">
+                                        <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" className="object-contain" />
+                                        <AvatarFallback className="bg-primary text-white text-4xl font-black">{clubInitial}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="space-y-2">
+                                        <CardTitle className="text-3xl font-black uppercase tracking-tight">
+                                            {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
+                                        </CardTitle>
+                                        <p className="text-primary font-black tracking-[0.4em] uppercase text-lg italic">{clubName}</p>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex items-center justify-center font-bold text-base bg-slate-50 py-4 rounded-xl border border-dashed border-slate-300">
+                                <span className="px-6 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
+                            </div>
+                        </CardHeader>
 
-                            <CardContent className="p-16 space-y-12 text-left flex flex-col h-full min-h-[900px]">
-                                {formType === 'checklist' ? (
-                                    <div className="space-y-12 py-10">
-                                        <div className="space-y-8">
-                                            <div className="flex items-center gap-4 mb-10">
-                                                <ClipboardList className="h-10 w-10 text-primary" />
-                                                <h3 className="font-black text-2xl uppercase tracking-tight italic">LISTE DES DOCUMENTS OBLIGATOIRES</h3>
+                        <CardContent className="p-16 space-y-12 text-left flex flex-col h-full min-h-[900px]">
+                            {formType === 'checklist' ? (
+                                <div className="space-y-12 py-10">
+                                    <div className="space-y-8">
+                                        <div className="flex items-center gap-4 mb-10">
+                                            <ClipboardList className="h-10 w-10 text-primary" />
+                                            <h3 className="font-black text-2xl uppercase tracking-tight italic">LISTE DES DOCUMENTS OBLIGATOIRES</h3>
+                                        </div>
+                                        <ul className="grid grid-cols-1 gap-8">
+                                            {[
+                                                { t: "2 Photos d'identité", d: "Format récent, fond clair uniforme." },
+                                                { t: "Copie de la CIN (Recto-Verso)", d: "Joueur (si majeur) ou tuteur légal." },
+                                                { t: "Certificat médical", d: "Aptitude à la pratique du football de compétition." },
+                                                { t: "Attestation d'assurance", d: "Couvrant la pratique sportive pour la saison." },
+                                                { t: "Frais d'adhésion", d: "Selon la grille tarifaire de la catégorie." },
+                                                { t: "Extrait d'acte de naissance", d: "Obligatoire pour les catégories juniors." }
+                                            ].map((item, i) => (
+                                                <li key={i} className="flex items-start gap-8 p-6 border-2 rounded-2xl bg-slate-50 shadow-sm">
+                                                    <div className="h-10 w-10 border-2 border-primary rounded-xl shrink-0 mt-1 flex items-center justify-center font-black text-primary text-xl italic">!</div>
+                                                    <div>
+                                                        <p className="font-black text-lg uppercase tracking-tight text-slate-900">{item.t}</p>
+                                                        <p className="text-base text-muted-foreground font-semibold italic">{item.d}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-8">
+                                        <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">I. IDENTITÉ DU JOUEUR</h3>
+                                        <div className="space-y-8 text-base font-medium">
+                                            <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
+                                            <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
+                                            <div className="grid grid-cols-2 gap-x-16">
+                                                <div className="flex items-center"><div>NATIONALITÉ :</div><DottedLine /></div>
+                                                <div className="flex items-center"><div>GENRE :</div><DottedLine /></div>
                                             </div>
-                                            <ul className="grid grid-cols-1 gap-8">
-                                                {[
-                                                    { t: "2 Photos d'identité", d: "Format récent, fond clair uniforme." },
-                                                    { t: "Copie de la CIN (Recto-Verso)", d: "Joueur (si majeur) ou tuteur légal." },
-                                                    { t: "Certificat médical", d: "Aptitude à la pratique du football de compétition." },
-                                                    { t: "Attestation d'assurance", d: "Couvrant la pratique sportive pour la saison." },
-                                                    { t: "Frais d'adhésion", d: "Selon la grille tarifaire de la catégorie." },
-                                                    { t: "Extrait d'acte de naissance", d: "Obligatoire pour les catégories juniors." }
-                                                ].map((item, i) => (
-                                                    <li key={i} className="flex items-start gap-8 p-6 border-2 rounded-2xl bg-slate-50 shadow-sm">
-                                                        <div className="h-10 w-10 border-2 border-primary rounded-xl shrink-0 mt-1 flex items-center justify-center font-black text-primary text-xl italic">!</div>
-                                                        <div>
-                                                            <p className="font-black text-lg uppercase tracking-tight text-slate-900">{item.t}</p>
-                                                            <p className="text-base text-muted-foreground font-semibold italic">{item.d}</p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                            <div className="grid grid-cols-2 gap-x-16">
+                                                <div className="flex items-center"><div>N° CIN :</div><DottedLine /></div>
+                                                <div className="flex items-center"><div>N° LICENCE :</div><DottedLine /></div>
+                                            </div>
+                                            <div className="flex items-center"><div>ADRESSE RÉSIDENTIELLE :</div><DottedLine /></div>
+                                            <div className="grid grid-cols-2 gap-x-16">
+                                                <div className="flex items-center"><div>TÉLÉPHONE :</div><DottedLine /></div>
+                                                <div className="flex items-center"><div>ADRESSE E-MAIL :</div><DottedLine /></div>
+                                            </div>
                                         </div>
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="space-y-8">
-                                            <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">I. IDENTITÉ DU JOUEUR</h3>
+
+                                    {formType === 'junior' && (
+                                        <div className="space-y-8 pt-6">
+                                            <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
                                             <div className="space-y-8 text-base font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
-                                                <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-16">
-                                                    <div className="flex items-center"><div>NATIONALITÉ :</div><DottedLine /></div>
-                                                    <div className="flex items-center"><div>GENRE :</div><DottedLine /></div>
+                                                    <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
+                                                    <div className="flex items-center"><div>N° DE CIN :</div><DottedLine /></div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-x-16">
-                                                    <div className="flex items-center"><div>N° CIN :</div><DottedLine /></div>
-                                                    <div className="flex items-center"><div>N° LICENCE :</div><DottedLine /></div>
-                                                </div>
-                                                <div className="flex items-center"><div>ADRESSE RÉSIDENTIELLE :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-16">
                                                     <div className="flex items-center"><div>TÉLÉPHONE :</div><DottedLine /></div>
-                                                    <div className="flex items-center"><div>ADRESSE E-MAIL :</div><DottedLine /></div>
+                                                    <div className="flex items-center"><div>E-MAIL :</div><DottedLine /></div>
                                                 </div>
                                             </div>
                                         </div>
+                                    )}
 
-                                        {formType === 'junior' && (
-                                            <div className="space-y-8 pt-6">
-                                                <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
-                                                <div className="space-y-8 text-base font-medium">
-                                                    <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
-                                                    <div className="grid grid-cols-2 gap-x-16">
-                                                        <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
-                                                        <div className="flex items-center"><div>N° DE CIN :</div><DottedLine /></div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-x-16">
-                                                        <div className="flex items-center"><div>TÉLÉPHONE :</div><DottedLine /></div>
-                                                        <div className="flex items-center"><div>E-MAIL :</div><DottedLine /></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-8 pt-6 flex-grow flex flex-col">
-                                            <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">III. AUTORISATION ET DÉCLARATION</h3>
-                                            <div className="space-y-8 text-base leading-relaxed italic text-slate-700">
-                                                <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
-                                                <p className="font-black text-black border-l-4 border-primary pl-6 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-sm">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                                
-                                <div className="mt-auto pt-16 flex flex-col items-center gap-10">
-                                    <div className="w-full flex flex-row justify-between items-start gap-16">
-                                        <div className="space-y-6 pt-6 text-left">
-                                            <div className="flex items-center">
-                                                <span className="font-bold text-lg">Fait à</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <span className="font-bold text-lg">Le</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="text-center w-80 h-48 border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
-                                                <div className="w-56 border-b-2 border-slate-200 mb-4"></div>
-                                            </div>
-                                            <p className="text-[10px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>
+                                    <div className="space-y-8 pt-6 flex-grow flex flex-col">
+                                        <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">III. AUTORISATION ET DÉCLARATION</h3>
+                                        <div className="space-y-8 text-base leading-relaxed italic text-slate-700">
+                                            <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
+                                            <p className="font-black text-black border-l-4 border-primary pl-6 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-sm">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
+                                </>
+                            )}
                             
-                            <footer className="p-10 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
-                                <p className="text-xs font-black uppercase tracking-[0.2em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
-                                <div className="flex items-center gap-3 text-primary font-black uppercase tracking-widest italic text-xs">
-                                    <ShieldCheck className="h-5 w-5" />
-                                    Document Officiel De l'Académie
+                            <div className="mt-auto pt-16 flex flex-col items-center gap-10">
+                                <div className="w-full flex flex-row justify-between items-start gap-16">
+                                    <div className="space-y-6 pt-6 text-left">
+                                        <div className="flex items-center">
+                                            <span className="font-bold text-lg">Fait à</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="font-bold text-lg">Le</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="text-center w-80 h-48 border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center bg-slate-50/50 shadow-inner">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
+                                            <div className="w-56 border-b-2 border-slate-200 mb-4"></div>
+                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>
+                                    </div>
                                 </div>
-                            </footer>
-                        </Card>
-                    </div>
+                            </div>
+                        </CardContent>
+                        
+                        <footer className="p-10 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
+                            <div className="flex items-center gap-3 text-primary font-black uppercase tracking-widest italic text-xs">
+                                <ShieldCheck className="h-5 w-5" />
+                                Document Officiel De l'Académie
+                            </div>
+                        </footer>
+                    </Card>
                 </div>
             </div>
         </div>

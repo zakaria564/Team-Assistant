@@ -121,7 +121,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
     }
   };
 
-  if (loading || loadingUser) return <div className="flex justify-center items-center h-screen bg-slate-50"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  if (loading || loadingUser) return <div className="flex justify-center items-center py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!coach) return null;
   
   const coachInitial = coach.name?.charAt(0)?.toUpperCase() || "E";
@@ -129,9 +129,9 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
   const displayId = coach.professionalId || `CH-REF-${coach.id.substring(0, 6).toUpperCase()}`;
 
   return (
-    <div className="bg-slate-100 min-h-screen p-2 sm:p-8 flex flex-col items-center overflow-x-hidden w-full">
-       <div className="w-full max-w-5xl space-y-6 text-center overflow-x-hidden">
-        <div className="flex justify-between items-center print:hidden gap-4 mb-4">
+    <div className="flex flex-col items-center w-full">
+       <div className="w-full max-w-5xl space-y-6 text-center">
+        <div className="flex justify-between items-center gap-4 mb-4">
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
@@ -235,7 +235,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                         <ShieldCheck className="h-6 w-6" />
                                         <span className="text-xs font-black uppercase tracking-widest italic">Certification Électronique de Fonction</span>
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                                 </div>
                                 <div className="text-sm font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
                             </div>

@@ -69,15 +69,11 @@
   }
   html {
     @apply bg-background;
-    overflow-x: hidden !important;
-    width: 100vw;
-    position: fixed; /* Force stabilization */
+    overflow-x: hidden;
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    overflow-x: hidden !important;
-    width: 100vw;
-    position: relative;
+    overflow-x: hidden;
   }
   
   @media (max-width: 768px) {
