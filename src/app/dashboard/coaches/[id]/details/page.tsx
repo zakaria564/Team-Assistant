@@ -135,7 +135,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter Fiche HD
+            Exporter Fiche
           </Button>
         </div>
 
