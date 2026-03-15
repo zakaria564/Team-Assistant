@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -101,7 +102,10 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
-        } catch (err) { toast({ variant: "destructive", title: "Erreur PDF" }); }
+        } catch (err) { 
+            console.error(err);
+            toast({ variant: "destructive", title: "Erreur PDF" }); 
+        }
         finally { setLoadingPdf(false); }
     }
   };
