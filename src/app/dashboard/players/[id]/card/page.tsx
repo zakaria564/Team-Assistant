@@ -83,7 +83,7 @@ export default function PlayerCardPdfPage(props: PageProps) {
         await new Promise(r => setTimeout(r, 1000));
 
         const canvas = await html2canvas(cardElement, {
-            scale: 3,
+            scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
         });

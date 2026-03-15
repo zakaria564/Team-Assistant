@@ -80,7 +80,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
             await new Promise(r => setTimeout(r, 1500));
 
             const canvas = await html2canvas(element, { 
-                scale: 3, 
+                scale: 2, 
                 useCORS: true, 
                 allowTaint: true,
                 backgroundColor: "#ffffff",
@@ -123,7 +123,6 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                 </Button>
             </div>
             
-            {/* Conteneur avec défilement horizontal pour Redmi 12C */}
             <div className="w-full overflow-x-auto pb-8">
                 <div className="min-w-[1000px] flex justify-center">
                     <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>

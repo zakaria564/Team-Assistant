@@ -60,7 +60,7 @@ export default function RegistrationFormPage() {
     const formElement = document.getElementById("printable-form");
     if (formElement) {
         html2canvas(formElement, {
-            scale: 3,
+            scale: 2,
             useCORS: true,
             backgroundColor: "#ffffff"
         }).then((canvas) => {
@@ -135,7 +135,6 @@ export default function RegistrationFormPage() {
                 </Button>
             </div>
             
-            {/* Conteneur avec défilement horizontal pour Redmi 12C */}
             <div className="w-full overflow-x-auto pb-8">
                 <div className="min-w-[1000px] flex justify-center">
                     <Card className="mx-auto bg-white text-black border shadow-2xl" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
