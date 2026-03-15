@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,7 +11,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { isPast } from "date-fns";
 
-export default function EditEventPage(props: { params: Promise<{ id: string }> }) {
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function EditEventPage(props: PageProps) {
   const params = React.use(props.params);
   const eventId = params.id;
   

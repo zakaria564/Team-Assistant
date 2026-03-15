@@ -17,8 +17,13 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SalaryReceiptPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
-  const params = React.use(paramsPromise);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function SalaryReceiptPage(props: PageProps) {
+  const params = React.use(props.params);
   const salaryId = params.id;
   
   const router = useRouter();
@@ -34,8 +39,8 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
-      if (containerWidth < 800) {
-        setScale(Math.min(containerWidth / 800, 1));
+      if (containerWidth < 1000) {
+        setScale(Math.min(containerWidth / 1000, 1));
       } else {
         setScale(1);
       }
@@ -125,7 +130,7 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
 
   return (
     <div className="bg-slate-100 p-2 sm:p-8 flex flex-col items-center min-h-screen overflow-x-hidden w-full">
-        <div className="w-full max-w-4xl space-y-4 text-center overflow-x-hidden">
+        <div className="w-full max-w-5xl space-y-4 text-center overflow-x-hidden">
             <div className="flex justify-between items-center print:hidden gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
@@ -139,100 +144,100 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                     style={{ 
                         transform: `scale(${scale})`, 
                         transformOrigin: 'top center',
-                        width: '800px',
-                        height: `${1120 * scale}px`,
+                        width: '1000px',
+                        height: `${1414 * scale}px`,
                         transition: 'transform 0.2s ease-out'
                     }}
                     className="bg-white shadow-2xl rounded-xl overflow-hidden"
                 >
-                    <div id="printable-receipt" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1120px' }}>
-                        <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
-                            <div className="flex flex-row items-center gap-8 text-left">
-                                <div className="h-24 w-28 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
+                    <div id="printable-receipt" className="bg-white text-slate-900 border-none flex flex-col mx-auto overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
+                        <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-10">
+                            <div className="flex flex-row items-center gap-10 text-left">
+                                <div className="h-28 w-32 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
                                     {clubInfo?.logoUrl ? (
                                         <img src={clubInfo.logoUrl} alt="Logo" className="h-full w-full object-contain p-2" />
                                     ) : (
-                                        <div className="h-full w-full bg-primary text-white flex items-center justify-center text-5xl font-black">
+                                        <div className="h-full w-full bg-primary text-white flex items-center justify-center text-6xl font-black">
                                             {clubInitial}
                                         </div>
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                                    <div className="text-slate-400 text-base font-semibold leading-tight max-w-[350px]">
+                                    <h1 className="text-3xl font-black uppercase tracking-tighter text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                                    <div className="text-slate-400 text-lg font-semibold leading-tight max-w-[450px]">
                                         <p className="break-words">{clubInfo?.address || "Adresse officielle"}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="text-right space-y-2">
-                                <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white">FICHE DE PAIE</h2>
+                                <h2 className="text-6xl font-black uppercase italic tracking-tighter text-white">FICHE DE PAIE</h2>
                                 <div className="pt-2">
-                                    <p className="text-primary font-black text-sm tracking-[0.2em] uppercase">REF: {professionalId}</p>
-                                    <p className="text-slate-500 text-xs font-bold mt-1">Générée le {format(new Date(), "dd/MM/yyyy")}</p>
+                                    <p className="text-primary font-black text-lg tracking-[0.2em] uppercase">REF: {professionalId}</p>
+                                    <p className="text-slate-500 text-base font-bold mt-1">Générée le {format(new Date(), "dd/MM/yyyy")}</p>
                                 </div>
                             </div>
                         </header>
 
-                        <div className="p-12 space-y-10 text-left flex-grow">
-                            <div className="grid grid-cols-2 gap-12">
-                                <div className="bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Bénéficiaire (Entraîneur)</h3>
-                                    <div className="space-y-3">
-                                        <p className="text-3xl font-black text-slate-900 uppercase tracking-tighter">{salary.coachName}</p>
-                                        <div className="flex flex-col gap-2">
-                                            <p className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Entraîneur Officiel Du Club</p>
-                                            <p className="text-slate-700 font-black text-xs flex items-center gap-3 bg-white px-3 py-2 rounded-lg border border-slate-200 w-fit mt-2 shadow-sm">
-                                                <Fingerprint className="h-4 w-4 text-primary" />
+                        <div className="p-16 space-y-12 text-left flex-grow">
+                            <div className="grid grid-cols-2 gap-16">
+                                <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100 shadow-sm">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Bénéficiaire (Entraîneur)</h3>
+                                    <div className="space-y-4">
+                                        <p className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{salary.coachName}</p>
+                                        <div className="flex flex-col gap-3">
+                                            <p className="text-slate-500 font-black uppercase text-[11px] tracking-widest">Entraîneur Officiel Du Club</p>
+                                            <p className="text-slate-700 font-black text-sm flex items-center gap-4 bg-white px-4 py-3 rounded-xl border border-slate-200 w-fit mt-2 shadow-sm">
+                                                <Fingerprint className="h-5 w-5 text-primary" />
                                                 <span>ID : {salary.coachProfessionalId}</span>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Période / Motif</h3>
-                                    <div className="space-y-2">
-                                        <p className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{salary.description}</p>
-                                        <p className="text-primary font-black text-xs uppercase tracking-widest mt-2 italic">Saison Sportive En Cours</p>
+                                <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100 shadow-sm">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Période / Motif</h3>
+                                    <div className="space-y-3">
+                                        <p className="text-3xl font-black text-slate-900 tracking-tight leading-tight">{salary.description}</p>
+                                        <p className="text-primary font-black text-sm uppercase tracking-widest mt-4 italic">Saison Sportive En Cours</p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div className="rounded-2xl border-2 border-slate-200 overflow-hidden shadow-lg">
+                            <div className="rounded-3xl border-2 border-slate-200 overflow-hidden shadow-lg">
                                 <Table className="w-full">
                                     <TableHeader className="bg-slate-100">
                                         <TableRow className="border-b-2 border-slate-200">
-                                            <TableHead className="px-8 font-black text-slate-900 uppercase tracking-widest text-[11px] h-14">Désignation du paiement</TableHead>
-                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[11px] h-14">Date Versement</TableHead>
-                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[11px] h-14">Méthode de règlement</TableHead>
-                                            <TableHead className="text-right px-8 font-black text-slate-900 uppercase tracking-widest text-[11px] h-14">Montant</TableHead>
+                                            <TableHead className="px-10 font-black text-slate-900 uppercase tracking-widest text-[12px] h-16">Désignation du paiement</TableHead>
+                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[12px] h-16">Date Versement</TableHead>
+                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[12px] h-16">Méthode de règlement</TableHead>
+                                            <TableHead className="text-right px-10 font-black text-slate-900 uppercase tracking-widest text-[12px] h-16">Montant</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {salary.transactions?.map((t: any, i: number) => (
-                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-16 hover:bg-slate-50">
-                                                <TableCell className="px-8 py-5 font-bold text-slate-900 text-base">Versement Salaire N°{i+1}</TableCell>
-                                                <TableCell className="py-5 text-slate-600 font-bold">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
-                                                <TableCell className="py-5 text-slate-700 font-black italic">{t.method}</TableCell>
-                                                <TableCell className="text-right px-8 font-black text-slate-900 text-xl">{t.amount.toFixed(2)} MAD</TableCell>
+                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-20 hover:bg-slate-50">
+                                                <TableCell className="px-10 py-6 font-bold text-slate-900 text-lg">Versement Salaire N°{i+1}</TableCell>
+                                                <TableCell className="py-6 text-slate-600 font-bold text-lg">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                                                <TableCell className="py-6 text-slate-700 font-black italic text-lg">{t.method}</TableCell>
+                                                <TableCell className="text-right px-10 font-black text-slate-900 text-2xl">{t.amount.toFixed(2)} MAD</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
                                 </Table>
                             </div>
 
-                            <div className="flex justify-end pt-4">
-                                <div className="w-full max-w-sm space-y-4 bg-slate-900 p-8 rounded-2xl shadow-2xl text-left border-b-8 border-primary">
-                                    <div className="flex justify-between text-slate-400 font-bold text-xs uppercase tracking-widest">
+                            <div className="flex justify-end pt-6">
+                                <div className="w-full max-w-md space-y-5 bg-slate-900 p-10 rounded-3xl shadow-2xl text-left border-b-8 border-primary">
+                                    <div className="flex justify-between text-slate-400 font-bold text-sm uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
                                         <span>{salary.totalAmount.toFixed(2)} MAD</span>
                                     </div>
-                                    <div className="flex justify-between text-white font-black text-2xl tracking-tighter">
+                                    <div className="flex justify-between text-white font-black text-3xl tracking-tighter">
                                         <span>Déjà versé au bénéficiaire</span>
                                         <span className="text-primary">{amountPaid.toFixed(2)} MAD</span>
                                     </div>
                                     <Separator className="bg-slate-700 h-0.5" />
                                     <div className={cn(
-                                        "flex justify-between items-center font-black text-lg pt-2",
+                                        "flex justify-between items-center font-black text-2xl pt-2",
                                         remaining > 0.01 ? "text-red-400" : "text-green-400"
                                     )}>
                                         <span className="uppercase tracking-tighter italic text-xs">SOLDE RESTANT À VERSER :</span>
@@ -241,27 +246,27 @@ export default function SalaryReceiptPage({ params: paramsPromise }: { params: P
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-center pt-12">
-                                <div className="text-center space-y-20 w-full max-w-md border-t-2 border-slate-100 pt-10">
-                                    <p className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-400 italic">Signature Administrative & Cachet</p>
-                                    <div className="w-full flex flex-col items-center gap-6">
-                                        <div className="w-72 border-b-4 border-slate-200 shadow-sm"></div>
-                                        <div className="flex items-center gap-3 text-slate-300">
-                                            <ShieldCheck className="h-6 w-6" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>
+                            <div className="flex flex-col items-center pt-16">
+                                <div className="text-center space-y-24 w-full max-w-xl border-t-2 border-slate-100 pt-12">
+                                    <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-400 italic">Signature Administrative & Cachet</p>
+                                    <div className="w-full flex flex-col items-center gap-8">
+                                        <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
+                                        <div className="flex items-center gap-4 text-slate-300">
+                                            <ShieldCheck className="h-8 w-8" />
+                                            <span className="text-[11px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <footer className="p-10 bg-slate-50 border-t-2 flex flex-row justify-between items-center gap-6 mt-auto">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-green-100 text-green-800 px-5 py-2 rounded-xl font-black text-[11px] tracking-widest border-2 border-green-200 uppercase shadow-sm">
+                        <footer className="p-12 bg-slate-50 border-t-2 flex flex-row justify-between items-center gap-8 mt-auto">
+                            <div className="flex items-center gap-6">
+                                <div className="bg-green-100 text-green-800 px-6 py-3 rounded-2xl font-black text-[12px] tracking-widest border-2 border-green-200 uppercase shadow-sm">
                                     STATUT FINAL: {salary.status.toUpperCase()}
                                 </div>
                             </div>
-                            <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic text-right border-l-2 border-slate-200 pl-6">
+                            <div className="text-[11px] text-slate-400 font-black uppercase tracking-widest italic text-right border-l-2 border-slate-200 pl-8">
                                 Système Team Assistant - Gestion Pro
                             </div>
                         </footer>

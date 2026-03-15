@@ -13,8 +13,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-export default function SalaryDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(props.params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function SalaryDetailPage(props: PageProps) {
+  const params = React.use(props.params);
+  const salaryId = params.id;
   
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);

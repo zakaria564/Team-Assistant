@@ -14,8 +14,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function PaymentDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(props.params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function PaymentDetailPage(props: PageProps) {
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

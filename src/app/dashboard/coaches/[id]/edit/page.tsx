@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,8 +14,15 @@ const toTitleCase = (str: string) => {
   return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export default function EditCoachPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function EditCoachPage(props: PageProps) {
+  const params = React.use(props.params);
+  const coachId = params.id;
+  
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);
   const [loading, setLoading] = useState(true);

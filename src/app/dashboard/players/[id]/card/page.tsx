@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,8 +13,14 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function PlayerCardPdfPage(props: { params: Promise<{ id: string }> }) {
-  const { id: playerId } = React.use(props.params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function PlayerCardPdfPage(props: PageProps) {
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -78,7 +83,7 @@ export default function PlayerCardPdfPage(props: { params: Promise<{ id: string 
         await new Promise(r => setTimeout(r, 1000));
 
         const canvas = await html2canvas(cardElement, {
-            scale: 2.5,
+            scale: 3,
             useCORS: true,
             backgroundColor: '#ffffff',
         });

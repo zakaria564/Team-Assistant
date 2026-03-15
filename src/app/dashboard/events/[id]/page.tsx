@@ -14,8 +14,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AddScoreForm } from "@/components/events/add-score-form";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export default function EventDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id: eventId } = React.use(props.params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function EventDetailPage(props: PageProps) {
+  const params = React.use(props.params);
+  const eventId = params.id;
   
   const router = useRouter();
   const [user] = useAuthState(auth);

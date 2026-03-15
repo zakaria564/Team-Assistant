@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { db, auth } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -27,8 +27,8 @@ export default function RegistrationFormPage() {
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
-      if (containerWidth < 800) {
-        setScale(Math.min(containerWidth / 800, 1));
+      if (containerWidth < 1000) {
+        setScale(Math.min(containerWidth / 1000, 1));
       } else {
         setScale(1);
       }
@@ -108,13 +108,13 @@ export default function RegistrationFormPage() {
     }
   };
 
-  const DottedLine = () => <div className="flex-grow border-b border-dotted border-gray-400 mx-1"></div>;
+  const DottedLine = () => <div className="flex-grow border-b border-dotted border-gray-400 mx-2"></div>;
   const clubInitial = clubName?.charAt(0)?.toUpperCase() || "C";
 
   return (
     <div className="overflow-x-hidden w-full">
         <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen overflow-x-hidden">
-            <div className="w-full max-w-3xl space-y-6 text-center overflow-x-hidden">
+            <div className="w-full max-w-5xl space-y-6 text-center overflow-x-hidden">
                 
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 print:hidden">
                     <Button variant="outline" size="sm" onClick={() => router.back()} className="w-full sm:w-auto h-10 font-bold">
@@ -156,47 +156,47 @@ export default function RegistrationFormPage() {
                         style={{ 
                             transform: `scale(${scale})`, 
                             transformOrigin: 'top center',
-                            width: '800px',
-                            height: `${1120 * scale}px`,
+                            width: '1000px',
+                            height: `${1414 * scale}px`,
                             transition: 'transform 0.2s ease-out'
                         }}
                         className="bg-white shadow-2xl rounded-xl overflow-hidden"
                     >
-                        <Card className="mx-auto print:shadow-none print:border-none bg-white text-black border-none" id="printable-form" style={{ width: '800px', minHeight: '1120px' }}>
-                            <CardHeader className="text-center space-y-4 p-10 border-b">
+                        <Card className="mx-auto print:shadow-none print:border-none bg-white text-black border-none" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
+                            <CardHeader className="text-center space-y-6 p-12 border-b">
                                 {loadingClub || loadingUser ? (
-                                <div className="flex flex-col items-center gap-4">
-                                        <Skeleton className="h-16 w-16 rounded-full bg-gray-200" />
-                                        <Skeleton className="h-8 w-3/4 mx-auto bg-gray-200" />
+                                <div className="flex flex-col items-center gap-6">
+                                        <Skeleton className="h-20 w-20 rounded-full bg-gray-200" />
+                                        <Skeleton className="h-10 w-3/4 mx-auto bg-gray-200" />
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center gap-3">
-                                        <Avatar className="h-20 w-20 border-2 border-primary/20 bg-white shadow-sm p-1">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <Avatar className="h-24 w-24 border-2 border-primary/20 bg-white shadow-sm p-1">
                                             <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" className="object-contain" />
-                                            <AvatarFallback className="bg-primary text-white text-3xl font-black">{clubInitial}</AvatarFallback>
+                                            <AvatarFallback className="bg-primary text-white text-4xl font-black">{clubInitial}</AvatarFallback>
                                         </Avatar>
-                                        <div className="space-y-1">
-                                            <CardTitle className="text-2xl font-black uppercase tracking-tight">
+                                        <div className="space-y-2">
+                                            <CardTitle className="text-3xl font-black uppercase tracking-tight">
                                                 {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
                                             </CardTitle>
-                                            <p className="text-primary font-black tracking-[0.3em] uppercase text-sm italic">{clubName}</p>
+                                            <p className="text-primary font-black tracking-[0.4em] uppercase text-lg italic">{clubName}</p>
                                         </div>
                                     </div>
                                 )}
-                                <div className="flex items-center justify-center font-bold text-sm bg-slate-50 py-3 rounded-md border border-dashed border-slate-300">
-                                    <span className="px-4 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
+                                <div className="flex items-center justify-center font-bold text-base bg-slate-50 py-4 rounded-xl border border-dashed border-slate-300">
+                                    <span className="px-6 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-12 space-y-10 text-left flex flex-col h-full min-h-[800px]">
+                            <CardContent className="p-16 space-y-12 text-left flex flex-col h-full min-h-[900px]">
                                 {formType === 'checklist' ? (
-                                    <div className="space-y-10 py-10">
-                                        <div className="space-y-6">
-                                            <div className="flex items-center gap-3 mb-8">
-                                                <ClipboardList className="h-8 w-8 text-primary" />
-                                                <h3 className="font-black text-xl uppercase tracking-tight italic">LISTE DES DOCUMENTS OBLIGATOIRES</h3>
+                                    <div className="space-y-12 py-10">
+                                        <div className="space-y-8">
+                                            <div className="flex items-center gap-4 mb-10">
+                                                <ClipboardList className="h-10 w-10 text-primary" />
+                                                <h3 className="font-black text-2xl uppercase tracking-tight italic">LISTE DES DOCUMENTS OBLIGATOIRES</h3>
                                             </div>
-                                            <ul className="grid grid-cols-1 gap-6">
+                                            <ul className="grid grid-cols-1 gap-8">
                                                 {[
                                                     { t: "2 Photos d'identité", d: "Format récent, fond clair uniforme." },
                                                     { t: "Copie de la CIN (Recto-Verso)", d: "Joueur (si majeur) ou tuteur légal." },
@@ -205,11 +205,11 @@ export default function RegistrationFormPage() {
                                                     { t: "Frais d'adhésion", d: "Selon la grille tarifaire de la catégorie." },
                                                     { t: "Extrait d'acte de naissance", d: "Obligatoire pour les catégories juniors." }
                                                 ].map((item, i) => (
-                                                    <li key={i} className="flex items-start gap-6 p-5 border rounded-xl bg-slate-50 shadow-sm">
-                                                        <div className="h-8 w-8 border-2 border-primary rounded-lg shrink-0 mt-1 flex items-center justify-center font-black text-primary italic">!</div>
+                                                    <li key={i} className="flex items-start gap-8 p-6 border-2 rounded-2xl bg-slate-50 shadow-sm">
+                                                        <div className="h-10 w-10 border-2 border-primary rounded-xl shrink-0 mt-1 flex items-center justify-center font-black text-primary text-xl italic">!</div>
                                                         <div>
-                                                            <p className="font-black text-base uppercase tracking-tight text-slate-900">{item.t}</p>
-                                                            <p className="text-sm text-muted-foreground font-semibold italic">{item.d}</p>
+                                                            <p className="font-black text-lg uppercase tracking-tight text-slate-900">{item.t}</p>
+                                                            <p className="text-base text-muted-foreground font-semibold italic">{item.d}</p>
                                                         </div>
                                                     </li>
                                                 ))}
@@ -218,21 +218,21 @@ export default function RegistrationFormPage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="space-y-6">
-                                            <h3 className="font-black text-sm uppercase tracking-[0.2em] bg-slate-900 text-white px-6 py-2.5 w-fit rounded shadow-md italic">I. IDENTITÉ DU JOUEUR</h3>
-                                            <div className="space-y-6 text-sm font-medium">
+                                        <div className="space-y-8">
+                                            <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">I. IDENTITÉ DU JOUEUR</h3>
+                                            <div className="space-y-8 text-base font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                                 <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
-                                                <div className="grid grid-cols-2 gap-x-12">
+                                                <div className="grid grid-cols-2 gap-x-16">
                                                     <div className="flex items-center"><div>NATIONALITÉ :</div><DottedLine /></div>
                                                     <div className="flex items-center"><div>GENRE :</div><DottedLine /></div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-x-12">
+                                                <div className="grid grid-cols-2 gap-x-16">
                                                     <div className="flex items-center"><div>N° CIN :</div><DottedLine /></div>
                                                     <div className="flex items-center"><div>N° LICENCE :</div><DottedLine /></div>
                                                 </div>
                                                 <div className="flex items-center"><div>ADRESSE RÉSIDENTIELLE :</div><DottedLine /></div>
-                                                <div className="grid grid-cols-2 gap-x-12">
+                                                <div className="grid grid-cols-2 gap-x-16">
                                                     <div className="flex items-center"><div>TÉLÉPHONE :</div><DottedLine /></div>
                                                     <div className="flex items-center"><div>ADRESSE E-MAIL :</div><DottedLine /></div>
                                                 </div>
@@ -240,15 +240,15 @@ export default function RegistrationFormPage() {
                                         </div>
 
                                         {formType === 'junior' && (
-                                            <div className="space-y-6 pt-4">
-                                                <h3 className="font-black text-sm uppercase tracking-[0.2em] bg-slate-900 text-white px-6 py-2.5 w-fit rounded shadow-md italic">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
-                                                <div className="space-y-6 text-sm font-medium">
+                                            <div className="space-y-8 pt-6">
+                                                <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">II. RESPONSABLE LÉGAL (TUTEUR)</h3>
+                                                <div className="space-y-8 text-base font-medium">
                                                     <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
-                                                    <div className="grid grid-cols-2 gap-x-12">
+                                                    <div className="grid grid-cols-2 gap-x-16">
                                                         <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
                                                         <div className="flex items-center"><div>N° DE CIN :</div><DottedLine /></div>
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-x-12">
+                                                    <div className="grid grid-cols-2 gap-x-16">
                                                         <div className="flex items-center"><div>TÉLÉPHONE :</div><DottedLine /></div>
                                                         <div className="flex items-center"><div>E-MAIL :</div><DottedLine /></div>
                                                     </div>
@@ -256,41 +256,41 @@ export default function RegistrationFormPage() {
                                             </div>
                                         )}
 
-                                        <div className="space-y-6 pt-4 flex-grow flex flex-col">
-                                            <h3 className="font-black text-sm uppercase tracking-[0.2em] bg-slate-900 text-white px-6 py-2.5 w-fit rounded shadow-md italic">III. AUTORISATION ET DÉCLARATION</h3>
-                                            <div className="space-y-6 text-sm leading-relaxed italic text-slate-700">
+                                        <div className="space-y-8 pt-6 flex-grow flex flex-col">
+                                            <h3 className="font-black text-base uppercase tracking-[0.2em] bg-slate-900 text-white px-8 py-3 w-fit rounded shadow-md italic">III. AUTORISATION ET DÉCLARATION</h3>
+                                            <div className="space-y-8 text-base leading-relaxed italic text-slate-700">
                                                 <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
-                                                <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-1 bg-primary/5 uppercase tracking-tighter text-xs">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
+                                                <p className="font-black text-black border-l-4 border-primary pl-6 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-sm">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
                                             </div>
                                         </div>
                                     </>
                                 )}
                                 
-                                <div className="mt-auto pt-12 flex flex-col items-center gap-8">
-                                    <div className="w-full flex flex-row justify-between items-start gap-12">
-                                        <div className="space-y-4 pt-4 text-left">
+                                <div className="mt-auto pt-16 flex flex-col items-center gap-10">
+                                    <div className="w-full flex flex-row justify-between items-start gap-16">
+                                        <div className="space-y-6 pt-6 text-left">
                                             <div className="flex items-center">
-                                                <span className="font-bold">Fait à</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>
+                                                <span className="font-bold text-lg">Fait à</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
                                             </div>
                                             <div className="flex items-center">
-                                                <span className="font-bold">Le</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>
+                                                <span className="font-bold text-lg">Le</span><div className="w-48 border-b border-dotted border-gray-400 mx-3"></div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="text-center w-72 h-40 border-2 border-slate-200 rounded-xl p-4 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
-                                                <div className="w-48 border-b-2 border-slate-200 mb-2"></div>
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="text-center w-80 h-48 border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center bg-slate-50/50 shadow-inner">
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
+                                                <div className="w-56 border-b-2 border-slate-200 mb-4"></div>
                                             </div>
-                                            <p className="text-[8px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>
+                                            <p className="text-[10px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
                             
-                            <footer className="p-8 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
-                                <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest italic text-[10px]">
-                                    <ShieldCheck className="h-4 w-4" />
+                            <footer className="p-10 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
+                                <p className="text-xs font-black uppercase tracking-[0.2em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
+                                <div className="flex items-center gap-3 text-primary font-black uppercase tracking-widest italic text-xs">
+                                    <ShieldCheck className="h-5 w-5" />
                                     Document Officiel De l'Académie
                                 </div>
                             </footer>
