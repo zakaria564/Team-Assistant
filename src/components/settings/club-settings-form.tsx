@@ -78,10 +78,10 @@ export function ClubSettingsForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
     
-    // Protection Firestore (1Mo limit)
+    // Firestore limit check (~1MB per doc)
     const totalSize = JSON.stringify(values).length;
     if (totalSize > 800000) {
-        setSaveError("Les données (probablement une image URL trop longue) sont trop volumineuses pour être enregistrées. Veuillez vider les champs URL et réessayer.");
+        setSaveError("Les données sont trop volumineuses pour être enregistrées (limite de la base de données). Veuillez utiliser des URLs d'images plus courtes ou vider les champs URL avec le bouton rouge.");
         return;
     }
 
@@ -94,8 +94,8 @@ export function ClubSettingsForm() {
         router.refresh();
     } catch (error: any) {
         console.error(error);
-        setSaveError("Erreur technique lors de l'enregistrement. Veuillez vérifier que les URLs ne sont pas trop longues.");
-        toast({ variant: "destructive", title: "Erreur" });
+        setSaveError("Erreur lors de l'enregistrement. Vérifiez vos URLs d'images.");
+        toast({ variant: "destructive", title: "Erreur technique" });
     } finally {
         setLoading(false);
     }
@@ -103,14 +103,14 @@ export function ClubSettingsForm() {
 
   const clearField = (fieldName: 'logoUrl' | 'adminPhotoUrl') => {
       form.setValue(fieldName, '');
-      toast({ title: "Champ vidé", description: "N'oubliez pas d'enregistrer les modifications." });
+      toast({ title: "Champ vidé", description: "Enregistrez pour confirmer la suppression." });
   };
 
   return (
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Identité du Club</CardTitle>
-        <CardDescription>Gérez les informations officielles et les logos de votre plateforme.</CardDescription>
+        <CardDescription>Gérez les logos et les informations de votre club.</CardDescription>
       </CardHeader>
       <CardContent>
         {loadingData || loadingUser ? (
@@ -134,34 +134,34 @@ export function ClubSettingsForm() {
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Logo du Club (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4 text-primary" /> Logo du Club (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 border-2 rounded-lg bg-muted flex items-center justify-center overflow-hidden shadow-inner bg-white">
+                                <div className="h-24 w-24 border-2 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-inner">
                                     {form.watch('logoUrl') ? <img src={form.watch('logoUrl')} className="h-full w-full object-contain p-1" alt="Logo" /> : <div className="text-[10px] text-muted-foreground font-bold text-center p-2">Aucun Logo</div>}
                                 </div>
                                 <div className="flex gap-2">
                                     <FormField control={form.control} name="logoUrl" render={({ field }) => (
                                         <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL du logo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('logoUrl')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('logoUrl')} title="Vider le champ"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre logo (Format PNG/JPG recommandé).</p>
+                                <p className="text-[10px] text-muted-foreground italic leading-tight">Collez l'adresse web de votre logo (PNG/JPG).</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Photo Profil Admin (URL)</FormLabel>
+                            <FormLabel className="text-base flex items-center gap-2"><LinkIcon className="h-4 w-4 text-primary" /> Photo Profil Admin (URL)</FormLabel>
                             <div className="flex flex-col gap-4">
-                                <div className="h-24 w-24 rounded-full border-2 bg-muted flex items-center justify-center overflow-hidden shadow-inner bg-white">
+                                <div className="h-24 w-24 rounded-full border-2 bg-white flex items-center justify-center overflow-hidden shadow-inner">
                                     {form.watch('adminPhotoUrl') ? <img src={form.watch('adminPhotoUrl')} className="h-full w-full object-cover" alt="Admin" /> : <div className="text-[10px] text-muted-foreground font-bold text-center">Aucune Photo</div>}
                                 </div>
                                 <div className="flex gap-2">
                                     <FormField control={form.control} name="adminPhotoUrl" render={({ field }) => (
                                         <FormItem className="flex-1"><FormControl><Input placeholder="Coller l'URL de la photo ici..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                                     )} />
-                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('adminPhotoUrl')} title="Effacer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-10 w-10 border-destructive/30 hover:bg-destructive/10" onClick={() => clearField('adminPhotoUrl')} title="Vider le champ"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic">Collez l'adresse web de votre photo de profil.</p>
+                                <p className="text-[10px] text-muted-foreground italic leading-tight">Collez l'adresse web de votre photo de profil.</p>
                             </div>
                         </div>
                     </div>
@@ -180,7 +180,7 @@ export function ClubSettingsForm() {
                         <FormItem><FormLabel>Adresse complète</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
                     )} />
 
-                    <Button type="submit" disabled={loading} className="w-full font-black uppercase tracking-widest h-12">
+                    <Button type="submit" disabled={loading} className="w-full font-black uppercase tracking-widest h-12 shadow-lg">
                         {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
                         Enregistrer les modifications
                     </Button>

@@ -47,7 +47,7 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
         if (!activePlayerIds.has(data.playerId)) return;
         const total = data.totalAmount || 0;
         const paid = (data.transactions || []).reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-        // On ne compte que si la dette est réelle et significative (> 10 MAD)
+        // Filtrage strict : dette supérieure à 10 MAD pour éviter les erreurs d'arrondi
         if (total - paid > 10) {
             playersWithDebt.add(data.playerId);
         }

@@ -53,6 +53,7 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
   const [clubAddress, setClubAddress] = useState("");
   const [scale, setScale] = useState(1);
 
+  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
@@ -127,9 +128,9 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
        <div className="w-full max-w-4xl space-y-6 text-center">
         <div className="flex justify-between items-center print:hidden gap-4 mb-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-          <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
+          <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="font-bold">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            <span className="ml-2">Télécharger PDF</span>
+            Exporter PDF
           </Button>
         </div>
 
@@ -219,9 +220,9 @@ export default function CoachDetailsPdfPage({ params: paramsPromise }: { params:
                         </main>
 
                         <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                            <div className="text-center space-y-20 mb-16 pt-8 w-full text-center">
+                            <div className="text-center space-y-20 mb-16 pt-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cachet du Club & Signature</p>
-                                <div className="w-64 border-b-2 border-slate-200 mx-auto"></div>
+                                <div className="w-64 border-b-2 border-slate-200"></div>
                             </div>
                             <div className="w-full flex flex-row justify-between items-end gap-10 text-left">
                                 <div className="space-y-2">

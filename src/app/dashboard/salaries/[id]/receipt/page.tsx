@@ -18,8 +18,10 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SalaryReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: salaryId } = React.use(params);
+export default function SalaryReceiptPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = React.use(paramsPromise);
+  const salaryId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -30,6 +32,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [scale, setScale] = useState(1);
 
+  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
@@ -124,9 +127,9 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
         <div className="w-full max-w-4xl space-y-4 text-center">
             <div className="flex justify-between items-center print:hidden gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-                <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf}>
+                <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="font-bold uppercase">
                     {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    <span className="ml-2 font-bold uppercase">Exporter Reçu</span>
+                    Exporter Reçu
                 </Button>
             </div>
             

@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, Loader2, User, Users, ClipboardList } from "lucide-react";
+import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
@@ -25,6 +25,7 @@ export default function RegistrationFormPage() {
   const [formType, setFormType] = useState<"junior" | "adult" | "checklist">("junior");
   const [scale, setScale] = useState(1);
 
+  // Auto-scale logic for mobile zero-zoom
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth - 32;
@@ -125,7 +126,6 @@ export default function RegistrationFormPage() {
         <div className="bg-muted/40 p-2 sm:p-6 md:p-8 flex flex-col items-center min-h-screen">
             <div className="w-full max-w-3xl space-y-6 text-center">
                 
-                {/* Contrôles non imprimables */}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 print:hidden">
                     <Button variant="outline" size="sm" onClick={() => router.back()} className="w-full sm:w-auto h-10 font-bold">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -161,7 +161,6 @@ export default function RegistrationFormPage() {
                     </Button>
                 </div>
                 
-                {/* Formulaire Imprimable avec Auto-Scale Mobile */}
                 <div className="w-full flex justify-center overflow-hidden">
                     <div 
                         style={{ 
@@ -199,7 +198,7 @@ export default function RegistrationFormPage() {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-12 space-y-10 text-left">
+                            <CardContent className="p-12 space-y-10 text-left flex flex-col h-full min-h-[800px]">
                                 {formType === 'checklist' ? (
                                     <div className="space-y-10 py-10">
                                         <div className="space-y-6">
@@ -269,28 +268,33 @@ export default function RegistrationFormPage() {
 
                                         <div className="space-y-6 pt-4 flex-grow flex flex-col">
                                             <h3 className="font-black text-sm uppercase tracking-[0.2em] bg-slate-900 text-white px-6 py-2.5 w-fit rounded shadow-md italic">III. AUTORISATION ET DÉCLARATION</h3>
-                                            <div className="space-y-6 text-sm leading-relaxed italic text-slate-700 flex-grow">
+                                            <div className="space-y-6 text-sm leading-relaxed italic text-slate-700">
                                                 <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
                                                 <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-1 bg-primary/5 uppercase tracking-tighter text-xs">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
-                                                
-                                                <div className="pt-12 flex flex-row justify-between items-start gap-12">
-                                                    <div className="space-y-4 pt-4">
-                                                        <div className="flex items-center">
-                                                            <span className="font-bold">Fait à</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>,
-                                                            <span className="ml-4 font-bold">le</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <div className="text-center w-72 h-40 border-2 border-slate-200 rounded-xl p-4 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Signature (Légalisée)</p>
-                                                        </div>
-                                                        <p className="text-[8px] font-bold text-slate-300 italic">Signature du parent ou du joueur majeur</p>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </>
                                 )}
+                                
+                                <div className="mt-auto pt-12 flex flex-col items-center gap-8">
+                                    <div className="w-full flex flex-row justify-between items-start gap-12">
+                                        <div className="space-y-4 pt-4 text-left">
+                                            <div className="flex items-center">
+                                                <span className="font-bold">Fait à</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <span className="font-bold">Le</span><div className="w-40 border-b border-dotted border-gray-400 mx-2"></div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="text-center w-72 h-40 border-2 border-slate-200 rounded-xl p-4 flex flex-col items-center bg-slate-50/50 shadow-inner">
+                                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
+                                                <div className="w-48 border-b-2 border-slate-200 mb-2"></div>
+                                            </div>
+                                            <p className="text-[8px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                             
                             <footer className="p-8 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
