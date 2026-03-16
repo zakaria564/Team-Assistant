@@ -16,13 +16,13 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-2 mb-1 text-left">
-    <div className="mt-0.5 bg-slate-100 p-1 rounded flex items-center justify-center shrink-0 border border-slate-200">
-        <Icon className="h-2 w-2 text-slate-700" />
+  <div className="flex items-start gap-3 mb-3 text-left">
+    <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0 border border-slate-200">
+        <Icon className="h-2.5 w-2.5 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[6px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</p>
-      <div className="text-[9px] font-bold text-slate-900 break-words leading-tight">
+      <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 leading-none mb-1">{label}</p>
+      <div className="text-[10px] font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -30,9 +30,9 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-1.5 flex items-center gap-2 border-b border-primary/10 pb-0.5">
-        {Icon && <Icon className="h-2 w-2 text-primary" />}
-        <h2 className="text-[7px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
+    <div className="mb-4 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
+        {Icon && <Icon className="h-3 w-3 text-primary" />}
+        <h2 className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
     </div>
 );
 
@@ -161,41 +161,41 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         </div>
                     </header>
                     
-                    <div className="px-6 py-4 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-4 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div className="px-6 py-6 flex-grow flex flex-col">
+                        <section className="flex flex-row items-center gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-2 shrink-0">
-                                <div className="h-16 w-16 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                                <div className="h-20 w-20 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                                     {player.photoUrl ? (
                                         <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" />
                                     ) : (
-                                        <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
+                                        <AvatarFallback className="text-3xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                                     )}
                                 </div>
-                                <div className="bg-slate-900 text-white px-2 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
-                                    <Fingerprint className="h-2 w-2 text-primary" />{displayId}
+                                <div className="bg-slate-900 text-white px-2 py-0.5 rounded-full font-mono text-[7px] font-black tracking-widest flex items-center gap-1 shadow-md">
+                                    <Fingerprint className="h-2.5 w-2.5 text-primary" />{displayId}
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-none mb-2 break-words text-left">{player.name}</h1>
-                                <div className="grid grid-cols-3 gap-2">
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100">
-                                        <span className="text-[5px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Catégorie</span>
-                                        <Badge className="bg-slate-900 text-white text-[7px] px-1 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none shadow-sm">{player.category}</Badge>
+                                <h1 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none mb-3 break-words text-left">{player.name}</h1>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Catégorie</span>
+                                        <Badge className="bg-slate-900 text-white text-[8px] px-1.5 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{player.category}</Badge>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100">
-                                        <span className="text-[5px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Poste</span>
-                                        <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 w-full"><Star className="h-1.5 w-1.5 text-primary fill-primary" /> {player.position || "Joueur"}</span>
+                                    <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Poste</span>
+                                        <span className="text-slate-800 font-black text-[8px] uppercase flex items-center justify-center gap-1 w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-primary rounded-lg shadow-sm">
-                                        <span className="text-[5px] font-black uppercase text-white/70">Numéro</span>
-                                        <span className="text-white font-black text-xs italic leading-none">#{player.number || "--"}</span>
+                                    <div className="flex flex-col items-center justify-center text-center p-1.5 bg-primary rounded-lg shadow-md">
+                                        <span className="text-[6px] font-black uppercase text-white/70">Numéro</span>
+                                        <span className="text-white font-black text-sm italic leading-none">#{player.number || "--"}</span>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <main className="grid grid-cols-2 gap-6 mb-2">
-                            <div className="space-y-3">
+                        <main className="grid grid-cols-2 gap-8 mb-4">
+                            <div className="space-y-6">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -207,14 +207,14 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={MapPin} label="Adresse" value={player.address} />
                                 </div>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-6">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                                 </div>
                                 {player.tutorName && (
-                                    <div className="pt-1">
+                                    <div className="pt-2">
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                         <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                                         <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
@@ -232,15 +232,15 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <footer className="pt-2 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2 shrink-0">
+                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2 shrink-0">
                             <div className="space-y-0.5 pb-1">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-3 w-3" />
-                                    <span className="text-[6px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
+                                    <span className="text-[7px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
                                 </div>
-                                <p className="text-[5px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                                <p className="text-[6px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                             </div>
-                            <div className="text-[7px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1">Document Officiel</div>
+                            <div className="text-[8px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1">Document Officiel</div>
                         </footer>
                     </div>
                 </div>

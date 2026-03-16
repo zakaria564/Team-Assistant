@@ -16,13 +16,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-2 mb-2 text-left">
+  <div className="flex items-start gap-3 mb-3 text-left">
     <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0 border border-slate-200">
-        <Icon className="h-3 w-3 text-slate-700" />
+        <Icon className="h-2.5 w-2.5 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[8px] font-black uppercase tracking-wider text-slate-400 mb-0.5 leading-none">{label}</p>
-      <div className="text-[11px] font-bold text-slate-900 break-words leading-tight">
+      <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 mb-1 leading-none">{label}</p>
+      <div className="text-[10px] font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -30,9 +30,9 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-3 flex items-center gap-2 border-b border-primary/10 pb-1">
+    <div className="mb-4 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
         {Icon && <Icon className="h-3 w-3 text-primary" />}
-        <h2 className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
+        <h2 className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
     </div>
 );
 
@@ -122,8 +122,8 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[600px] flex justify-center">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px' }}>
-                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary">
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '840px' }}>
+                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubLogoUrl ? (
@@ -150,8 +150,8 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                         </div>
                     </header>
                     
-                    <div className="px-6 py-4 flex-grow">
-                        <section className="flex flex-row items-center gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                    <div className="px-6 py-6 flex-grow flex flex-col">
+                        <section className="flex flex-row items-center gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-2 shrink-0">
                                 <div className="h-20 w-20 border-2 border-white shadow-lg rounded-xl overflow-hidden bg-white flex items-center justify-center relative">
                                     {coach.photoUrl ? (
@@ -161,12 +161,12 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                     )}
                                 </div>
                                 <div className="bg-slate-900 text-white px-2 py-0.5 rounded-full font-mono text-[7px] font-black tracking-widest flex items-center gap-1 shadow-md">
-                                    <Fingerprint className="h-2 w-2 text-primary" />{displayId}
+                                    <Fingerprint className="h-2.5 w-2.5 text-primary" />{displayId}
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0 text-left">
                                 <h1 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none mb-3 break-words">{coach.name}</h1>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
                                         <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5"></span>
                                         <Badge className="bg-slate-900 text-white text-[8px] px-1.5 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{coach.category}</Badge>
@@ -179,8 +179,8 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </section>
 
-                        <main className="grid grid-cols-2 gap-6 mb-4">
-                            <div className="space-y-4">
+                        <main className="grid grid-cols-2 gap-8 mb-4">
+                            <div className="space-y-6">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
@@ -190,7 +190,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                                 </div>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
                                     <SectionTitle title="Parcours" icon={Shield} />
                                     <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
@@ -200,14 +200,14 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
+                        <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
 
-                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left">
+                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2 shrink-0">
                             <div className="space-y-0.5 pb-1">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-3 w-3" />

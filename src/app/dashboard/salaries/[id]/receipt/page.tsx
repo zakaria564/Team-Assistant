@@ -111,8 +111,8 @@ export default function SalaryReceiptPage({ params }: PageProps) {
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[600px] flex justify-center">
-                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '600px' }}>
-                        <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary">
+                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '600px', minHeight: '840px' }}>
+                        <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                             <div className="flex flex-row items-center gap-3 text-left">
                                 <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                     {clubInfo?.logoUrl ? (
@@ -139,13 +139,13 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </header>
 
-                        <div className="px-6 py-4 space-y-6 text-left flex-grow">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="px-6 py-6 space-y-8 text-left flex-grow flex flex-col">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                     <h3 className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Bénéficiaire (Entraîneur)</h3>
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                         <p className="text-lg font-black text-slate-900 uppercase tracking-tighter">{salary.coachName}</p>
-                                        <div className="flex flex-col gap-1">
+                                        <div className="flex flex-col gap-1.5">
                                             <p className="text-slate-500 font-black uppercase text-[7px] tracking-widest">Entraîneur Officiel</p>
                                             <p className="text-slate-700 font-black text-[8px] flex items-center gap-1.5 bg-white px-1.5 py-0.5 rounded-lg border border-slate-200 w-fit">
                                                 <Fingerprint className="h-2.5 w-2.5 text-primary" />
@@ -156,7 +156,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                     <h3 className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Période / Motif</h3>
-                                    <div className="space-y-1">
+                                    <div className="space-y-2">
                                         <p className="text-base font-black text-slate-900 tracking-tight leading-tight">{salary.description}</p>
                                         <p className="text-primary font-black text-[8px] uppercase tracking-widest italic">Saison Sportive En Cours</p>
                                     </div>
@@ -167,15 +167,15 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 <Table className="w-full">
                                     <TableHeader className="bg-slate-100">
                                         <TableRow className="border-b-2 border-slate-200">
-                                            <TableHead className="px-4 font-black text-slate-900 uppercase tracking-widest text-[7px] h-8">Désignation</TableHead>
-                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[7px] h-8">Date</TableHead>
-                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[7px] h-8">Méthode</TableHead>
-                                            <TableHead className="text-right px-4 font-black text-slate-900 uppercase tracking-widest text-[7px] h-8">Montant</TableHead>
+                                            <TableHead className="px-4 font-black text-slate-900 uppercase tracking-widest text-[7px] h-10">Désignation</TableHead>
+                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[7px] h-10">Date</TableHead>
+                                            <TableHead className="font-black text-slate-900 uppercase tracking-widest text-[7px] h-10">Méthode</TableHead>
+                                            <TableHead className="text-right px-4 font-black text-slate-900 uppercase tracking-widest text-[7px] h-10">Montant</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {salary.transactions?.map((t: any, i: number) => (
-                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-10 hover:bg-slate-50">
+                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-12 hover:bg-slate-50">
                                                 <TableCell className="px-4 py-1 font-bold text-slate-900 text-[10px]">Versement Salaire N°{i+1}</TableCell>
                                                 <TableCell className="py-1 text-slate-600 font-bold text-[10px]">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                                 <TableCell className="py-1 text-slate-700 font-black italic text-[10px]">{t.method}</TableCell>
@@ -186,8 +186,8 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </Table>
                             </div>
 
-                            <div className="flex justify-end pt-2">
-                                <div className="w-full max-w-[220px] space-y-2 bg-slate-900 p-4 rounded-xl shadow-xl text-left border-b-4 border-primary">
+                            <div className="flex justify-end pt-4">
+                                <div className="w-full max-w-[220px] space-y-3 bg-slate-900 p-4 rounded-xl shadow-xl text-left border-b-4 border-primary">
                                     <div className="flex justify-between text-slate-400 font-bold text-[7px] uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
                                         <span>{salary.totalAmount.toFixed(2)} MAD</span>
@@ -207,7 +207,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
+                            <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
                                 <div className="text-center space-y-8 w-full flex flex-col items-center">
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                     <div className="w-40 border-b-2 border-slate-300"></div>
@@ -215,13 +215,13 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <footer className="p-4 bg-slate-50 border-t-2 flex flex-row justify-between items-center gap-4 mt-auto">
+                        <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-auto shrink-0 border-t border-primary">
                             <div className="flex items-center gap-4">
-                                <div className="bg-green-100 text-green-800 px-2 py-1 rounded-lg font-black text-[7px] tracking-widest border border-green-200 uppercase shadow-sm">
+                                <div className="bg-green-600 text-white px-2 py-1 rounded font-black text-[7px] tracking-widest uppercase shadow-sm">
                                     STATUT: {salary.status.toUpperCase()}
                                 </div>
                             </div>
-                            <div className="text-[7px] text-slate-400 font-black uppercase tracking-widest italic text-right border-l-2 border-slate-200 pl-2">
+                            <div className="text-[7px] text-slate-400 font-black uppercase tracking-widest italic text-right border-l border-slate-700 pl-4">
                                 Système Team Assistant - Gestion Pro
                             </div>
                         </footer>

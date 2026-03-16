@@ -150,13 +150,13 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         </div>
                     </header>
 
-                    <div className="px-6 py-4 space-y-6 flex-grow flex flex-col">
-                        <div className="grid grid-cols-2 gap-4 text-left">
+                    <div className="px-6 py-6 space-y-8 flex-grow flex flex-col">
+                        <div className="grid grid-cols-2 gap-6 text-left">
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                 <h3 className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bénéficiaire (Joueur)</h3>
-                                <div className="space-y-1.5">
+                                <div className="space-y-2">
                                     <p className="text-lg font-black text-slate-900 uppercase tracking-tighter">{payment.playerName}</p>
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1.5">
                                         <p className="text-slate-600 font-bold text-[10px]">
                                             <span className="uppercase text-[6px] text-slate-400 font-black tracking-widest block leading-none mb-0.5">Catégorie</span> {payment.playerCategory}
                                         </p>
@@ -169,7 +169,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                             </div>
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                 <h3 className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Motif du règlement</h3>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     <p className="text-base font-black text-slate-900 tracking-tight leading-tight">{payment.description}</p>
                                     <p className="text-primary font-black text-[8px] uppercase tracking-widest italic">Saison Sportive En Cours</p>
                                 </div>
@@ -180,15 +180,15 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                             <Table className="w-full">
                                 <TableHeader className="bg-slate-100">
                                     <TableRow className="border-b-2 border-slate-200">
-                                        <TableHead className="font-black text-slate-900 h-8 px-4 uppercase tracking-widest text-[7px]">Désignation</TableHead>
-                                        <TableHead className="font-black text-slate-900 h-8 uppercase tracking-widest text-[7px]">Date</TableHead>
-                                        <TableHead className="font-black text-slate-900 h-8 uppercase tracking-widest text-[7px]">Mode</TableHead>
-                                        <TableHead className="text-right font-black text-slate-900 h-8 px-4 uppercase tracking-widest text-[7px]">Montant</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-10 px-4 uppercase tracking-widest text-[7px]">Désignation</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-10 uppercase tracking-widest text-[7px]">Date</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-10 uppercase tracking-widest text-[7px]">Mode</TableHead>
+                                        <TableHead className="text-right font-black text-slate-900 h-10 px-4 uppercase tracking-widest text-[7px]">Montant</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {payment.transactions?.map((t: any, i: number) => (
-                                    <TableRow key={i} className="border-b border-slate-100 last:border-0 h-10 hover:bg-slate-50">
+                                    <TableRow key={i} className="border-b border-slate-100 last:border-0 h-12 hover:bg-slate-50">
                                         <TableCell className="px-4 py-1 font-bold text-slate-900 text-[10px]">Versement N°{i+1}</TableCell>
                                         <TableCell className="py-1 text-slate-600 font-bold text-[10px]">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                         <TableCell className="py-1 text-slate-700 font-black italic text-[10px]">{t.method}</TableCell>
@@ -199,8 +199,8 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                             </Table>
                         </div>
 
-                        <div className="flex justify-end pt-2">
-                            <div className="w-full max-w-[220px] space-y-2 bg-slate-900 p-4 rounded-xl shadow-xl text-left border-b-4 border-primary">
+                        <div className="flex justify-end pt-4">
+                            <div className="w-full max-w-[220px] space-y-3 bg-slate-900 p-4 rounded-xl shadow-xl text-left border-b-4 border-primary">
                                 <div className="flex justify-between text-slate-400 font-bold text-[7px] uppercase tracking-widest">
                                     <span>Montant Dû</span>
                                     <span>{payment.totalAmount.toFixed(2)} MAD</span>
