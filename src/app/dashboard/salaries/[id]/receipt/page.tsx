@@ -22,7 +22,8 @@ type PageProps = {
 };
 
 export default function SalaryReceiptPage({ params }: PageProps) {
-  const { id: salaryId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const salaryId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

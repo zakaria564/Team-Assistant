@@ -16,7 +16,6 @@ const toTitleCase = (str: string) => {
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function EditCoachPage(props: PageProps) {

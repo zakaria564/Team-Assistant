@@ -34,7 +34,8 @@ type PageProps = {
 };
 
 export default function PlayerDetailPage({ params }: PageProps) {
-  const { id: playerId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const playerId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

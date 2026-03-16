@@ -22,7 +22,8 @@ type PageProps = {
 };
 
 export default function PaymentReceiptPage({ params }: PageProps) {
-  const { id: paymentId } = React.use(params);
+  const resolvedParams = React.use(params);
+  const paymentId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

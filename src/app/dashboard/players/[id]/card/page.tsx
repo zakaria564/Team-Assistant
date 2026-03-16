@@ -15,12 +15,11 @@ import { fr } from "date-fns/locale";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function PlayerCardPdfPage(props: PageProps) {
-  const params = React.use(props.params);
-  const playerId = params.id;
+  const resolvedParams = React.use(props.params);
+  const playerId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -155,7 +154,7 @@ export default function PlayerCardPdfPage(props: PageProps) {
                 <div className="relative">
                     <div className="h-28 w-28 border-4 border-primary shadow-md rounded-full overflow-hidden flex items-center justify-center bg-slate-100">
                         {player.photoUrl ? (
-                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain" />
+                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" />
                         ) : (
                             <AvatarFallback className="text-4xl">{playerInitial}</AvatarFallback>
                         )}
