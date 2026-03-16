@@ -135,7 +135,7 @@ export default function RegistrationFormPage() {
                 </Button>
             </div>
             
-            <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
+            <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[1000px] flex justify-center">
                     <Card className="mx-auto bg-white text-black border shadow-2xl" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
                         <CardHeader className="text-center space-y-6 p-12 border-b">
@@ -253,7 +253,7 @@ export default function RegistrationFormPage() {
                                     </div>
                                     <div className="flex flex-col items-center gap-4">
                                         <div className="text-center w-80 h-48 border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet & Signature (Légalisée)</p>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-auto">Cachet du Club & Signature</p>
                                             <div className="w-56 border-b-2 border-slate-200 mb-4"></div>
                                         </div>
                                         <p className="text-[10px] font-bold text-slate-300 italic text-center uppercase tracking-widest">Signature du parent ou du joueur majeur</p>

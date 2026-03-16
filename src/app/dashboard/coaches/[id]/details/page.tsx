@@ -40,9 +40,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function CoachDetailsPdfPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const coachId = resolvedParams.id;
+export default function CoachDetailsPdfPage({ params }: PageProps) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -127,7 +126,7 @@ export default function CoachDetailsPdfPage(props: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
+        <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[1000px] flex justify-center">
                 <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
                     <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
@@ -209,7 +208,7 @@ export default function CoachDetailsPdfPage(props: PageProps) {
 
                         <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
                             <div className="text-center space-y-24 mb-20 pt-10 w-full flex flex-col items-center">
-                                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 italic">Cachet du Club & Signature Administrative</p>
+                                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 italic">Cachet du Club & Signature</p>
                                 <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
                             </div>
                             <div className="w-full flex flex-row justify-between items-end gap-12 text-left">

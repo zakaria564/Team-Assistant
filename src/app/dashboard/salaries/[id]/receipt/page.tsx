@@ -21,9 +21,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function SalaryReceiptPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const salaryId = resolvedParams.id;
+export default function SalaryReceiptPage({ params }: PageProps) {
+  const { id: salaryId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -123,7 +122,7 @@ export default function SalaryReceiptPage(props: PageProps) {
                 </Button>
             </div>
             
-            <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
+            <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[1000px] flex justify-center">
                     <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
                         <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-10">
@@ -223,7 +222,7 @@ export default function SalaryReceiptPage(props: PageProps) {
 
                             <div className="flex flex-col items-center pt-16">
                                 <div className="text-center space-y-24 w-full max-w-xl border-t-2 border-slate-100 pt-12">
-                                    <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-400 italic">Signature Administrative & Cachet</p>
+                                    <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-400 italic">Cachet du Club & Signature</p>
                                     <div className="w-full flex flex-col items-center gap-8">
                                         <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
                                         <div className="flex items-center gap-4 text-slate-300">
