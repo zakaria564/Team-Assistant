@@ -133,7 +133,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter Fiche
+            Exporter PDF
           </Button>
         </div>
 
@@ -232,21 +232,22 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <footer className="mt-auto pt-12 flex flex-col items-center">
-                            <div className="text-center space-y-16 mb-12 w-full flex flex-col items-center">
+                        <div className="pt-20 pb-12 flex flex-col items-center">
+                            <div className="text-center space-y-16 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                <div className="w-64 border-b-4 border-slate-200 shadow-sm"></div>
+                                <div className="w-64 border-b-4 border-slate-300 shadow-sm"></div>
                             </div>
-                            <div className="w-full flex flex-row justify-between items-end gap-10 text-left pt-6 border-t-2 border-slate-100">
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center gap-2 text-slate-300">
-                                        <ShieldCheck className="h-5 w-5" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest italic">Certification Électronique Certifiée</span>
-                                    </div>
-                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                        </div>
+
+                        <footer className="mt-auto pt-6 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10 text-left">
+                            <div className="space-y-1.5 pb-2">
+                                <div className="flex items-center gap-2 text-slate-300">
+                                    <ShieldCheck className="h-5 w-5" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest italic">Certification Électronique Certifiée</span>
                                 </div>
-                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                             </div>
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary mb-2">Document Officiel</div>
                         </footer>
                     </div>
                 </div>

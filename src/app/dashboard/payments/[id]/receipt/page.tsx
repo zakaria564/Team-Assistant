@@ -129,7 +129,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
               {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              Exporter Fiche
+              Exporter PDF
           </Button>
         </div>
 
@@ -230,11 +230,11 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center pt-12">
-                            <div className="text-center space-y-16 w-full max-w-lg border-t-2 border-slate-100 pt-10">
+                        <div className="pt-20 pb-12 flex flex-col items-center">
+                            <div className="text-center space-y-16 w-full max-w-lg flex flex-col items-center">
                                 <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-full flex flex-col items-center gap-6">
-                                    <div className="w-64 border-b-4 border-slate-200 shadow-sm"></div>
+                                    <div className="w-64 border-b-4 border-slate-300 shadow-sm"></div>
                                     <div className="flex items-center gap-3 text-slate-300">
                                         <ShieldCheck className="h-6 w-6" />
                                         <span className="text-[9px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>

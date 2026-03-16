@@ -122,14 +122,14 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter Fiche
+            Exporter PDF
           </Button>
         </div>
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[800px] flex justify-center">
                 <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '800px', minHeight: '1131px' }}>
-                    <header className="p-10 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-8">
+                    <header className="p-8 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-8">
                         <div className="flex flex-row items-center gap-6 text-left">
                             <div className="h-20 w-24 border-2 border-slate-700 shadow-2xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubLogoUrl ? (
@@ -156,10 +156,10 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                         </div>
                     </header>
                     
-                    <div className="px-12 pb-10 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-12 mb-10 bg-slate-50 p-10 rounded-2xl border-2 border-slate-100 shadow-sm">
+                    <div className="px-10 pb-8 flex-grow flex flex-col">
+                        <section className="flex flex-row items-center gap-10 mb-8 bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-4 shrink-0">
-                                <div className="h-36 w-32 border-4 border-white shadow-xl rounded-2xl overflow-hidden bg-white flex items-center justify-center relative">
+                                <div className="h-32 w-32 border-4 border-white shadow-xl rounded-2xl overflow-hidden bg-white flex items-center justify-center relative">
                                     {coach.photoUrl ? (
                                         <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain bg-white" />
                                     ) : (
@@ -171,7 +171,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-8 break-words text-left">{coach.name}</h1>
+                                <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-6 break-words text-left">{coach.name}</h1>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="flex flex-col items-center justify-center text-center p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
                                         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Catégorie Affectée</span>
@@ -185,8 +185,8 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </section>
 
-                        <main className="flex flex-row gap-12 mb-6">
-                            <div className="w-1/2 space-y-10">
+                        <main className="flex flex-row gap-10 mb-6">
+                            <div className="w-1/2 space-y-8">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Flag} label="Nationalité" value={coach.nationality} />
@@ -196,7 +196,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={Home} label="Adresse Résidentielle" value={coach.address} />
                                 </div>
                             </div>
-                            <div className="w-1/2 space-y-10">
+                            <div className="w-1/2 space-y-8">
                                 <div>
                                     <SectionTitle title="Parcours Professionnel" icon={Shield} />
                                     <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
@@ -206,21 +206,22 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <footer className="mt-auto pt-12 flex flex-col items-center">
-                            <div className="text-center space-y-16 mb-16 w-full flex flex-col items-center">
+                        <div className="pt-20 pb-12 flex flex-col items-center">
+                            <div className="text-center space-y-16 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                <div className="w-64 border-b-4 border-slate-200 shadow-sm"></div>
+                                <div className="w-64 border-b-4 border-slate-300 shadow-sm"></div>
                             </div>
-                            <div className="w-full flex flex-row justify-between items-end gap-10 text-left pt-8 border-t-2 border-slate-100">
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center gap-2 text-slate-300">
-                                        <ShieldCheck className="h-5 w-5" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest italic">Certification Électronique de Fonction</span>
-                                    </div>
-                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                        </div>
+
+                        <footer className="mt-auto pt-6 border-t-2 border-slate-100 flex flex-row justify-between items-end gap-10 text-left">
+                            <div className="space-y-1.5 pb-2">
+                                <div className="flex items-center gap-2 text-slate-300">
+                                    <ShieldCheck className="h-5 w-5" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest italic">Certification Électronique de Fonction</span>
                                 </div>
-                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                             </div>
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary mb-2">Document Officiel</div>
                         </footer>
                     </div>
                 </div>
