@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -41,8 +40,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function CoachDetailsPdfPage({ params }: PageProps) {
-  const resolvedParams = React.use(params);
+export default function CoachDetailsPdfPage(props: PageProps) {
+  const resolvedParams = React.use(props.params);
   const coachId = resolvedParams.id;
   
   const router = useRouter();
@@ -128,7 +127,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full overflow-x-auto pb-8">
+        <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
             <div className="min-w-[1000px] flex justify-center">
                 <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
                     <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">

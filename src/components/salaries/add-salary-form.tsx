@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -67,7 +66,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     }).superRefine((data, ctx) => {
         const total = data.totalAmount || 0;
         const alreadyPaid = isEditMode ? amountAlreadyPaid : 0;
-        const remaining = total - alreadyPaid;
+        const remaining = Math.max(0, total - alreadyPaid);
         
         if (data.newTransactionAmount && data.newTransactionAmount > (remaining + 0.01)) {
             ctx.addIssue({
