@@ -18,8 +18,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function EditCoachPage(props: PageProps) {
-  const { id: coachId } = React.use(props.params);
+export default function EditCoachPage({ params }: PageProps) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);

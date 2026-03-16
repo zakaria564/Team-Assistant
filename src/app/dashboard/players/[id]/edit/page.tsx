@@ -18,8 +18,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function EditPlayerPage(props: PageProps) {
-  const { id: playerId } = React.use(props.params);
+export default function EditPlayerPage({ params }: PageProps) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);

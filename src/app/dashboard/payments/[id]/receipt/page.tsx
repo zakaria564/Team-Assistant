@@ -21,8 +21,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PaymentReceiptPage(props: PageProps) {
-  const { id: paymentId } = React.use(props.params);
+export default function PaymentReceiptPage({ params }: PageProps) {
+  const { id: paymentId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

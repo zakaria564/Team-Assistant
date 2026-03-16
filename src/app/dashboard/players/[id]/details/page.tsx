@@ -45,8 +45,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PlayerDetailsPdfPage(props: PageProps) {
-  const { id: playerId } = React.use(props.params);
+export default function PlayerDetailsPdfPage({ params }: PageProps) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
