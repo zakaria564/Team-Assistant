@@ -21,9 +21,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PaymentReceiptPage({ params }: PageProps) {
-  const resolvedParams = React.use(params);
-  const paymentId = resolvedParams.id;
+export default function PaymentReceiptPage(props: PageProps) {
+  const { id: paymentId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -135,121 +134,121 @@ export default function PaymentReceiptPage({ params }: PageProps) {
         </div>
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-            <div className="min-w-[1000px] flex justify-center">
-                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
-                    <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-10">
-                        <div className="flex flex-row items-center gap-10 text-left">
-                            <div className="h-28 w-32 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
+            <div className="min-w-[800px] flex justify-center">
+                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '800px', minHeight: '1131px' }}>
+                    <header className="p-8 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-8">
+                        <div className="flex flex-row items-center gap-8 text-left">
+                            <div className="h-20 w-24 border-2 border-slate-700 shadow-2xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubInfo?.logoUrl ? (
-                                    <img src={clubInfo.logoUrl} alt="Logo" className="h-full w-full object-contain p-2" />
+                                    <img src={clubInfo.logoUrl} alt="Logo" className="h-full w-full object-contain p-1.5" />
                                 ) : (
-                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-6xl font-black">
+                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-4xl font-black">
                                         {clubInitial}
                                     </div>
                                 )}
                             </div>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-black uppercase tracking-tighter text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                                <div className="text-slate-400 text-lg font-semibold leading-tight max-w-[450px]">
+                            <div className="space-y-1">
+                                <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                                <div className="text-slate-400 text-sm font-semibold leading-tight max-w-[350px]">
                                     <p className="break-words">{clubInfo?.address || "Siège Social"}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right space-y-2">
-                            <h2 className="text-6xl font-black uppercase italic tracking-tighter text-white">REÇU</h2>
-                            <div className="pt-2">
-                                <p className="text-primary font-black text-lg tracking-[0.2em] uppercase">REF: {receiptRef}</p>
-                                <p className="text-slate-500 text-base font-bold mt-1">Date : {format(new Date(), "dd/MM/yyyy")}</p>
+                        <div className="text-right space-y-1">
+                            <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">REÇU</h2>
+                            <div className="pt-1">
+                                <p className="text-primary font-black text-sm tracking-[0.2em] uppercase">REF: {receiptRef}</p>
+                                <p className="text-slate-500 text-xs font-bold mt-0.5">Date : {format(new Date(), "dd/MM/yyyy")}</p>
                             </div>
                         </div>
                     </header>
 
-                    <div className="p-16 space-y-12 flex-grow">
-                        <div className="grid grid-cols-2 gap-16 text-left">
-                            <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100 shadow-sm">
-                                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Bénéficiaire (Joueur)</h3>
-                                <div className="space-y-4">
-                                    <p className="text-4xl font-black text-slate-900 uppercase tracking-tighter">{payment.playerName}</p>
-                                    <div className="flex flex-col gap-3">
-                                        <p className="text-slate-600 font-bold text-lg">
-                                            <span className="uppercase text-[10px] text-slate-400 font-black tracking-widest block mb-1">Catégorie</span> {payment.playerCategory}
+                    <div className="px-12 py-8 space-y-10 flex-grow">
+                        <div className="grid grid-cols-2 gap-10 text-left">
+                            <div className="bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Bénéficiaire (Joueur)</h3>
+                                <div className="space-y-3">
+                                    <p className="text-3xl font-black text-slate-900 uppercase tracking-tighter">{payment.playerName}</p>
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-slate-600 font-bold text-base">
+                                            <span className="uppercase text-[8px] text-slate-400 font-black tracking-widest block mb-0.5">Catégorie</span> {payment.playerCategory}
                                         </p>
-                                        <p className="text-slate-700 font-black text-sm flex items-center gap-4 bg-white px-4 py-3 rounded-xl border border-slate-200 w-fit mt-2 shadow-sm">
-                                            <Fingerprint className="h-5 w-5 text-primary" />
+                                        <p className="text-slate-700 font-black text-xs flex items-center gap-3 bg-white px-3 py-2 rounded-lg border border-slate-200 w-fit mt-1 shadow-sm">
+                                            <Fingerprint className="h-4 w-4 text-primary" />
                                             <span>ID : {payment.playerProfessionalId}</span>
                                         </p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100 shadow-sm">
-                                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Description du paiement</h3>
-                                <div className="space-y-3">
-                                    <p className="text-3xl font-black text-slate-900 tracking-tight leading-tight">{payment.description}</p>
-                                    <p className="text-primary font-black text-sm uppercase tracking-widest mt-4 italic">Saison Sportive En Cours</p>
+                            <div className="bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Description du paiement</h3>
+                                <div className="space-y-2">
+                                    <p className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{payment.description}</p>
+                                    <p className="text-primary font-black text-xs uppercase tracking-widest mt-2 italic">Saison Sportive En Cours</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-3xl border-2 border-slate-200 shadow-lg overflow-hidden">
+                        <div className="rounded-2xl border-2 border-slate-200 shadow-lg overflow-hidden">
                             <Table className="w-full">
                                 <TableHeader className="bg-slate-100">
                                     <TableRow className="border-b-2 border-slate-200">
-                                        <TableHead className="font-black text-slate-900 h-16 px-10 uppercase tracking-widest text-[12px]">Désignation</TableHead>
-                                        <TableHead className="font-black text-slate-900 h-16 uppercase tracking-widest text-[12px]">Date Versement</TableHead>
-                                        <TableHead className="font-black text-slate-900 h-16 uppercase tracking-widest text-[12px]">Mode de règlement</TableHead>
-                                        <TableHead className="text-right font-black text-slate-900 h-16 px-10 uppercase tracking-widest text-[12px]">Montant Versé</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-14 px-8 uppercase tracking-widest text-[10px]">Désignation</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-14 uppercase tracking-widest text-[10px]">Date Versement</TableHead>
+                                        <TableHead className="font-black text-slate-900 h-14 uppercase tracking-widest text-[10px]">Mode de règlement</TableHead>
+                                        <TableHead className="text-right font-black text-slate-900 h-14 px-8 uppercase tracking-widest text-[10px]">Montant Versé</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {payment.transactions?.map((t: any, i: number) => (
-                                    <TableRow key={i} className="border-b border-slate-100 last:border-0 h-20 hover:bg-slate-50">
-                                        <TableCell className="px-10 py-6 font-bold text-slate-900 text-lg">Versement N°{i+1}</TableCell>
-                                        <TableCell className="py-6 text-slate-600 font-bold text-lg">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
-                                        <TableCell className="py-6 text-slate-700 font-black italic text-lg">{t.method}</TableCell>
-                                        <TableCell className="text-right py-6 px-10 font-black text-slate-900 text-2xl">{t.amount.toFixed(2)} MAD</TableCell>
+                                    <TableRow key={i} className="border-b border-slate-100 last:border-0 h-16 hover:bg-slate-50">
+                                        <TableCell className="px-8 py-4 font-bold text-slate-900 text-base">Versement N°{i+1}</TableCell>
+                                        <TableCell className="py-4 text-slate-600 font-bold text-base">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
+                                        <TableCell className="py-4 text-slate-700 font-black italic text-base">{t.method}</TableCell>
+                                        <TableCell className="text-right py-4 px-8 font-black text-slate-900 text-xl">{t.amount.toFixed(2)} MAD</TableCell>
                                     </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
                         </div>
 
-                        <div className="flex justify-end pt-6">
-                            <div className="w-full max-w-md space-y-5 bg-slate-900 p-10 rounded-3xl shadow-2xl text-left border-b-8 border-primary">
-                                <div className="flex justify-between text-slate-400 font-bold text-sm uppercase tracking-widest">
+                        <div className="flex justify-end pt-4">
+                            <div className="w-full max-w-sm space-y-4 bg-slate-900 p-8 rounded-2xl shadow-2xl text-left border-b-8 border-primary">
+                                <div className="flex justify-between text-slate-400 font-bold text-[10px] uppercase tracking-widest">
                                     <span>Montant Total Dû</span>
                                     <span>{payment.totalAmount.toFixed(2)} MAD</span>
                                 </div>
-                                <div className="flex justify-between text-white font-black text-3xl tracking-tighter">
+                                <div className="flex justify-between text-white font-black text-2xl tracking-tighter">
                                     <span>Payé à ce jour</span>
                                     <span className="text-primary">{amountPaid.toFixed(2)} MAD</span>
                                 </div>
                                 <Separator className="bg-slate-700 h-0.5" />
-                                <div className="flex justify-between text-slate-400 font-bold text-sm uppercase tracking-widest pt-2">
+                                <div className="flex justify-between text-slate-400 font-bold text-[10px] uppercase tracking-widest pt-1">
                                     <span>Reste à régler</span>
                                     <span className={cn(remaining > 0.01 ? "text-red-400" : "text-green-400")}>{remaining.toFixed(2)} MAD</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center pt-16">
-                            <div className="text-center space-y-24 w-full max-w-xl border-t-2 border-slate-100 pt-12">
-                                <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                <div className="w-full flex flex-col items-center gap-8">
-                                    <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
-                                    <div className="flex items-center gap-4 text-slate-300">
-                                        <ShieldCheck className="h-8 w-8" />
-                                        <span className="text-[11px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>
+                        <div className="flex flex-col items-center pt-12">
+                            <div className="text-center space-y-16 w-full max-w-lg border-t-2 border-slate-100 pt-10">
+                                <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-600 italic">Cachet du Club & Signature</p>
+                                <div className="w-full flex flex-col items-center gap-6">
+                                    <div className="w-64 border-b-4 border-slate-200 shadow-sm"></div>
+                                    <div className="flex items-center gap-3 text-slate-300">
+                                        <ShieldCheck className="h-6 w-6" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <footer className="p-12 bg-slate-900 text-white flex justify-between items-center gap-8 mt-auto">
-                        <div className="text-[11px] opacity-50 font-black uppercase tracking-widest text-left">
+                    <footer className="p-8 bg-slate-900 text-white flex justify-between items-center gap-6 mt-auto">
+                        <div className="text-[9px] opacity-50 font-black uppercase tracking-widest text-left">
                             <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club Sportif"} - Team Assistant Pro</p>
                         </div>
-                        <div className="text-primary font-black uppercase tracking-[0.3em] text-[11px] italic text-right border-l-2 border-primary/30 pl-8">
+                        <div className="text-primary font-black uppercase tracking-[0.3em] text-[9px] italic text-right border-l-2 border-primary/30 pl-6">
                             Authenticité Garantie
                         </div>
                     </footer>

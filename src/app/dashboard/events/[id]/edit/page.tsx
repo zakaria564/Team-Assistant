@@ -13,12 +13,10 @@ import { isPast } from "date-fns";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function EditEventPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const eventId = resolvedParams.id;
+  const { id: eventId } = React.use(props.params);
   
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);

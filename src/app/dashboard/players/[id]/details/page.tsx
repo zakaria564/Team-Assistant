@@ -45,9 +45,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PlayerDetailsPdfPage({ params }: PageProps) {
-  const resolvedParams = React.use(params);
-  const playerId = resolvedParams.id;
+export default function PlayerDetailsPdfPage(props: PageProps) {
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -139,70 +138,70 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
         </div>
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-            <div className="min-w-[1000px] flex justify-center">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '1000px', minHeight: '1414px' }}>
-                    <header className="p-12 bg-slate-900 text-white flex flex-row justify-between items-center gap-8 mb-8">
-                        <div className="flex flex-row items-center gap-10 text-left">
-                            <div className="h-28 w-32 border-2 border-slate-700 shadow-2xl rounded-xl overflow-hidden bg-white flex items-center justify-center shrink-0">
+            <div className="min-w-[800px] flex justify-center">
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col overflow-hidden" style={{ width: '800px', minHeight: '1131px' }}>
+                    <header className="p-8 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-8">
+                        <div className="flex flex-row items-center gap-6 text-left">
+                            <div className="h-20 w-24 border-2 border-slate-700 shadow-2xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubLogoUrl ? (
-                                    <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-2" />
+                                    <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1.5" />
                                 ) : (
-                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-6xl font-black">
+                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-4xl font-black">
                                         {clubInitial}
                                     </div>
                                 )}
                             </div>
-                            <div className="space-y-2">
-                                <h1 className="text-4xl font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
-                                <div className="text-slate-400 text-lg font-semibold leading-tight max-w-[450px]">
+                            <div className="space-y-1">
+                                <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
+                                <div className="text-slate-400 text-sm font-semibold leading-tight max-w-[350px]">
                                     <p className="break-words">{clubAddress || "Siège Social"}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right space-y-2">
-                            <h2 className="text-6xl font-black uppercase italic tracking-tighter text-white">FICHE</h2>
-                            <div className="pt-2">
-                                <p className="text-primary font-black text-sm uppercase tracking-[0.3em]">OFFICIELLE JOUEUR</p>
-                                <p className="text-slate-500 text-base font-bold mt-1">Saison {new Date().getFullYear()}</p>
+                        <div className="text-right space-y-1">
+                            <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">FICHE</h2>
+                            <div className="pt-1">
+                                <p className="text-primary font-black text-[10px] uppercase tracking-[0.3em]">OFFICIELLE JOUEUR</p>
+                                <p className="text-slate-500 text-xs font-bold mt-0.5">Saison {new Date().getFullYear()}</p>
                             </div>
                         </div>
                     </header>
                     
-                    <div className="px-16 pb-12 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-16 mb-12 bg-slate-50 p-12 rounded-3xl border-2 border-slate-100 shadow-sm">
-                            <div className="flex flex-col items-center gap-6 shrink-0">
-                                <div className="h-48 w-48 border-4 border-white shadow-xl rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                    <div className="px-10 pb-8 flex-grow flex flex-col">
+                        <section className="flex flex-row items-center gap-10 mb-8 bg-slate-50 p-8 rounded-2xl border-2 border-slate-100 shadow-sm">
+                            <div className="flex flex-col items-center gap-4 shrink-0">
+                                <div className="h-32 w-32 border-4 border-white shadow-xl rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                                     {player.photoUrl ? (
                                         <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" />
                                     ) : (
-                                        <AvatarFallback className="text-6xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
+                                        <AvatarFallback className="text-4xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
                                     )}
                                 </div>
-                                <div className="bg-slate-900 text-white px-6 py-2 rounded-full font-mono text-xs font-black tracking-widest flex items-center gap-3 shadow-lg border border-slate-700">
-                                    <Fingerprint className="h-4 w-4 text-primary" />{displayId}
+                                <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full font-mono text-[10px] font-black tracking-widest flex items-center gap-2 shadow-lg border border-slate-700">
+                                    <Fingerprint className="h-3 w-3 text-primary" />{displayId}
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-10 break-words text-left">{player.name}</h1>
-                                <div className="grid grid-cols-3 gap-8">
-                                    <div className="flex flex-col items-center justify-center text-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Catégorie</span>
-                                        <Badge className="bg-slate-900 text-white text-sm px-4 py-1.5 font-black uppercase tracking-widest rounded-md justify-center w-full border-none shadow-sm">{player.category}</Badge>
+                                <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-6 break-words text-left">{player.name}</h1>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="flex flex-col items-center justify-center text-center p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Catégorie</span>
+                                        <Badge className="bg-slate-900 text-white text-xs px-3 py-1 font-black uppercase tracking-widest rounded-md justify-center w-full border-none shadow-sm">{player.category}</Badge>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Poste</span>
-                                        <span className="text-slate-800 font-black text-xs uppercase flex items-center justify-center gap-2"><Star className="h-4 w-4 text-primary fill-primary" /> {player.position || "Joueur"}</span>
+                                    <div className="flex flex-col items-center justify-center text-center p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Poste</span>
+                                        <span className="text-slate-800 font-black text-[10px] uppercase flex items-center justify-center gap-1.5"><Star className="h-3 w-3 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-4 bg-primary rounded-2xl shadow-md">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 mb-1">Numéro</span>
-                                        <span className="text-white font-black text-3xl italic">#{player.number || "--"}</span>
+                                    <div className="flex flex-col items-center justify-center text-center p-3 bg-primary rounded-xl shadow-md">
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/70 mb-0.5">Numéro</span>
+                                        <span className="text-white font-black text-2xl italic">#{player.number || "--"}</span>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <main className="flex flex-row gap-16 mb-8">
-                            <div className="w-1/2 space-y-12">
+                        <main className="flex flex-row gap-10 mb-6">
+                            <div className="w-1/2 space-y-8">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Cake} label="Date de naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -214,7 +213,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={MapPin} label="Adresse Résidentielle" value={player.address} />
                                 </div>
                             </div>
-                            <div className="w-1/2 space-y-12">
+                            <div className="w-1/2 space-y-8">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Entraîneur Responsable" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
@@ -222,7 +221,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En cours"} />
                                 </div>
                                 {player.tutorName && (
-                                    <div className="pt-6">
+                                    <div className="pt-4">
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                         <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                                         <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
@@ -233,20 +232,20 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <footer className="mt-auto pt-16 flex flex-col items-center">
-                            <div className="text-center space-y-24 mb-20 w-full flex flex-col items-center">
-                                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
+                        <footer className="mt-auto pt-12 flex flex-col items-center">
+                            <div className="text-center space-y-16 mb-12 w-full flex flex-col items-center">
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
+                                <div className="w-64 border-b-4 border-slate-200 shadow-sm"></div>
                             </div>
-                            <div className="w-full flex flex-row justify-between items-end gap-12 text-left pt-10 border-t-2 border-slate-100">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-4 text-slate-300">
-                                        <ShieldCheck className="h-8 w-8" />
-                                        <span className="text-[11px] font-black uppercase tracking-widest italic">Certification Électronique Certifiée</span>
+                            <div className="w-full flex flex-row justify-between items-end gap-10 text-left pt-6 border-t-2 border-slate-100">
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center gap-2 text-slate-300">
+                                        <ShieldCheck className="h-5 w-5" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest italic">Certification Électronique Certifiée</span>
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                                 </div>
-                                <div className="text-sm font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-b-2 border-primary">Document Officiel</div>
                             </div>
                         </footer>
                     </div>

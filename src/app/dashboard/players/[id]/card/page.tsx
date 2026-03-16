@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Download, Trophy, Shirt, Shield, Cake, Flag, Fingerprint } from "lucide-react";
-import jsPDF from "jspdf";
+import jsPDF from "jsPDF";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -18,8 +18,7 @@ type PageProps = {
 };
 
 export default function PlayerCardPdfPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const playerId = resolvedParams.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

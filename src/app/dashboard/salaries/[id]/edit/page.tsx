@@ -11,12 +11,10 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function EditSalaryPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const salaryId = resolvedParams.id;
+  const { id: salaryId } = React.use(props.params);
   
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);

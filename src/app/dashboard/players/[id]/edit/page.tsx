@@ -19,8 +19,7 @@ type PageProps = {
 };
 
 export default function EditPlayerPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const playerId = resolvedParams.id;
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);

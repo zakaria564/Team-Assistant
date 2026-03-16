@@ -11,12 +11,10 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function EditPaymentPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const paymentId = resolvedParams.id;
+  const { id: paymentId } = React.use(props.params);
   
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);

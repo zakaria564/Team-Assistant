@@ -33,9 +33,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PlayerDetailPage({ params }: PageProps) {
-  const resolvedParams = React.use(params);
-  const playerId = resolvedParams.id;
+export default function PlayerDetailPage(props: PageProps) {
+  const { id: playerId } = React.use(props.params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
@@ -90,7 +89,7 @@ export default function PlayerDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1 h-fit">
           <CardContent className="pt-8 flex flex-col items-center gap-6">
-            <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+            <div className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-primary shadow-lg rounded-full overflow-hidden bg-slate-100 flex items-center justify-center relative">
               {player.photoUrl ? (
                 <img 
                   src={player.photoUrl} 
