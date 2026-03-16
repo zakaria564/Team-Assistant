@@ -194,7 +194,7 @@ export default function RegistrationFormPage() {
                                 <>
                                     <div className="space-y-4">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
-                                        <div className="space-y-4 text-[9px] font-medium">
+                                        <div className="space-y-5 text-[10px] font-medium">
                                             <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                             <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
                                             <div className="grid grid-cols-2 gap-x-6">
@@ -214,9 +214,9 @@ export default function RegistrationFormPage() {
                                     </div>
 
                                     {formType === 'junior' && (
-                                        <div className="space-y-4 pt-2">
+                                        <div className="space-y-4 pt-4">
                                             <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
-                                            <div className="space-y-4 text-[9px] font-medium">
+                                            <div className="space-y-5 text-[10px] font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-6">
                                                     <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
@@ -230,24 +230,24 @@ export default function RegistrationFormPage() {
                                         </div>
                                     )}
 
-                                    <div className="space-y-4 pt-2">
+                                    <div className="space-y-4 pt-4">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">III. AUTORISATION ET DÉCLARATION</h3>
-                                        <div className="space-y-3 text-[8px] leading-relaxed italic text-slate-700">
+                                        <div className="space-y-3 text-[9px] leading-relaxed italic text-slate-700">
                                             <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
-                                            <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-[7px]">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
+                                            <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-[8px]">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
                                         </div>
                                     </div>
                                 </>
                             )}
                             
-                            <div className="mt-auto pt-8 flex flex-col items-center gap-6">
+                            <div className="mt-auto pt-16 flex flex-col items-center">
                                 <div className="w-full flex flex-row justify-between items-start gap-10 px-4">
-                                    <div className="space-y-4 pt-2 text-left">
+                                    <div className="space-y-6 pt-2 text-left">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-[10px]">Fait à</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
+                                            <span className="font-bold text-[11px]">Fait à</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
                                         </div>
                                         <div className="flex items-center">
-                                            <span className="font-bold text-[10px]">Le</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
+                                            <span className="font-bold text-[11px]">Le</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-2">
@@ -261,7 +261,7 @@ export default function RegistrationFormPage() {
                             </div>
                         </div>
                         
-                        <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-auto border-t-2 border-primary shrink-0">
+                        <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-12 border-t-2 border-primary shrink-0">
                             <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
                             <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px]">
                                 <ShieldCheck className="h-3 w-3" />

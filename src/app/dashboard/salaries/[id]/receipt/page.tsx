@@ -207,7 +207,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
+                            <div className="mt-auto pt-16 flex flex-col items-center">
                                 <div className="text-center space-y-8 w-full flex flex-col items-center">
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                     <div className="w-40 border-b-2 border-slate-300"></div>
@@ -215,7 +215,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-auto shrink-0 border-t border-primary">
+                        <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-12 shrink-0 border-t border-primary">
                             <div className="flex items-center gap-4">
                                 <div className="bg-green-600 text-white px-2 py-1 rounded font-black text-[7px] tracking-widest uppercase shadow-sm">
                                     STATUT: {salary.status.toUpperCase()}

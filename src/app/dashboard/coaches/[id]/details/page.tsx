@@ -16,13 +16,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3 mb-3 text-left">
+  <div className="flex items-start gap-3 mb-5 text-left">
     <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0 border border-slate-200">
-        <Icon className="h-2.5 w-2.5 text-slate-700" />
+        <Icon className="h-3 w-3 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 mb-1 leading-none">{label}</p>
-      <div className="text-[10px] font-bold text-slate-900 break-words leading-tight">
+      <p className="text-[8px] font-black uppercase tracking-wider text-slate-400 leading-none mb-1.5">{label}</p>
+      <div className="text-[11px] font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -30,9 +30,9 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-4 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
-        {Icon && <Icon className="h-3 w-3 text-primary" />}
-        <h2 className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
+    <div className="mb-5 flex items-center gap-2 border-b-2 border-primary/10 pb-1.5">
+        {Icon && <Icon className="h-3.5 w-3.5 text-primary" />}
+        <h2 className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-900">{title}</h2>
     </div>
 );
 
@@ -168,11 +168,9 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                 <h1 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none mb-3 break-words">{coach.name}</h1>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5"></span>
                                         <Badge className="bg-slate-900 text-white text-[8px] px-1.5 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{coach.category}</Badge>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5"></span>
                                         <span className="text-slate-800 font-black text-[8px] uppercase flex items-center justify-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded-sm w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
                                     </div>
                                 </div>
@@ -200,14 +198,14 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
+                        <div className="mt-auto pt-16 flex flex-col items-center">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
 
-                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2 shrink-0">
+                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-12 shrink-0">
                             <div className="space-y-0.5 pb-1">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-3 w-3" />
