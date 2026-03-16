@@ -227,6 +227,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                         <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
                                         <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
+                                        <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
                                         <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
                                     </div>
                                 )}
