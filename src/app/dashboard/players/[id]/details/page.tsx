@@ -16,13 +16,13 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-2 mb-1.5 text-left">
+  <div className="flex items-start gap-2 mb-1 text-left">
     <div className="mt-0.5 bg-slate-100 p-1 rounded flex items-center justify-center shrink-0 border border-slate-200">
-        <Icon className="h-2.5 w-2.5 text-slate-700" />
+        <Icon className="h-2 w-2 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</p>
-      <div className="text-[10px] font-bold text-slate-900 break-words leading-tight">
+      <p className="text-[6px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</p>
+      <div className="text-[9px] font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -30,9 +30,9 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-2 flex items-center gap-2 border-b border-primary/10 pb-0.5">
-        {Icon && <Icon className="h-2.5 w-2.5 text-primary" />}
-        <h2 className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
+    <div className="mb-1.5 flex items-center gap-2 border-b border-primary/10 pb-0.5">
+        {Icon && <Icon className="h-2 w-2 text-primary" />}
+        <h2 className="text-[7px] font-black uppercase tracking-[0.1em] text-slate-900">{title}</h2>
     </div>
 );
 
@@ -133,8 +133,8 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[600px] flex justify-center">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px' }}>
-                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary">
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '840px' }}>
+                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubLogoUrl ? (
@@ -161,7 +161,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         </div>
                     </header>
                     
-                    <div className="px-6 py-4 flex-grow">
+                    <div className="px-6 py-4 flex-grow flex flex-col">
                         <section className="flex flex-row items-center gap-4 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-2 shrink-0">
                                 <div className="h-16 w-16 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
@@ -225,14 +225,14 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
+                        <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
 
-                        <footer className="pt-2 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2">
+                        <footer className="pt-2 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-2 shrink-0">
                             <div className="space-y-0.5 pb-1">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-3 w-3" />

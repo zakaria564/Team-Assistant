@@ -122,8 +122,8 @@ export default function PaymentReceiptPage({ params }: PageProps) {
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[600px] flex justify-center">
-                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px' }}>
-                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary">
+                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '840px' }}>
+                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
                                 {clubInfo?.logoUrl ? (
@@ -150,7 +150,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         </div>
                     </header>
 
-                    <div className="px-6 py-4 space-y-6 flex-grow">
+                    <div className="px-6 py-4 space-y-6 flex-grow flex flex-col">
                         <div className="grid grid-cols-2 gap-4 text-left">
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                 <h3 className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bénéficiaire (Joueur)</h3>
@@ -217,7 +217,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
+                        <div className="mt-auto py-12 flex flex-col items-center border-t border-slate-100">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
@@ -225,7 +225,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         </div>
                     </div>
 
-                    <footer className="p-4 bg-slate-900 text-white flex justify-between items-center gap-4 mt-auto">
+                    <footer className="p-4 bg-slate-900 text-white flex justify-between items-center gap-4 mt-auto shrink-0">
                         <div className="text-[7px] opacity-50 font-black uppercase tracking-widest text-left">
                             <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club Sportif"} - Team Assistant Pro</p>
                         </div>
