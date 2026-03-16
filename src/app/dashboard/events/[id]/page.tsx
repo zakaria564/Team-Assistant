@@ -20,8 +20,8 @@ type PageProps = {
 };
 
 export default function EventDetailPage(props: PageProps) {
-  const params = React.use(props.params);
-  const eventId = params.id;
+  const resolvedParams = React.use(props.params);
+  const eventId = resolvedParams.id;
   
   const router = useRouter();
   const [user] = useAuthState(auth);

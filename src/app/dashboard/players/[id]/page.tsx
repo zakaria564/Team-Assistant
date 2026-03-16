@@ -95,7 +95,7 @@ export default function PlayerDetailPage(props: PageProps) {
                 <img 
                   src={player.photoUrl} 
                   alt={player.name} 
-                  className="h-full w-full object-contain" 
+                  className="h-full w-full object-contain bg-white" 
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{playerInitial}</div>

@@ -19,8 +19,8 @@ type PageProps = {
 };
 
 export default function SalaryDetailPage(props: PageProps) {
-  const params = React.use(props.params);
-  const salaryId = params.id;
+  const resolvedParams = React.use(props.params);
+  const salaryId = resolvedParams.id;
   
   const router = useRouter();
   const [salary, setSalary] = useState<any>(null);

@@ -15,8 +15,8 @@ type PageProps = {
 };
 
 export default function EditPaymentPage(props: PageProps) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+  const resolvedParams = React.use(props.params);
+  const paymentId = resolvedParams.id;
   
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);

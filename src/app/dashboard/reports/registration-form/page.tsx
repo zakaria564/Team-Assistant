@@ -135,7 +135,7 @@ export default function RegistrationFormPage() {
                 </Button>
             </div>
             
-            <div className="w-full overflow-x-auto pb-8">
+            <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
                 <div className="min-w-[1000px] flex justify-center">
                     <Card className="mx-auto bg-white text-black border shadow-2xl" id="printable-form" style={{ width: '1000px', minHeight: '1414px' }}>
                         <CardHeader className="text-center space-y-6 p-12 border-b">

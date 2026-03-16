@@ -20,8 +20,8 @@ type PageProps = {
 };
 
 export default function PaymentDetailPage(props: PageProps) {
-  const params = React.use(props.params);
-  const paymentId = params.id;
+  const resolvedParams = React.use(props.params);
+  const paymentId = resolvedParams.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

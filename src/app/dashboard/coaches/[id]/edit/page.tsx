@@ -20,8 +20,8 @@ type PageProps = {
 };
 
 export default function EditCoachPage(props: PageProps) {
-  const params = React.use(props.params);
-  const coachId = params.id;
+  const resolvedParams = React.use(props.params);
+  const coachId = resolvedParams.id;
   
   const router = useRouter();
   const [coach, setCoach] = useState<any>(null);

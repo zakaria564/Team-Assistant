@@ -85,7 +85,7 @@ export default function CoachDetailPage(props: PageProps) {
                 <img 
                   src={coach.photoUrl} 
                   alt={coach.name} 
-                  className="h-full w-full object-contain" 
+                  className="h-full w-full object-contain bg-white" 
                 />
               ) : (
                 <div className="text-4xl font-black text-slate-300">{coachInitial}</div>
