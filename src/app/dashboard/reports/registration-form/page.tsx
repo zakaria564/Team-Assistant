@@ -252,7 +252,7 @@ export default function RegistrationFormPage() {
                                     </div>
                                     <div className="flex flex-col items-center gap-1.5">
                                         <div className="text-center w-36 h-20 border-2 border-slate-200 rounded-xl p-2 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                            <p className="text-[6px] font-black uppercase tracking-[0.2em] text-slate-400 mb-auto">Cachet du Club & Signature</p>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 mb-auto">Cachet du Club & Signature</p>
                                             <div className="w-28 border-b border-slate-200 mb-1"></div>
                                         </div>
                                         <p className="text-[6px] font-bold text-slate-300 italic text-center uppercase tracking-widest leading-none">Signature du parent ou du joueur majeur</p>

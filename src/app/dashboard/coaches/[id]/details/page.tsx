@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -82,12 +82,6 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            const images = Array.from(element.getElementsByTagName('img'));
-            await Promise.all(images.map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
-            }));
-            await new Promise(r => setTimeout(r, 1000));
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true, 
@@ -174,11 +168,11 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                 <h1 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none mb-3 break-words">{coach.name}</h1>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Catégorie</span>
+                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5"></span>
                                         <Badge className="bg-slate-900 text-white text-[8px] px-1.5 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{coach.category}</Badge>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1.5 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Spécialité</span>
+                                        <span className="text-[6px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5"></span>
                                         <span className="text-slate-800 font-black text-[8px] uppercase flex items-center justify-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded-sm w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {coach.specialty || "Entraîneur"}</span>
                                     </div>
                                 </div>
@@ -208,7 +202,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
 
                         <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
-                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic">Cachet du Club & Signature</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>

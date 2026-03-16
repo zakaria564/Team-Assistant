@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Download, Trophy, Shirt, Shield, Cake, Flag, Fingerprint } from "lucide-react";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -69,17 +69,6 @@ export default function PlayerCardPdfPage(props: PageProps) {
     const cardElement = document.getElementById("printable-card");
     if (cardElement) {
       try {
-        const images = Array.from(cardElement.getElementsByTagName('img'));
-        await Promise.all(images.map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-        }));
-
-        await new Promise(r => setTimeout(r, 1000));
-
         const canvas = await html2canvas(cardElement, {
             scale: 2,
             useCORS: true,

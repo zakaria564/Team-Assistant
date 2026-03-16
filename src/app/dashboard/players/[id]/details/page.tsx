@@ -93,12 +93,6 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            const images = Array.from(element.getElementsByTagName('img'));
-            await Promise.all(images.map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
-            }));
-            await new Promise(r => setTimeout(r, 1000));
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true, 
@@ -231,9 +225,9 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="py-10 flex flex-col items-center border-t border-slate-100 mt-2">
+                        <div className="py-12 flex flex-col items-center border-t border-slate-100 mt-4">
                             <div className="text-center space-y-8 w-full flex flex-col items-center">
-                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic">Cachet du Club & Signature</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
