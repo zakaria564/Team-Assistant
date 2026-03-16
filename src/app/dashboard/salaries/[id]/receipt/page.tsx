@@ -116,7 +116,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
         <div className="w-full max-w-5xl space-y-4 text-center">
             <div className="flex justify-between items-center gap-4 mb-4">
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-10 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-                <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest">
+                <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-10 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
                     {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                     Exporter PDF
                 </Button>
@@ -124,7 +124,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[800px] flex justify-center">
-                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto overflow-hidden" style={{ width: '800px', minHeight: '1131px' }}>
+                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '800px' }}>
                         <header className="p-8 bg-slate-900 text-white flex flex-row justify-between items-center gap-6 mb-8">
                             <div className="flex flex-row items-center gap-8 text-left">
                                 <div className="h-20 w-24 border-2 border-slate-700 shadow-2xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
@@ -220,16 +220,10 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="pt-20 pb-12 flex flex-col items-center">
-                                <div className="text-center space-y-16 w-full max-w-lg flex flex-col items-center">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                    <div className="w-full flex flex-col items-center gap-6">
-                                        <div className="w-64 border-b-4 border-slate-300 shadow-sm"></div>
-                                        <div className="flex items-center gap-3 text-slate-300">
-                                            <ShieldCheck className="h-6 w-6" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest italic">Document Officiel Certifié Conforme</span>
-                                        </div>
-                                    </div>
+                            <div className="py-20 flex flex-col items-center border-t border-slate-100 mt-10">
+                                <div className="text-center space-y-16 w-full flex flex-col items-center">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
+                                    <div className="w-64 border-b-4 border-slate-300"></div>
                                 </div>
                             </div>
                         </div>

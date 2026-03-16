@@ -120,7 +120,7 @@ export default function RegistrationFormPage() {
                     </TabsList>
                 </Tabs>
 
-                <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-10 font-black uppercase">
+                <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-10 font-black uppercase bg-primary hover:bg-primary/90 text-white">
                     {loadingPdf ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -137,8 +137,8 @@ export default function RegistrationFormPage() {
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[800px] flex justify-center">
-                    <Card className="mx-auto bg-white text-black border shadow-2xl" id="printable-form" style={{ width: '800px', minHeight: '1131px' }}>
-                        <CardHeader className="text-center space-y-4 p-8 border-b">
+                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '800px' }}>
+                        <header className="text-center space-y-4 p-8 border-b">
                             {loadingClub || loadingUser ? (
                             <div className="flex flex-col items-center gap-4">
                                     <Skeleton className="h-16 w-16 rounded-full bg-gray-200" />
@@ -151,9 +151,9 @@ export default function RegistrationFormPage() {
                                         <AvatarFallback className="bg-primary text-white text-3xl font-black">{clubInitial}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-1">
-                                        <CardTitle className="text-2xl font-black uppercase tracking-tight">
+                                        <h1 className="text-2xl font-black uppercase tracking-tight">
                                             {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
-                                        </CardTitle>
+                                        </h1>
                                         <p className="text-primary font-black tracking-[0.4em] uppercase text-base italic">{clubName}</p>
                                     </div>
                                 </div>
@@ -161,9 +161,9 @@ export default function RegistrationFormPage() {
                             <div className="flex items-center justify-center font-bold text-sm bg-slate-50 py-3 rounded-lg border border-dashed border-slate-300">
                                 <span className="px-4 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
                             </div>
-                        </CardHeader>
+                        </header>
 
-                        <CardContent className="p-12 space-y-10 text-left flex flex-col h-full min-h-[800px]">
+                        <div className="p-12 space-y-10 text-left flex flex-col h-full min-h-[800px]">
                             {formType === 'checklist' ? (
                                 <div className="space-y-10 py-6">
                                     <div className="space-y-6">
@@ -260,7 +260,7 @@ export default function RegistrationFormPage() {
                                     </div>
                                 </div>
                             </div>
-                        </CardContent>
+                        </div>
                         
                         <footer className="p-8 bg-slate-900 text-white flex justify-between items-center rounded-b-lg mt-auto">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
@@ -269,7 +269,7 @@ export default function RegistrationFormPage() {
                                 Document Officiel De l'Académie
                             </div>
                         </footer>
-                    </Card>
+                    </div>
                 </div>
             </div>
         </div>
