@@ -33,9 +33,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function PlayerDetailPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const playerId = resolvedParams.id;
+export default function PlayerDetailPage({ params }: PageProps) {
+  const { id: playerId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

@@ -87,7 +87,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
             }));
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 1000));
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true, 
@@ -206,12 +206,12 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <footer className="mt-auto pt-12 border-t-2 border-slate-100 flex flex-col items-center">
-                            <div className="text-center space-y-24 mb-20 pt-10 w-full flex flex-col items-center">
-                                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 italic">Cachet du Club & Signature</p>
+                        <footer className="mt-auto pt-16 flex flex-col items-center">
+                            <div className="text-center space-y-24 mb-20 w-full flex flex-col items-center">
+                                <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
                             </div>
-                            <div className="w-full flex flex-row justify-between items-end gap-12 text-left">
+                            <div className="w-full flex flex-row justify-between items-end gap-12 text-left pt-10 border-t-2 border-slate-100">
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-3 text-slate-300">
                                         <ShieldCheck className="h-6 w-6" />

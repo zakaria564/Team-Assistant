@@ -86,7 +86,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                 });
             }));
 
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 1000));
 
             const canvas = await html2canvas(element, { 
                 scale: 2, 
@@ -232,7 +232,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
 
                         <div className="flex flex-col items-center pt-16">
                             <div className="text-center space-y-24 w-full max-w-xl border-t-2 border-slate-100 pt-12">
-                                <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-400 italic">Cachet du Club & Signature</p>
+                                <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-full flex flex-col items-center gap-8">
                                     <div className="w-80 border-b-4 border-slate-200 shadow-sm"></div>
                                     <div className="flex items-center gap-4 text-slate-300">

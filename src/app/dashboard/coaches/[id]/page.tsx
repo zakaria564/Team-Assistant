@@ -32,9 +32,8 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function CoachDetailPage(props: PageProps) {
-  const resolvedParams = React.use(props.params);
-  const coachId = resolvedParams.id;
+export default function CoachDetailPage({ params }: PageProps) {
+  const { id: coachId } = React.use(params);
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
