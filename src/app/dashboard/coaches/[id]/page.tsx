@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, Fingerprint, User, Flag, Home, LogIn, LogOut, FileText, ExternalLink, Eye } from "lucide-react";
+import { Loader2, ArrowLeft, Phone, Mail, Shield, Star, Fingerprint, User, Flag, Home, LogIn, LogOut, FileText, ExternalLink, Eye, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -134,26 +134,26 @@ export default function CoachDetailPage({ params }: PageProps) {
           {coach.documents && coach.documents.length > 0 && (
             <Card>
                 <CardHeader className="pb-3 border-b mb-4"><CardTitle className="text-lg flex items-center gap-2 text-primary"><FileText className="h-5 w-5" /> Documents Numérisés</CardTitle></CardHeader>
-                <CardContent className="pt-4">
-                    <div className="space-y-3">
+                <CardContent className="pt-2">
+                    <div className="space-y-1">
                         {coach.documents.map((doc: any, i: number) => (
-                            <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors group">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-primary/10 p-2 rounded">
-                                        <FileText className="h-4 w-4 text-primary" />
+                            <div key={i} className="flex items-center justify-between py-2 px-3 border-b last:border-0 hover:bg-muted/30 transition-colors rounded-lg group">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="bg-primary/10 p-1.5 rounded shrink-0">
+                                        <FileText className="h-3.5 w-3.5 text-primary" />
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-800">{doc.name}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-bold text-slate-800 truncate">{doc.name}</p>
                                         {doc.validityDate && (
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Expire le : {doc.validityDate}</p>
+                                            <p className="text-[9px] text-muted-foreground uppercase font-black">Exp: {doc.validityDate}</p>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-1">
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Eye className="h-4 w-4 mr-2" /> Aperçu
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" title="Aperçu">
+                                                <Eye className="h-4 w-4" />
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent className="max-w-3xl">
@@ -165,9 +165,9 @@ export default function CoachDetailPage({ params }: PageProps) {
                                             </div>
                                         </DialogContent>
                                     </Dialog>
-                                    <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-white hover:shadow-sm" title="Télécharger">
                                         <a href={doc.url} download={doc.name}>
-                                            <ExternalLink className="h-4 w-4 mr-2" /> Télécharger
+                                            <Download className="h-4 w-4" />
                                         </a>
                                     </Button>
                                 </div>

@@ -217,12 +217,12 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   )} />
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                   <div className="flex items-center justify-between">
                       <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6 text-primary" />Documents Numérisés</h3>
                       <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px] bg-background border-slate-200"><PlusCircle className="h-4 w-4 mr-2 text-primary" />Ajouter</Button>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {fields.map((field, index) => (
                         <DocumentPickerItem key={field.id} index={index} remove={remove} form={form} />
                     ))}
@@ -246,25 +246,24 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-5 border-2 rounded-2xl bg-background space-y-4 relative group shadow-sm border-slate-100">
-            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-3 border-2 rounded-2xl bg-background space-y-3 relative group shadow-sm border-slate-100">
+            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => remove(index)}><Trash2 className="h-3.5 w-3.5" /></Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-slate-500">Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-slate-500">Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} className="h-9 bg-background border-slate-200" /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Expiration" field={field} />} />
             </div>
-            <div className="space-y-2">
-                <FormLabel className="font-bold text-[10px] uppercase text-slate-500">Fichier (Scan / Photo)</FormLabel>
+            <div className="space-y-1.5">
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background border-slate-200")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4 text-primary" />Choisir fichier</>}
+                    <Button type="button" variant="outline" className={cn("flex-1 h-9 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background border-slate-200")} onClick={() => fileRef.current?.click()} disabled={loading}>
+                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-3.5 w-3.5" />Chargé</> : <><Upload className="mr-2 h-3.5 w-3.5 text-primary" />Choisir fichier</>}
                     </Button>
                     {url && (
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button type="button" variant="secondary" size="icon" className="h-12 w-12 bg-slate-100 hover:bg-slate-200" title="Voir le document">
-                                    <Eye className="h-5 w-5 text-slate-700" />
+                                <Button type="button" variant="secondary" size="icon" className="h-9 w-9 bg-slate-100 hover:bg-slate-200" title="Voir">
+                                    <Eye className="h-4 w-4 text-slate-700" />
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-3xl">
