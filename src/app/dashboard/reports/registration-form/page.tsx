@@ -86,7 +86,7 @@ export default function RegistrationFormPage() {
                                         <AvatarFallback className="bg-primary text-white text-base font-black">{clubInitial}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-0.5">
-                                        <h1 className="text-xs font-black uppercase tracking-tight leading-none text-white">{formType === 'checklist' ? 'PIÈCES À FOURNIR' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}</h1>
+                                        <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{formType === 'checklist' ? 'PIÈCES À FOURNIR' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}</h1>
                                         <p className="text-primary font-black tracking-[0.3em] uppercase text-[8px] italic">{clubName}</p>
                                     </div>
                                 </div>

@@ -30,44 +30,65 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
-    // Alerte Paiements Joueurs : Compte uniquement les dossiers avec un reste à payer réel
-    const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
-        const playersWithDebt = new Set();
-        paySnap.docs.forEach(doc => {
-            const data = doc.data();
-            const transactions = data.transactions || [];
-            const total = data.totalAmount || 0;
-            const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
-            
-            if (total - paid > 0.01) {
-                playersWithDebt.add(data.playerId);
-            }
+    // Alerte Paiements Joueurs : Joueurs sans dossier OU avec reste à payer
+    const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (playersSnap) => {
+        const allPlayerIds = playersSnap.docs.map(d => d.id);
+        
+        const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+            const playersWithDossier = new Set();
+            const playersWithDebt = new Set();
+
+            paySnap.docs.forEach(doc => {
+                const data = doc.data();
+                const transactions = data.transactions || [];
+                const total = data.totalAmount || 0;
+                const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
+                
+                playersWithDossier.add(data.playerId);
+                if (total - paid > 0.01) {
+                    playersWithDebt.add(data.playerId);
+                }
+            });
+
+            // Joueurs sans dossier
+            const playersNoDossier = allPlayerIds.filter(id => !playersWithDossier.has(id));
+            setPendingPaymentsCount(playersWithDebt.size + playersNoDossier.length);
         });
-        setPendingPaymentsCount(playersWithDebt.size);
+        return () => unsubscribePayments();
     });
-    return () => unsubscribePayments();
+    return () => unsubscribePlayers();
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
     
-    // Alerte Salaires Coachs : Compte les entraîneurs ayant au moins une fiche non régularisée
-    const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salarySnap) => {
-        const coachesWithDebt = new Set();
-        salarySnap.docs.forEach(doc => {
-            const data = doc.data();
-            const transactions = data.transactions || [];
-            const total = data.totalAmount || 0;
-            const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
-            
-            if (total - paid > 0.01) {
-                coachesWithDebt.add(data.coachId);
-            }
+    // Alerte Salaires Coachs : Coachs sans fiche OU avec solde dû
+    const unsubscribeCoaches = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachesSnap) => {
+        const allCoachIds = coachesSnap.docs.map(d => d.id);
+
+        const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salarySnap) => {
+            const coachesWithFiche = new Set();
+            const coachesWithDebt = new Set();
+
+            salarySnap.docs.forEach(doc => {
+                const data = doc.data();
+                const transactions = data.transactions || [];
+                const total = data.totalAmount || 0;
+                const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
+                
+                coachesWithFiche.add(data.coachId);
+                if (total - paid > 0.01) {
+                    coachesWithDebt.add(data.coachId);
+                }
+            });
+
+            // Coachs sans aucune fiche
+            const coachesNoFiche = allCoachIds.filter(id => !coachesWithFiche.has(id));
+            setPendingSalariesCount(coachesWithDebt.size + coachesNoFiche.length);
         });
-        setPendingSalariesCount(coachesWithDebt.size);
+        return () => unsubscribeSalaries();
     });
-    
-    return () => unsubscribeSalaries();
+    return () => unsubscribeCoaches();
   }, [user]);
 
   return (
