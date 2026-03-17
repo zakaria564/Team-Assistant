@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -200,7 +199,7 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <p className="text-[10px] font-bold text-muted-foreground tracking-wider mb-1">
+                  <p className="text-sm font-bold text-muted-foreground tracking-wider mb-1">
                     {toTitleCase(group.coachName)}
                   </p>
                   <div className="flex items-center gap-2">

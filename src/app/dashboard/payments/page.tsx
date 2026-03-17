@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -205,7 +204,7 @@ export default function PaymentsPage() {
                                 <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                           <div className="flex flex-col text-left">
-                              <p className="text-[10px] font-bold text-muted-foreground tracking-wider mb-1">
+                              <p className="text-sm font-bold text-muted-foreground tracking-wider mb-1">
                                 {toTitleCase(playerGroup.playerName)}
                               </p>
                               <div className="flex items-center gap-2">
