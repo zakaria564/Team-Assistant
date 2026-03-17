@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Download, ShieldCheck, Fingerprint } from "lucide-react";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import jsPDF from "jspdf";
+import jspdf from "jspdf";
 import html2canvas from "html2canvas";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
     if (element) {
         try {
             const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#0f172a", logging: false, allowTaint: true });
-            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdf = new jspdf('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
             const imgWidth = pdf.internal.pageSize.getWidth(); 
             const imgHeight = (canvas.height * imgWidth) / canvas.width;

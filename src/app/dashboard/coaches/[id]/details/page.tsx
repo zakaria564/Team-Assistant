@@ -7,7 +7,7 @@ import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileDown, User, Phone, Mail, Home, Flag, Star, LogIn, LogOut, Fingerprint, Shield, ShieldCheck } from "lucide-react";
-import jsPDF from "jspdf";
+import jspdf from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -77,7 +77,7 @@ export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: 
     if (element) {
         try {
             const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0f172a', logging: false, allowTaint: true });
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const pdf = new jspdf({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
