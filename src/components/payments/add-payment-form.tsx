@@ -122,7 +122,7 @@ function FormContent({ payment }: { payment?: PaymentData }) {
         } : {
             description: `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
             playerId: searchParams.get('playerId') || "",
-            totalAmount: 0,
+            totalAmount: "" as any,
             status: "En attente",
             newTransactionAmount: "",
             newTransactionMethod: "Espèces",
@@ -136,12 +136,11 @@ function FormContent({ payment }: { payment?: PaymentData }) {
         const total = parseFloat(watchTotal?.toString() || "0");
         const newVal = parseFloat(watchNewAmount || "0");
         
-        if (total <= 0) return;
+        if (!watchTotal) return;
 
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
 
-        // Accounting Precision: Only "Payé" if balance is exactly zero or less
         if (total > 0 && remaining <= 0.001) {
             form.setValue("status", "Payé");
         } else if (totalSettled > 0) {
@@ -156,11 +155,9 @@ function FormContent({ payment }: { payment?: PaymentData }) {
             if (!user) return;
             setLoadingPlayers(true);
             try {
-                // 1. Fetch all players
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
 
-                // 2. Fetch all payment dossiers
                 const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
                 const playerStatusMap: Record<string, string[]> = {};
                 paymentsSnap.docs.forEach(d => {
@@ -169,11 +166,10 @@ function FormContent({ payment }: { payment?: PaymentData }) {
                     playerStatusMap[data.playerId].push(data.status);
                 });
 
-                // 3. Filter: Show only players with at least one unpaid dossier OR NO dossiers at all
                 const filtered = allPlayers.filter(player => {
                     const statuses = playerStatusMap[player.id];
-                    if (!statuses || statuses.length === 0) return true; // New player = show
-                    return statuses.some(s => s !== 'Payé'); // Any unpaid dossier = show
+                    if (!statuses || statuses.length === 0) return true;
+                    return statuses.some(s => s !== 'Payé');
                 });
 
                 setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
@@ -245,7 +241,7 @@ function FormContent({ payment }: { payment?: PaymentData }) {
                 <FormField control={form.control} name="totalAmount" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Montant total dû (MAD)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />
@@ -267,7 +263,7 @@ function FormContent({ payment }: { payment?: PaymentData }) {
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant (MAD)</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder={`Max ${remainingToDisplay.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingToDisplay.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
