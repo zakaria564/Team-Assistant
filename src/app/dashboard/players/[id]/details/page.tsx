@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string }) => (
   <div className="flex items-start gap-3 mb-2 text-left">
     <div className="mt-0.5 bg-slate-100 p-1 rounded flex items-center justify-center shrink-0 border border-slate-200">
         <Icon className="h-2.5 w-2.5 text-slate-700" />
@@ -23,7 +23,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
     <div className="flex-1 min-w-0">
       <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</p>
       <div className="text-[9px] font-bold text-slate-900 break-words leading-tight">
-        {value || children || "Non spécifié"}
+        {value || "Non spécifié"}
       </div>
     </div>
   </div>
@@ -35,11 +35,6 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
         <h2 className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-900">{title}</h2>
     </div>
 );
-
-const toTitleCase = (str: string) => {
-  if (!str) return '';
-  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -124,7 +119,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
   return (
     <div className="flex flex-col items-center w-full">
        <div className="w-full max-w-2xl space-y-4 text-center">
-        <div className="flex justify-between items-center gap-4 mb-2 px-2 print:hidden">
+        <div className="flex justify-between items-center gap-4 mb-2 px-2">
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
@@ -176,20 +171,17 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <Fingerprint className="h-2 w-2 text-primary" />{displayId}
                                 </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <h1 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-none mb-2 break-words text-left">{player.name}</h1>
+                            <div className="flex-1 min-w-0 text-left">
+                                <h1 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-none mb-2 break-words">{player.name}</h1>
                                 <div className="grid grid-cols-3 gap-2">
                                     <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[5px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Catégorie</span>
                                         <Badge className="bg-slate-900 text-white text-[7px] px-1 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{player.category}</Badge>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[5px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Poste</span>
                                         <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1 bg-primary rounded-lg shadow-md">
-                                        <span className="text-[5px] font-black uppercase text-white/70">Numéro</span>
-                                        <span className="text-white font-black text-xs italic leading-none">#{player.number || "--"}</span>
+                                        <span className="text-white font-black text-xs italic">#{player.number || "--"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -199,7 +191,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             <div className="space-y-2">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
-                                    <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
+                                    <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                                     <DetailItem icon={Fingerprint} label="N° CIN / ID" value={player.cin} />
@@ -211,14 +203,14 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             <div className="space-y-2">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
-                                    <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
+                                    <DetailItem icon={ClipboardList} label="Coach" value={player.coachName || "Non assigné"} />
                                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
                                     <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Actif"} />
                                 </div>
                                 {player.tutorName && (
                                     <div className="pt-2">
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
-                                        <DetailItem icon={User} label="Nom du tuteur" value={toTitleCase(player.tutorName)} />
+                                        <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
                                         <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
                                         <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
                                         <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />

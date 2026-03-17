@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint, Upload, Mail, Phone, Calendar } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Fingerprint, Upload, Mail, Phone, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
@@ -17,7 +17,10 @@ import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -76,14 +79,62 @@ const playerCategories = [
     "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"
 ];
 
-const nationalities = [
-    "Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Portugaise", "Espagnole", "Brésilienne", "Autre"
-];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Autre"];
 
 const generateProfessionalId = () => {
     const yearMonth = format(new Date(), "yyyyMM");
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `PL-${yearMonth}-${random}`;
+};
+
+const DateField = ({ label, field, placeholder }: { label: string, field: any, placeholder?: string }) => {
+    const [inputValue, setInputValue] = useState(field.value || "");
+
+    useEffect(() => {
+        setInputValue(field.value || "");
+    }, [field.value]);
+
+    return (
+        <FormItem className="flex flex-col">
+            <FormLabel>{label}</FormLabel>
+            <div className="flex gap-2">
+                <FormControl>
+                    <Input 
+                        type="date" 
+                        {...field} 
+                        value={inputValue}
+                        onChange={(e) => {
+                            setInputValue(e.target.value);
+                            field.onChange(e.target.value);
+                        }}
+                        className="flex-1"
+                    />
+                </FormControl>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" size="icon" className="shrink-0 h-10 w-10">
+                            <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => {
+                                if (date) {
+                                    const formatted = format(date, "yyyy-MM-dd");
+                                    setInputValue(formatted);
+                                    field.onChange(formatted);
+                                }
+                            }}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <FormMessage />
+        </FormItem>
+    );
 };
 
 export function AddPlayerForm({ player }: AddPlayerFormProps) {
@@ -171,11 +222,8 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          if (width > height) {
-            if (width > maxSize) { height *= maxSize / width; width = maxSize; }
-          } else {
-            if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-          }
+          if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } 
+          else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
@@ -317,10 +365,10 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="entryDate" render={({ field }) => (
-                          <FormItem><FormLabel>Date d'entrée au club</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                          <DateField label="Date d'entrée" field={field} />
                       )} />
                       <FormField control={form.control} name="exitDate" render={({ field }) => (
-                          <FormItem><FormLabel>Date de fin / sortie</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                          <DateField label="Date de sortie" field={field} />
                       )} />
                   </div>
               </div>
@@ -334,7 +382,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                   )} />
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="birthDate" render={({ field }) => (
-                        <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        <DateField label="Date de naissance" field={field} />
                       )} />
                        <FormField control={form.control} name="gender" render={({ field }) => (
                         <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select><FormMessage /></FormItem>

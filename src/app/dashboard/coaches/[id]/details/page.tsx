@@ -15,7 +15,7 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
-const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string }) => (
   <div className="flex items-start gap-3 mb-2 text-left">
     <div className="mt-0.5 bg-slate-100 p-1 rounded flex items-center justify-center shrink-0 border border-slate-200">
         <Icon className="h-2.5 w-2.5 text-slate-700" />
@@ -23,7 +23,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
     <div className="flex-1 min-w-0">
       <p className="text-[7px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</p>
       <div className="text-[9px] font-bold text-slate-900 break-words leading-tight">
-        {value || children || "Non spécifié"}
+        {value || "Non spécifié"}
       </div>
     </div>
   </div>
@@ -83,22 +83,13 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            const canvas = await html2canvas(element, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: '#0f172a',
-                logging: false,
-                allowTaint: true
-            });
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0f172a', logging: false, allowTaint: true });
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_coach_${coach?.name?.replace(/ /g, "_")}.pdf`);
-        } catch (err) { 
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur PDF" }); 
-        }
+        } catch (err) { console.error(err); toast({ variant: "destructive", title: "Erreur PDF" }); }
         finally { setLoadingPdf(false); }
     }
   };
@@ -127,19 +118,11 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                     <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-10 w-12 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
-                                {clubLogoUrl ? (
-                                    <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" />
-                                ) : (
-                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">
-                                        {clubInitial}
-                                    </div>
-                                )}
+                                {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">{clubInitial}</div>}
                             </div>
                             <div className="space-y-0.5">
                                 <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{clubName}</h1>
-                                <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]">
-                                    <p className="break-words">{clubAddress || "Siège Social"}</p>
-                                </div>
+                                <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]"><p className="break-words">{clubAddress || "Siège Social"}</p></div>
                             </div>
                         </div>
                         <div className="text-right space-y-0.5">
@@ -155,11 +138,7 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                         <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-1.5 shrink-0">
                                 <div className="h-16 w-16 border-2 border-white shadow-lg rounded-xl overflow-hidden bg-white flex items-center justify-center relative">
-                                    {coach.photoUrl ? (
-                                        <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain bg-white" />
-                                    ) : (
-                                        <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>
-                                    )}
+                                    {coach.photoUrl ? <img src={coach.photoUrl} alt={coach.name} className="h-full w-full object-contain bg-white" /> : <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{coachInitial}</AvatarFallback>}
                                 </div>
                                 <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
                                     <Fingerprint className="h-2 w-2 text-primary" />{displayId}

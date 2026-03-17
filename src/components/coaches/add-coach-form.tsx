@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,16 +8,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint, Upload } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
@@ -58,17 +59,48 @@ const coachCategories = [
     "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"
 ];
 
-const coachSpecialties = [
-    "Entraîneur Principal", "Entraîneur Adjoint", "Entraîneur des Gardiens",
-    "Préparateur Physique", "Analyste Vidéo", "Directeur Technique", "Autre"
-];
-
+const coachSpecialties = ["Entraîneur Principal", "Adjoint", "Gardiens", "Physique", "Analyste", "DT", "Autre"];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Autre"];
 
 const generateProfessionalId = () => {
     const yearMonth = format(new Date(), "yyyyMM");
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `CH-${yearMonth}-${random}`;
+};
+
+const DateField = ({ label, field }: { label: string, field: any }) => {
+    return (
+        <FormItem className="flex flex-col">
+            <FormLabel>{label}</FormLabel>
+            <div className="flex gap-2">
+                <FormControl>
+                    <Input 
+                        type="date" 
+                        {...field} 
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="flex-1"
+                    />
+                </FormControl>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" size="icon" className="shrink-0 h-10 w-10">
+                            <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => date && field.onChange(format(date, "yyyy-MM-dd"))}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <FormMessage />
+        </FormItem>
+    );
 };
 
 export function AddCoachForm({ coach }: AddCoachFormProps) {
@@ -109,39 +141,24 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     };
   }, [coach]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues
-  });
+  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues });
 
-  useEffect(() => {
-    if (coach) {
-      form.reset(defaultValues);
-    }
-  }, [coach, defaultValues, form]);
+  useEffect(() => { if (coach) form.reset(defaultValues); }, [coach, defaultValues, form]);
 
   const photoDataUrl = form.watch('photoUrl');
 
   const compressImage = (file: File, maxSize: number = 400): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
+      const reader = new FileReader(); reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image(); img.src = e.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            if (width > maxSize) { height *= maxSize / width; width = maxSize; }
-          } else {
-            if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          let w = img.width; let h = img.height;
+          if (w > h) { if (w > maxSize) { h *= maxSize / w; w = maxSize; } } 
+          else { if (h > maxSize) { w *= maxSize / h; h = maxSize; } }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d'); ctx?.drawImage(img, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', 0.7));
         };
       };
@@ -150,50 +167,35 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     setLoading(true);
-    try {
-      const compressed = await compressImage(file);
-      form.setValue('photoUrl', compressed);
-      toast({ title: "Photo chargée", description: "L'image a été optimisée." });
-    } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger l'image." });
-    } finally {
-      setLoading(false);
-    }
+    try { const comp = await compressImage(file); form.setValue('photoUrl', comp); } 
+    catch (err) { toast({ variant: "destructive", title: "Erreur" }); } 
+    finally { setLoading(false); }
   };
 
   const getCameraPermission = useCallback(async () => {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setHasCameraPermission(false);
-        return;
-    }
+    if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        if (videoRef.current) videoRef.current.srcObject = s;
         setHasCameraPermission(true);
-    } catch (error) { setHasCameraPermission(false); }
+    } catch (e) { setHasCameraPermission(false); }
   }, []);
 
   useEffect(() => { if(!photoDataUrl) getCameraPermission(); }, [photoDataUrl, getCameraPermission]);
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      if (context) {
-        canvas.width = 400; canvas.height = 400;
-        const videoWidth = video.videoWidth; const videoHeight = video.videoHeight;
-        const aspectRatio = videoWidth / videoHeight;
-        let sx, sy, sWidth, sHeight;
-        if (aspectRatio > 1) { sHeight = videoHeight; sWidth = videoHeight; sx = (videoWidth - videoHeight) / 2; sy = 0; }
-        else { sWidth = videoWidth; sHeight = videoWidth; sx = 0; sy = (videoHeight - videoWidth) / 2; }
-        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, 400, 400);
-        form.setValue('photoUrl', canvas.toDataURL('image/jpeg', 0.8));
-        const stream = video.srcObject as MediaStream;
-        if (stream) stream.getTracks().forEach(track => track.stop());
+      const v = videoRef.current; const c = canvasRef.current; const ctx = c.getContext('2d');
+      if (ctx) {
+        c.width = 400; c.height = 400; const vw = v.videoWidth; const vh = v.videoHeight;
+        const ar = vw / vh; let sx, sy, sw, sh;
+        if (ar > 1) { sh = vh; sw = vh; sx = (vw - vh) / 2; sy = 0; }
+        else { sw = vw; sh = vw; sx = 0; sy = (vh - vw) / 2; }
+        ctx.drawImage(v, sx, sy, sw, sh, 0, 0, 400, 400);
+        form.setValue('photoUrl', c.toDataURL('image/jpeg', 0.8));
+        const s = v.srcObject as MediaStream; if (s) s.getTracks().forEach(t => t.stop());
         if(videoRef.current) videoRef.current.srcObject = null;
       }
     }
@@ -203,24 +205,12 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
     if (!user) return;
     setLoading(true);
     try {
-        const dataToSave = {
-            ...values,
-            userId: user.uid,
-            professionalId: values.professionalId || generateProfessionalId(),
-            isDeleted: false,
-        };
-        if (isEditMode && coach) {
-            await updateDoc(doc(db, "coaches", coach.id), dataToSave);
-            toast({ title: "Entraîneur modifié !" });
-        } else {
-            await addDoc(collection(db, "coaches"), { ...dataToSave, createdAt: new Date() });
-            toast({ title: "Entraîneur ajouté !" });
-        }
-        router.push("/dashboard/coaches");
-        router.refresh();
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erreur" });
-    } finally { setLoading(false); }
+        const data = { ...values, userId: user.uid, professionalId: values.professionalId || generateProfessionalId(), isDeleted: false };
+        if (isEditMode && coach) { await updateDoc(doc(db, "coaches", coach.id), data); toast({ title: "Modifié !" }); } 
+        else { await addDoc(collection(db, "coaches"), { ...data, createdAt: new Date() }); toast({ title: "Ajouté !" }); }
+        router.push("/dashboard/coaches"); router.refresh();
+    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); } 
+    finally { setLoading(false); }
   }
 
   return (
@@ -230,66 +220,61 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
           <div className="space-y-6">
               <div className="space-y-4">
                   <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
-                       {!photoDataUrl && hasCameraPermission ? (
-                           <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                      ) : photoDataUrl ? (
-                          <img src={photoDataUrl} alt="Photo" className="w-full h-full object-contain absolute inset-0 p-1" />
-                      ) : (
-                           <p className="text-muted-foreground p-4 text-center">Caméra non disponible.</p>
-                      )}
+                       {!photoDataUrl && hasCameraPermission ? <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                      : photoDataUrl ? <img src={photoDataUrl} className="w-full h-full object-contain absolute inset-0 p-1" />
+                      : <p className="text-muted-foreground p-4 text-center text-xs">Caméra non disponible.</p>}
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="grid grid-cols-2 gap-2">
-                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="w-full h-10 text-xs" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!photoDataUrl} className="w-full h-10 text-xs" size="sm"><Upload className="mr-2 h-4 w-4"/>Galerie</Button>
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!photoDataUrl} className="h-10 text-xs" size="sm">Prendre</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!photoDataUrl} className="h-10 text-xs" size="sm">Galerie</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                      {photoDataUrl && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="w-full h-10 col-span-2 text-xs" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
+                      {photoDataUrl && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-10 col-span-2 text-xs" size="sm">Changer</Button>}
                   </div>
               </div>
               <Separator />
               <div className="space-y-4">
-                  <h3 className="text-lg font-bold flex items-center gap-2 uppercase tracking-tighter"><Fingerprint className="h-5 w-5 text-primary" />Informations Club</h3>
-                  {isEditMode && (
-                      <FormField control={form.control} name="professionalId" render={({ field }) => (
-                          <FormItem><FormLabel>ID Professionnel</FormLabel><FormControl><Input {...field} value={field.value ?? ""} disabled className="bg-muted font-mono font-bold" /></FormControl></FormItem>
-                      )} />
-                  )}
-                  <FormField control={form.control} name="specialty" render={({ field }) => (
-                      <FormItem><FormLabel>Spécialité Technique</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                  )} />
+                  <h3 className="text-lg font-bold flex items-center gap-2 uppercase tracking-tighter"><Fingerprint className="h-5 w-5 text-primary" />Infos Club</h3>
+                  {isEditMode && <FormField control={form.control} name="professionalId" render={({ field }) => (
+                      <FormItem><FormLabel>ID Professionnel</FormLabel><FormControl><Input {...field} disabled className="bg-muted font-mono font-bold" /></FormControl></FormItem>
+                  )} />}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel>Catégorie Affectée</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({ field }) => (
-                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="entryDate" render={({ field }) => <DateField label="Date d'entrée" field={field} />} />
+                      <FormField control={form.control} name="exitDate" render={({ field }) => <DateField label="Date de sortie" field={field} />} />
                   </div>
               </div>
           </div>
           <div className="space-y-6">
               <div className="space-y-4">
-                   <h3 className="text-lg font-bold uppercase tracking-tighter">État Civil & Contact</h3>
+                  <h3 className="text-lg font-bold uppercase tracking-tighter">État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
-                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
-                          <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                       )} />
                   </div>
                    <FormField control={form.control} name="email" render={({ field }) => (
-                      <FormItem><FormLabel>Email professionnel</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                    <FormField control={form.control} name="phone" render={({ field }) => (
-                      <FormItem><FormLabel>Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
               <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase tracking-widest h-12 shadow-lg">
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer les modifications" : "Ajouter l'entraîneur"}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter"}
               </Button>
           </div>
         </form>

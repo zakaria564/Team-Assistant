@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,6 @@ export default function SalaryReceiptPage({ params }: PageProps) {
 
   useEffect(() => {
     if (!salaryId || loadingUser) return;
-
     const fetchDetails = async () => {
       if (!user) return;
       try {
@@ -43,21 +42,11 @@ export default function SalaryReceiptPage({ params }: PageProps) {
           const data = salarySnap.data();
           const coachSnap = await getDoc(doc(db, "coaches", data.coachId));
           const clubSnap = await getDoc(doc(db, "clubs", user.uid));
-          
-          setSalary({ 
-            id: salarySnap.id, 
-            ...data, 
-            coachName: coachSnap.exists() ? coachSnap.data().name : "Entraîneur",
-            coachProfessionalId: coachSnap.exists() ? coachSnap.data().professionalId : "N/A"
-          });
+          setSalary({ id: salarySnap.id, ...data, coachName: coachSnap.exists() ? coachSnap.data().name : "Entraîneur", coachProfessionalId: coachSnap.exists() ? coachSnap.data().professionalId : "N/A" });
           if (clubSnap.exists()) setClubInfo(clubSnap.data());
-        } else {
-          router.push('/dashboard/salaries');
-        }
-      } catch (error) { console.error(error); }
-      finally { setLoading(false); }
+        } else { router.push('/dashboard/salaries'); }
+      } catch (error) { console.error(error); } finally { setLoading(false); }
     };
-
     fetchDetails();
   }, [salaryId, user, loadingUser, router]);
 
@@ -66,26 +55,14 @@ export default function SalaryReceiptPage({ params }: PageProps) {
     const element = document.getElementById("printable-receipt");
     if (element) {
         try {
-            const canvas = await html2canvas(element, { 
-                scale: 2, 
-                useCORS: true, 
-                allowTaint: true,
-                backgroundColor: "#0f172a",
-                logging: false
-            });
-
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#0f172a", logging: false });
             const pdf = new jsPDF('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_paie_${salary?.coachName.replace(/ /g, "_")}.pdf`);
-        } catch (err) {
-            console.error("Erreur PDF:", err);
-            toast({ variant: "destructive", title: "Erreur de génération" });
-        } finally {
-            setLoadingPdf(false);
-        }
+        } catch (err) { console.error(err); toast({ variant: "destructive", title: "Erreur PDF" }); } finally { setLoadingPdf(false); }
     }
   };
 
@@ -95,9 +72,8 @@ export default function SalaryReceiptPage({ params }: PageProps) {
   const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
   const remaining = salary.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
-
   const dateObj = salary.createdAt?.seconds ? new Date(salary.createdAt.seconds * 1000) : new Date();
-  const professionalId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
+  const profId = `RC-E-${format(dateObj, "yyyyMM")}-${salary.id.substring(0, 4).toUpperCase()}`;
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -105,8 +81,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
             <div className="flex justify-between items-center gap-4 mb-2 px-2">
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
-                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    Exporter PDF
+                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Exporter PDF
                 </Button>
             </div>
             
@@ -116,25 +91,17 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                         <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                             <div className="flex flex-row items-center gap-3 text-left">
                                 <div className="h-10 w-12 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
-                                    {clubInfo?.logoUrl ? (
-                                        <img src={clubInfo.logoUrl} alt="Logo" className="h-full w-full object-contain p-1" />
-                                    ) : (
-                                        <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">
-                                            {clubInitial}
-                                        </div>
-                                    )}
+                                    {clubInfo?.logoUrl ? <img src={clubInfo.logoUrl} alt="Logo" className="h-full w-full object-contain p-1" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">{clubInitial}</div>}
                                 </div>
                                 <div className="space-y-0.5">
                                     <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
-                                    <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]">
-                                        <p className="break-words">{clubInfo?.address || "Adresse officielle"}</p>
-                                    </div>
+                                    <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]"><p className="break-words">{clubInfo?.address || "Adresse officielle"}</p></div>
                                 </div>
                             </div>
                             <div className="text-right space-y-0.5">
                                 <h2 className="text-lg font-black uppercase italic tracking-tighter text-white leading-none">FICHE DE PAIE</h2>
                                 <div className="pt-0.5">
-                                    <p className="text-primary font-black text-[7px] tracking-[0.2em] uppercase">REF: {professionalId}</p>
+                                    <p className="text-primary font-black text-[7px] tracking-[0.2em] uppercase">REF: {profId}</p>
                                     <p className="text-slate-500 text-[7px] font-bold">Le {format(new Date(), "dd/MM/yyyy")}</p>
                                 </div>
                             </div>
@@ -148,10 +115,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                         <p className="text-sm font-black text-slate-900 uppercase tracking-tighter">{salary.coachName}</p>
                                         <div className="flex flex-col gap-0.5">
                                             <p className="text-slate-500 font-black uppercase text-[6px] tracking-widest">Entraîneur Officiel</p>
-                                            <p className="text-slate-700 font-black text-[7px] flex items-center gap-1.5 bg-white px-1 py-0.5 rounded-lg border border-slate-200 w-fit">
-                                                <Fingerprint className="h-2 w-2 text-primary" />
-                                                <span>ID : {salary.coachProfessionalId}</span>
-                                            </p>
+                                            <p className="text-slate-700 font-black text-[7px] flex items-center gap-1.5 bg-white px-1 py-0.5 rounded-lg border border-slate-200 w-fit"><Fingerprint className="h-2 w-2 text-primary" /><span>ID : {salary.coachProfessionalId}</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -189,42 +153,21 @@ export default function SalaryReceiptPage({ params }: PageProps) {
 
                             <div className="flex justify-end pt-2">
                                 <div className="w-full max-w-[180px] space-y-1.5 bg-slate-900 p-2.5 rounded-xl shadow-xl text-left border-b-4 border-primary">
-                                    <div className="flex justify-between text-slate-400 font-bold text-[6px] uppercase tracking-widest">
-                                        <span>Salaire Brut Total</span>
-                                        <span>{salary.totalAmount.toFixed(2)} MAD</span>
-                                    </div>
-                                    <div className="flex justify-between text-white font-black text-xs tracking-tighter">
-                                        <span>Déjà versé</span>
-                                        <span className="text-primary">{amountPaid.toFixed(2)} MAD</span>
-                                    </div>
+                                    <div className="flex justify-between text-slate-400 font-bold text-[6px] uppercase tracking-widest"><span>Salaire Brut Total</span><span>{salary.totalAmount.toFixed(2)} MAD</span></div>
+                                    <div className="flex justify-between text-white font-black text-xs tracking-tighter"><span>Déjà versé</span><span className="text-primary">{amountPaid.toFixed(2)} MAD</span></div>
                                     <Separator className="bg-slate-700 h-0.5" />
-                                    <div className={cn(
-                                        "flex justify-between items-center font-black text-[9px] pt-0.5",
-                                        remaining > 0.01 ? "text-red-400" : "text-green-400"
-                                    )}>
-                                        <span className="uppercase tracking-tighter italic text-[6px]">RESTE À VERSER :</span>
-                                        <span>{remaining.toFixed(2)} MAD</span>
-                                    </div>
+                                    <div className={cn("flex justify-between items-center font-black text-[9px] pt-0.5", remaining > 0.01 ? "text-red-400" : "text-green-400")}><span className="uppercase tracking-tighter italic text-[6px]">RESTE À VERSER :</span><span>{remaining.toFixed(2)} MAD</span></div>
                                 </div>
                             </div>
 
                             <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
-                                <div className="text-center space-y-4 w-full flex flex-col items-center">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                    <div className="w-32 border-b-2 border-slate-300"></div>
-                                </div>
+                                <div className="text-center space-y-4 w-full flex flex-col items-center"><p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p><div className="w-32 border-b-2 border-slate-300"></div></div>
                             </div>
                         </div>
 
                         <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-0 shrink-0 border-t border-primary">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-green-600 text-white px-1.5 py-0.5 rounded font-black text-[6px] tracking-widest uppercase shadow-sm">
-                                    STATUT: {salary.status.toUpperCase()}
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[6px] border-b border-primary w-fit pb-0.5 ml-auto">
-                                Document Officiel
-                            </div>
+                            <div className="flex items-center gap-4"><div className="bg-green-600 text-white px-1.5 py-0.5 rounded font-black text-[6px] tracking-widest uppercase shadow-sm">STATUT: {salary.status.toUpperCase()}</div></div>
+                            <div className="text-[7px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
                         </footer>
                     </div>
                 </div>
