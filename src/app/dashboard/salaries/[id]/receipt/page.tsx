@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react";
@@ -124,7 +125,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                     )}
                                 </div>
                                 <div className="space-y-0.5">
-                                    <h1 className="text-sm font-black uppercase tracking-tighter text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
+                                    <h1 className="text-sm font-black uppercase tracking-tight text-white leading-none">{clubInfo?.clubName || "VOTRE CLUB"}</h1>
                                     <div className="text-slate-400 text-[8px] font-semibold leading-tight max-w-[180px]">
                                         <p className="break-words">{clubInfo?.address || "Adresse officielle"}</p>
                                     </div>
@@ -186,7 +187,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </Table>
                             </div>
 
-                            <div className="flex justify-end pt-2">
+                            <div className="flex justify-end pt-2 pb-8">
                                 <div className="w-full max-w-[200px] space-y-2 bg-slate-900 p-3 rounded-xl shadow-xl text-left border-b-4 border-primary">
                                     <div className="flex justify-between text-slate-400 font-bold text-[7px] uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
@@ -207,7 +208,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="pt-12 flex flex-col items-center mt-auto">
+                            <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
                                 <div className="text-center space-y-6 w-full flex flex-col items-center">
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                     <div className="w-40 border-b-2 border-slate-300"></div>

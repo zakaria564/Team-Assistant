@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -146,7 +147,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                 )}
                             </div>
                             <div className="space-y-0.5">
-                                <h1 className="text-sm font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
+                                <h1 className="text-sm font-black uppercase tracking-tight text-white leading-none">{clubName}</h1>
                                 <div className="text-slate-400 text-[8px] font-semibold leading-tight max-w-[180px]">
                                     <p className="break-words">{clubAddress || "Siège Social"}</p>
                                 </div>
@@ -195,7 +196,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         </section>
 
                         <main className="grid grid-cols-2 gap-6 mb-4">
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -207,7 +208,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={MapPin} label="Adresse" value={player.address} />
                                 </div>
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
@@ -225,24 +226,24 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="pt-12 flex flex-col items-center">
+                        <div className="pt-12 pb-8 flex flex-col items-center">
                             <div className="text-center space-y-6 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
-
-                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-auto shrink-0">
-                            <div className="space-y-0.5 pb-1">
-                                <div className="flex items-center gap-1 text-slate-300">
-                                    <ShieldCheck className="h-3 w-3" />
-                                    <span className="text-[7px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
-                                </div>
-                                <p className="text-[6px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
-                            </div>
-                            <div className="text-[8px] font-black uppercase tracking-[0.1em] text-primary italic border-b-2 border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
-                        </footer>
                     </div>
+
+                    <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-end gap-4 text-left mt-auto shrink-0 border-t border-primary">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-1 text-primary">
+                                <ShieldCheck className="h-3 w-3" />
+                                <span className="text-[7px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
+                            </div>
+                            <p className="text-[6px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                        </div>
+                        <div className="text-[8px] font-black uppercase tracking-[0.1em] text-primary italic border-b-2 border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
+                    </footer>
                 </div>
             </div>
         </div>

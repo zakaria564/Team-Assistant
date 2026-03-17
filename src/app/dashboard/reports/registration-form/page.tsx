@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -194,7 +195,7 @@ export default function RegistrationFormPage() {
                                 <>
                                     <div className="space-y-2">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
-                                        <div className="space-y-3 text-[10px] font-medium">
+                                        <div className="space-y-2 text-[10px] font-medium">
                                             <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                             <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
                                             <div className="grid grid-cols-2 gap-x-6">
@@ -216,7 +217,7 @@ export default function RegistrationFormPage() {
                                     {formType === 'junior' && (
                                         <div className="space-y-2 pt-2">
                                             <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
-                                            <div className="space-y-3 text-[10px] font-medium">
+                                            <div className="space-y-2 text-[10px] font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-6">
                                                     <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
@@ -240,7 +241,7 @@ export default function RegistrationFormPage() {
                                 </>
                             )}
                             
-                            <div className="pt-12 flex flex-col items-center mt-auto">
+                            <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
                                 <div className="w-full flex flex-row justify-between items-start gap-10 px-4">
                                     <div className="space-y-6 pt-2 text-left">
                                         <div className="flex items-center">
@@ -263,7 +264,7 @@ export default function RegistrationFormPage() {
                         
                         <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-auto border-t-2 border-primary shrink-0">
                             <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
-                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5">
+                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5 ml-auto">
                                 <ShieldCheck className="h-3 w-3" />
                                 Document Officiel
                             </div>
