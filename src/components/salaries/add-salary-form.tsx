@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -58,7 +59,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
 
     const formSchema = z.object({
         coachId: z.string().min(1, "L'entraîneur est requis."),
-        totalAmount: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
+        totalAmount: z.preprocess((val) => (val === "" || val === 0 ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.string().optional().or(z.literal('')),
         newTransactionMethod: z.string().optional(),
@@ -88,7 +89,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
         } : {
             description: `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
             coachId: "",
-            totalAmount: "" as any,
+            totalAmount: undefined,
             status: "En attente",
             newTransactionAmount: "",
             newTransactionMethod: "Espèces",
@@ -99,10 +100,8 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
     const watchNewAmount = form.watch("newTransactionAmount");
     const selectedCoachId = form.watch("coachId");
 
-    // Logic to detect existing open salary dossier when selecting a coach
     useEffect(() => {
         if (!selectedCoachId || isEditMode || !user) return;
-
         const checkForOpenDossier = async () => {
             setIsCheckingDossier(true);
             try {
@@ -119,7 +118,6 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                     const docData = snap.docs[0].data();
                     const salaryData = { id: snap.docs[0].id, ...docData } as SalaryData;
                     setActiveDossier(salaryData);
-                    
                     form.reset({
                         coachId: selectedCoachId,
                         description: salaryData.description,
@@ -128,50 +126,35 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                         newTransactionAmount: "",
                         newTransactionMethod: "Espèces"
                     });
-                    
-                    toast({ 
-                        title: "Fiche existante détectée", 
-                        description: `Reprise de la fiche : ${salaryData.description}` 
-                    });
+                    toast({ title: "Fiche existante détectée", description: `Reprise de la fiche : ${salaryData.description}` });
                 } else {
                     if (activeDossier) {
                         setActiveDossier(null);
                         form.reset({
                             coachId: selectedCoachId,
                             description: `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
-                            totalAmount: "" as any,
+                            totalAmount: undefined,
                             status: "En attente",
                             newTransactionAmount: "",
                             newTransactionMethod: "Espèces"
                         });
                     }
                 }
-            } catch (e) {
-                console.error("Error checking for open salary dossier:", e);
-            } finally {
-                setIsCheckingDossier(false);
-            }
+            } catch (e) { console.error("Error checking for open salary dossier:", e); }
+            finally { setIsCheckingDossier(false); }
         };
-
         checkForOpenDossier();
     }, [selectedCoachId, isEditMode, user, form, toast]);
 
     useEffect(() => {
         const total = parseFloat(watchTotal?.toString() || "0");
         const newVal = parseFloat(watchNewAmount || "0");
-        
         if (!watchTotal) return;
-
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
-
-        if (total > 0 && remaining < 0.01) {
-            form.setValue("status", "Payé");
-        } else if (totalSettled > 0) {
-            form.setValue("status", "Partiel");
-        } else {
-            form.setValue("status", "En attente");
-        }
+        if (total > 0 && remaining < 0.01) { form.setValue("status", "Payé"); }
+        else if (totalSettled > 0) { form.setValue("status", "Partiel"); }
+        else { form.setValue("status", "En attente"); }
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
@@ -181,7 +164,6 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
             try {
                 const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
                 const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
-
                 const salariesSnap = await getDocs(query(collection(db, "salaries"), where("userId", "==", user.uid)));
                 const coachStatusMap: Record<string, string[]> = {};
                 salariesSnap.docs.forEach(d => {
@@ -189,19 +171,13 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                     if (!coachStatusMap[data.coachId]) coachStatusMap[data.coachId] = [];
                     coachStatusMap[data.coachId].push(data.status);
                 });
-
                 const filtered = allCoaches.filter(coach => {
                     const statuses = coachStatusMap[coach.id];
                     if (!statuses || statuses.length === 0) return true;
                     return statuses.some(s => s !== 'Payé');
                 });
-
                 setCoaches(filtered.sort((a,b) => a.name.localeCompare(b.name)));
-            } catch (error) { 
-                console.error(error); 
-            } finally { 
-                setLoadingCoaches(false); 
-            }
+            } catch (error) { console.error(error); } finally { setLoadingCoaches(false); }
         };
         fetchFilteredCoaches();
     }, [user]);
@@ -211,12 +187,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
         const newVal = parseFloat(values.newTransactionAmount || "0");
         setLoading(true);
         try {
-            const trans = newVal > 0 ? {
-                amount: newVal,
-                date: new Date(),
-                method: values.newTransactionMethod || "Espèces",
-            } : null;
-
+            const trans = newVal > 0 ? { amount: newVal, date: new Date(), method: values.newTransactionMethod || "Espèces" } : null;
             if (isUpdating && effectiveSalary) {
                 const ref = doc(db, "salaries", effectiveSalary.id);
                 const update: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };

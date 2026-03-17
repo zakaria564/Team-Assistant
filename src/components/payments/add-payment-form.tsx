@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -60,7 +61,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
 
     const formSchema = z.object({
         playerId: z.string().min(1, "Le joueur est requis."),
-        totalAmount: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
+        totalAmount: z.preprocess((val) => (val === "" || val === 0 ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.string().optional().or(z.literal('')),
         newTransactionMethod: z.string().optional(),
@@ -90,7 +91,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
         } : {
             description: `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
             playerId: searchParams.get('playerId') || "",
-            totalAmount: "" as any,
+            totalAmount: undefined,
             status: "En attente",
             newTransactionAmount: "",
             newTransactionMethod: "Espèces",
@@ -101,7 +102,6 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     const watchNewAmount = form.watch("newTransactionAmount");
     const selectedPlayerId = form.watch("playerId");
 
-    // Logic to detect existing partial dossier when selecting a player in "New" mode
     useEffect(() => {
         if (!selectedPlayerId || isEditMode || !user) return;
 
@@ -131,49 +131,35 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                         newTransactionMethod: "Espèces"
                     });
                     
-                    toast({ 
-                        title: "Dossier existant détecté", 
-                        description: `Reprise automatique du dossier : ${paymentData.description}` 
-                    });
+                    toast({ title: "Dossier existant détecté", description: `Reprise automatique du dossier : ${paymentData.description}` });
                 } else {
                     if (activeDossier) {
                         setActiveDossier(null);
                         form.reset({
                             playerId: selectedPlayerId,
                             description: `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
-                            totalAmount: "" as any,
+                            totalAmount: undefined,
                             status: "En attente",
                             newTransactionAmount: "",
                             newTransactionMethod: "Espèces"
                         });
                     }
                 }
-            } catch (e) {
-                console.error("Error checking for open dossier:", e);
-            } finally {
-                setIsCheckingDossier(false);
-            }
+            } catch (e) { console.error("Error checking for open dossier:", e); }
+            finally { setIsCheckingDossier(false); }
         };
-
         checkForOpenDossier();
     }, [selectedPlayerId, isEditMode, user, form, toast]);
 
     useEffect(() => {
         const total = parseFloat(watchTotal?.toString() || "0");
         const newVal = parseFloat(watchNewAmount || "0");
-        
         if (!watchTotal) return;
-
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
-
-        if (total > 0 && remaining < 0.01) {
-            form.setValue("status", "Payé");
-        } else if (totalSettled > 0) {
-            form.setValue("status", "Partiel");
-        } else {
-            form.setValue("status", "En attente");
-        }
+        if (total > 0 && remaining < 0.01) { form.setValue("status", "Payé"); }
+        else if (totalSettled > 0) { form.setValue("status", "Partiel"); }
+        else { form.setValue("status", "En attente"); }
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
@@ -183,7 +169,6 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
             try {
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
-
                 const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
                 const playerStatusMap: Record<string, string[]> = {};
                 paymentsSnap.docs.forEach(d => {
@@ -191,19 +176,13 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                     if (!playerStatusMap[data.playerId]) playerStatusMap[data.playerId] = [];
                     playerStatusMap[data.playerId].push(data.status);
                 });
-
                 const filtered = allPlayers.filter(player => {
                     const statuses = playerStatusMap[player.id];
                     if (!statuses || statuses.length === 0) return true;
                     return statuses.some(s => s !== 'Payé');
                 });
-
                 setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
-            } catch(e) { 
-                console.error(e); 
-            } finally { 
-                setLoadingPlayers(false); 
-            }
+            } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
         };
         fetchFilteredPlayers();
     }, [user]);
@@ -213,10 +192,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
         const newVal = parseFloat(values.newTransactionAmount || "0");
         setLoading(true);
         try {
-            const trans = newVal > 0 ? {
-                amount: newVal, date: new Date(), method: values.newTransactionMethod || "Espèces"
-            } : null;
-
+            const trans = newVal > 0 ? { amount: newVal, date: new Date(), method: values.newTransactionMethod || "Espèces" } : null;
             if (isUpdating && effectivePayment) {
                 const ref = doc(db, "payments", effectivePayment.id);
                 const update: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };

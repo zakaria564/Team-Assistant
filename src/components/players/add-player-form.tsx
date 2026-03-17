@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -59,7 +60,7 @@ const formSchema = z.object({
   gender: z.enum(["Masculin", "Féminin"], { required_error: "Le genre est requis." }),
   category: z.string().min(1, "La catégorie est requise."),
   status: z.enum(playerStatuses, { required_error: "Le statut est requis." }),
-  number: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().min(1).max(99).optional()),
+  number: z.preprocess((val) => (val === "" || val === 0 ? undefined : val), z.coerce.number().min(1).max(99).optional()),
   birthDate: z.string().optional(),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
@@ -151,11 +152,11 @@ export function AddPlayerForm({ player }: { player?: any }) {
   const defaultValues = useMemo(() => {
     if (!player) return {
         name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
-        number: "" as any, birthDate: "", entryDate: format(new Date(), "dd/MM/yyyy"), exitDate: "", address: "", nationality: "Marocaine",
+        number: undefined, birthDate: "", entryDate: format(new Date(), "dd/MM/yyyy"), exitDate: "", address: "", nationality: "Marocaine",
         cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
     };
-    return { ...player, documents: player.documents || [], number: player.number || "" as any };
+    return { ...player, documents: player.documents || [], number: player.number || undefined };
   }, [player]);
 
   const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues });
