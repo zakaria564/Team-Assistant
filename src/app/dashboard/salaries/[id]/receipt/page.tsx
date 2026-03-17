@@ -63,7 +63,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
   if (loading || loadingUser) return <div className="flex justify-center items-center py-20"><Loader2 className="animate-spin text-primary" /></div>;
   if (!salary) return null;
   
-  const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0;
+  const amountPaid = salary.transactions?.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0) || 0;
   const remaining = salary.totalAmount - amountPaid;
   const clubInitial = clubInfo?.clubName?.charAt(0)?.toUpperCase() || "C";
   const dateObj = salary.createdAt?.seconds ? new Date(salary.createdAt.seconds * 1000) : new Date();
@@ -138,7 +138,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
                                                 <TableCell className="px-4 py-1 font-bold text-slate-900 text-[9px]">Versement Salaire N°{i+1}</TableCell>
                                                 <TableCell className="py-1 text-slate-600 font-bold text-[9px]">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                                 <TableCell className="py-1 text-slate-700 font-black italic text-[9px]">{t.method}</TableCell>
-                                                <TableCell className="text-right px-4 py-1 font-black text-slate-900 text-[9px]">{t.amount.toFixed(2)} MAD</TableCell>
+                                                <TableCell className="text-right px-4 py-1 font-black text-slate-900 text-[9px]">{parseFloat(t.amount?.toString() || "0").toFixed(2)} MAD</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>

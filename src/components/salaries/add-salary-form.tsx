@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, AlertCircle, ShieldCheck, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, AlertCircle, Calendar as CalendarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -17,7 +17,6 @@ import { format, parse } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Badge } from "../ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -87,20 +86,21 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
     const isEditMode = !!salary;
     
     const amountAlreadyPaid = useMemo(() => 
-      isEditMode ? (salary?.transactions || []).reduce((acc, t) => acc + (t.amount || 0), 0) : 0
+      isEditMode ? (salary?.transactions || []).reduce((acc, t) => acc + (parseFloat(t.amount?.toString() || "0")), 0) : 0
     , [salary, isEditMode]);
 
     const formSchema = z.object({
         coachId: z.string().min(1, "L'entraîneur est requis."),
         totalAmount: z.coerce.number().min(0.01, "Le montant total doit être positif."),
         description: z.string().min(3, "La description est requise."),
-        newTransactionAmount: z.coerce.number().optional(),
+        newTransactionAmount: z.coerce.string().optional().or(z.literal('')),
         newTransactionMethod: z.string().optional(),
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
-        const total = data.totalAmount || 0;
+        const total = parseFloat(data.totalAmount?.toString() || "0");
+        const newVal = parseFloat(data.newTransactionAmount || "0");
         const remaining = Math.max(0, total - amountAlreadyPaid);
-        if (data.newTransactionAmount && data.newTransactionAmount > (remaining + 0.01)) {
+        if (newVal > (remaining + 0.01)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
@@ -116,36 +116,39 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
             totalAmount: salary?.totalAmount,
             description: salary?.description,
             status: salary?.status,
-            newTransactionAmount: undefined,
+            newTransactionAmount: "",
             newTransactionMethod: "Espèces",
         } : {
             description: `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
             coachId: "",
             totalAmount: 0,
             status: "En attente",
-            newTransactionAmount: undefined,
+            newTransactionAmount: "",
             newTransactionMethod: "Espèces",
         }
     });
 
     const watchTotal = form.watch("totalAmount");
-    const watchNew = form.watch("newTransactionAmount") || 0;
-    const currentPaid = amountAlreadyPaid + watchNew;
-    const remaining = Math.max(0, (watchTotal || 0) - amountAlreadyPaid);
+    const watchNewAmount = form.watch("newTransactionAmount");
 
+    // NEW PRECISION CALCULATION LOGIC
     useEffect(() => {
-        const total = Number(watchTotal) || 0;
-        if (total > 0) {
-            const diff = total - currentPaid;
-            if (diff <= 0.01) {
-                form.setValue("status", "Payé");
-            } else if (currentPaid > 0) {
-                form.setValue("status", "Partiel");
-            } else {
-                form.setValue("status", "En attente");
-            }
+        const total = parseFloat(watchTotal?.toString() || "0");
+        const newValue = parseFloat(watchNewAmount?.toString() || "0");
+        
+        if (total <= 0) return;
+
+        const totalSettled = amountAlreadyPaid + newValue;
+        const diff = total - totalSettled;
+
+        if (diff <= 0.01) {
+            form.setValue("status", "Payé");
+        } else if (totalSettled > 0) {
+            form.setValue("status", "Partiel");
+        } else {
+            form.setValue("status", "En attente");
         }
-    }, [currentPaid, watchTotal, form]);
+    }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
         const fetchUnpaidCoaches = async () => {
@@ -161,10 +164,11 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
+        const newVal = parseFloat(values.newTransactionAmount || "0");
         setLoading(true);
         try {
-            const trans = values.newTransactionAmount && values.newTransactionAmount > 0 ? {
-                amount: values.newTransactionAmount,
+            const trans = newVal > 0 ? {
+                amount: newVal,
                 date: new Date(),
                 method: values.newTransactionMethod || "Espèces",
             } : null;
@@ -172,7 +176,7 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
             if (isEditMode && salary) {
                 const ref = doc(db, "salaries", salary.id);
                 const update: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };
-                if (trans) update.transactions = arrayUnion(trans);
+                if(trans) update.transactions = arrayUnion(trans);
                 await updateDoc(ref, update);
                 toast({ title: "Salaire mis à jour" });
             } else {
@@ -186,6 +190,8 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
             router.push("/dashboard/salaries");
         } catch (e) { toast({ variant: "destructive", title: "Erreur" }); } finally { setLoading(false); }
     }
+
+    const remainingToDisplay = Math.max(0, (parseFloat(watchTotal?.toString() || "0")) - amountAlreadyPaid);
 
     return (
         <Form {...form}>
@@ -222,17 +228,17 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                     </div>
                 )}
 
-                {remaining > 0.01 && (
+                {remainingToDisplay > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
                             <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> Nouveau Versement</h4>
-                            <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200">SOLDE RESTANT : {remaining.toFixed(2)} MAD</Badge>
+                            <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200">SOLDE RESTANT : {remainingToDisplay.toFixed(2)} MAD</Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à payer</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder={`Max ${remaining.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder={`Max ${remainingToDisplay.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -249,7 +255,7 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                 <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10"><SelectValue /></SelectTrigger></FormControl><SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value} disabled><FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2"><SelectValue /></SelectTrigger></FormControl><SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
                     </FormItem>
                 )} />
 
