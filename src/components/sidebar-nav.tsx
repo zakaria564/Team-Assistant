@@ -97,7 +97,7 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
           )}>
             <Icon className="h-4 w-4" />
             <span className="flex-1">{label}</span>
-            {badge !== null && (
+            {badge && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-black text-white shadow-sm animate-pulse">
                     {badge}
                 </span>
