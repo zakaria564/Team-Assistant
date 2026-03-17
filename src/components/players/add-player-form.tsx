@@ -72,7 +72,7 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background font-medium" />
+                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background border-slate-200 font-medium" />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
@@ -214,9 +214,14 @@ export function AddPlayerForm({ player }: { player?: any }) {
                       <FormField control={form.control} name="entryDate" render={({ field }) => <DateField label="Date d'entrée" field={field} />} />
                       <FormField control={form.control} name="exitDate" render={({ field }) => <DateField label="Date de sortie" field={field} />} />
                   </div>
-                  <FormField control={form.control} name="status" render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut actuel</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
-                  )} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="status" render={({ field }) => (
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut actuel</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                    )} />
+                    <FormField control={form.control} name="professionalId" render={({ field }) => (
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly placeholder="Attribué automatiquement" className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
+                    )} />
+                  </div>
               </div>
           </div>
 
@@ -302,7 +307,7 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-3 border-2 rounded-2xl bg-background space-y-3 relative group shadow-sm border-slate-100">
+        <div className="p-3 border-2 rounded-2xl bg-background border-slate-100 space-y-3 relative group shadow-sm">
             <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => remove(index)}><Trash2 className="h-3.5 w-3.5" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (

@@ -60,7 +60,7 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background font-medium" />
+                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background border-slate-200 font-medium" />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
@@ -180,7 +180,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                         <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir une spécialité..." /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="professionalId" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel (Optionnel)</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly placeholder="Attribué automatiquement" className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -246,7 +246,7 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-3 border-2 rounded-2xl bg-background space-y-3 relative group shadow-sm border-slate-100">
+        <div className="p-3 border-2 rounded-2xl bg-background border-slate-100 space-y-3 relative group shadow-sm">
             <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => remove(index)}><Trash2 className="h-3.5 w-3.5" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
