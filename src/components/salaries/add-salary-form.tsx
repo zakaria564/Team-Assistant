@@ -139,7 +139,8 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
 
-        if (remaining <= 0.001 && totalSettled >= total && total > 0) {
+        // Accounting Precision: Only "Payé" if balance is exactly zero or less
+        if (total > 0 && remaining <= 0.001) {
             form.setValue("status", "Payé");
         } else if (totalSettled > 0) {
             form.setValue("status", "Partiel");
@@ -149,15 +150,38 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchUnpaidCoaches = async () => {
+        const fetchFilteredCoaches = async () => {
             if (!user) return;
             setLoadingCoaches(true);
             try {
+                // 1. Fetch all coaches
                 const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
-                setCoaches(coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach)).sort((a,b) => a.name.localeCompare(b.name)));
-            } catch (error) { console.error(error); } finally { setLoadingCoaches(false); }
+                const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
+
+                // 2. Fetch all salary dossiers to identify who is already settled
+                const salariesSnap = await getDocs(query(collection(db, "salaries"), where("userId", "==", user.uid)));
+                const coachStatusMap: Record<string, string[]> = {};
+                salariesSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (!coachStatusMap[data.coachId]) coachStatusMap[data.coachId] = [];
+                    coachStatusMap[data.coachId].push(data.status);
+                });
+
+                // 3. Filter: Show only coaches with at least one unpaid dossier OR NO dossiers at all
+                const filtered = allCoaches.filter(coach => {
+                    const statuses = coachStatusMap[coach.id];
+                    if (!statuses || statuses.length === 0) return true; // No dossier = show
+                    return statuses.some(s => s !== 'Payé'); // Has any unpaid = show
+                });
+
+                setCoaches(filtered.sort((a,b) => a.name.localeCompare(b.name)));
+            } catch (error) { 
+                console.error(error); 
+            } finally { 
+                setLoadingCoaches(false); 
+            }
         };
-        fetchUnpaidCoaches();
+        fetchFilteredCoaches();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -196,10 +220,17 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                 <FormField control={form.control} name="coachId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur (Focus impayés)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || loadingCoaches}>
-                            <FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach"} /></SelectTrigger></FormControl>
-                            <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                            <FormControl>
+                                <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach"} />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Tous les coachs sont réglés</SelectItem>}
+                            </SelectContent>
                         </Select>
                         <FormMessage />
                     </FormItem>
@@ -253,7 +284,14 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                 <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled><FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2"><SelectValue /></SelectTrigger></FormControl><SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value} disabled>
+                            <FormControl>
+                                <SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2">
+                                    <SelectValue />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
                     </FormItem>
                 )} />
 

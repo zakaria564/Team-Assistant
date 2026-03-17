@@ -141,7 +141,8 @@ function FormContent({ payment }: { payment?: PaymentData }) {
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
 
-        if (remaining <= 0.001 && totalSettled >= total && total > 0) {
+        // Accounting Precision: Only "Payé" if balance is exactly zero or less
+        if (total > 0 && remaining <= 0.001) {
             form.setValue("status", "Payé");
         } else if (totalSettled > 0) {
             form.setValue("status", "Partiel");
@@ -151,15 +152,38 @@ function FormContent({ payment }: { payment?: PaymentData }) {
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchPlayers = async () => {
+        const fetchFilteredPlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
             try {
-                const snap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
-                setPlayers(snap.docs.map(d => ({ id: d.id, name: d.data().name } as Player)).sort((a,b) => a.name.localeCompare(b.name)));
-            } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
+                // 1. Fetch all players
+                const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
+                const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
+
+                // 2. Fetch all payment dossiers
+                const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
+                const playerStatusMap: Record<string, string[]> = {};
+                paymentsSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (!playerStatusMap[data.playerId]) playerStatusMap[data.playerId] = [];
+                    playerStatusMap[data.playerId].push(data.status);
+                });
+
+                // 3. Filter: Show only players with at least one unpaid dossier OR NO dossiers at all
+                const filtered = allPlayers.filter(player => {
+                    const statuses = playerStatusMap[player.id];
+                    if (!statuses || statuses.length === 0) return true; // New player = show
+                    return statuses.some(s => s !== 'Payé'); // Any unpaid dossier = show
+                });
+
+                setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
+            } catch(e) { 
+                console.error(e); 
+            } finally { 
+                setLoadingPlayers(false); 
+            }
         };
-        fetchPlayers();
+        fetchFilteredPlayers();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -196,10 +220,17 @@ function FormContent({ payment }: { payment?: PaymentData }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                  <FormField control={form.control} name="playerId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur (Focus impayés)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
-                            <FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur"} /></SelectTrigger></FormControl>
-                            <SelectContent>{players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                            <FormControl>
+                                <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur"} />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Tous les joueurs sont réglés</SelectItem>}
+                            </SelectContent>
                         </Select>
                         <FormMessage />
                     </FormItem>
@@ -253,7 +284,14 @@ function FormContent({ payment }: { payment?: PaymentData }) {
                 <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled><FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2"><SelectValue /></SelectTrigger></FormControl><SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value} disabled>
+                            <FormControl>
+                                <SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2">
+                                    <SelectValue />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
                     </FormItem>
                 )} />
 
