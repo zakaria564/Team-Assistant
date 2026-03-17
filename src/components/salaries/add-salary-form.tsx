@@ -111,14 +111,9 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                 const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
                 
                 const salariesSnap = await getDocs(query(collection(db, "salaries"), where("userId", "==", user.uid)));
-                const coachesWithOpenDossiers = new Set();
-                salariesSnap.docs.forEach(d => {
-                    if (d.data().status !== 'Payé') {
-                        coachesWithOpenDossiers.add(d.data().coachId);
-                    }
-                });
+                const coachesWithAnyDossier = new Set(salariesSnap.docs.map(d => d.data().coachId));
 
-                const filtered = allCoaches.filter(c => !coachesWithOpenDossiers.has(c.id));
+                const filtered = allCoaches.filter(c => !coachesWithAnyDossier.has(c.id));
                 setCoaches(filtered.sort((a,b) => a.name.localeCompare(b.name)));
             } catch (error) { console.error(error); } finally { setLoadingCoaches(false); }
         };
@@ -165,7 +160,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                             </FormControl>
                             <SelectContent>
                                 {coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Aucun coach disponible</SelectItem>}
+                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Aucun coach disponible (Dossiers déjà créés)</SelectItem>}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -181,7 +176,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                 <FormField control={form.control} name="totalAmount" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Salaire Total Fixé (MAD)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200 h-12" /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder="Ex: 5000.00" className="font-bold text-lg bg-background border-slate-200 h-12" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />

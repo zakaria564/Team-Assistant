@@ -109,21 +109,13 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
             if (!user) return;
             setLoadingPlayers(true);
             try {
-                // 1. Fetch all players
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
                 
-                // 2. Fetch all active dossiers (not paid)
                 const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
-                const playersWithOpenDossiers = new Set();
-                paymentsSnap.docs.forEach(d => {
-                    if (d.data().status !== 'Payé') {
-                        playersWithOpenDossiers.add(d.data().playerId);
-                    }
-                });
+                const playersWithAnyDossier = new Set(paymentsSnap.docs.map(d => d.data().playerId));
 
-                // 3. Filter: Keep players with NO active dossier (only paid or none)
-                const filtered = allPlayers.filter(p => !playersWithOpenDossiers.has(p.id));
+                const filtered = allPlayers.filter(p => !playersWithAnyDossier.has(p.id));
                 setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
         };
@@ -170,10 +162,10 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                             </FormControl>
                             <SelectContent>
                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur disponible</SelectItem>}
+                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur disponible (Dossiers déjà créés)</SelectItem>}
                             </SelectContent>
                         </Select>
-                        <p className="text-[10px] text-muted-foreground italic mt-1">Note: Les joueurs avec une avance en cours sont à compléter dans la liste de suivi.</p>
+                        <p className="text-[10px] text-muted-foreground italic mt-1">Note: Les joueurs ayant déjà un dossier sont à compléter directement dans la liste de suivi.</p>
                         <FormMessage />
                     </FormItem>
                 )} />
@@ -187,7 +179,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                 <FormField control={form.control} name="totalAmount" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Montant total dû (MAD)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200 h-12" /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} placeholder="Ex: 1500.00" className="font-bold text-lg bg-background border-slate-200 h-12" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />
