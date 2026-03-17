@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -141,24 +140,24 @@ export default function RegistrationFormPage() {
                         <header className="text-center space-y-2 p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0">
                             {loadingClub || loadingUser ? (
                             <div className="flex flex-col items-center gap-2">
-                                    <Skeleton className="h-10 w-10 rounded-full bg-gray-200" />
-                                    <Skeleton className="h-5 w-3/4 mx-auto bg-gray-200" />
+                                    <Skeleton className="h-8 w-8 rounded-full bg-gray-200" />
+                                    <Skeleton className="h-4 w-3/4 mx-auto bg-gray-200" />
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                    <Avatar className="h-10 w-10 border border-primary/20 bg-white shadow-sm p-1">
+                                <div className="flex flex-col items-center gap-1.5">
+                                    <Avatar className="h-8 w-8 border border-primary/20 bg-white shadow-sm p-1">
                                         <AvatarImage src={clubLogoUrl || undefined} alt="Club Logo" className="object-contain" />
-                                        <AvatarFallback className="bg-primary text-white text-lg font-black">{clubInitial}</AvatarFallback>
+                                        <AvatarFallback className="bg-primary text-white text-base font-black">{clubInitial}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-0.5">
-                                        <h1 className="text-sm font-black uppercase tracking-tight leading-none text-white">
+                                        <h1 className="text-xs font-black uppercase tracking-tight leading-none text-white">
                                             {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
                                         </h1>
-                                        <p className="text-primary font-black tracking-[0.3em] uppercase text-[10px] italic">{clubName}</p>
+                                        <p className="text-primary font-black tracking-[0.3em] uppercase text-[8px] italic">{clubName}</p>
                                     </div>
                                 </div>
                             )}
-                            <div className="flex items-center justify-center font-bold text-[8px] bg-slate-800 py-1 rounded-lg border border-dashed border-slate-700">
+                            <div className="flex items-center justify-center font-bold text-[7px] bg-slate-800 py-1 rounded-lg border border-dashed border-slate-700">
                                 <span className="px-4 font-black uppercase tracking-tighter text-slate-300">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
                             </div>
                         </header>
@@ -168,8 +167,8 @@ export default function RegistrationFormPage() {
                                 <div className="space-y-2 py-2">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <ClipboardList className="h-4 w-4 text-primary" />
-                                            <h3 className="font-black text-sm uppercase tracking-tight italic">DOCUMENTS OBLIGATOIRES</h3>
+                                            <ClipboardList className="h-3 w-3 text-primary" />
+                                            <h3 className="font-black text-xs uppercase tracking-tight italic">DOCUMENTS OBLIGATOIRES</h3>
                                         </div>
                                         <ul className="grid grid-cols-1 gap-2">
                                             {[
@@ -181,10 +180,10 @@ export default function RegistrationFormPage() {
                                                 { t: "Extrait d'acte de naissance", d: "Obligatoire pour les catégories juniors." }
                                             ].map((item, i) => (
                                                 <li key={i} className="flex items-start gap-3 p-2 border rounded-xl bg-slate-50 shadow-sm">
-                                                    <div className="h-5 w-5 border-2 border-primary rounded shrink-0 mt-0.5 flex items-center justify-center font-black text-primary text-[10px] italic">!</div>
+                                                    <div className="h-4 w-4 border-2 border-primary rounded shrink-0 mt-0.5 flex items-center justify-center font-black text-primary text-[8px] italic">!</div>
                                                     <div>
-                                                        <p className="font-black text-[10px] uppercase tracking-tight text-slate-900 leading-none mb-1">{item.t}</p>
-                                                        <p className="text-[8px] text-muted-foreground font-semibold italic leading-tight">{item.d}</p>
+                                                        <p className="font-black text-[9px] uppercase tracking-tight text-slate-900 leading-none mb-0.5">{item.t}</p>
+                                                        <p className="text-[7px] text-muted-foreground font-semibold italic leading-tight">{item.d}</p>
                                                     </div>
                                                 </li>
                                             ))}
@@ -194,8 +193,8 @@ export default function RegistrationFormPage() {
                             ) : (
                                 <>
                                     <div className="space-y-2">
-                                        <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
-                                        <div className="space-y-2 text-[10px] font-medium">
+                                        <h3 className="font-black text-[7px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
+                                        <div className="space-y-3 text-[9px] font-medium">
                                             <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                             <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
                                             <div className="grid grid-cols-2 gap-x-6">
@@ -216,8 +215,8 @@ export default function RegistrationFormPage() {
 
                                     {formType === 'junior' && (
                                         <div className="space-y-2 pt-2">
-                                            <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
-                                            <div className="space-y-2 text-[10px] font-medium">
+                                            <h3 className="font-black text-[7px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
+                                            <div className="space-y-3 text-[9px] font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-6">
                                                     <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
@@ -232,40 +231,40 @@ export default function RegistrationFormPage() {
                                     )}
 
                                     <div className="space-y-2 pt-2">
-                                        <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">III. AUTORISATION ET DÉCLARATION</h3>
-                                        <div className="space-y-2 text-[9px] leading-relaxed italic text-slate-700">
+                                        <h3 className="font-black text-[7px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1 w-fit rounded shadow-sm italic">III. AUTORISATION ET DÉCLARATION</h3>
+                                        <div className="space-y-2 text-[8px] leading-relaxed italic text-slate-700">
                                             <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
-                                            <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-[8px]">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
+                                            <p className="font-black text-black border-l-4 border-primary pl-4 not-italic py-2 bg-primary/5 uppercase tracking-tighter text-[7px]">AVIS IMPORTANT : Cette fiche d'inscription doit impérativement être légalisée auprès des autorités compétentes pour être valide.</p>
                                         </div>
                                     </div>
                                 </>
                             )}
                             
-                            <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
+                            <div className="pt-8 pb-4 flex flex-col items-center mt-auto">
                                 <div className="w-full flex flex-row justify-between items-start gap-10 px-4">
-                                    <div className="space-y-6 pt-2 text-left">
+                                    <div className="space-y-4 pt-2 text-left">
                                         <div className="flex items-center">
-                                            <span className="font-bold text-[11px]">Fait à</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
+                                            <span className="font-bold text-[10px]">Fait à</span><div className="w-20 border-b border-dotted border-gray-400 mx-1"></div>
                                         </div>
                                         <div className="flex items-center">
-                                            <span className="font-bold text-[11px]">Le</span><div className="w-24 border-b border-dotted border-gray-400 mx-1"></div>
+                                            <span className="font-bold text-[10px]">Le</span><div className="w-20 border-b border-dotted border-gray-400 mx-1"></div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-2">
-                                        <div className="text-center w-40 h-20 border-2 border-slate-200 rounded-xl p-3 flex flex-col items-center bg-slate-50/50 shadow-inner">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 mb-auto">Cachet du Club & Signature</p>
-                                            <div className="w-32 border-b border-slate-200 mb-1"></div>
+                                        <div className="text-center w-36 h-16 border-2 border-slate-200 rounded-xl p-2 flex flex-col items-center bg-slate-50/50 shadow-inner">
+                                            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-600 mb-auto">Cachet du Club & Signature</p>
+                                            <div className="w-28 border-b border-slate-200 mb-1"></div>
                                         </div>
-                                        <p className="text-[7px] font-bold text-slate-300 italic text-center uppercase tracking-widest leading-none">Signature du parent ou du joueur majeur</p>
+                                        <p className="text-[6px] font-bold text-slate-300 italic text-center uppercase tracking-widest leading-none">Signature du parent ou du joueur majeur</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-0 border-t-2 border-primary shrink-0">
-                            <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
-                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5 ml-auto">
-                                <ShieldCheck className="h-3 w-3" />
+                            <p className="text-[6px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
+                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[6px] border-b border-primary w-fit pb-0.5 ml-auto">
+                                <ShieldCheck className="h-2.5 w-2.5" />
                                 Document Officiel
                             </div>
                         </footer>
