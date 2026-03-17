@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -170,15 +171,13 @@ export default function PaymentsPage() {
             playerGender: player.gender || 'Masculin',
             payments: [],
             currentMonthStatus: 'N/A',
-            hasPending: true // Par défaut true si pas encore de paiements
+            hasPending: true
         };
     });
 
     payments.forEach(payment => {
         if (grouped[payment.playerId]) {
             grouped[payment.playerId].payments.push(payment);
-            
-            // Un joueur a un impayé si au moins un dossier n'est pas "Payé"
             const playerPending = grouped[payment.playerId].payments.some(p => p.status !== 'Payé');
             grouped[payment.playerId].hasPending = playerPending;
 
