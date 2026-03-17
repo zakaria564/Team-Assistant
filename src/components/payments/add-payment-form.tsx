@@ -45,37 +45,6 @@ const formatDateInput = (value: string) => {
   return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
 };
 
-const DateField = ({ label, field }: { label: string, field: any }) => (
-    <FormItem className="flex flex-col">
-        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
-        <div className="flex gap-2">
-            <FormControl>
-                <Input 
-                    placeholder="JJ/MM/AAAA" 
-                    {...field} 
-                    value={field.value || ""} 
-                    onChange={(e) => field.onChange(formatDateInput(e.target.value))}
-                    className="flex-1 bg-background border-slate-200 font-medium" 
-                />
-            </FormControl>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background border-slate-200"><CalendarIcon className="h-4 w-4 text-primary" /></Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                    <Calendar
-                        mode="single"
-                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined}
-                        onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))}
-                        initialFocus
-                    />
-                </PopoverContent>
-            </Popover>
-        </div>
-        <FormMessage />
-    </FormItem>
-);
-
 function FormContent({ payment }: { payment?: PaymentData }) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();

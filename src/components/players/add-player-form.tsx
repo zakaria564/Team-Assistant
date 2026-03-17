@@ -59,7 +59,7 @@ const formSchema = z.object({
   gender: z.enum(["Masculin", "Féminin"], { required_error: "Le genre est requis." }),
   category: z.string().min(1, "La catégorie est requise."),
   status: z.enum(playerStatuses, { required_error: "Le statut est requis." }),
-  number: z.coerce.number().min(1).max(99).optional().or(z.literal('')),
+  number: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().min(1).max(99).optional()),
   birthDate: z.string().optional(),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
@@ -67,12 +67,12 @@ const formSchema = z.object({
   nationality: z.string().optional(),
   cin: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email("Email invalide").optional().or(z.literal('')),
+  email: z.preprocess((val) => (val === "" ? undefined : val), z.string().email("Email invalide").optional()),
   position: z.string().optional(),
   tutorName: z.string().optional(),
   tutorCin: z.string().optional(),
   tutorPhone: z.string().optional(),
-  tutorEmail: z.string().email("Email invalide").optional().or(z.literal('')),
+  tutorEmail: z.preprocess((val) => (val === "" ? undefined : val), z.string().email("Email invalide").optional()),
   coachId: z.string().optional(),
   documents: z.array(documentSchema).optional(),
   professionalId: z.string().optional(),
@@ -83,6 +83,24 @@ const formatDateInput = (value: string) => {
   if (numbers.length <= 2) return numbers;
   if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
   return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+};
+
+const compressImage = (dataUrl: string, maxSize: number = 400): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } }
+      else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+  });
 };
 
 const DateField = ({ label, field }: { label: string, field: any }) => (
@@ -161,7 +179,11 @@ export function AddPlayerForm({ player }: { player?: any }) {
     const file = e.target.files?.[0]; if (!file) return;
     setLoading(true);
     const reader = new FileReader();
-    reader.onload = (event) => { form.setValue('photoUrl', event.target?.result as string); setLoading(false); };
+    reader.onload = async (event) => { 
+        const compressed = await compressImage(event.target?.result as string);
+        form.setValue('photoUrl', compressed); 
+        setLoading(false); 
+    };
     reader.readAsDataURL(file);
   };
 
@@ -176,10 +198,16 @@ export function AddPlayerForm({ player }: { player?: any }) {
 
   useEffect(() => { if(!form.watch('photoUrl')) getCameraPermission(); }, [form.watch('photoUrl'), getCameraPermission]);
 
-  const takePicture = () => {
+  const takePicture = async () => {
     if (videoRef.current && canvasRef.current) {
       const c = canvasRef.current; const ctx = c.getContext('2d');
-      if (ctx) { c.width = 400; c.height = 400; ctx.drawImage(videoRef.current, 0, 0, 400, 400); form.setValue('photoUrl', c.toDataURL('image/jpeg', 0.8)); }
+      if (ctx) { 
+          c.width = videoRef.current.videoWidth; 
+          c.height = videoRef.current.videoHeight; 
+          ctx.drawImage(videoRef.current, 0, 0); 
+          const compressed = await compressImage(c.toDataURL('image/jpeg', 0.8));
+          form.setValue('photoUrl', compressed); 
+      }
     }
   };
 
@@ -195,7 +223,10 @@ export function AddPlayerForm({ player }: { player?: any }) {
         if (isEditMode) await updateDoc(doc(db, "players", player.id), data);
         else await addDoc(collection(db, "players"), { ...data, createdAt: new Date() });
         toast({ title: "Enregistré avec succès !" }); router.push("/dashboard/players");
-    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); } finally { setLoading(false); }
+    } catch (e) { 
+        console.error(e);
+        toast({ variant: "destructive", title: "Erreur lors de l'enregistrement" }); 
+    } finally { setLoading(false); }
   }
 
   return (
@@ -254,7 +285,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="number" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="coachId" render={({ field }) => (
                         <FormItem>
@@ -361,7 +392,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                         <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email</FormLabel><FormControl><Input type="email" {...field} className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
                   <FormField control={form.control} name="address" render={({ field }) => (
@@ -384,7 +415,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                         <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorEmail" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email Tuteur</FormLabel><FormControl><Input type="email" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email Tuteur</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                   </div>
               </div>
@@ -447,8 +478,9 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
             </div>
             <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={(e) => {
                 const file = e.target.files?.[0]; if (!file) return; setLoading(true);
-                const reader = new FileReader(); reader.onload = (ev) => {
-                    form.setValue(`documents.${index}.url`, ev.target?.result as string);
+                const reader = new FileReader(); reader.onload = async (ev) => {
+                    const compressed = await compressImage(ev.target?.result as string);
+                    form.setValue(`documents.${index}.url`, compressed);
                     if (!form.getValues(`documents.${index}.name`)) form.setValue(`documents.${index}.name`, file.name.split('.')[0]);
                     setLoading(false);
                 }; reader.readAsDataURL(file);
