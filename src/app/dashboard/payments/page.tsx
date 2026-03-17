@@ -291,16 +291,20 @@ export default function PaymentsPage() {
                                     </span>
                                 )}
                             </div>
-                          <div className="flex flex-col text-left">
-                              <div className="flex items-center gap-2">
-                                  <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
+                          <div className="flex flex-col text-left min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                                    {playerGroup.playerName}
+                                  </p>
                                   {playerGroup.hasPending && (
                                       <Badge className="bg-destructive/10 text-destructive border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 flex items-center gap-1">
                                           <BellRing className="h-2 w-2" /> Notification
                                       </Badge>
                                   )}
                               </div>
-                              <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase font-bold">{playerGroup.payments.length} dossier(s)</Badge>
+                              <p className="text-lg font-black text-slate-900 tracking-tighter uppercase leading-tight mt-0.5">
+                                {playerGroup.payments.length} {playerGroup.payments.length > 1 ? 'Dossiers' : 'Dossier'}
+                              </p>
                           </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -360,7 +364,7 @@ export default function PaymentsPage() {
                                                       <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
                                                           <DropdownMenuItem className="cursor-pointer py-2.5 text-primary bg-primary/5 font-black">
                                                               <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
-                                                          </DropdownMenuItem>
+                           </DropdownMenuItem>
                                                       </Link>
                                                   )}
                                                   <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>

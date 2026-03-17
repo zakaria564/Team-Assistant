@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -212,10 +213,18 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="text-base text-muted-foreground leading-none mb-1 uppercase tracking-widest">{group.coachName}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
+                    {group.coachName}
+                  </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm text-slate-900 font-black uppercase tracking-tighter">{group.salaries.length} FICHE(S)</p>
-                    {group.hasPending && <Badge variant="destructive" className="text-[9px] px-1.5 h-4 font-black uppercase tracking-tighter">Solde dû</Badge>}
+                    <p className="text-lg font-black text-slate-900 tracking-tighter uppercase leading-none">
+                      {group.salaries.length} {group.salaries.length > 1 ? 'Fiches' : 'Fiche'}
+                    </p>
+                    {group.hasPending && (
+                        <Badge variant="destructive" className="text-[8px] px-1.5 h-4 font-black uppercase tracking-widest border-none shadow-sm">
+                            Solde dû
+                        </Badge>
+                    )}
                   </div>
                 </div>
               </div>

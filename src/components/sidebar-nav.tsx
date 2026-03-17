@@ -30,29 +30,31 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
 
-    // Listen for Player Alerts
+    // Listen for Player Alerts: Count players with no dossier OR status != 'Payé'
     const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (playersSnap) => {
         const playersData = playersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
-        onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paymentsSnap) => {
+        const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paymentsSnap) => {
             const paymentsData = paymentsSnap.docs.map(d => d.data());
             let count = 0;
             
             playersData.forEach(player => {
                 const playerPayments = paymentsData.filter(p => p.playerId === player.id);
+                // Alert if no payments recorded OR if any payment is not 'Payé'
                 if (playerPayments.length === 0 || playerPayments.some(p => p.status !== 'Payé')) {
                     count++;
                 }
             });
             setAlerts(prev => ({ ...prev, players: count }));
         });
+        return () => unsubscribePayments();
     });
 
-    // Listen for Coach Alerts
+    // Listen for Coach Alerts: Count coaches with no dossier OR status != 'Payé'
     const unsubscribeCoaches = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachesSnap) => {
         const coachesData = coachesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
-        onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salariesSnap) => {
+        const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salariesSnap) => {
             const salariesData = salariesSnap.docs.map(d => d.data());
             let count = 0;
             
@@ -64,6 +66,7 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
             });
             setAlerts(prev => ({ ...prev, coaches: count }));
         });
+        return () => unsubscribeSalaries();
     });
 
     return () => {
