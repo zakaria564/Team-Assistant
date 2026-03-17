@@ -204,7 +204,7 @@ export default function SalariesPage() {
                     {toTitleCase(group.coachName)}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-slate-900 uppercase tracking-tight leading-tight">
+                    <p className="text-xs font-bold text-slate-900 leading-tight">
                       {group.salaries.length} Fiche(s)
                     </p>
                     {group.hasPending && (

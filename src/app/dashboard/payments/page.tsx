@@ -209,7 +209,7 @@ export default function PaymentsPage() {
                                 {toTitleCase(playerGroup.playerName)}
                               </p>
                               <div className="flex items-center gap-2">
-                                <p className="text-xs font-bold text-slate-900 uppercase tracking-tight leading-tight">
+                                <p className="text-xs font-bold text-slate-900 leading-tight">
                                     {playerGroup.payments.length} Dossier(s)
                                 </p>
                                 {playerGroup.hasPending && (
