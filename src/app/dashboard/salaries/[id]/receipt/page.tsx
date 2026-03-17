@@ -139,7 +139,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </header>
 
-                        <div className="px-6 py-6 space-y-8 text-left flex-grow flex flex-col">
+                        <div className="px-6 py-6 space-y-6 text-left flex-grow flex flex-col">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                     <h3 className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Bénéficiaire (Entraîneur)</h3>
@@ -175,7 +175,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                     </TableHeader>
                                     <TableBody>
                                         {salary.transactions?.map((t: any, i: number) => (
-                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-12 hover:bg-slate-50">
+                                            <TableRow key={i} className="border-b border-slate-100 last:border-0 h-10 hover:bg-slate-50">
                                                 <TableCell className="px-4 py-1 font-bold text-slate-900 text-[10px]">Versement Salaire N°{i+1}</TableCell>
                                                 <TableCell className="py-1 text-slate-600 font-bold text-[10px]">{t.date?.seconds ? format(new Date(t.date.seconds * 1000), "dd/MM/yyyy") : 'N/A'}</TableCell>
                                                 <TableCell className="py-1 text-slate-700 font-black italic text-[10px]">{t.method}</TableCell>
@@ -186,7 +186,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </Table>
                             </div>
 
-                            <div className="flex justify-end pt-4">
+                            <div className="flex justify-end pt-2">
                                 <div className="w-full max-w-[220px] space-y-3 bg-slate-900 p-4 rounded-xl shadow-xl text-left border-b-4 border-primary">
                                     <div className="flex justify-between text-slate-400 font-bold text-[7px] uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
@@ -207,7 +207,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="mt-auto pt-16 flex flex-col items-center">
+                            <div className="mt-auto pt-12 flex flex-col items-center">
                                 <div className="text-center space-y-8 w-full flex flex-col items-center">
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                     <div className="w-40 border-b-2 border-slate-300"></div>

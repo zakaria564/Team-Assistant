@@ -162,15 +162,15 @@ export default function RegistrationFormPage() {
                             </div>
                         </header>
 
-                        <div className="p-6 space-y-6 text-left flex flex-col flex-grow">
+                        <div className="p-6 space-y-4 text-left flex flex-col flex-grow">
                             {formType === 'checklist' ? (
-                                <div className="space-y-6 py-4">
+                                <div className="space-y-4 py-4">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2 mb-2">
                                             <ClipboardList className="h-4 w-4 text-primary" />
                                             <h3 className="font-black text-sm uppercase tracking-tight italic">DOCUMENTS OBLIGATOIRES</h3>
                                         </div>
-                                        <ul className="grid grid-cols-1 gap-3">
+                                        <ul className="grid grid-cols-1 gap-2">
                                             {[
                                                 { t: "2 Photos d'identité", d: "Format récent, fond clair uniforme." },
                                                 { t: "Copie de la CIN (Recto-Verso)", d: "Joueur (si majeur) ou tuteur légal." },
@@ -194,7 +194,7 @@ export default function RegistrationFormPage() {
                                 <>
                                     <div className="space-y-4">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
-                                        <div className="space-y-5 text-[10px] font-medium">
+                                        <div className="space-y-4 text-[10px] font-medium">
                                             <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                             <div className="flex items-center"><div>DATE ET LIEU DE NAISSANCE :</div><DottedLine /></div>
                                             <div className="grid grid-cols-2 gap-x-6">
@@ -216,7 +216,7 @@ export default function RegistrationFormPage() {
                                     {formType === 'junior' && (
                                         <div className="space-y-4 pt-4">
                                             <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
-                                            <div className="space-y-5 text-[10px] font-medium">
+                                            <div className="space-y-4 text-[10px] font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
                                                 <div className="grid grid-cols-2 gap-x-6">
                                                     <div className="flex items-center"><div>LIEN DE PARENTÉ :</div><DottedLine /></div>
@@ -240,7 +240,7 @@ export default function RegistrationFormPage() {
                                 </>
                             )}
                             
-                            <div className="mt-auto pt-16 flex flex-col items-center">
+                            <div className="mt-auto pt-12 flex flex-col items-center">
                                 <div className="w-full flex flex-row justify-between items-start gap-10 px-4">
                                     <div className="space-y-6 pt-2 text-left">
                                         <div className="flex items-center">
