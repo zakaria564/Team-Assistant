@@ -62,7 +62,7 @@ export default function RegistrationFormPage() {
         html2canvas(formElement, {
             scale: 2,
             useCORS: true,
-            backgroundColor: "#ffffff"
+            backgroundColor: "#0f172a"
         }).then((canvas) => {
             const pdf = new jsPDF({
                 orientation: 'portrait',
@@ -73,10 +73,10 @@ export default function RegistrationFormPage() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const imgData = canvas.toDataURL('image/png', 1.0);
             const ratio = canvas.width / canvas.height;
-            const width = pdfWidth - 40; 
+            const width = pdfWidth; 
             const height = width / ratio;
 
-            pdf.addImage(imgData, 'PNG', 20, 20, width, height);
+            pdf.addImage(imgData, 'PNG', 0, 0, width, height);
             
             let fileName = "document.pdf";
             if (formType === 'junior') fileName = "fiche-inscription-junior.pdf";
@@ -137,8 +137,8 @@ export default function RegistrationFormPage() {
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[600px] flex justify-center">
-                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '600px', minHeight: '840px' }}>
-                        <header className="text-center space-y-2 p-4 border-b-4 border-slate-900 shrink-0">
+                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '600px', minHeight: '848px' }}>
+                        <header className="text-center space-y-2 p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0">
                             {loadingClub || loadingUser ? (
                             <div className="flex flex-col items-center gap-2">
                                     <Skeleton className="h-10 w-10 rounded-full bg-gray-200" />
@@ -151,15 +151,15 @@ export default function RegistrationFormPage() {
                                         <AvatarFallback className="bg-primary text-white text-lg font-black">{clubInitial}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-0.5">
-                                        <h1 className="text-sm font-black uppercase tracking-tight leading-none">
+                                        <h1 className="text-sm font-black uppercase tracking-tight leading-none text-white">
                                             {formType === 'checklist' ? 'PIÈCES À FOURNIR POUR LE DOSSIER' : `FICHE D'INSCRIPTION ${formType === 'adult' ? 'ADULTE' : 'JUNIOR'}`}
                                         </h1>
                                         <p className="text-primary font-black tracking-[0.3em] uppercase text-[10px] italic">{clubName}</p>
                                     </div>
                                 </div>
                             )}
-                            <div className="flex items-center justify-center font-bold text-[8px] bg-slate-50 py-1 rounded-lg border border-dashed border-slate-300">
-                                <span className="px-4 font-black uppercase tracking-tighter">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
+                            <div className="flex items-center justify-center font-bold text-[8px] bg-slate-800 py-1 rounded-lg border border-dashed border-slate-700">
+                                <span className="px-4 font-black uppercase tracking-tighter text-slate-300">SAISON SPORTIVE : 20 . . . / 20 . . .</span>
                             </div>
                         </header>
 
@@ -262,7 +262,7 @@ export default function RegistrationFormPage() {
                             </div>
                         </div>
                         
-                        <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-auto border-t-2 border-primary shrink-0">
+                        <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-0 border-t-2 border-primary shrink-0">
                             <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
                             <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5 ml-auto">
                                 <ShieldCheck className="h-3 w-3" />

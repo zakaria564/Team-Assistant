@@ -70,7 +70,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                 scale: 2, 
                 useCORS: true, 
                 allowTaint: true,
-                backgroundColor: "#ffffff",
+                backgroundColor: "#0f172a",
                 logging: false
             });
 
@@ -112,7 +112,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
                 <div className="min-w-[600px] flex justify-center">
-                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '600px', minHeight: '840px' }}>
+                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '600px', minHeight: '848px' }}>
                         <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                             <div className="flex flex-row items-center gap-3 text-left">
                                 <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
@@ -216,7 +216,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-auto shrink-0 border-t border-primary">
+                        <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 mt-0 shrink-0 border-t border-primary">
                             <div className="flex items-center gap-4">
                                 <div className="bg-green-600 text-white px-2 py-1 rounded font-black text-[7px] tracking-widest uppercase shadow-sm">
                                     STATUT: {salary.status.toUpperCase()}

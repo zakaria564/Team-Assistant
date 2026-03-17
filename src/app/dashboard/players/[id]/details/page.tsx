@@ -97,7 +97,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true, 
-                backgroundColor: '#ffffff', 
+                backgroundColor: '#0f172a', // Slate-900 pour éviter toute bordure blanche capturée
                 logging: false,
                 allowTaint: true
             });
@@ -134,7 +134,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[600px] flex justify-center">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '840px' }}>
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '848px' }}>
                     <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
@@ -163,7 +163,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                     </header>
                     
                     <div className="px-6 py-6 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-6 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-2 shrink-0">
                                 <div className="h-20 w-20 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
                                     {player.photoUrl ? (
@@ -226,7 +226,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="pt-12 pb-8 flex flex-col items-center">
+                        <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
                             <div className="text-center space-y-6 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
@@ -234,7 +234,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         </div>
                     </div>
 
-                    <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-end gap-4 text-left mt-auto shrink-0 border-t border-primary">
+                    <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-end gap-4 text-left shrink-0 border-t border-primary mt-0">
                         <div className="space-y-0.5">
                             <div className="flex items-center gap-1 text-primary">
                                 <ShieldCheck className="h-3 w-3" />

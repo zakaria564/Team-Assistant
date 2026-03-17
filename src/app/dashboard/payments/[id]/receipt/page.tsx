@@ -79,7 +79,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
             const canvas = await html2canvas(element, { 
                 scale: 2, 
                 useCORS: true,
-                backgroundColor: "#ffffff",
+                backgroundColor: "#0f172a",
                 logging: false,
                 allowTaint: true
             });
@@ -123,7 +123,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
             <div className="min-w-[600px] flex justify-center">
-                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '840px' }}>
+                <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '848px' }}>
                     <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-12 w-14 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
@@ -226,7 +226,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         </div>
                     </div>
 
-                    <footer className="p-4 bg-slate-900 text-white flex justify-between items-center gap-4 mt-auto shrink-0 border-t border-primary">
+                    <footer className="p-4 bg-slate-900 text-white flex justify-between items-center gap-4 mt-0 shrink-0 border-t border-primary">
                         <div className="text-[7px] opacity-50 font-black uppercase tracking-widest text-left">
                             <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club Sportif"} - Team Assistant Pro</p>
                         </div>
