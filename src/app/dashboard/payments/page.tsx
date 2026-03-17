@@ -78,6 +78,11 @@ const getBadgeClass = (status?: Payment['status']) => {
     }
 };
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export default function PaymentsPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -139,7 +144,7 @@ export default function PaymentsPage() {
             playerPhotoUrl: player.photoUrl,
             playerGender: player.gender || 'Masculin',
             payments: [],
-            hasPending: true // Default true for newcomers
+            hasPending: true
         };
     });
 
@@ -200,11 +205,11 @@ export default function PaymentsPage() {
                                 <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                           <div className="flex flex-col text-left">
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                                {playerGroup.playerName}
+                              <p className="text-[10px] font-bold text-muted-foreground tracking-wider mb-1">
+                                {toTitleCase(playerGroup.playerName)}
                               </p>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">
+                                <p className="text-xs font-bold text-slate-900 uppercase tracking-tight leading-tight">
                                     {playerGroup.payments.length} Dossier(s)
                                 </p>
                                 {playerGroup.hasPending && (

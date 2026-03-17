@@ -71,6 +71,11 @@ const getBadgeClass = (status?: Salary['status']) => {
     }
 };
 
+const toTitleCase = (str: string) => {
+  if (!str) return '';
+  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export default function SalariesPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [salaries, setSalaries] = useState<Salary[]>([]);
@@ -195,11 +200,11 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                    {group.coachName}
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-wider mb-1">
+                    {toTitleCase(group.coachName)}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">
+                    <p className="text-xs font-bold text-slate-900 uppercase tracking-tight leading-tight">
                       {group.salaries.length} Fiche(s)
                     </p>
                     {group.hasPending && (
