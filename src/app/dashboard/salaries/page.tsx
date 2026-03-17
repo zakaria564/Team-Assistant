@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -207,8 +208,8 @@ export default function SalariesPage() {
                       {group.salaries.length} Fiche(s)
                     </p>
                     {group.hasPending && (
-                        <Badge className="bg-red-600 text-white border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 animate-pulse">
-                            Action requise
+                        <Badge className="bg-red-600 text-white border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 flex items-center gap-1 animate-pulse">
+                            <BellRing className="h-2 w-2" /> Notification
                         </Badge>
                     )}
                   </div>
