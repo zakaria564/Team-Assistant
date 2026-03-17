@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Fingerprint, Upload, Mail, Phone, Calendar as CalendarIcon, FileText, Trash2, ShieldCheck, User, MapPin, Eye } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, ShieldCheck, User, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
@@ -114,7 +114,7 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
                     {...field} 
                     value={field.value || ""} 
                     onChange={(e) => field.onChange(formatDateInput(e.target.value))} 
-                    className="flex-1 bg-background border-slate-200 font-medium" 
+                    className="flex-1 bg-background border-slate-200 font-medium h-10" 
                 />
             </FormControl>
             <Popover>
@@ -258,7 +258,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                             <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-10">
                                         <SelectValue placeholder="Choisir..." />
                                     </SelectTrigger>
                                 </FormControl>
@@ -273,7 +273,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                             <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Poste Principal</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-10">
                                         <SelectValue placeholder="Choisir..." />
                                     </SelectTrigger>
                                 </FormControl>
@@ -286,14 +286,14 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="number" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="coachId" render={({ field }) => (
                         <FormItem>
                             <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-10">
                                         <SelectValue placeholder="Choisir..." />
                                     </SelectTrigger>
                                 </FormControl>
@@ -315,7 +315,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                             <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-10">
                                         <SelectValue />
                                     </SelectTrigger>
                                 </FormControl>
@@ -333,7 +333,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                                     {...field} 
                                     readOnly 
                                     disabled 
-                                    className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" 
+                                    className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs h-10" 
                                     placeholder="Généré automatiquement" 
                                 />
                             </FormControl>
@@ -347,7 +347,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
               <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom Complet</FormLabel><FormControl><Input {...field} placeholder="Prénom NOM" className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom Complet</FormLabel><FormControl><Input {...field} placeholder="Prénom NOM" className="bg-background border-slate-200 h-10" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="birthDate" render={({ field }) => <DateField label="Date de naissance" field={field} />} />
@@ -356,7 +356,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                             <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Genre</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-10">
                                         <SelectValue />
                                     </SelectTrigger>
                                 </FormControl>
@@ -374,7 +374,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                               <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
-                                      <SelectTrigger className="bg-background border-slate-200">
+                                      <SelectTrigger className="bg-background border-slate-200 h-10">
                                           <SelectValue />
                                       </SelectTrigger>
                                   </FormControl>
@@ -385,15 +385,15 @@ export function AddPlayerForm({ player }: { player?: any }) {
                           </FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
-                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="phone" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200 h-10" /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
                   <FormField control={form.control} name="address" render={({ field }) => (
@@ -405,18 +405,18 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />Tuteur Légal</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="tutorName" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorCin" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">CIN Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">CIN Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="tutorPhone" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorEmail" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email Tuteur</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email Tuteur</FormLabel><FormControl><Input type="email" {...field} value={field.value || ""} className="bg-background border-slate-200 h-10" /></FormControl></FormItem>
                       )} />
                   </div>
               </div>

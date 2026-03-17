@@ -10,16 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, Suspense, useMemo } from "react";
-import { Loader2, AlertCircle, Calendar as CalendarIcon, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where, limit, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Badge } from "../ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import React from "react";
 
 interface Player {
@@ -45,23 +43,17 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     const [loading, setLoading] = useState(false);
     const [players, setPlayers] = useState<Player[]>([]);
     const [loadingPlayers, setLoadingPlayers] = useState(true);
-    const [activeDossier, setActiveDossier] = useState<PaymentData | null>(null);
-    const [isCheckingDossier, setIsCheckingDossier] = useState(false);
-    
     const router = useRouter();
     const searchParams = useSearchParams();
     const isEditMode = !!initialPayment;
-    
-    const effectivePayment = initialPayment || activeDossier;
-    const isUpdating = !!effectivePayment;
 
     const amountAlreadyPaid = useMemo(() => 
-      isUpdating ? (effectivePayment?.transactions || []).reduce((acc, t) => acc + (parseFloat(t.amount?.toString() || "0")), 0) : 0
-    , [effectivePayment, isUpdating]);
+      isEditMode ? (initialPayment?.transactions || []).reduce((acc, t) => acc + (parseFloat(t.amount?.toString() || "0")), 0) : 0
+    , [initialPayment, isEditMode]);
 
     const formSchema = z.object({
         playerId: z.string().min(1, "Le joueur est requis."),
-        totalAmount: z.preprocess((val) => (val === "" || val === 0 ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
+        totalAmount: z.preprocess((val) => (val === "" || val === 0 ? undefined : val), z.coerce.number().min(0.01, "Montant requis.")),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.string().optional().or(z.literal('')),
         newTransactionMethod: z.string().optional(),
@@ -100,56 +92,6 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
 
     const watchTotal = form.watch("totalAmount");
     const watchNewAmount = form.watch("newTransactionAmount");
-    const selectedPlayerId = form.watch("playerId");
-
-    useEffect(() => {
-        if (!selectedPlayerId || isEditMode || !user) return;
-
-        const checkForOpenDossier = async () => {
-            setIsCheckingDossier(true);
-            try {
-                const q = query(
-                    collection(db, "payments"), 
-                    where("userId", "==", user.uid), 
-                    where("playerId", "==", selectedPlayerId),
-                    where("status", "!=", "Payé"),
-                    orderBy("status"),
-                    limit(1)
-                );
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    const docData = snap.docs[0].data();
-                    const paymentData = { id: snap.docs[0].id, ...docData } as PaymentData;
-                    setActiveDossier(paymentData);
-                    
-                    form.reset({
-                        playerId: selectedPlayerId,
-                        description: paymentData.description,
-                        totalAmount: paymentData.totalAmount,
-                        status: paymentData.status,
-                        newTransactionAmount: "",
-                        newTransactionMethod: "Espèces"
-                    });
-                    
-                    toast({ title: "Dossier existant détecté", description: `Reprise automatique du dossier : ${paymentData.description}` });
-                } else {
-                    if (activeDossier) {
-                        setActiveDossier(null);
-                        form.reset({
-                            playerId: selectedPlayerId,
-                            description: `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
-                            totalAmount: undefined,
-                            status: "En attente",
-                            newTransactionAmount: "",
-                            newTransactionMethod: "Espèces"
-                        });
-                    }
-                }
-            } catch (e) { console.error("Error checking for open dossier:", e); }
-            finally { setIsCheckingDossier(false); }
-        };
-        checkForOpenDossier();
-    }, [selectedPlayerId, isEditMode, user, form, toast]);
 
     useEffect(() => {
         const total = parseFloat(watchTotal?.toString() || "0");
@@ -163,28 +105,29 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchFilteredPlayers = async () => {
+        const fetchEligiblePlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
             try {
+                // 1. Fetch all players
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
+                
+                // 2. Fetch all active dossiers (not paid)
                 const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
-                const playerStatusMap: Record<string, string[]> = {};
+                const playersWithOpenDossiers = new Set();
                 paymentsSnap.docs.forEach(d => {
-                    const data = d.data();
-                    if (!playerStatusMap[data.playerId]) playerStatusMap[data.playerId] = [];
-                    playerStatusMap[data.playerId].push(data.status);
+                    if (d.data().status !== 'Payé') {
+                        playersWithOpenDossiers.add(d.data().playerId);
+                    }
                 });
-                const filtered = allPlayers.filter(player => {
-                    const statuses = playerStatusMap[player.id];
-                    if (!statuses || statuses.length === 0) return true;
-                    return statuses.some(s => s !== 'Payé');
-                });
+
+                // 3. Filter: Keep players with NO active dossier (only paid or none)
+                const filtered = allPlayers.filter(p => !playersWithOpenDossiers.has(p.id));
                 setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
         };
-        fetchFilteredPlayers();
+        fetchEligiblePlayers();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -193,8 +136,8 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
         setLoading(true);
         try {
             const trans = newVal > 0 ? { amount: newVal, date: new Date(), method: values.newTransactionMethod || "Espèces" } : null;
-            if (isUpdating && effectivePayment) {
-                const ref = doc(db, "payments", effectivePayment.id);
+            if (isEditMode && initialPayment) {
+                const ref = doc(db, "payments", initialPayment.id);
                 const update: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };
                 if(trans) update.transactions = arrayUnion(trans);
                 await updateDoc(ref, update);
@@ -218,19 +161,19 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                  <FormField control={form.control} name="playerId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur (Focus impayés)</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur (Nouveaux Dossiers Uniquement)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
-                                <SelectTrigger className="bg-background border-slate-200">
-                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur"} />
+                                <SelectTrigger className="bg-background border-slate-200 h-11">
+                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Sélectionner un joueur..."} />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Tous les joueurs sont réglés</SelectItem>}
+                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur disponible</SelectItem>}
                             </SelectContent>
                         </Select>
-                        {isCheckingDossier && <p className="text-[10px] text-primary animate-pulse font-bold mt-1">Recherche de dossiers en cours...</p>}
+                        <p className="text-[10px] text-muted-foreground italic mt-1">Note: Les joueurs avec une avance en cours sont à compléter dans la liste de suivi.</p>
                         <FormMessage />
                     </FormItem>
                 )} />
@@ -244,15 +187,15 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                 <FormField control={form.control} name="totalAmount" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Montant total dû (MAD)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200 h-12" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />
 
-                {isUpdating && (
-                    <div className="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 flex justify-between items-center shadow-sm">
+                {isEditMode && (
+                    <div className="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 flex justify-between items-center">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Avance réglée</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Montant déjà réglé</span>
                             <span className="text-base font-black text-primary italic">DÉJÀ VERSÉ</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -265,13 +208,13 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                 {remainingToDisplay > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isUpdating ? "Complément" : "Nouveau Versement"}</h4>
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isEditMode ? "Versement Complémentaire" : "Premier Versement"}</h4>
                             <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200 uppercase tracking-tighter">RESTE : {remainingToDisplay.toFixed(2)} MAD</Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à ajouter (MAD)</FormLabel>
+                                    <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à verser (MAD)</FormLabel>
                                     <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingToDisplay.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -300,8 +243,8 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                     </FormItem>
                 )} />
 
-                <Button type="submit" disabled={loading || loadingPlayers || isCheckingDossier} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isUpdating ? "Enregistrer le complément" : "Confirmer l'enregistrement"}
+                <Button type="submit" disabled={loading || loadingPlayers} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer le versement" : "Confirmer le paiement"}
                 </Button>
             </form>
         </Form>
