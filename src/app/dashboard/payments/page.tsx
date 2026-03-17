@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, BellRing, Filter, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
+import { collection, query, doc, where, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -302,7 +302,7 @@ export default function PaymentsPage() {
                                       </Badge>
                                   )}
                               </div>
-                              <p className="text-lg font-black text-slate-900 tracking-tighter uppercase leading-tight mt-0.5">
+                              <p className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight mt-1">
                                 {playerGroup.payments.length} {playerGroup.payments.length > 1 ? 'Dossiers' : 'Dossier'}
                               </p>
                           </div>
@@ -364,7 +364,7 @@ export default function PaymentsPage() {
                                                       <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
                                                           <DropdownMenuItem className="cursor-pointer py-2.5 text-primary bg-primary/5 font-black">
                                                               <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
-                           </DropdownMenuItem>
+                                                          </DropdownMenuItem>
                                                       </Link>
                                                   )}
                                                   <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>

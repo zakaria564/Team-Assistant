@@ -217,7 +217,7 @@ export default function SalariesPage() {
                     {group.coachName}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-lg font-black text-slate-900 tracking-tighter uppercase leading-none">
+                    <p className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight">
                       {group.salaries.length} {group.salaries.length > 1 ? 'Fiches' : 'Fiche'}
                     </p>
                     {group.hasPending && (
