@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
@@ -19,12 +19,13 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "../ui/textarea";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
 
 const documentSchema = z.object({
-  name: z.string().optional(),
-  url: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
+  name: z.string().min(1, "Nom requis"),
+  url: z.string().url("URL invalide"),
   validityDate: z.string().optional(),
 });
 
@@ -59,7 +60,6 @@ const coachCategories = [
     "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"
 ];
 
-const coachSpecialties = ["Entraîneur Principal", "Adjoint", "Gardiens", "Physique", "Analyste", "DT", "Autre"];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Autre"];
 
 const generateProfessionalId = () => {
@@ -120,28 +120,14 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
         entryDate: "", exitDate: "", nationality: "Marocaine", cin: "", address: "", documents: [], professionalId: "",
     };
     return {
-        name: coach.name || "",
-        photoUrl: coach.photoUrl || "",
-        category: coach.category || "",
+        ...coach,
         status: (coach.status as typeof coachStatuses[number]) || "Actif",
-        phone: coach.phone || "",
-        email: coach.email || "",
-        specialty: coach.specialty || "",
-        entryDate: coach.entryDate || "",
-        exitDate: coach.exitDate || "",
-        nationality: coach.nationality || "Marocaine",
-        cin: coach.cin || "",
-        address: coach.address || "",
-        professionalId: coach.professionalId || "",
-        documents: (coach.documents || []).map((d: any) => ({
-            name: d.name || "",
-            url: d.url || "",
-            validityDate: d.validityDate || "",
-        })),
+        documents: coach.documents || [],
     };
   }, [coach]);
 
   const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues });
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   useEffect(() => { if (coach) form.reset(defaultValues); }, [coach, defaultValues, form]);
 
@@ -222,7 +208,7 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                   <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
                        {!photoDataUrl && hasCameraPermission ? <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                       : photoDataUrl ? <img src={photoDataUrl} className="w-full h-full object-contain absolute inset-0 p-1" />
-                      : <p className="text-muted-foreground p-4 text-center text-xs">Caméra non disponible.</p>}
+                      : <p className="text-muted-foreground p-4 text-center">Caméra non disponible.</p>}
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="grid grid-cols-2 gap-2">
@@ -272,8 +258,30 @@ export function AddCoachForm({ coach }: AddCoachFormProps) {
                    <FormField control={form.control} name="phone" render={({ field }) => (
                       <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                  <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Adresse</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
+                  )} />
               </div>
-              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase tracking-widest h-12 shadow-lg">
+              <Separator />
+              <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-bold uppercase tracking-tighter flex items-center gap-2"><FileText className="h-5 w-5" />Documents</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })}><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
+                  </div>
+                  {fields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-lg bg-slate-50 space-y-3 relative">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+                          <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
+                              <FormItem><FormLabel>Nom du document</FormLabel><FormControl><Input placeholder="Ex: Licence, CIN..." {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => (
+                              <FormItem><FormLabel>URL du document</FormLabel><FormControl><Input placeholder="Lien vers le fichier..." {...field} /></FormControl></FormItem>
+                          )} />
+                          <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Date de validité" field={field} />} />
+                      </div>
+                  ))}
+              </div>
+              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase h-14 shadow-lg active:scale-95 transition-transform">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter"}
               </Button>
           </div>

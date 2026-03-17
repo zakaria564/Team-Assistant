@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask, Shirt } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -89,22 +89,13 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            const canvas = await html2canvas(element, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: '#0f172a',
-                logging: false,
-                allowTaint: true
-            });
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0f172a', logging: false, allowTaint: true });
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`fiche_${player?.name?.replace(/ /g, "_")}.pdf`);
-        } catch (err) { 
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur PDF" }); 
-        }
+        } catch (err) { console.error(err); toast({ variant: "destructive", title: "Erreur PDF" }); }
         finally { setLoadingPdf(false); }
     }
   };
@@ -133,19 +124,11 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                     <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-10 w-12 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
-                                {clubLogoUrl ? (
-                                    <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" />
-                                ) : (
-                                    <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">
-                                        {clubInitial}
-                                    </div>
-                                )}
+                                {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">{clubInitial}</div>}
                             </div>
                             <div className="space-y-0.5">
                                 <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{clubName}</h1>
-                                <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]">
-                                    <p className="break-words">{clubAddress || "Siège Social"}</p>
-                                </div>
+                                <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]"><p className="break-words">{clubAddress || "Siège Social"}</p></div>
                             </div>
                         </div>
                         <div className="text-right space-y-0.5">
@@ -161,11 +144,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-1.5 shrink-0">
                                 <div className="h-16 w-16 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
-                                    {player.photoUrl ? (
-                                        <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" />
-                                    ) : (
-                                        <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>
-                                    )}
+                                    {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" /> : <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
                                 </div>
                                 <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
                                     <Fingerprint className="h-2 w-2 text-primary" />{displayId}
