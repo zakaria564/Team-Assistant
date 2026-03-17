@@ -23,6 +23,13 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const coachStatuses = ["Actif", "Inactif"] as const;
+
+const playerCategories = [
+    "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
+    "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
+    "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "U6", "U6 F", "Vétérans"
+];
+
 const coachSpecialties = [
   "Entraîneur Principal",
   "Entraîneur Adjoint",
@@ -182,18 +189,65 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Infos Club</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue placeholder="Sélectionner..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="specialty" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir une spécialité..." /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Spécialité</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue placeholder="Choisir une spécialité..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                       <FormField control={form.control} name="professionalId" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly disabled className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    {...field} 
+                                    readOnly 
+                                    disabled 
+                                    className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" 
+                                    placeholder="Généré automatiquement"
+                                />
+                            </FormControl>
+                        </FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -211,7 +265,19 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
-                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
+                          <FormItem>
+                              <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ''}>
+                                  <FormControl>
+                                      <SelectTrigger className="bg-background border-slate-200">
+                                          <SelectValue />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
                           <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
@@ -275,7 +341,7 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
                     {url && (
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button type="button" variant="secondary" size="icon" className="h-9 w-9 bg-slate-100 hover:bg-slate-200" title="Voir">
+                                <Button type="button" variant="secondary" size="icon" className="h-9 w-9 bg-slate-100" title="Voir">
                                     <Eye className="h-4 w-4 text-slate-700" />
                                 </Button>
                             </DialogTrigger>

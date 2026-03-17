@@ -22,6 +22,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 const eventTypes = ["Match de Championnat", "Match Amical", "Match de Coupe", "Tournoi", "Entraînement", "Stage", "Détection", "Réunion", "Événement Spécial"] as const;
 const eventStatuses = ["Prévu", "En cours", "Terminé", "Annulé", "Reporté"] as const;
 
+const playerCategories = [
+    "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
+    "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
+    "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "U6", "U6 F", "Vétérans"
+];
+
 const formSchema = z.object({
   type: z.enum(eventTypes, { required_error: "Le type est requis." }),
   category: z.string({ required_error: "La catégorie est requise." }),
@@ -32,8 +38,6 @@ const formSchema = z.object({
   teamHome: z.string().optional(),
   teamAway: z.string().optional(),
 });
-
-const playerCategories = ["Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "Vétérans"];
 
 export function AddEventForm({ event }: { event?: any }) {
     const [user] = useAuthState(auth);
@@ -92,29 +96,65 @@ export function AddEventForm({ event }: { event?: any }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="type" render={({ field }) => (
-                        <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{eventTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {eventTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                     )} />
                     <FormField control={form.control} name="status" render={({ field }) => (
-                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{eventStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel>Statut</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {eventStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                     )} />
                 </div>
                 <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                    <FormItem>
+                        <FormLabel>Catégorie</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectValue />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </FormItem>
                 )} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="date" render={({ field }) => (
                         <FormItem className="flex flex-col">
                             <FormLabel>Date</FormLabel>
                             <div className="flex gap-2">
-                                <FormControl><Input type="date" {...field} className="flex-1" /></FormControl>
-                                <Popover><PopoverTrigger asChild><Button variant="outline" size="icon"><CalendarIcon className="h-4 w-4" /></Button></PopoverTrigger>
+                                <FormControl><Input type="date" {...field} className="flex-1 bg-background border-slate-200" /></FormControl>
+                                <Popover><PopoverTrigger asChild><Button variant="outline" size="icon" className="bg-background border-slate-200"><CalendarIcon className="h-4 w-4" /></Button></PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="end"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(d) => d && field.onChange(format(d, "yyyy-MM-dd"))} initialFocus /></PopoverContent>
                                 </Popover>
                             </div>
                         </FormItem>
                     )} />
                     <FormField control={form.control} name="time" render={({ field }) => (
-                        <FormItem><FormLabel>Heure</FormLabel><FormControl><Input type="time" {...field} /></FormControl></FormItem>
+                        <FormItem><FormLabel>Heure</FormLabel><FormControl><Input type="time" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                     )} />
                 </div>
                 <Button type="submit" disabled={loading} className="w-full">{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}</Button>

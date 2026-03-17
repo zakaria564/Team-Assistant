@@ -23,7 +23,29 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
-const playerPositions = ["Gardien de but", "Défenseur Central", "Arrière Latéral", "Milieu Défensif", "Milieu Central", "Milieu Offensif", "Ailier", "Attaquant de pointe"];
+
+const playerCategories = [
+    "Seniors", "Seniors F", "U19", "U19 F", "U18", "U18 F", "U17", "U17 F", "U16", "U16 F", 
+    "U15", "U15 F", "U14", "U14 F", "U13", "U13 F", "U12", "U12 F", "U11", "U11 F", 
+    "U10", "U10 F", "U9", "U9 F", "U8", "U8 F", "U7", "U7 F", "U6", "U6 F", "Vétérans"
+];
+
+const playerPositions = [
+    "Gardien de but", 
+    "Défenseur Central", 
+    "Arrière Latéral", 
+    "Arrière Droit", 
+    "Arrière Gauche", 
+    "Milieu Défensif", 
+    "Milieu Central", 
+    "Milieu Offensif", 
+    "Ailier", 
+    "Ailier Droit", 
+    "Ailier Gauche", 
+    "Attaquant", 
+    "Attaquant de pointe", 
+    "Avant-centre"
+];
 
 const documentSchema = z.object({
   name: z.string().min(1, "Nom requis"),
@@ -67,10 +89,29 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
     <FormItem className="flex flex-col">
         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
         <div className="flex gap-2">
-            <FormControl><Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} onChange={(e) => field.onChange(formatDateInput(e.target.value))} className="flex-1 bg-background border-slate-200 font-medium" /></FormControl>
+            <FormControl>
+                <Input 
+                    placeholder="JJ/MM/AAAA" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(formatDateInput(e.target.value))} 
+                    className="flex-1 bg-background border-slate-200 font-medium" 
+                />
+            </FormControl>
             <Popover>
-                <PopoverTrigger asChild><Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background border-slate-200"><CalendarIcon className="h-4 w-4 text-primary" /></Button></PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end"><Calendar mode="single" selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined} onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))} initialFocus /></PopoverContent>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background border-slate-200">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar 
+                        mode="single" 
+                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined} 
+                        onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))} 
+                        initialFocus 
+                    />
+                </PopoverContent>
             </Popover>
         </div>
         <FormMessage />
@@ -146,7 +187,11 @@ export function AddPlayerForm({ player }: { player?: any }) {
     if (!user) return;
     setLoading(true);
     try {
-        const data = { ...values, userId: user.uid, professionalId: values.professionalId || `PL-${format(new Date(), "yyyyMM")}-${Math.random().toString(36).substring(2, 6).toUpperCase()}` };
+        const data = { 
+            ...values, 
+            userId: user.uid, 
+            professionalId: values.professionalId || `PL-${format(new Date(), "yyyyMM")}-${Math.random().toString(36).substring(2, 6).toUpperCase()}` 
+        };
         if (isEditMode) await updateDoc(doc(db, "players", player.id), data);
         else await addDoc(collection(db, "players"), { ...data, createdAt: new Date() });
         toast({ title: "Enregistré avec succès !" }); router.push("/dashboard/players");
@@ -169,7 +214,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                       <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Camera className="mr-2 h-4 w-4 text-primary"/>Prendre</Button>
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Upload className="mr-2 h-4 w-4 text-primary"/>Galerie</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer</Button>}
+                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
                   </div>
               </div>
 
@@ -177,10 +222,34 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Parcours Sportif</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue placeholder="Choisir..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                       <FormField control={form.control} name="position" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Poste Principal</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl><SelectContent>{playerPositions.map(pos => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Poste Principal</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue placeholder="Choisir..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerPositions.map(pos => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -188,7 +257,20 @@ export function AddPlayerForm({ player }: { player?: any }) {
                         <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="coachId" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">Aucun</SelectItem>{coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue placeholder="Choisir..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="none">Aucun</SelectItem>
+                                    {coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -197,10 +279,33 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <FormField control={form.control} name="status" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                     )} />
                     <FormField control={form.control} name="professionalId" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly disabled className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    {...field} 
+                                    readOnly 
+                                    disabled 
+                                    className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" 
+                                    placeholder="Généré automatiquement" 
+                                />
+                            </FormControl>
+                        </FormItem>
                     )} />
                   </div>
               </div>
@@ -215,12 +320,37 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="birthDate" render={({ field }) => <DateField label="Date de naissance" field={field} />} />
                       <FormField control={form.control} name="gender" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Genre</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Genre</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Masculin">Masculin</SelectItem>
+                                    <SelectItem value="Féminin">Féminin</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
-                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
+                          <FormItem>
+                              <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ''}>
+                                  <FormControl>
+                                      <SelectTrigger className="bg-background border-slate-200">
+                                          <SelectValue />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
                           <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
@@ -295,12 +425,23 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
             </div>
             <div className="flex gap-2">
                 <Button type="button" variant="outline" className={cn("flex-1 h-9 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background border-slate-200")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                    {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-3.5 w-3.5" />Chargé</> : <><Upload className="mr-2 h-3.5 w-3.5 text-primary" />Fichier</>}
+                    {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-3.5 w-3.5" />Chargé</> : <><Upload className="mr-2 h-3.5 w-3.5 text-primary" />Choisir fichier</>}
                 </Button>
                 {url && (
                     <Dialog>
-                        <DialogTrigger asChild><Button type="button" variant="secondary" size="icon" className="h-9 w-9 bg-slate-100"><Eye className="h-4 w-4 text-slate-700" /></Button></DialogTrigger>
-                        <DialogContent className="max-w-3xl"><DialogHeader><DialogTitle>Aperçu</DialogTitle></DialogHeader><div className="mt-4 flex justify-center bg-slate-50 rounded-xl overflow-hidden border"><img src={url} alt="Doc" className="max-w-full h-auto max-h-[70vh] object-contain" /></div></DialogContent>
+                        <DialogTrigger asChild>
+                            <Button type="button" variant="secondary" size="icon" className="h-9 w-9 bg-slate-100" title="Voir">
+                                <Eye className="h-4 w-4 text-slate-700" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl">
+                            <DialogHeader>
+                                <DialogTitle>Aperçu du document</DialogTitle>
+                            </DialogHeader>
+                            <div className="mt-4 flex justify-center bg-slate-50 rounded-xl overflow-hidden border">
+                                <img src={url} alt="Doc" className="max-w-full h-auto max-h-[70vh] object-contain" />
+                            </div>
+                        </DialogContent>
                     </Dialog>
                 )}
             </div>
