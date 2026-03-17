@@ -9,18 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { Loader2, AlertCircle, ShieldCheck, Calendar as CalendarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { Separator } from "../ui/separator";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Badge } from "../ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 interface Coach {
   id: string;
@@ -42,6 +42,44 @@ interface AddSalaryFormProps {
 
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Virement", "Chèque"];
+
+const formatDateInput = (value: string) => {
+  const numbers = value.replace(/\D/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+};
+
+const DateField = ({ label, field }: { label: string, field: any }) => (
+    <FormItem className="flex flex-col">
+        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
+        <div className="flex gap-2">
+            <FormControl>
+                <Input 
+                    placeholder="JJ/MM/AAAA" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(formatDateInput(e.target.value))}
+                    className="flex-1 bg-background border-slate-200 font-medium" 
+                />
+            </FormControl>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background border-slate-200"><CalendarIcon className="h-4 w-4 text-primary" /></Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                        mode="single"
+                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined}
+                        onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))}
+                        initialFocus
+                    />
+                </PopoverContent>
+            </Popover>
+        </div>
+        <FormMessage />
+    </FormItem>
+);
 
 export function AddSalaryForm({ salary }: AddSalaryFormProps) {
     const [user] = useAuthState(auth);
@@ -189,9 +227,9 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="coachId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Entraîneur</FormLabel>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || loadingCoaches}>
-                                <FormControl><SelectTrigger><SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach"} /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach"} /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     {coaches.length > 0 ? (
                                         coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
@@ -209,8 +247,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Description (Période)</FormLabel>
-                            <FormControl><Input {...field} value={field.value ?? ""} /></FormControl>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Description (Période)</FormLabel>
+                            <FormControl><Input {...field} value={field.value ?? ""} className="bg-background border-slate-200" /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -220,8 +258,8 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="totalAmount"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Salaire Total Fixé (MAD)</FormLabel>
-                            <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg" /></FormControl>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Salaire Total Fixé (MAD)</FormLabel>
+                            <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -259,7 +297,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                                 {...field} 
                                                 value={field.value ?? ""} 
                                                 placeholder={`Maximum ${remaining.toFixed(2)} MAD`} 
-                                                className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm"
+                                                className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -273,7 +311,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                                     <FormItem>
                                         <FormLabel className="font-black text-[10px] uppercase text-slate-500">Méthode de règlement</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl><SelectTrigger className="h-12 font-bold shadow-sm"><SelectValue /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger className="h-12 font-bold shadow-sm bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl>
                                             <SelectContent>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </FormItem>
@@ -305,7 +343,7 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                         <FormItem>
                             <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger className="bg-slate-50 font-black tracking-widest text-xs h-10"><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10"><SelectValue placeholder="Choisir le statut..." /></SelectTrigger></FormControl>
                                 <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         </FormItem>
