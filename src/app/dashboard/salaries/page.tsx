@@ -212,9 +212,9 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="font-black text-lg md:text-xl uppercase tracking-tighter text-slate-900 leading-none mb-1">{group.coachName}</p>
+                  <p className="font-bold text-base uppercase tracking-widest text-muted-foreground leading-none mb-1">{group.coachName}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">{group.salaries.length} fiche(s)</p>
+                    <p className="text-sm text-slate-900 font-black uppercase tracking-tighter">{group.salaries.length} fiche(s)</p>
                     {group.hasPending && <Badge variant="destructive" className="text-[9px] px-1.5 h-4 font-black uppercase tracking-tighter">Solde dû</Badge>}
                   </div>
                 </div>
