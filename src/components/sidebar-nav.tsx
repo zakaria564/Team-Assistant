@@ -30,41 +30,22 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
-    // Alerte Paiements Joueurs : Compte les joueurs qui ont un reste à payer OU aucun dossier
-    const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("status", "==", "Actif")), (playerSnap) => {
-        const activePlayerIds = new Set(playerSnap.docs.map(d => d.id));
-        
-        const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
-            const playersWithPaymentRecord = new Set();
-            const playersWithDebt = new Set();
-
-            paySnap.docs.forEach(doc => {
-                const data = doc.data();
-                if (!activePlayerIds.has(data.playerId)) return;
-                
-                playersWithPaymentRecord.add(data.playerId);
-
-                const transactions = data.transactions || [];
-                const total = data.totalAmount || 0;
-                const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
-                
-                if (total - paid > 0.01) {
-                    playersWithDebt.add(data.playerId);
-                }
-            });
-
-            // Ajouter ceux qui n'ont AUCUN dossier
-            activePlayerIds.forEach(id => {
-                if (!playersWithPaymentRecord.has(id)) {
-                    playersWithDebt.add(id);
-                }
-            });
-
-            setPendingPaymentsCount(playersWithDebt.size);
+    // Alerte Paiements Joueurs : Compte uniquement les dossiers avec un reste à payer réel
+    const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+        const playersWithDebt = new Set();
+        paySnap.docs.forEach(doc => {
+            const data = doc.data();
+            const transactions = data.transactions || [];
+            const total = data.totalAmount || 0;
+            const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
+            
+            if (total - paid > 0.01) {
+                playersWithDebt.add(data.playerId);
+            }
         });
-        return () => unsubscribePayments();
+        setPendingPaymentsCount(playersWithDebt.size);
     });
-    return () => unsubscribePlayers();
+    return () => unsubscribePayments();
   }, [user]);
 
   useEffect(() => {
@@ -79,7 +60,7 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
             const total = data.totalAmount || 0;
             const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
             
-            if (data.status !== 'Payé' || (total - paid > 0.01)) {
+            if (total - paid > 0.01) {
                 coachesWithDebt.add(data.coachId);
             }
         });

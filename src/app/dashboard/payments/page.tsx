@@ -4,10 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
+import { collection, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -170,7 +170,7 @@ export default function PaymentsPage() {
             playerGender: player.gender || 'Masculin',
             payments: [],
             currentMonthStatus: 'N/A',
-            hasPending: player.status === 'Actif' // Un nouveau joueur actif est considéré comme ayant une cotisation à régler
+            hasPending: false
         };
     });
 
@@ -199,7 +199,7 @@ export default function PaymentsPage() {
     }
 
     if (showOnlyPending) {
-        result = result.filter(playerGroup => playerGroup.hasPending);
+        result = result.filter(playerGroup => playerGroup.hasPending || playerGroup.payments.length === 0);
     }
 
     return result.sort((a, b) => a.playerName.localeCompare(b.playerName));
@@ -220,7 +220,7 @@ export default function PaymentsPage() {
   }, [groupedAndFilteredPayments]);
 
   const pendingCount = useMemo(() => {
-      return groupedAndFilteredPayments.filter(p => p.hasPending).length;
+      return groupedAndFilteredPayments.filter(p => p.hasPending || p.payments.length === 0).length;
   }, [groupedAndFilteredPayments]);
 
   const confirmDeletePayment = async () => {
@@ -287,18 +287,9 @@ export default function PaymentsPage() {
                             <Avatar className="relative h-12 w-12 border-2 border-slate-100">
                               <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
                               <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
-                              {playerGroup.hasPending && (
-                                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                      <AlertCircle className="relative inline-flex h-4 w-4 text-red-600 fill-white" />
-                                  </span>
-                              )}
                           </Avatar>
                           <div className="flex flex-col text-left">
-                              <div className="flex items-center gap-2">
-                                  <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
-                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1 font-black uppercase">Retard</Badge>}
-                              </div>
+                              <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
                               <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase font-bold">{playerGroup.payments.length} dossier(s)</Badge>
                           </div>
                       </div>
@@ -326,7 +317,7 @@ export default function PaymentsPage() {
                           </TableHeader>
                           <TableBody>
                               {playerGroup.payments.length > 0 ? playerGroup.payments.map((payment) => (
-                                  <TableRow key={payment.id} className={cn(payment.status !== 'Payé' ? "bg-destructive/5" : "")}>
+                                  <TableRow key={payment.id}>
                                       <TableCell>
                                           <div className="flex flex-col">
                                               <span className="font-bold text-xs sm:text-sm">{payment.description}</span>
@@ -409,7 +400,7 @@ export default function PaymentsPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
               <h1 className="text-3xl font-black uppercase tracking-tighter italic">Suivi des Cotisations</h1>
-              <p className="text-muted-foreground font-medium">Gérez les paiements mensuels et les impayés de vos joueurs.</p>
+              <p className="text-muted-foreground font-medium">Gérez les paiements mensuels de vos joueurs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" className="w-1/2 md:w-auto font-bold h-11" onClick={handleExport}>
@@ -422,20 +413,6 @@ export default function PaymentsPage() {
               </Button>
           </div>
         </div>
-
-        {pendingCount > 0 && (
-            <Card className="bg-destructive/5 border-destructive/20 shadow-sm">
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="bg-destructive/10 p-2 rounded-full">
-                        <AlertCircle className="h-6 w-6 text-destructive" />
-                    </div>
-                    <div>
-                        <p className="font-black text-destructive uppercase text-xs tracking-tight">{pendingCount} joueur(s) en attente de régularisation.</p>
-                        <p className="text-[10px] text-muted-foreground font-bold uppercase">Filtrez par "retards" pour les contacter rapidement.</p>
-                    </div>
-                </CardContent>
-            </Card>
-        )}
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:max-w-sm">
@@ -454,8 +431,7 @@ export default function PaymentsPage() {
                     onCheckedChange={(checked) => setShowShowOnlyPending(checked === true)}
                 />
                 <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-black uppercase text-[10px] tracking-widest">
-                    <Filter className="h-4 w-4 text-primary" />
-                    Afficher les retards uniquement
+                    Afficher les paiements incomplets
                 </Label>
             </div>
         </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -6,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight, AlertCircle, Fingerprint } from "lucide-react";
+import { PlusCircle, Loader2, MoreHorizontal, Trash2, Search, Pencil, FileText, ChevronDown, ChevronRight, Fingerprint } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { collection, getDocs, query, doc, updateDoc, where, deleteDoc, onSnapshot } from "firebase/firestore";
@@ -107,23 +106,12 @@ const PlayerCategoryGroup = ({ category, players, onUpdateStatus, onDeletePlayer
                                 <TableRow key={player.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
-                                            <div className="relative">
-                                                <Avatar>
-                                                    <AvatarImage src={player.photoUrl} alt={player.name} />
-                                                    <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                {player.hasPendingPayment && (
-                                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                        <AlertCircle className="relative inline-flex h-3 w-3 text-red-600 fill-white" />
-                                                    </span>
-                                                )}
-                                            </div>
+                                            <Avatar>
+                                                <AvatarImage src={player.photoUrl} alt={player.name} />
+                                                <AvatarFallback>{player.name?.charAt(0)}</AvatarFallback>
+                                            </Avatar>
                                             <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-medium">{toTitleCase(player.name)}</span>
-                                                    {player.hasPendingPayment && <Badge variant="destructive" className="text-[10px] h-4 px-1">Impayé</Badge>}
-                                                </div>
+                                                <span className="font-medium">{toTitleCase(player.name)}</span>
                                                 <span className="text-muted-foreground text-xs font-mono sm:hidden">{player.professionalId || "N/A"}</span>
                                             </div>
                                         </div>
@@ -185,32 +173,9 @@ export default function PlayersPage() {
     const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
     
     const unsubscribePlayers = onSnapshot(playersQuery, (playersSnapshot) => {
-        const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
-        
-        const paymentsQuery = query(
-            collection(db, "payments"), 
-            where("userId", "==", user.uid)
-        );
-
-        const unsubscribePayments = onSnapshot(paymentsQuery, (paymentsSnapshot) => {
-            const pendingPlayerIds = new Set();
-            paymentsSnapshot.docs.forEach(doc => {
-                const p = doc.data();
-                if (p.status !== "Payé") {
-                    pendingPlayerIds.add(p.playerId);
-                }
-            });
-
-            const enrichedPlayers = playersData.map(p => ({
-                ...p,
-                hasPendingPayment: pendingPlayerIds.has(p.id)
-            }));
-
-            setPlayers(enrichedPlayers);
-            setLoading(false);
-        });
-
-        return () => unsubscribePayments();
+        const enrichedPlayers = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+        setPlayers(enrichedPlayers);
+        setLoading(false);
     });
 
     return () => unsubscribePlayers();
@@ -253,17 +218,13 @@ export default function PlayersPage() {
   const confirmDeletePlayer = async () => {
     if (!playerToDelete) return;
     try {
-      // 1. Supprimer le joueur
       await deleteDoc(doc(db, "players", playerToDelete.id));
-      
-      // 2. Nettoyer les paiements associés pour éviter les badges fantômes
       const paymentsQuery = query(collection(db, "payments"), where("playerId", "==", playerToDelete.id));
       const paymentsSnapshot = await getDocs(paymentsQuery);
       const deletePromises = paymentsSnapshot.docs.map(d => deleteDoc(d.ref));
       await Promise.all(deletePromises);
-
-      toast({ title: "Joueur et ses paiements supprimés définitivement" });
-    } catch (e) { toast({ variant: "destructive", title: "Erreur lors de la suppression" }); }
+      toast({ title: "Joueur supprimé" });
+    } catch (e) { toast({ variant: "destructive", title: "Erreur" }); }
     finally { setPlayerToDelete(null); }
   };
 
@@ -299,7 +260,7 @@ export default function PlayersPage() {
 
       <AlertDialog open={!!playerToDelete} onOpenChange={() => setPlayerToDelete(null)}>
           <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible. Le joueur et tout son historique de paiement seront effacés.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
                 <AlertDialogAction onClick={confirmDeletePlayer} className="bg-destructive hover:bg-destructive/90">Supprimer</AlertDialogAction>
