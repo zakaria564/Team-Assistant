@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, AlertCircle, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { collection, getDocs, query, doc, where, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -38,7 +38,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-
 
 interface Player {
     id: string;
@@ -90,10 +89,10 @@ const getBadgeClass = (status?: PaymentStatus | 'N/A') => {
     }
 };
 
-
 export default function PaymentsPage() {
   const [user, loadingUser] = useAuthState(auth);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,75 +100,62 @@ export default function PaymentsPage() {
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
 
-  const fetchPayments = async () => {
-      if (!user) {
-          if (!loadingUser) setLoading(false);
-          return;
-      }
-    setLoading(true);
-    try {
-      const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-      const playersSnapshot = await getDocs(playersQuery);
-      const playersMap = new Map<string, Player>();
-      playersSnapshot.forEach(doc => {
-          playersMap.set(doc.id, { id: doc.id, ...doc.data() } as Player);
-      });
-
-      const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
-      const paymentsSnapshot = await getDocs(paymentsQuery);
-      const paymentsData = paymentsSnapshot.docs
-          .map(doc => {
-              const data = doc.data() as any;
-              const player = playersMap.get(data.playerId);
-              
-              if (!player) return null;
-
-              const transactions = data.transactions || [];
-              const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-              const totalAmount = data.totalAmount || 0;
-              const amountRemaining = totalAmount - amountPaid;
-              
-              let calculatedStatus: PaymentStatus = data.status;
-              if (amountRemaining <= 0.01) {
-                calculatedStatus = 'Payé';
-              } else if (amountPaid > 0) {
-                calculatedStatus = 'Partiel';
-              } else {
-                calculatedStatus = 'En attente';
-              }
-
-              return { 
-                  id: doc.id, 
-                  ...data,
-                  playerName: player.name,
-                  playerPhotoUrl: player.photoUrl,
-                  playerGender: player.gender || 'Masculin',
-                  amountPaid,
-                  amountRemaining,
-                  totalAmount,
-                  transactions,
-                  status: calculatedStatus
-              } as Payment;
-          })
-          .filter((p): p is Payment => p !== null);
-      
-      const sortedPayments = paymentsData.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-      setPayments(sortedPayments);
-
-    } catch (error: any) {
-      console.error("Error fetching payments: ", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de chargement",
-        description: "Impossible de charger les paiements.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPayments();
+    if (!user) {
+        if (!loadingUser) setLoading(false);
+        return;
+    }
+    setLoading(true);
+    
+    // Fetch all players to ensure even those without payments show up
+    const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
+    const unsubscribePlayers = onSnapshot(playersQuery, (playersSnapshot) => {
+        const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+        setPlayers(playersData);
+
+        // Fetch all payments
+        const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
+        const unsubscribePayments = onSnapshot(paymentsQuery, (paymentsSnapshot) => {
+            const paymentsData = paymentsSnapshot.docs.map(doc => {
+                const data = doc.data() as any;
+                const player = playersData.find(p => p.id === data.playerId);
+                
+                const transactions = data.transactions || [];
+                const amountPaid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
+                const totalAmount = data.totalAmount || 0;
+                const amountRemaining = totalAmount - amountPaid;
+                
+                let calculatedStatus: PaymentStatus = data.status;
+                if (amountRemaining <= 0.01 && totalAmount > 0) {
+                    calculatedStatus = 'Payé';
+                } else if (amountPaid > 0) {
+                    calculatedStatus = 'Partiel';
+                } else {
+                    calculatedStatus = 'En attente';
+                }
+
+                return { 
+                    id: doc.id, 
+                    ...data,
+                    playerName: player?.name || "Inconnu",
+                    playerPhotoUrl: player?.photoUrl,
+                    playerGender: player?.gender || 'Masculin',
+                    amountPaid,
+                    amountRemaining,
+                    totalAmount,
+                    transactions,
+                    status: calculatedStatus
+                } as Payment;
+            });
+            
+            setPayments(paymentsData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+            setLoading(false);
+        });
+
+        return () => unsubscribePayments();
+    });
+
+    return () => unsubscribePlayers();
   }, [user, loadingUser]);
 
   const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
@@ -177,27 +163,32 @@ export default function PaymentsPage() {
     const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
 
-    payments.forEach(payment => {
-        if (!grouped[payment.playerId]) {
-            grouped[payment.playerId] = {
-                playerId: payment.playerId,
-                playerName: payment.playerName || "Joueur inconnu",
-                playerPhotoUrl: payment.playerPhotoUrl,
-                playerGender: payment.playerGender || 'Masculin',
-                payments: [],
-                currentMonthStatus: 'N/A',
-                hasPending: false
-            };
-        }
-        grouped[payment.playerId].payments.push(payment);
-        
-        if (payment.status !== 'Payé') {
-            grouped[payment.playerId].hasPending = true;
-        }
+    // Initialiser avec tous les joueurs
+    players.forEach(player => {
+        grouped[player.id] = {
+            playerId: player.id,
+            playerName: player.name,
+            playerPhotoUrl: player.photoUrl,
+            playerGender: player.gender || 'Masculin',
+            payments: [],
+            currentMonthStatus: 'N/A',
+            hasPending: false
+        };
+    });
 
-        const normalizedPaymentDesc = normalizeString(payment.description);
-        if(normalizedPaymentDesc === normalizedCurrentMonthDesc) {
-            grouped[payment.playerId].currentMonthStatus = payment.status;
+    // Remplir avec les paiements
+    payments.forEach(payment => {
+        if (grouped[payment.playerId]) {
+            grouped[payment.playerId].payments.push(payment);
+            
+            if (payment.status !== 'Payé') {
+                grouped[payment.playerId].hasPending = true;
+            }
+
+            const normalizedPaymentDesc = normalizeString(payment.description);
+            if(normalizedPaymentDesc === normalizedCurrentMonthDesc) {
+                grouped[payment.playerId].currentMonthStatus = payment.status;
+            }
         }
     });
 
@@ -216,7 +207,7 @@ export default function PaymentsPage() {
 
     return result.sort((a, b) => a.playerName.localeCompare(b.playerName));
 
-  }, [payments, searchTerm, showOnlyPending]);
+  }, [payments, players, searchTerm, showOnlyPending]);
 
   const { malePayments, femalePayments } = useMemo(() => {
     const male: PlayerPayments[] = [];
@@ -236,23 +227,13 @@ export default function PaymentsPage() {
       return uniquePlayersWithPending.size;
   }, [payments]);
 
-
   const confirmDeletePayment = async () => {
     if(!paymentToDelete) return;
     try {
       await deleteDoc(doc(db, "payments", paymentToDelete.id));
-      setPayments(payments.filter(p => p.id !== paymentToDelete.id));
-      toast({
-        title: "Paiement supprimé",
-        description: `Le paiement a été définitivement supprimé.`,
-      });
+      toast({ title: "Paiement supprimé" });
     } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le paiement.",
-      });
-      console.error("Error deleting payment: ", error);
+      toast({ variant: "destructive", title: "Erreur" });
     } finally {
         setPaymentToDelete(null);
     }
@@ -270,31 +251,28 @@ export default function PaymentsPage() {
         p.amountPaid.toFixed(2),
         p.amountRemaining.toFixed(2),
         p.status,
-        format(new Date(p.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr })
+        p.createdAt ? format(new Date(p.createdAt.seconds * 1000), "yyyy-MM-dd HH:mm", { locale: fr }) : 'N/A'
       ].join(';');
       return row;
     }).join('\n');
 
     const csvString = `${csvHeader}${csvRows}`;
     const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' });
-
     const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `export_paiements_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `export_paiements_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const renderPaymentGroups = (groups: PlayerPayments[]) => {
      if (groups.length === 0) {
         return (
-            <div className="text-center text-muted-foreground py-10">
-                {searchTerm || showOnlyPending ? "Aucun joueur ne correspond à vos critères." : "Aucun paiement trouvé."}
+            <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-xl bg-slate-50/50">
+                {searchTerm || showOnlyPending ? "Aucun joueur ne correspond à vos critères." : "Aucun joueur dans cette catégorie."}
             </div>
         )
     }
@@ -310,9 +288,9 @@ export default function PaymentsPage() {
               >
                   <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                            <Avatar className="relative">
+                            <Avatar className="relative h-12 w-12 border-2 border-slate-100">
                               <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
-                              <AvatarFallback>{playerGroup.playerName?.charAt(0)}</AvatarFallback>
+                              <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
                               {playerGroup.hasPending && (
                                   <span className="absolute -top-1 -right-1 flex h-4 w-4">
                                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -322,92 +300,94 @@ export default function PaymentsPage() {
                           </Avatar>
                           <div className="flex flex-col text-left">
                               <div className="flex items-center gap-2">
-                                  <span className="font-bold text-base">{playerGroup.playerName}</span>
-                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1">Retard</Badge>}
+                                  <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
+                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1 font-black uppercase">Retard</Badge>}
                               </div>
-                              <Badge variant="secondary" className="w-fit mt-1">{playerGroup.payments.length} versement(s)</Badge>
+                              <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase font-bold">{playerGroup.payments.length} dossier(s)</Badge>
                           </div>
                       </div>
                       <div className="flex items-center gap-4">
                             <div className="hidden sm:flex flex-col items-end mr-2">
-                                <span className="text-xs text-muted-foreground uppercase font-bold">État actuel</span>
-                                <Badge className={cn("whitespace-nowrap mt-0.5", getBadgeClass(playerGroup.currentMonthStatus))}>
+                                <span className="text-[8px] text-muted-foreground uppercase font-black tracking-widest">Mois en cours</span>
+                                <Badge className={cn("whitespace-nowrap mt-0.5 text-[10px] font-bold uppercase", getBadgeClass(playerGroup.currentMonthStatus))}>
                                   {playerGroup.currentMonthStatus}
                                 </Badge>
                             </div>
-                            {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                            {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5 text-slate-400" /> : <ChevronRight className="h-5 w-5 text-slate-400" />}
                       </div>
                   </CollapsibleTrigger>
-                  <CollapsibleContent>
+                  <CollapsibleContent className="border-t bg-slate-50/30">
                       <div className="w-full overflow-x-auto p-2">
                       <Table>
                           <TableHeader>
                               <TableRow>
-                              <TableHead>Description</TableHead>
-                              <TableHead className="hidden md:table-cell">Versé / Total</TableHead>
-                              <TableHead className="hidden sm:table-cell">Statut</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
+                              <TableHead className="font-bold">Description</TableHead>
+                              <TableHead className="hidden md:table-cell font-bold">Total</TableHead>
+                              <TableHead className="font-bold">Payé</TableHead>
+                              <TableHead className="hidden sm:table-cell font-bold">Statut</TableHead>
+                              <TableHead className="text-right font-bold pr-4">Actions</TableHead>
                               </TableRow>
                           </TableHeader>
                           <TableBody>
-                              {playerGroup.payments.map((payment) => {
-                                  return (
-                                      <TableRow key={payment.id} className={cn(payment.status !== 'Payé' ? "bg-destructive/5" : "")}>
-                                          <TableCell>
-                                              <div className="flex flex-col">
-                                                  <span className="font-medium">{payment.description}</span>
-                                                  <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
-                                              </div>
-                                          </TableCell>
-                                          <TableCell className="hidden md:table-cell font-mono">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
-                                          <TableCell className="hidden sm:table-cell">
-                                              <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
-                                                  {payment.status}
-                                              </Badge>
-                                          </TableCell>
-                                          <TableCell className="text-right">
-                                              <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                                      <MoreHorizontal className="h-4 w-4" />
-                                                  </Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                                      <Link href={`/dashboard/payments/${payment.id}`}>
-                                                          <FileText className="mr-2 h-4 w-4" />
-                                                          Voir les détails
-                                                      </Link>
+                              {playerGroup.payments.length > 0 ? playerGroup.payments.map((payment) => (
+                                  <TableRow key={payment.id} className={cn(payment.status !== 'Payé' ? "bg-destructive/5" : "")}>
+                                      <TableCell>
+                                          <div className="flex flex-col">
+                                              <span className="font-bold text-xs sm:text-sm">{payment.description}</span>
+                                              <span className="text-muted-foreground text-[10px] md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
+                                          </div>
+                                      </TableCell>
+                                      <TableCell className="hidden md:table-cell font-mono text-xs">{payment.totalAmount.toFixed(2)} MAD</TableCell>
+                                      <TableCell className="font-black text-green-600 text-xs">{payment.amountPaid.toFixed(2)} MAD</TableCell>
+                                      <TableCell className="hidden sm:table-cell">
+                                          <Badge className={cn("whitespace-nowrap text-[10px] font-bold uppercase", getBadgeClass(payment.status))}>
+                                              {payment.status}
+                                          </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-right pr-4">
+                                          <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white shadow-sm border">
+                                                  <MoreHorizontal className="h-4 w-4" />
+                                              </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end" className="w-56 p-2">
+                                              <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Actions</DropdownMenuLabel>
+                                              <Link href={`/dashboard/payments/${payment.id}`} passHref>
+                                                  <DropdownMenuItem className="cursor-pointer py-2.5">
+                                                      <FileText className="mr-3 h-4 w-4 text-primary" /> Détails complets
                                                   </DropdownMenuItem>
-                                                  {payment.status !== 'Payé' && (
-                                                      <DropdownMenuItem asChild className="cursor-pointer">
-                                                          <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                              <PlusCircle className="mr-2 h-4 w-4" />
-                                                              Enregistrer versement
-                                                          </Link>
+                                              </Link>
+                                              {payment.status !== 'Payé' && (
+                                                  <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
+                                                      <DropdownMenuItem className="cursor-pointer py-2.5 text-primary bg-primary/5 font-black">
+                                                          <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
                                                       </DropdownMenuItem>
-                                                  )}
-                                                  <DropdownMenuItem asChild className="cursor-pointer">
-                                                      <Link href={`/dashboard/payments/${payment.id}/receipt`}>
-                                                          <Download className="mr-2 h-4 w-4" />
-                                                          Exporter le reçu
-                                                      </Link>
+                                                  </Link>
+                                              )}
+                                              <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>
+                                                  <DropdownMenuItem className="cursor-pointer py-2.5">
+                                                      <Download className="mr-3 h-4 w-4" /> Exporter le reçu
                                                   </DropdownMenuItem>
-                                                  <DropdownMenuSeparator />
-                                                  <DropdownMenuItem
-                                                      className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                      onSelect={(e) => { e.preventDefault(); setPaymentToDelete(payment); }}
-                                                    >
-                                                      <Trash2 className="mr-2 h-4 w-4" />
-                                                      Supprimer définitivement
-                                                  </DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                              </DropdownMenu>
-                                          </TableCell>
-                                      </TableRow>
-                                  )
-                              })}
+                                              </Link>
+                                              <DropdownMenuSeparator />
+                                              <DropdownMenuItem
+                                                  className="cursor-pointer text-destructive focus:bg-destructive/10 font-bold"
+                                                  onSelect={() => setPaymentToDelete(payment)}
+                                                >
+                                                  <Trash2 className="mr-3 h-4 w-4" /> Supprimer définitivement
+                                              </DropdownMenuItem>
+                                              </DropdownMenuContent>
+                                          </DropdownMenu>
+                                      </TableCell>
+                                  </TableRow>
+                              )) : (
+                                  <TableRow>
+                                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground text-xs italic">
+                                          Aucun dossier de paiement ouvert pour ce joueur.
+                                      </TableCell>
+                                  </TableRow>
+                              )}
                           </TableBody>
                           </Table>
                       </div>
@@ -423,18 +403,16 @@ export default function PaymentsPage() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-              <h1 className="text-3xl font-bold tracking-tight">Suivi des Cotisations</h1>
-              <p className="text-muted-foreground">Gérez les paiements mensuels et les impayés de vos joueurs.</p>
+              <h1 className="text-3xl font-black uppercase tracking-tighter italic">Suivi des Cotisations</h1>
+              <p className="text-muted-foreground font-medium">Gérez les paiements mensuels et les impayés de vos joueurs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
-              <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter
+              <Button variant="outline" className="w-1/2 md:w-auto font-bold h-11" onClick={handleExport}>
+                  <Download className="mr-2 h-4 w-4" /> Exporter
               </Button>
-              <Button asChild className="w-1/2 md:w-auto">
+              <Button asChild className="w-1/2 md:w-auto font-black uppercase tracking-widest h-11 shadow-lg">
                 <Link href="/dashboard/payments/add">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nouveau Dossier
+                  <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
                 </Link>
               </Button>
           </div>
@@ -447,8 +425,8 @@ export default function PaymentsPage() {
                         <AlertCircle className="h-6 w-6 text-destructive" />
                     </div>
                     <div>
-                        <p className="font-bold text-destructive">{pendingCount} joueur(s) en attente de régularisation.</p>
-                        <p className="text-sm text-muted-foreground">Filtrez par "retards" pour les contacter rapidement.</p>
+                        <p className="font-black text-destructive uppercase text-xs tracking-tight">{pendingCount} joueur(s) en attente de régularisation.</p>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase">Filtrez par "retards" pour les contacter rapidement.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -459,52 +437,47 @@ export default function PaymentsPage() {
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                     placeholder="Rechercher un joueur..."
-                    className="pl-10 h-11"
+                    className="pl-10 h-12 bg-background shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <div className="flex items-center space-x-2 bg-muted/50 p-2 px-4 rounded-md border w-full md:w-auto justify-center">
+            <div className="flex items-center space-x-2 bg-muted/50 p-2 px-4 rounded-xl border w-full md:w-auto justify-center h-12">
                 <Checkbox 
                     id="pending-filter" 
                     checked={showOnlyPending} 
                     onCheckedChange={(checked) => setShowShowOnlyPending(checked === true)}
                 />
-                <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-black uppercase text-[10px] tracking-widest">
                     <Filter className="h-4 w-4 text-primary" />
                     Afficher les retards uniquement
                 </Label>
             </div>
         </div>
 
-
-        <Card className="shadow-lg">
-          <CardHeader className="border-b bg-slate-50/50">
-            <CardTitle>Historique Groupé</CardTitle>
-            <CardDescription>Liste complète des cotisations par joueur et par genre.</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
+        <Card className="shadow-xl border-none">
+          <CardContent className="p-0 sm:p-6 pt-6">
             {loading || loadingUser ? (
-              <div className="flex justify-center items-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
               </div>
             ) : groupedAndFilteredPayments.length > 0 ? (
                  <Tabs defaultValue="male">
-                    <TabsList className="grid w-full grid-cols-2 h-12 mb-6">
-                        <TabsTrigger value="male" className="font-bold">Masculin ({malePayments.length})</TabsTrigger>
-                        <TabsTrigger value="female" className="font-bold">Féminin ({femalePayments.length})</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-14 mb-6 bg-muted/50 p-1 rounded-xl">
+                        <TabsTrigger value="male" className="font-black uppercase text-[10px] tracking-widest">Masculin ({malePayments.length})</TabsTrigger>
+                        <TabsTrigger value="female" className="font-black uppercase text-[10px] tracking-widest">Féminin ({femalePayments.length})</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="male" className="mt-0">
+                    <TabsContent value="male" className="mt-0 outline-none">
                         {renderPaymentGroups(malePayments)}
                     </TabsContent>
-                    <TabsContent value="female" className="mt-0">
+                    <TabsContent value="female" className="mt-0 outline-none">
                         {renderPaymentGroups(femalePayments)}
                     </TabsContent>
                 </Tabs>
             ) : (
-                <div className="text-center text-muted-foreground py-16 bg-slate-50 rounded-xl border-2 border-dashed">
-                    <p className="text-lg font-bold">Aucun résultat</p>
-                    <p className="text-sm">Vérifiez vos filtres ou ajoutez une nouvelle cotisation.</p>
+                <div className="text-center text-muted-foreground py-24 bg-slate-50/50 rounded-2xl border-2 border-dashed mx-4">
+                    <p className="text-lg font-black uppercase tracking-tighter italic">Aucun résultat</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Vérifiez vos filtres ou ajoutez un joueur.</p>
                 </div>
             )}
           </CardContent>
@@ -512,18 +485,18 @@ export default function PaymentsPage() {
       </div>
 
       <AlertDialog open={!!paymentToDelete} onOpenChange={(isOpen) => !isOpen && setPaymentToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
-              <AlertDialogDescription>
-              Cette action est irréversible. L'historique des transactions liées à "{paymentToDelete?.description}" sera effacé.
+              <AlertDialogTitle className="font-black text-xl">Supprimer définitivement ?</AlertDialogTitle>
+              <AlertDialogDescription className="font-medium text-slate-600">
+              Cette action supprimera tout l'historique des transactions pour ce dossier spécifique.
               </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+              <AlertDialogCancel className="rounded-xl font-bold">Annuler</AlertDialogCancel>
               <AlertDialogAction 
               onClick={confirmDeletePayment}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold"
+              className="bg-destructive hover:bg-destructive/90 text-white font-black uppercase tracking-widest rounded-xl"
               >
               Confirmer la suppression
               </AlertDialogAction>

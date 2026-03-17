@@ -131,17 +131,16 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
     const watchTotal = form.watch("totalAmount");
     const watchNewAmount = form.watch("newTransactionAmount");
 
-    // NEW PRECISION CALCULATION LOGIC
     useEffect(() => {
         const total = parseFloat(watchTotal?.toString() || "0");
-        const newValue = parseFloat(watchNewAmount?.toString() || "0");
+        const newVal = parseFloat(watchNewAmount || "0");
         
         if (total <= 0) return;
 
-        const totalSettled = amountAlreadyPaid + newValue;
-        const diff = total - totalSettled;
+        const totalSettled = amountAlreadyPaid + newVal;
+        const remaining = total - totalSettled;
 
-        if (diff <= 0.01) {
+        if (remaining <= 0.01 && totalSettled > 0) {
             form.setValue("status", "Payé");
         } else if (totalSettled > 0) {
             form.setValue("status", "Partiel");
