@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, Filter } from "lucide-react";
+import { PlusCircle, Download, Loader2, MoreHorizontal, Pencil, Trash2, FileText, Search, ChevronDown, ChevronRight, BellRing, Filter, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { collection, query, doc, where, deleteDoc, onSnapshot } from "firebase/firestore";
@@ -122,10 +122,10 @@ export default function PaymentsPage() {
                 const transactions = data.transactions || [];
                 const amountPaid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
                 const totalAmount = data.totalAmount || 0;
-                const amountRemaining = totalAmount - amountPaid;
+                const amountRemaining = Math.max(0, totalAmount - amountPaid);
                 
                 let calculatedStatus: PaymentStatus = data.status;
-                if (amountRemaining <= 0.01 && totalAmount > 0) {
+                if (amountRemaining < 0.01 && totalAmount > 0) {
                     calculatedStatus = 'Payé';
                 } else if (amountPaid > 0) {
                     calculatedStatus = 'Partiel';
@@ -170,7 +170,7 @@ export default function PaymentsPage() {
             playerGender: player.gender || 'Masculin',
             payments: [],
             currentMonthStatus: 'N/A',
-            hasPending: false
+            hasPending: true // Par défaut true si pas encore de paiements
         };
     });
 
@@ -178,9 +178,9 @@ export default function PaymentsPage() {
         if (grouped[payment.playerId]) {
             grouped[payment.playerId].payments.push(payment);
             
-            if (payment.status !== 'Payé') {
-                grouped[payment.playerId].hasPending = true;
-            }
+            // Un joueur a un impayé si au moins un dossier n'est pas "Payé"
+            const playerPending = grouped[payment.playerId].payments.some(p => p.status !== 'Payé');
+            grouped[payment.playerId].hasPending = playerPending;
 
             const normalizedPaymentDesc = normalizeString(payment.description);
             if(normalizedPaymentDesc === normalizedCurrentMonthDesc) {
@@ -280,12 +280,27 @@ export default function PaymentsPage() {
               >
                   <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                            <Avatar className="relative h-12 w-12 border-2 border-slate-100">
-                              <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
-                              <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                            <div className="relative">
+                                <Avatar className="h-12 w-12 border-2 border-slate-100">
+                                    <AvatarImage src={playerGroup.playerPhotoUrl} alt={playerGroup.playerName} />
+                                    <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                {playerGroup.hasPending && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-destructive border-2 border-white"></span>
+                                    </span>
+                                )}
+                            </div>
                           <div className="flex flex-col text-left">
-                              <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
+                              <div className="flex items-center gap-2">
+                                  <span className="font-bold text-base text-slate-900">{playerGroup.playerName}</span>
+                                  {playerGroup.hasPending && (
+                                      <Badge className="bg-destructive/10 text-destructive border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 flex items-center gap-1">
+                                          <BellRing className="h-2 w-2" /> Notification
+                                      </Badge>
+                                  )}
+                              </div>
                               <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase font-bold">{playerGroup.payments.length} dossier(s)</Badge>
                           </div>
                       </div>

@@ -110,7 +110,7 @@ function FormContent({ payment }: { payment?: PaymentData }) {
         const totalSettled = amountAlreadyPaid + newVal;
         const remaining = total - totalSettled;
 
-        if (total > 0 && remaining <= 0.001) {
+        if (total > 0 && remaining < 0.01) {
             form.setValue("status", "Payé");
         } else if (totalSettled > 0) {
             form.setValue("status", "Partiel");
