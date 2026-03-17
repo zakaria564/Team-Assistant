@@ -31,16 +31,14 @@ export default function PaymentReceiptPage({ params }: { params: Promise<{ id: s
     const fetchDetails = async () => {
       if (!user) return;
       try {
-        const paymentRef = doc(db, "payments", paymentId);
-        const clubRef = doc(db, "clubs", user.uid);
-        const [paymentSnap, clubSnap] = await Promise.all([getDoc(paymentRef), getDoc(clubRef)]);
+        const paymentSnap = await getDoc(doc(db, "payments", paymentId));
         if (paymentSnap.exists()) {
           const data = paymentSnap.data();
-          const playerSnap = await getDoc(doc(db, "players", data.playerId));
-          const playerData = playerSnap.exists() ? playerSnap.data() : null;
-          setPayment({ id: paymentSnap.id, ...data, playerName: playerData?.name || "Joueur inconnu", playerCategory: playerData?.category || "N/A", playerProfessionalId: playerData?.professionalId || "N/A" });
+          const pSnap = await getDoc(doc(db, "players", data.playerId));
+          const clubSnap = await getDoc(doc(db, "clubs", user.uid));
+          setPayment({ id: paymentSnap.id, ...data, playerName: pSnap.exists() ? pSnap.data().name : "Inconnu", playerCategory: pSnap.exists() ? pSnap.data().category : "N/A", playerProfessionalId: pSnap.exists() ? pSnap.data().professionalId : "N/A" });
+          if (clubSnap.exists()) setClubInfo(clubSnap.data());
         } else { router.push('/dashboard/payments'); }
-        if (clubSnap.exists()) setClubInfo(clubSnap.data());
       } catch (error) { console.error(error); } finally { setLoading(false); }
     };
     fetchDetails();
