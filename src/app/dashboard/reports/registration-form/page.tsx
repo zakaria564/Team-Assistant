@@ -162,10 +162,10 @@ export default function RegistrationFormPage() {
                             </div>
                         </header>
 
-                        <div className="p-6 space-y-3 text-left flex flex-col flex-grow">
+                        <div className="p-6 space-y-2 text-left flex flex-col flex-grow">
                             {formType === 'checklist' ? (
-                                <div className="space-y-3 py-2">
-                                    <div className="space-y-3">
+                                <div className="space-y-2 py-2">
+                                    <div className="space-y-2">
                                         <div className="flex items-center gap-2 mb-1">
                                             <ClipboardList className="h-4 w-4 text-primary" />
                                             <h3 className="font-black text-sm uppercase tracking-tight italic">DOCUMENTS OBLIGATOIRES</h3>
@@ -192,7 +192,7 @@ export default function RegistrationFormPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">I. IDENTITÉ DU JOUEUR</h3>
                                         <div className="space-y-3 text-[10px] font-medium">
                                             <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
@@ -214,7 +214,7 @@ export default function RegistrationFormPage() {
                                     </div>
 
                                     {formType === 'junior' && (
-                                        <div className="space-y-3 pt-2">
+                                        <div className="space-y-2 pt-2">
                                             <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">II. RESPONSABLE LÉGAL</h3>
                                             <div className="space-y-3 text-[10px] font-medium">
                                                 <div className="flex items-center"><div>NOM ET PRÉNOM :</div><DottedLine /></div>
@@ -230,7 +230,7 @@ export default function RegistrationFormPage() {
                                         </div>
                                     )}
 
-                                    <div className="space-y-3 pt-2">
+                                    <div className="space-y-2 pt-2">
                                         <h3 className="font-black text-[8px] uppercase tracking-[0.15em] bg-slate-900 text-white px-3 py-1.5 w-fit rounded shadow-sm italic">III. AUTORISATION ET DÉCLARATION</h3>
                                         <div className="space-y-2 text-[9px] leading-relaxed italic text-slate-700">
                                             <p>Je soussigné(e) certifie que les informations ci-dessus sont exactes et m'engage à respecter scrupuleusement le règlement intérieur et les valeurs sportives du club.</p>
@@ -263,7 +263,7 @@ export default function RegistrationFormPage() {
                         
                         <footer className="p-4 bg-slate-900 text-white flex justify-between items-center mt-auto border-t-2 border-primary shrink-0">
                             <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-50">© {new Date().getFullYear()} {clubName} - ADMINISTRATION SPORTIVE</p>
-                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px]">
+                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5">
                                 <ShieldCheck className="h-3 w-3" />
                                 Document Officiel
                             </div>

@@ -16,7 +16,7 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3 mb-3 text-left">
+  <div className="flex items-start gap-3 mb-2 text-left">
     <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0 border border-slate-200">
         <Icon className="h-3 w-3 text-slate-700" />
     </div>
@@ -30,7 +30,7 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-3 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
+    <div className="mb-2 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
         {Icon && <Icon className="h-3 w-3 text-primary" />}
         <h2 className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-900">{title}</h2>
     </div>
@@ -194,7 +194,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </section>
 
-                        <main className="grid grid-cols-2 gap-8 mb-4">
+                        <main className="grid grid-cols-2 gap-6 mb-4">
                             <div className="space-y-1">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
@@ -240,7 +240,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                 </div>
                                 <p className="text-[6px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
                             </div>
-                            <div className="text-[8px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1">Document Officiel</div>
+                            <div className="text-[8px] font-black uppercase tracking-[0.1em] text-primary italic border-b-2 border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
                         </footer>
                     </div>
                 </div>

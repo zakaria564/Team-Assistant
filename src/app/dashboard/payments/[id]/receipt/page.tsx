@@ -150,7 +150,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         </div>
                     </header>
 
-                    <div className="px-6 py-6 space-y-3 flex-grow flex flex-col">
+                    <div className="px-6 py-6 space-y-2 flex-grow flex flex-col">
                         <div className="grid grid-cols-2 gap-6 text-left">
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                 <h3 className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bénéficiaire (Joueur)</h3>
@@ -229,7 +229,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         <div className="text-[7px] opacity-50 font-black uppercase tracking-widest text-left">
                             <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club Sportif"} - Team Assistant Pro</p>
                         </div>
-                        <div className="text-primary font-black uppercase tracking-[0.2em] text-[7px] italic text-right border-l-2 border-primary/30 pl-4 leading-none">
+                        <div className="text-primary font-black uppercase tracking-[0.2em] text-[7px] italic text-right border-l-2 border-primary/30 pl-4 leading-none border-b-2 border-primary w-fit pb-0.5 ml-auto">
                             Authenticité Garantie
                         </div>
                     </footer>

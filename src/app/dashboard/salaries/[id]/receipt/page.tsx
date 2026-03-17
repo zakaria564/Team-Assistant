@@ -139,7 +139,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
                         </header>
 
-                        <div className="px-6 py-6 space-y-3 text-left flex-grow flex flex-col">
+                        <div className="px-6 py-6 space-y-2 text-left flex-grow flex flex-col">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
                                     <h3 className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Bénéficiaire (Entraîneur)</h3>
@@ -221,8 +221,8 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                     STATUT: {salary.status.toUpperCase()}
                                 </div>
                             </div>
-                            <div className="text-[7px] text-slate-400 font-black uppercase tracking-widest italic text-right border-l border-slate-700 pl-4">
-                                Système Team Assistant - Gestion Pro
+                            <div className="flex items-center gap-1 text-primary font-black uppercase tracking-widest italic text-[7px] border-b-2 border-primary w-fit pb-0.5 ml-auto">
+                                Document Officiel
                             </div>
                         </footer>
                     </div>
