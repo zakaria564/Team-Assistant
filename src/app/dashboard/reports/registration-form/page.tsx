@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Loader2, User, Users, ClipboardList, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import jsPDF from "jspdf";
+import jspdf from "jspdf";
 import html2canvas from "html2canvas";
 import { db, auth } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -42,8 +42,8 @@ export default function RegistrationFormPage() {
     setLoadingPdf(true);
     const formElement = document.getElementById("printable-form");
     if (formElement) {
-        html2canvas(formElement, { scale: 2, useCORS: true, backgroundColor: "#0f172a" }).then((canvas) => {
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+        html2canvas(formElement, { scale: 3, useCORS: true, backgroundColor: "#0f172a" }).then((canvas) => {
+            const pdf = new jspdf({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const imgData = canvas.toDataURL('image/png', 1.0);
             const ratio = canvas.width / canvas.height;
@@ -71,13 +71,13 @@ export default function RegistrationFormPage() {
                     </TabsList>
                 </Tabs>
                 <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-9 font-black uppercase bg-primary hover:bg-primary/90 text-white">
-                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Download className="mr-2 h-4 w-4" /> Exporter</>}
+                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Download className="mr-2 h-4 w-4" /> Exporter (HD)</>}
                 </Button>
             </div>
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-                <div className="min-w-[600px] flex justify-center">
-                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '600px', minHeight: '848px' }}>
+                <div className="min-w-[595px] flex justify-center">
+                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '595px', minHeight: '842px' }}>
                         <header className="text-center space-y-2 p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0">
                             {loadingClub || loadingUser ? <div className="flex flex-col items-center gap-2"><Skeleton className="h-8 w-8 rounded-full bg-gray-200" /><Skeleton className="h-4 w-3/4 mx-auto bg-gray-200" /></div> : (
                                 <div className="flex flex-col items-center gap-1.5">

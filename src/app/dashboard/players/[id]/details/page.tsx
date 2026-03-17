@@ -82,7 +82,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
     const element = document.getElementById("printable-details");
     if (element) {
         try {
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0f172a', logging: false, allowTaint: true });
+            const canvas = await html2canvas(element, { scale: 3, useCORS: true, backgroundColor: '#0f172a', logging: false, allowTaint: true });
             const pdf = new jspdf({ orientation: 'portrait', unit: 'pt', format: 'a4' });
             const imgWidth = pdf.internal.pageSize.getWidth();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -107,13 +107,13 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter PDF
+            Exporter PDF (HD)
           </Button>
         </div>
 
         <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-            <div className="min-w-[600px] flex justify-center">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '600px', minHeight: '848px' }}>
+            <div className="min-w-[595px] flex justify-center">
+                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col" style={{ width: '595px', minHeight: '842px' }}>
                     <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                         <div className="flex flex-row items-center gap-3 text-left">
                             <div className="h-10 w-12 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">

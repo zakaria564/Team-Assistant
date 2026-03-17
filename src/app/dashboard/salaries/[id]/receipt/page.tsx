@@ -49,7 +49,7 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
     const element = document.getElementById("printable-receipt");
     if (element) {
         try {
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#0f172a", logging: false });
+            const canvas = await html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#0f172a", logging: false });
             const pdf = new jspdf('p', 'pt', 'a4');
             const imgData = canvas.toDataURL('image/png', 1.0);
             const imgWidth = pdf.internal.pageSize.getWidth();
@@ -75,13 +75,13 @@ export default function SalaryReceiptPage({ params }: { params: Promise<{ id: st
             <div className="flex justify-between items-center gap-4 mb-2 px-2">
                 <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
                 <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
-                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Exporter PDF
+                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Exporter PDF (HD)
                 </Button>
             </div>
             
             <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-                <div className="min-w-[600px] flex justify-center">
-                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '600px', minHeight: '848px' }}>
+                <div className="min-w-[595px] flex justify-center">
+                    <div id="printable-receipt" className="bg-white text-slate-900 border shadow-2xl flex flex-col mx-auto" style={{ width: '595px', minHeight: '842px' }}>
                         <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
                             <div className="flex flex-row items-center gap-3 text-left">
                                 <div className="h-10 w-12 border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
