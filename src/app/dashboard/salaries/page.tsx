@@ -179,19 +179,21 @@ export default function SalariesPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input 
           placeholder="Rechercher un entraîneur..." 
-          className="pl-10 h-12 bg-white shadow-sm" 
+          className="pl-10 h-12 bg-white shadow-sm dark:bg-slate-900" 
           value={searchTerm} 
           onChange={(e) => setSearchTerm(e.target.value)} 
         />
       </div>
 
       <div className="space-y-4">
-        {groupedSalaries.map((group) => (
+        {groupedSalaries.length === 0 ? (
+            <div className="text-center text-muted-foreground py-16 border-2 border-dashed rounded-xl bg-muted/20 italic">Aucun résultat trouvé.</div>
+        ) : groupedSalaries.map((group) => (
           <Collapsible 
             key={group.coachId}
             open={openCollapsibles[group.coachId]}
             onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({ ...prev, [group.coachId]: isOpen }))}
-            className={cn("border rounded-lg bg-white overflow-hidden shadow-sm transition-all", group.hasPending ? "border-red-200 bg-red-50/30" : "border-border")}
+            className={cn("border rounded-lg bg-white dark:bg-slate-900 overflow-hidden shadow-sm transition-all", group.hasPending ? "border-red-200 bg-red-50/30 dark:bg-red-950/10" : "border-border")}
           >
             <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-4">
@@ -204,7 +206,7 @@ export default function SalariesPage() {
                     {toTitleCase(group.coachName)}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-slate-900 leading-tight">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight">
                       {group.salaries.length} Fiche(s)
                     </p>
                     {group.hasPending && (
@@ -217,7 +219,7 @@ export default function SalariesPage() {
               </div>
               {openCollapsibles[group.coachId] ? <ChevronDown className="h-5 w-5 text-slate-400" /> : <ChevronRight className="h-5 w-5 text-slate-400" />}
             </CollapsibleTrigger>
-            <CollapsibleContent className="border-t bg-white">
+            <CollapsibleContent className="border-t bg-white dark:bg-slate-950">
               <div className="overflow-x-auto w-full">
                 <Table>
                     <TableHeader className="bg-muted/20">
@@ -242,14 +244,14 @@ export default function SalariesPage() {
                         </TableCell>
                         <TableCell className="text-right pr-4">
                             <div className="flex items-center justify-end gap-1">
-                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border border-slate-100">
+                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border border-slate-100 dark:border-slate-800">
                                     <Link href={`/dashboard/salaries/${salary.id}`}>
                                         <FileText className="h-4 w-4 text-primary" />
                                     </Link>
                                 </Button>
                                 <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 border border-slate-100">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 border border-slate-100 dark:border-slate-800">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>

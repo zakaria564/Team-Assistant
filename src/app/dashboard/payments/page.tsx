@@ -187,7 +187,7 @@ export default function PaymentsPage() {
   };
 
   const renderPaymentGroups = (groups: PlayerPayments[]) => {
-     if (groups.length === 0) return <div className="text-center text-muted-foreground py-16 border-2 border-dashed rounded-xl bg-slate-50/50 italic">Aucun résultat trouvé.</div>;
+     if (groups.length === 0) return <div className="text-center text-muted-foreground py-16 border-2 border-dashed rounded-xl bg-muted/20 italic">Aucun résultat trouvé.</div>;
 
     return (
        <div className="space-y-2">
@@ -222,7 +222,7 @@ export default function PaymentsPage() {
                       </div>
                       {openCollapsibles[playerGroup.playerId] ? <ChevronDown className="h-5 w-5 text-slate-400" /> : <ChevronRight className="h-5 w-5 text-slate-400" />}
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="border-t bg-white">
+                  <CollapsibleContent className="border-t bg-white dark:bg-slate-950">
                       <div className="w-full overflow-x-auto p-2">
                       <Table>
                           <TableHeader className="bg-muted/20">
@@ -328,7 +328,7 @@ export default function PaymentsPage() {
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                     placeholder="Rechercher un joueur..."
-                    className="pl-10 h-12 bg-white shadow-sm"
+                    className="pl-10 h-12 bg-white shadow-sm dark:bg-slate-900"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
