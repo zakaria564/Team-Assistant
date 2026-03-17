@@ -212,9 +212,9 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="font-bold text-base uppercase tracking-widest text-muted-foreground leading-none mb-1">{group.coachName}</p>
+                  <p className="text-base text-muted-foreground leading-none mb-1 uppercase tracking-widest">{group.coachName}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm text-slate-900 font-black uppercase tracking-tighter">{group.salaries.length} fiche(s)</p>
+                    <p className="text-sm text-slate-900 font-black uppercase tracking-tighter">{group.salaries.length} FICHE(S)</p>
                     {group.hasPending && <Badge variant="destructive" className="text-[9px] px-1.5 h-4 font-black uppercase tracking-tighter">Solde dû</Badge>}
                   </div>
                 </div>
@@ -245,37 +245,39 @@ export default function SalariesPage() {
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right pr-4">
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 hover:bg-white shadow-sm border border-slate-100">
-                                    <MoreHorizontal className="h-5 w-5 md:h-4 md:w-4 text-slate-600" />
+                            <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-white shadow-sm border border-slate-100">
+                                    <Link href={`/dashboard/salaries/${salary.id}`}>
+                                        <FileText className="h-4 w-4 text-primary" />
+                                    </Link>
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl border-2">
-                                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/salaries/${salary.id}`} passHref>
-                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-xs uppercase tracking-tight">
-                                        <FileText className="mr-3 h-4 w-4 text-primary" /> Détails complets
-                                    </DropdownMenuItem>
-                                </Link>
-                                {salary.status !== 'Payé' && (
-                                    <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
-                                        <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-primary bg-primary/5">
-                                            <PlusCircle className="mr-3 h-4 w-4" /> Ajouter versement
+                                <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white shadow-sm border border-slate-100">
+                                        <MoreHorizontal className="h-4 w-4 text-slate-600" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl border-2">
+                                    <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions</DropdownMenuLabel>
+                                    {salary.status !== 'Payé' && (
+                                        <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
+                                            <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-primary bg-primary/5">
+                                                <PlusCircle className="mr-3 h-4 w-4" /> Ajouter versement
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    )}
+                                    <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
+                                        <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-xs uppercase tracking-tight text-slate-600">
+                                            <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu de paie (PDF)
                                         </DropdownMenuItem>
                                     </Link>
-                                )}
-                                <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
-                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-xs uppercase tracking-tight text-slate-600">
-                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu de paie (PDF)
+                                    <DropdownMenuSeparator className="my-1" />
+                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
+                                        <Trash2 className="mr-3 h-4 w-4" /> Supprimer
                                     </DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuSeparator className="my-1" />
-                                <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
-                                    <Trash2 className="mr-3 h-4 w-4" /> Supprimer
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                            </DropdownMenu>
+                                </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </TableCell>
                         </TableRow>
                     ))}

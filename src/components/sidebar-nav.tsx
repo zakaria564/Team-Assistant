@@ -7,8 +7,6 @@ import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,14 +30,19 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
+    // Alerte Paiements Joueurs : Compte les joueurs qui ont un reste à payer OU aucun dossier
     const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid), where("status", "==", "Actif")), (playerSnap) => {
         const activePlayerIds = new Set(playerSnap.docs.map(d => d.id));
         
         const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paySnap) => {
+            const playersWithPaymentRecord = new Set();
             const playersWithDebt = new Set();
+
             paySnap.docs.forEach(doc => {
                 const data = doc.data();
                 if (!activePlayerIds.has(data.playerId)) return;
+                
+                playersWithPaymentRecord.add(data.playerId);
 
                 const transactions = data.transactions || [];
                 const total = data.totalAmount || 0;
@@ -49,6 +52,14 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
                     playersWithDebt.add(data.playerId);
                 }
             });
+
+            // Ajouter ceux qui n'ont AUCUN dossier
+            activePlayerIds.forEach(id => {
+                if (!playersWithPaymentRecord.has(id)) {
+                    playersWithDebt.add(id);
+                }
+            });
+
             setPendingPaymentsCount(playersWithDebt.size);
         });
         return () => unsubscribePayments();
@@ -59,7 +70,7 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
     
-    // Alerte dynamique : Compte les entraîneurs ayant au moins une fiche non régularisée
+    // Alerte Salaires Coachs : Compte les entraîneurs ayant au moins une fiche non régularisée
     const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salarySnap) => {
         const coachesWithDebt = new Set();
         salarySnap.docs.forEach(doc => {
@@ -68,7 +79,6 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
             const total = data.totalAmount || 0;
             const paid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
             
-            // Si le statut n'est pas "Payé" ou s'il reste plus de 0.01 MAD à payer
             if (data.status !== 'Payé' || (total - paid > 0.01)) {
                 coachesWithDebt.add(data.coachId);
             }

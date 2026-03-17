@@ -44,6 +44,7 @@ interface Player {
     name: string;
     photoUrl?: string;
     gender: 'Masculin' | 'Féminin';
+    status: string;
 }
 
 interface Payment {
@@ -107,13 +108,11 @@ export default function PaymentsPage() {
     }
     setLoading(true);
     
-    // Fetch all players to ensure even those without payments show up
     const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
     const unsubscribePlayers = onSnapshot(playersQuery, (playersSnapshot) => {
         const playersData = playersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
         setPlayers(playersData);
 
-        // Fetch all payments
         const paymentsQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
         const unsubscribePayments = onSnapshot(paymentsQuery, (paymentsSnapshot) => {
             const paymentsData = paymentsSnapshot.docs.map(doc => {
@@ -163,7 +162,6 @@ export default function PaymentsPage() {
     const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
     const normalizedCurrentMonthDesc = normalizeString(currentMonthDesc);
 
-    // Initialiser avec tous les joueurs
     players.forEach(player => {
         grouped[player.id] = {
             playerId: player.id,
@@ -172,11 +170,10 @@ export default function PaymentsPage() {
             playerGender: player.gender || 'Masculin',
             payments: [],
             currentMonthStatus: 'N/A',
-            hasPending: false
+            hasPending: player.status === 'Actif' // Un nouveau joueur actif est considéré comme ayant une cotisation à régler
         };
     });
 
-    // Remplir avec les paiements
     payments.forEach(payment => {
         if (grouped[payment.playerId]) {
             grouped[payment.playerId].payments.push(payment);
@@ -223,9 +220,8 @@ export default function PaymentsPage() {
   }, [groupedAndFilteredPayments]);
 
   const pendingCount = useMemo(() => {
-      const uniquePlayersWithPending = new Set(payments.filter(p => p.status !== 'Payé').map(p => p.playerId));
-      return uniquePlayersWithPending.size;
-  }, [payments]);
+      return groupedAndFilteredPayments.filter(p => p.hasPending).length;
+  }, [groupedAndFilteredPayments]);
 
   const confirmDeletePayment = async () => {
     if(!paymentToDelete) return;
@@ -345,46 +341,55 @@ export default function PaymentsPage() {
                                           </Badge>
                                       </TableCell>
                                       <TableCell className="text-right pr-4">
-                                          <DropdownMenu>
-                                              <DropdownMenuTrigger asChild>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white shadow-sm border">
-                                                  <MoreHorizontal className="h-4 w-4" />
+                                          <div className="flex items-center justify-end gap-1">
+                                              <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-white shadow-sm border">
+                                                  <Link href={`/dashboard/payments/${payment.id}`}>
+                                                      <FileText className="h-4 w-4 text-primary" />
+                                                  </Link>
                                               </Button>
-                                              </DropdownMenuTrigger>
-                                              <DropdownMenuContent align="end" className="w-56 p-2">
-                                              <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Actions</DropdownMenuLabel>
-                                              <Link href={`/dashboard/payments/${payment.id}`} passHref>
-                                                  <DropdownMenuItem className="cursor-pointer py-2.5">
-                                                      <FileText className="mr-3 h-4 w-4 text-primary" /> Détails complets
-                                                  </DropdownMenuItem>
-                                              </Link>
-                                              {payment.status !== 'Payé' && (
-                                                  <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
-                                                      <DropdownMenuItem className="cursor-pointer py-2.5 text-primary bg-primary/5 font-black">
-                                                          <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
+                                              <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white shadow-sm border">
+                                                      <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent align="end" className="w-56 p-2">
+                                                  <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Actions</DropdownMenuLabel>
+                                                  {payment.status !== 'Payé' && (
+                                                      <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
+                                                          <DropdownMenuItem className="cursor-pointer py-2.5 text-primary bg-primary/5 font-black">
+                                                              <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
+                                                          </DropdownMenuItem>
+                                                      </Link>
+                                                  )}
+                                                  <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>
+                                                      <DropdownMenuItem className="cursor-pointer py-2.5">
+                                                          <Download className="mr-3 h-4 w-4" /> Exporter le reçu
                                                       </DropdownMenuItem>
                                                   </Link>
-                                              )}
-                                              <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>
-                                                  <DropdownMenuItem className="cursor-pointer py-2.5">
-                                                      <Download className="mr-3 h-4 w-4" /> Exporter le reçu
+                                                  <DropdownMenuSeparator />
+                                                  <DropdownMenuItem
+                                                      className="cursor-pointer text-destructive focus:bg-destructive/10 font-bold"
+                                                      onSelect={() => setPaymentToDelete(payment)}
+                                                    >
+                                                      <Trash2 className="mr-3 h-4 w-4" /> Supprimer définitivement
                                                   </DropdownMenuItem>
-                                              </Link>
-                                              <DropdownMenuSeparator />
-                                              <DropdownMenuItem
-                                                  className="cursor-pointer text-destructive focus:bg-destructive/10 font-bold"
-                                                  onSelect={() => setPaymentToDelete(payment)}
-                                                >
-                                                  <Trash2 className="mr-3 h-4 w-4" /> Supprimer définitivement
-                                              </DropdownMenuItem>
-                                              </DropdownMenuContent>
-                                          </DropdownMenu>
+                                                  </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </div>
                                       </TableCell>
                                   </TableRow>
                               )) : (
                                   <TableRow>
-                                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground text-xs italic">
-                                          Aucun dossier de paiement ouvert pour ce joueur.
+                                      <TableCell colSpan={5} className="text-center py-8">
+                                          <div className="flex flex-col items-center gap-2">
+                                              <p className="text-muted-foreground text-xs italic">Aucun dossier de paiement ouvert pour ce joueur.</p>
+                                              <Button asChild variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase">
+                                                  <Link href={`/dashboard/payments/add?playerId=${playerGroup.playerId}`}>
+                                                      <PlusCircle className="mr-2 h-3 w-3" /> Ouvrir un dossier
+                                                  </Link>
+                                              </Button>
+                                          </div>
                                       </TableCell>
                                   </TableRow>
                               )}
