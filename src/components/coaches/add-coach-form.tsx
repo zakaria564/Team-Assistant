@@ -59,16 +59,16 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
         <FormLabel>{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-white" />
+                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background" />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-white"><CalendarIcon className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background"><CalendarIcon className="h-4 w-4" /></Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
                         mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
+                        selected={field.value ? new Date(field.value.split('/').reverse().join('-')) : undefined}
                         onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))}
                         initialFocus
                     />
@@ -157,8 +157,8 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="grid grid-cols-2 gap-3">
-                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-white" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-white" size="sm"><Upload className="mr-2 h-4 w-4"/>Galerie</Button>
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background" size="sm"><Upload className="mr-2 h-4 w-4"/>Galerie</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                       {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
                   </div>
@@ -168,18 +168,18 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Infos Club</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-white"><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({ field }) => (
-                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-white"><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="specialty" render={({ field }) => (
-                        <FormItem><FormLabel>Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-white"><SelectValue placeholder="Choisir une spécialité..." /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={pos} value={spec}>{spec}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel>Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Choisir une spécialité..." /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="professionalId" render={({ field }) => (
-                        <FormItem><FormLabel>ID Professionnel (Optionnel)</FormLabel><FormControl><Input {...field} className="bg-white" /></FormControl></FormItem>
+                        <FormItem><FormLabel>ID Professionnel (Optionnel)</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -193,33 +193,33 @@ export function AddCoachForm({ coach }: { coach?: any }) {
               <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} className="bg-white" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
-                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-white"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
+                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
-                          <FormItem><FormLabel>N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-white" /></FormControl></FormItem>
+                          <FormItem><FormLabel>N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>Email professionnel</FormLabel><FormControl><Input type="email" {...field} className="bg-white" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email professionnel</FormLabel><FormControl><Input type="email" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="phone" render={({ field }) => (
-                        <FormItem><FormLabel>Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} className="bg-white" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
                   <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem><FormLabel>Adresse de résidence</FormLabel><FormControl><Textarea {...field} className="min-h-[80px] bg-white" /></FormControl></FormItem>
+                    <FormItem><FormLabel>Adresse de résidence</FormLabel><FormControl><Textarea {...field} className="min-h-[80px] bg-background" /></FormControl></FormItem>
                   )} />
               </div>
 
               <div className="space-y-6">
                   <div className="flex items-center justify-between">
                       <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6" />Documents Numérisés</h3>
-                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px] bg-white"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px] bg-background"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
                   </div>
                   <div className="space-y-4">
                     {fields.map((field, index) => (
@@ -245,18 +245,18 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-5 border-2 rounded-2xl bg-white space-y-4 relative group shadow-sm">
-            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+        <div className="p-5 border-2 rounded-2xl bg-background space-y-4 relative group shadow-sm">
+            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-background shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                    <FormItem><FormLabel>Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} className="bg-white" /></FormControl></FormItem>
+                    <FormItem><FormLabel>Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} className="bg-background" /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Expiration" field={field} />} />
             </div>
             <div className="space-y-2">
                 <FormLabel>Fichier (Scan / Photo)</FormLabel>
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-white")} onClick={() => fileRef.current?.click()} disabled={loading}>
+                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background")} onClick={() => fileRef.current?.click()} disabled={loading}>
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir fichier</>}
                     </Button>
                     {url && (
