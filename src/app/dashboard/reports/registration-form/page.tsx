@@ -240,7 +240,7 @@ export default function RegistrationFormPage() {
                                 </>
                             )}
                             
-                            <div className="pt-8 pb-4 flex flex-col items-center mt-auto">
+                            <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
                                 <div className="w-full flex flex-row justify-between items-start gap-10 px-4">
                                     <div className="space-y-4 pt-2 text-left">
                                         <div className="flex items-center">

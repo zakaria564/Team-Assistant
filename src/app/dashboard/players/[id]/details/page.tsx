@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
+import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
@@ -213,6 +213,9 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                                    {player.exitDate && (
+                                        <DetailItem icon={LogOut} label="Fin de mission" value={format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr })} />
+                                    )}
                                 </div>
                                 {player.tutorName && (
                                     <div className="pt-2">
@@ -226,7 +229,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="pt-8 pb-4 flex flex-col items-center mt-auto">
+                        <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
                             <div className="text-center space-y-4 w-full flex flex-col items-center">
                                 <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-32 border-b-2 border-slate-300"></div>

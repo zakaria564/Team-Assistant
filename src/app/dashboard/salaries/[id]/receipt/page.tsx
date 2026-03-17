@@ -208,7 +208,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                                 </div>
                             </div>
 
-                            <div className="pt-8 pb-4 flex flex-col items-center mt-auto">
+                            <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
                                 <div className="text-center space-y-4 w-full flex flex-col items-center">
                                     <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                     <div className="w-32 border-b-2 border-slate-300"></div>
