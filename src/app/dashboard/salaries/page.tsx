@@ -104,7 +104,7 @@ export default function SalariesPage() {
                 if (!coach) return null;
 
                 const transactions = data.transactions || [];
-                const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+                const amountPaid = transactions.reduce((sum: number, t: any) => sum + (parseFloat(t.amount?.toString() || "0")), 0);
                 const totalAmount = data.totalAmount || 0;
                 const amountRemaining = totalAmount - amountPaid;
 
@@ -128,7 +128,7 @@ export default function SalariesPage() {
                 } as Salary;
             }).filter(s => s !== null) as Salary[];
 
-            setSalaries(salariesData.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
+            setSalaries(salariesData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
             setLoading(false);
         });
 
@@ -203,19 +203,21 @@ export default function SalariesPage() {
             key={group.coachId}
             open={openCollapsibles[group.coachId]}
             onOpenChange={(isOpen) => setOpenCollapsibles(prev => ({ ...prev, [group.coachId]: isOpen }))}
-            className="border rounded-lg bg-card overflow-hidden"
+            className="border rounded-lg bg-card overflow-hidden shadow-sm"
           >
-            <CollapsibleTrigger className="w-full p-4 md:p-4 flex items-center justify-between hover:bg-muted/50 transition-colors min-h-[70px]">
-              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                <Avatar className="h-12 w-12 shrink-0 border-2 border-primary/10">
+            <CollapsibleTrigger className="w-full p-4 md:p-5 flex items-center justify-between hover:bg-muted/50 transition-colors min-h-[80px]">
+              <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
+                <Avatar className="h-14 w-14 shrink-0 border-2 border-primary/10 shadow-sm">
                   <AvatarImage src={group.coachPhotoUrl} />
-                  <AvatarFallback className="font-bold">{group.coachName.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="font-bold text-base md:text-base truncate text-slate-900">{group.coachName}</p>
-                  <p className="text-xs text-muted-foreground font-semibold">{group.salaries.length} fiche(s) enregistrée(s)</p>
+                  <p className="font-black text-lg md:text-xl uppercase tracking-tighter text-slate-900 leading-none mb-1">{group.coachName}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">{group.salaries.length} fiche(s)</p>
+                    {group.hasPending && <Badge variant="destructive" className="text-[9px] px-1.5 h-4 font-black uppercase tracking-tighter">Solde dû</Badge>}
+                  </div>
                 </div>
-                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">Solde dû</Badge>}
               </div>
               {openCollapsibles[group.coachId] ? <ChevronDown className="h-6 w-6 shrink-0 text-slate-400" /> : <ChevronRight className="h-6 w-6 shrink-0 text-slate-400" />}
             </CollapsibleTrigger>
@@ -224,21 +226,21 @@ export default function SalariesPage() {
                 <Table>
                     <TableHeader className="bg-muted/20">
                     <TableRow>
-                        <TableHead className="min-w-[140px] font-bold">Période</TableHead>
-                        <TableHead className="hidden sm:table-cell font-bold">Fixé</TableHead>
-                        <TableHead className="font-bold">Payé</TableHead>
-                        <TableHead className="font-bold">Statut</TableHead>
-                        <TableHead className="text-right font-bold pr-4">Actions</TableHead>
+                        <TableHead className="min-w-[140px] font-black uppercase text-[10px] tracking-widest">Période</TableHead>
+                        <TableHead className="hidden sm:table-cell font-black uppercase text-[10px] tracking-widest">Fixé</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-widest">Payé</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Statut</TableHead>
+                        <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-4">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {group.salaries.map((salary) => (
                         <TableRow key={salary.id} className="hover:bg-muted/10 h-16 md:h-auto">
                         <TableCell className="font-bold text-xs sm:text-sm pl-4">{salary.description}</TableCell>
-                        <TableCell className="hidden sm:table-cell text-xs font-medium">{salary.totalAmount.toFixed(2)} MAD</TableCell>
-                        <TableCell className="text-green-600 font-black text-xs">{salary.amountPaid.toFixed(2)} MAD</TableCell>
-                        <TableCell>
-                            <Badge className={cn("whitespace-nowrap text-[10px] px-2 py-0.5 font-bold uppercase", getBadgeClass(salary.status))}>
+                        <TableCell className="hidden sm:table-cell text-xs font-bold text-slate-600">{salary.totalAmount.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-green-600 font-black text-xs sm:text-sm">{salary.amountPaid.toFixed(2)} MAD</TableCell>
+                        <TableCell className="text-center">
+                            <Badge className={cn("whitespace-nowrap text-[9px] px-2 py-0.5 font-black uppercase tracking-tighter", getBadgeClass(salary.status))}>
                             {salary.status}
                             </Badge>
                         </TableCell>
@@ -252,24 +254,24 @@ export default function SalariesPage() {
                             <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl border-2">
                                 <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions</DropdownMenuLabel>
                                 <Link href={`/dashboard/salaries/${salary.id}`} passHref>
-                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
+                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-xs uppercase tracking-tight">
                                         <FileText className="mr-3 h-4 w-4 text-primary" /> Détails complets
                                     </DropdownMenuItem>
                                 </Link>
                                 {salary.status !== 'Payé' && (
                                     <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
-                                        <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-sm text-primary bg-primary/5">
+                                        <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-primary bg-primary/5">
                                             <PlusCircle className="mr-3 h-4 w-4" /> Ajouter versement
                                         </DropdownMenuItem>
                                     </Link>
                                 )}
                                 <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
-                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
-                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu de paie
+                                    <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-xs uppercase tracking-tight text-slate-600">
+                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu de paie (PDF)
                                     </DropdownMenuItem>
                                 </Link>
                                 <DropdownMenuSeparator className="my-1" />
-                                <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-sm text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
+                                <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-xs uppercase tracking-tight text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
                                     <Trash2 className="mr-3 h-4 w-4" /> Supprimer
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -294,11 +296,11 @@ export default function SalariesPage() {
         <AlertDialogContent className="w-[95%] rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black">Supprimer cette fiche ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600">Cette action supprimera tout l'historique associé à cette période.</AlertDialogDescription>
+            <AlertDialogDescription className="text-slate-600 font-medium">Cette action supprimera tout l'historique associé à cette période.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="h-12 md:h-10 font-bold">Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive text-white hover:bg-destructive/90 h-12 md:h-10 font-black">Supprimer définitivement</AlertDialogAction>
+            <AlertDialogCancel className="h-12 md:h-10 font-bold rounded-xl">Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteSalary} className="bg-destructive text-white hover:bg-destructive/90 h-12 md:h-10 font-black rounded-xl uppercase tracking-widest">Confirmer la suppression</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
