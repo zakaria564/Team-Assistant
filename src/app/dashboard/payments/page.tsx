@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel,
+  DropdownMenuLabel, 
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
@@ -125,13 +125,17 @@ export default function PaymentsPage() {
               if (!player) return null;
 
               const transactions = data.transactions || [];
-              const amountPaid = transactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+              const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
               const totalAmount = data.totalAmount || 0;
               const amountRemaining = totalAmount - amountPaid;
               
-              let status: PaymentStatus = data.status;
-              if (amountRemaining <= 0) {
-                status = 'Payé';
+              let calculatedStatus: PaymentStatus = data.status;
+              if (amountRemaining <= 0.01) {
+                calculatedStatus = 'Payé';
+              } else if (amountPaid > 0) {
+                calculatedStatus = 'Partiel';
+              } else {
+                calculatedStatus = 'En attente';
               }
 
               return { 
@@ -144,7 +148,7 @@ export default function PaymentsPage() {
                   amountRemaining,
                   totalAmount,
                   transactions,
-                  status
+                  status: calculatedStatus
               } as Payment;
           })
           .filter((p): p is Payment => p !== null);
@@ -290,7 +294,7 @@ export default function PaymentsPage() {
      if (groups.length === 0) {
         return (
             <div className="text-center text-muted-foreground py-10">
-                {searchTerm || showOnlyPending ? "Aucun joueur ne correspond à vos critères." : "Aucun paiement trouvé dans cette section."}
+                {searchTerm || showOnlyPending ? "Aucun joueur ne correspond à vos critères." : "Aucun paiement trouvé."}
             </div>
         )
     }
@@ -319,14 +323,14 @@ export default function PaymentsPage() {
                           <div className="flex flex-col text-left">
                               <div className="flex items-center gap-2">
                                   <span className="font-bold text-base">{playerGroup.playerName}</span>
-                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1">Retard/Incomplet</Badge>}
+                                  {playerGroup.hasPending && <Badge variant="destructive" className="text-[10px] h-4 px-1">Retard</Badge>}
                               </div>
-                              <Badge variant="secondary" className="w-fit mt-1">{playerGroup.payments.length} paiement(s)</Badge>
+                              <Badge variant="secondary" className="w-fit mt-1">{playerGroup.payments.length} versement(s)</Badge>
                           </div>
                       </div>
                       <div className="flex items-center gap-4">
                             <div className="hidden sm:flex flex-col items-end mr-2">
-                                <span className="text-xs text-muted-foreground uppercase font-bold">Mois en cours</span>
+                                <span className="text-xs text-muted-foreground uppercase font-bold">État actuel</span>
                                 <Badge className={cn("whitespace-nowrap mt-0.5", getBadgeClass(playerGroup.currentMonthStatus))}>
                                   {playerGroup.currentMonthStatus}
                                 </Badge>
@@ -340,7 +344,7 @@ export default function PaymentsPage() {
                           <TableHeader>
                               <TableRow>
                               <TableHead>Description</TableHead>
-                              <TableHead className="hidden md:table-cell">Montant</TableHead>
+                              <TableHead className="hidden md:table-cell">Versé / Total</TableHead>
                               <TableHead className="hidden sm:table-cell">Statut</TableHead>
                               <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
@@ -355,7 +359,7 @@ export default function PaymentsPage() {
                                                   <span className="text-muted-foreground text-sm md:hidden">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</span>
                                               </div>
                                           </TableCell>
-                                          <TableCell className="hidden md:table-cell">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
+                                          <TableCell className="hidden md:table-cell font-mono">{payment.amountPaid.toFixed(2)} / {payment.totalAmount.toFixed(2)} MAD</TableCell>
                                           <TableCell className="hidden sm:table-cell">
                                               <Badge className={cn("whitespace-nowrap", getBadgeClass(payment.status))}>
                                                   {payment.status}
@@ -365,7 +369,6 @@ export default function PaymentsPage() {
                                               <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                   <Button variant="ghost" className="h-8 w-8 p-0">
-                                                      <span className="sr-only">Ouvrir le menu</span>
                                                       <MoreHorizontal className="h-4 w-4" />
                                                   </Button>
                                                   </DropdownMenuTrigger>
@@ -381,7 +384,7 @@ export default function PaymentsPage() {
                                                       <DropdownMenuItem asChild className="cursor-pointer">
                                                           <Link href={`/dashboard/payments/${payment.id}/edit`}>
                                                               <PlusCircle className="mr-2 h-4 w-4" />
-                                                              Ajouter un versement
+                                                              Enregistrer versement
                                                           </Link>
                                                       </DropdownMenuItem>
                                                   )}
@@ -420,8 +423,8 @@ export default function PaymentsPage() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-              <h1 className="text-3xl font-bold tracking-tight">Paiements des Joueurs</h1>
-              <p className="text-muted-foreground">Suivez les cotisations et les règlements de vos joueurs.</p>
+              <h1 className="text-3xl font-bold tracking-tight">Suivi des Cotisations</h1>
+              <p className="text-muted-foreground">Gérez les paiements mensuels et les impayés de vos joueurs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" className="w-1/2 md:w-auto" onClick={handleExport}>
@@ -431,21 +434,21 @@ export default function PaymentsPage() {
               <Button asChild className="w-1/2 md:w-auto">
                 <Link href="/dashboard/payments/add">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Nouveau Paiement
+                  Nouveau Dossier
                 </Link>
               </Button>
           </div>
         </div>
 
         {pendingCount > 0 && (
-            <Card className="bg-destructive/5 border-destructive/20">
+            <Card className="bg-destructive/5 border-destructive/20 shadow-sm">
                 <CardContent className="p-4 flex items-center gap-4">
                     <div className="bg-destructive/10 p-2 rounded-full">
                         <AlertCircle className="h-6 w-6 text-destructive" />
                     </div>
                     <div>
-                        <p className="font-bold text-destructive">{pendingCount} joueur(s) ont des paiements non régularisés.</p>
-                        <p className="text-sm text-muted-foreground">Utilisez le filtre pour identifier rapidement qui contacter.</p>
+                        <p className="font-bold text-destructive">{pendingCount} joueur(s) en attente de régularisation.</p>
+                        <p className="text-sm text-muted-foreground">Filtrez par "retards" pour les contacter rapidement.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -467,41 +470,41 @@ export default function PaymentsPage() {
                     checked={showOnlyPending} 
                     onCheckedChange={(checked) => setShowShowOnlyPending(checked === true)}
                 />
-                <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-semibold">
-                    <Filter className="h-4 w-4" />
-                    Afficher uniquement les retards
+                <Label htmlFor="pending-filter" className="flex items-center gap-2 cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                    <Filter className="h-4 w-4 text-primary" />
+                    Afficher les retards uniquement
                 </Label>
             </div>
         </div>
 
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Suivi des paiements</CardTitle>
-            <CardDescription>Liste des cotisations regroupées par joueur.</CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="border-b bg-slate-50/50">
+            <CardTitle>Historique Groupé</CardTitle>
+            <CardDescription>Liste complète des cotisations par joueur et par genre.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {loading || loadingUser ? (
               <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : groupedAndFilteredPayments.length > 0 ? (
                  <Tabs defaultValue="male">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="male">Masculin ({malePayments.length})</TabsTrigger>
-                        <TabsTrigger value="female">Féminin ({femalePayments.length})</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-12 mb-6">
+                        <TabsTrigger value="male" className="font-bold">Masculin ({malePayments.length})</TabsTrigger>
+                        <TabsTrigger value="female" className="font-bold">Féminin ({femalePayments.length})</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="male" className="mt-4">
+                    <TabsContent value="male" className="mt-0">
                         {renderPaymentGroups(malePayments)}
                     </TabsContent>
-                    <TabsContent value="female" className="mt-4">
+                    <TabsContent value="female" className="mt-0">
                         {renderPaymentGroups(femalePayments)}
                     </TabsContent>
                 </Tabs>
             ) : (
-                <div className="text-center text-muted-foreground py-10">
-                    <p className="text-lg font-medium">Aucun résultat trouvé.</p>
-                    <p className="text-sm">Essayez de modifier vos filtres ou vos termes de recherche.</p>
+                <div className="text-center text-muted-foreground py-16 bg-slate-50 rounded-xl border-2 border-dashed">
+                    <p className="text-lg font-bold">Aucun résultat</p>
+                    <p className="text-sm">Vérifiez vos filtres ou ajoutez une nouvelle cotisation.</p>
                 </div>
             )}
           </CardContent>
@@ -511,18 +514,18 @@ export default function PaymentsPage() {
       <AlertDialog open={!!paymentToDelete} onOpenChange={(isOpen) => !isOpen && setPaymentToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer ce paiement ?</AlertDialogTitle>
+              <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
               <AlertDialogDescription>
-              Cette action est irréversible. Toutes les transactions liées à "{paymentToDelete?.description}" seront effacées.
+              Cette action est irréversible. L'historique des transactions liées à "{paymentToDelete?.description}" sera effacé.
               </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setPaymentToDelete(null)}>Annuler</AlertDialogCancel>
               <AlertDialogAction 
               onClick={confirmDeletePayment}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold"
               >
-              Supprimer définitivement
+              Confirmer la suppression
               </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

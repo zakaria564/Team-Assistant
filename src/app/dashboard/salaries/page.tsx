@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -109,7 +108,6 @@ export default function SalariesPage() {
                 const totalAmount = data.totalAmount || 0;
                 const amountRemaining = totalAmount - amountPaid;
 
-                // Logic correction: Determine status based on math
                 let calculatedStatus = data.status;
                 if (amountRemaining > 0.01 && amountPaid > 0) {
                     calculatedStatus = 'Partiel';
@@ -180,7 +178,7 @@ export default function SalariesPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Salaires des Entraîneurs</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Gérez les rémunérations et le suivi du club.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Suivez les rémunérations et l'état des paiements.</p>
         </div>
         <Button asChild className="w-full sm:w-auto h-12 md:h-10 text-base md:text-sm">
           <Link href="/dashboard/salaries/add">
@@ -217,7 +215,7 @@ export default function SalariesPage() {
                   <p className="font-bold text-base md:text-base truncate text-slate-900">{group.coachName}</p>
                   <p className="text-xs text-muted-foreground font-semibold">{group.salaries.length} fiche(s) enregistrée(s)</p>
                 </div>
-                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">Dû</Badge>}
+                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">Solde dû</Badge>}
               </div>
               {openCollapsibles[group.coachId] ? <ChevronDown className="h-6 w-6 shrink-0 text-slate-400" /> : <ChevronRight className="h-6 w-6 shrink-0 text-slate-400" />}
             </CollapsibleTrigger>
@@ -227,7 +225,7 @@ export default function SalariesPage() {
                     <TableHeader className="bg-muted/20">
                     <TableRow>
                         <TableHead className="min-w-[140px] font-bold">Période</TableHead>
-                        <TableHead className="hidden sm:table-cell font-bold">Total</TableHead>
+                        <TableHead className="hidden sm:table-cell font-bold">Fixé</TableHead>
                         <TableHead className="font-bold">Payé</TableHead>
                         <TableHead className="font-bold">Statut</TableHead>
                         <TableHead className="text-right font-bold pr-4">Actions</TableHead>
@@ -252,27 +250,27 @@ export default function SalariesPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl border-2">
-                                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions Disponibles</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Actions</DropdownMenuLabel>
                                 <Link href={`/dashboard/salaries/${salary.id}`} passHref>
                                     <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
-                                        <FileText className="mr-3 h-4 w-4 text-primary" /> Détails de la fiche
+                                        <FileText className="mr-3 h-4 w-4 text-primary" /> Détails complets
                                     </DropdownMenuItem>
                                 </Link>
                                 {salary.status !== 'Payé' && (
                                     <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
                                         <DropdownMenuItem className="cursor-pointer py-2.5 font-black text-sm text-primary bg-primary/5">
-                                            <PlusCircle className="mr-3 h-4 w-4" /> Enregistrer versement
+                                            <PlusCircle className="mr-3 h-4 w-4" /> Ajouter versement
                                         </DropdownMenuItem>
                                     </Link>
                                 )}
                                 <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
                                     <DropdownMenuItem className="cursor-pointer py-2.5 font-semibold text-sm">
-                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu PDF (Fiche de paie)
+                                        <Download className="mr-3 h-4 w-4 text-slate-600" /> Reçu de paie
                                     </DropdownMenuItem>
                                 </Link>
                                 <DropdownMenuSeparator className="my-1" />
                                 <DropdownMenuItem className="cursor-pointer py-2.5 font-bold text-sm text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setSalaryToDelete(salary)}>
-                                    <Trash2 className="mr-3 h-4 w-4" /> Supprimer définitivement
+                                    <Trash2 className="mr-3 h-4 w-4" /> Supprimer
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
@@ -287,7 +285,7 @@ export default function SalariesPage() {
         ))}
         {groupedSalaries.length === 0 && (
           <div className="text-center py-24 text-muted-foreground border rounded-lg bg-card bg-slate-50/50 italic">
-            Aucun salaire enregistré pour le moment.
+            Aucun enregistrement trouvé.
           </div>
         )}
       </div>
@@ -296,7 +294,7 @@ export default function SalariesPage() {
         <AlertDialogContent className="w-[95%] rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black">Supprimer cette fiche ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600">Cette action est irréversible. L'historique des versements sera totalement effacé pour cette période.</AlertDialogDescription>
+            <AlertDialogDescription className="text-slate-600">Cette action supprimera tout l'historique associé à cette période.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel className="h-12 md:h-10 font-bold">Annuler</AlertDialogCancel>

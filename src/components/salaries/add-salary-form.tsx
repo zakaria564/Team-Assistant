@@ -141,9 +141,13 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
 
     useEffect(() => {
         if (watchTotal > 0) {
-            if (currentPaid >= watchTotal - 0.01) form.setValue("status", "Payé");
-            else if (currentPaid > 0) form.setValue("status", "Partiel");
-            else form.setValue("status", "En attente");
+            if (currentPaid >= watchTotal - 0.01) {
+                form.setValue("status", "Payé");
+            } else if (currentPaid > 0) {
+                form.setValue("status", "Partiel");
+            } else {
+                form.setValue("status", "En attente");
+            }
         }
     }, [currentPaid, watchTotal, form]);
 
@@ -341,9 +345,9 @@ export function AddSalaryForm({ salary }: AddSalaryFormProps) {
                     name="status"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier</FormLabel>
+                            <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10"><SelectValue placeholder="Choisir le statut..." /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10"><SelectValue placeholder="Déterminé par le système..." /></SelectTrigger></FormControl>
                                 <SelectContent>{paymentStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         </FormItem>

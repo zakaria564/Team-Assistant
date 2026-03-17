@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -10,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -19,6 +18,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Badge } from "../ui/badge";
+import { cn } from "@/lib/utils";
 import React from "react";
 
 interface Player {
@@ -54,7 +55,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
     const isEditMode = !!payment;
     
     const amountAlreadyPaid = isEditMode 
-      ? (payment.transactions || []).reduce((acc, t) => acc + t.amount, 0)
+      ? (payment.transactions || []).reduce((acc, t) => acc + (t.amount || 0), 0)
       : 0;
 
     const formSchema = z.object({
@@ -65,13 +66,14 @@ function FormContent({ payment }: AddPaymentFormProps) {
         newTransactionMethod: z.string().optional(),
         status: z.enum(["Payé", "Partiel", "En attente", "En retard"]),
     }).superRefine((data, ctx) => {
-        const totalAmount = data.totalAmount || 0;
-        const amountRemaining = isEditMode ? (payment?.totalAmount || 0) - amountAlreadyPaid : totalAmount;
-        if (data.newTransactionAmount && data.newTransactionAmount > amountRemaining + 0.01) {
+        const total = data.totalAmount || 0;
+        const alreadyPaid = isEditMode ? amountAlreadyPaid : 0;
+        const remaining = Math.max(0, total - alreadyPaid);
+        if (data.newTransactionAmount && data.newTransactionAmount > (remaining + 0.01)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["newTransactionAmount"],
-                message: `Le versement ne peut pas dépasser le montant restant.`,
+                message: `Le versement ne peut pas dépasser le montant restant de ${remaining.toFixed(2)} MAD.`,
             });
         }
     });
@@ -121,11 +123,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
             setLoadingPlayers(true);
              try {
                 const currentMonthDesc = `Cotisation ${format(new Date(), "MMMM yyyy", { locale: fr })}`;
-                
-                // Récupérer TOUS les joueurs actifs
                 const playersQuery = query(collection(db, "players"), where("userId", "==", user.uid));
-                
-                // Récupérer les paiements DEJA EXISTANTS pour ce mois précis
                 const paymentsQuery = query(
                     collection(db, "payments"), 
                     where("userId", "==", user.uid),
@@ -133,10 +131,7 @@ function FormContent({ payment }: AddPaymentFormProps) {
                 );
 
                 const [playersSnap, paymentsSnap] = await Promise.all([getDocs(playersQuery), getDocs(paymentsQuery)]);
-                
                 const paidPlayerIds = new Set(paymentsSnap.docs.map(d => d.data().playerId));
-                
-                // On ne propose que les joueurs qui n'ont AUCUNE fiche de paiement pour ce mois
                 const filteredPlayers = playersSnap.docs
                     .map(doc => ({ id: doc.id, name: doc.data().name } as Player))
                     .filter(p => isEditMode ? true : !paidPlayerIds.has(p.id));
@@ -198,10 +193,10 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     name="playerId"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Joueur</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-background border-slate-200">
                                 <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur"} />
                             </SelectTrigger>
                             </FormControl>
@@ -225,8 +220,8 @@ function FormContent({ payment }: AddPaymentFormProps) {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl><Input {...field} value={field.value ?? ""} /></FormControl>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Description</FormLabel>
+                        <FormControl><Input {...field} value={field.value ?? ""} className="bg-background border-slate-200" /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -237,9 +232,9 @@ function FormContent({ payment }: AddPaymentFormProps) {
                   name="totalAmount"
                   render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Montant total (MAD)</FormLabel>
+                      <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Montant total dû (MAD)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                        <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} className="font-bold text-lg bg-background border-slate-200" />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
@@ -248,24 +243,25 @@ function FormContent({ payment }: AddPaymentFormProps) {
 
                 {isEditMode && payment && (
                   <Card className="bg-muted/30">
-                    <CardHeader><CardTitle className="text-lg">Historique</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-lg">Historique des règlements</CardTitle></CardHeader>
                     <CardContent className="text-sm">
                       <div className="w-full overflow-x-auto">
                         {(payment.transactions || []).length > 0 ? (
                           <ul className="space-y-2">
                             {payment.transactions.map((t, i) => (
-                                <li key={i} className="flex justify-between items-center">
-                                  <span>{t.amount.toFixed(2)} MAD ({t.method})</span>
+                                <li key={i} className="flex justify-between items-center bg-white p-2 rounded border border-slate-100">
+                                  <span className="font-medium">{t.amount.toFixed(2)} MAD</span>
+                                  <span className="text-xs text-muted-foreground">{t.method}</span>
                                 </li>
                             ))}
-                            <Separator />
-                              <li className="flex justify-between items-center font-bold">
-                                  <span>Total Payé</span>
+                            <Separator className="my-2" />
+                              <li className="flex justify-between items-center font-black text-slate-900">
+                                  <span className="uppercase text-[10px]">Total déjà versé</span>
                                   <span>{amountAlreadyPaid.toFixed(2)} MAD</span>
                               </li>
                           </ul>
                         ) : (
-                          <p className="text-muted-foreground">Aucune transaction.</p>
+                          <p className="text-muted-foreground italic">Aucun versement enregistré.</p>
                         )}
                       </div>
                     </CardContent>
@@ -273,17 +269,20 @@ function FormContent({ payment }: AddPaymentFormProps) {
                 )}
                
                  {(watchTotalAmount !== undefined && (watchTotalAmount > amountAlreadyPaid + 0.01)) || !isEditMode ? (
-                  <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
-                    <h4 className="font-bold text-primary">Nouveau versement</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4 rounded-xl border-2 border-primary/20 p-6 bg-primary/5 shadow-inner">
+                    <div className="flex justify-between items-center">
+                        <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> Nouveau Versement</h4>
+                        <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm border-primary/30">Reste: {(Math.max(0, (watchTotalAmount || 0) - amountAlreadyPaid)).toFixed(2)} MAD</Badge>
+                    </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="newTransactionAmount"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Montant (MAD)</FormLabel>
+                                <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant (MAD)</FormLabel>
                                 <FormControl>
-                                  <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} />
+                                  <Input type="number" step="0.01" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -294,9 +293,9 @@ function FormContent({ payment }: AddPaymentFormProps) {
                             name="newTransactionMethod"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Méthode</FormLabel>
+                                <FormLabel className="font-black text-[10px] uppercase text-slate-500">Méthode</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                  <FormControl><SelectTrigger className="h-12 font-bold shadow-sm bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl>
                                   <SelectContent>{paymentMethods.map(method => <SelectItem key={method} value={method}>{method}</SelectItem>)}</SelectContent>
                                 </Select>
                               </FormItem>
@@ -304,24 +303,30 @@ function FormContent({ payment }: AddPaymentFormProps) {
                         />
                       </div>
                   </div>
-                ) : null}
+                ) : (
+                    <div className="p-6 bg-green-50 border-2 border-green-200 rounded-2xl text-center">
+                        <p className="font-black text-green-700 uppercase tracking-widest flex items-center justify-center gap-2">
+                            <ShieldCheck className="h-5 w-5" /> Cotisation Intégralement Réglée
+                        </p>
+                    </div>
+                )}
 
                  <FormField
                     control={form.control}
                     name="status"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Statut</FormLabel>
+                        <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                            <FormControl><SelectTrigger className="bg-muted"><SelectValue /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10"><SelectValue placeholder="Déterminé par le système..." /></SelectTrigger></FormControl>
                             <SelectContent>{paymentStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
                         </Select>
                         </FormItem>
                     )}
                 />
 
-                <Button type="submit" disabled={loading || loadingPlayers} className="w-full !mt-8">
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}
+                <Button type="submit" disabled={loading || loadingPlayers} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95 !mt-12">
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirmer l'enregistrement"}
                 </Button>
             </form>
         </Form>
