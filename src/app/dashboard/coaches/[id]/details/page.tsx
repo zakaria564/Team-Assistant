@@ -11,7 +11,6 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 

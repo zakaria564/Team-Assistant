@@ -8,7 +8,6 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, User, Phone, Mail, Flag, Star, ClipboardList, LogIn, LogOut, FileDown, Fingerprint, MapPin, ShieldCheck, Cake, Shield, VenetianMask, Shirt } from "lucide-react";
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Badge } from "@/components/ui/badge";
@@ -129,7 +128,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                             <h2 className="text-lg font-black uppercase italic tracking-tighter text-white leading-none">FICHE</h2>
                             <div className="pt-0.5">
                                 <p className="text-primary font-black text-[6px] uppercase tracking-[0.2em]">OFFICIELLE JOUEUR</p>
-                                <p className="text-slate-500 text-[7px] font-bold">Saison {new Date().getFullYear()}</p>
+                                <p className="text-slate-500 text-[7px] font-bold">Le {format(new Date(), 'dd/MM/yyyy')}</p>
                             </div>
                         </div>
                     </header>
@@ -137,7 +136,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                     <div className="px-6 py-4 flex-grow flex flex-col">
                         <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col items-center gap-1.5 shrink-0">
-                                <div className="h-16 w-16 border-2 border-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center relative">
+                                <div className="h-16 w-16 border-2 border-white shadow-lg rounded-xl overflow-hidden bg-white flex items-center justify-center relative">
                                     {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" /> : <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
                                 </div>
                                 <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
@@ -151,7 +150,7 @@ export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id:
                                         <Badge className="bg-slate-900 text-white text-[7px] px-1 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{player.category}</Badge>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
+                                        <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 bg-slate-50 px-1 py-0.5 rounded-sm w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
                                     </div>
                                     <div className="flex flex-col items-center justify-center text-center p-1 bg-primary rounded-lg shadow-md">
                                         <span className="text-white font-black text-xs italic">#{player.number || "--"}</span>

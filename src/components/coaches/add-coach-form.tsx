@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, PlusCircle, Link as LinkIcon, ShieldCheck } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, PlusCircle, Link as LinkIcon, ShieldCheck, User, Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
@@ -52,11 +52,11 @@ const DateField = ({ label, field }: { label: string, field: any }) => (
         <FormLabel>{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="AAAA-MM-DD" {...field} value={field.value || ""} className="flex-1" />
+                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1" />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10"><CalendarIcon className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm"><CalendarIcon className="h-4 w-4" /></Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
@@ -138,77 +138,92 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   }
 
   return (
-    <CardContent>
+    <CardContent className="pt-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="space-y-8">
               <div className="space-y-4">
-                  <div className="aspect-square bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner">
+                  <div className="aspect-square bg-slate-50 rounded-2xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner group">
                        {!form.watch('photoUrl') && hasCameraPermission ? <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                      : form.watch('photoUrl') ? <img src={form.watch('photoUrl')} className="w-full h-full object-contain p-1" />
-                      : <p className="text-muted-foreground p-4 text-center">Caméra non disponible.</p>}
+                      : form.watch('photoUrl') ? <img src={form.watch('photoUrl')} className="w-full h-full object-contain p-2" />
+                      : <div className="flex flex-col items-center gap-2 text-muted-foreground"><Camera className="h-12 w-12 opacity-20" /><p className="text-xs font-bold uppercase">Caméra inactive</p></div>}
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
-                  <div className="grid grid-cols-2 gap-2">
-                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-10 text-xs" size="sm">Prendre</Button>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-10 text-xs" size="sm">Galerie</Button>
+                  <div className="grid grid-cols-2 gap-3">
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px]" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px]" size="sm"><Upload className="mr-2 h-4 w-4"/>Galerie</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-10 col-span-2 text-xs" size="sm">Changer</Button>}
+                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
                   </div>
               </div>
-              <Separator />
-              <div className="space-y-4">
-                  <h3 className="text-lg font-bold flex items-center gap-2 uppercase tracking-tighter"><Fingerprint className="h-5 w-5 text-primary" />Infos Club</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+                  <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Infos Club</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({ field }) => (
                         <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coachStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <FormField control={form.control} name="specialty" render={({ field }) => (
+                        <FormItem><FormLabel>Spécialité</FormLabel><FormControl><Input placeholder="Ex: Entraîneur Principal" {...field} /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="professionalId" render={({ field }) => (
+                        <FormItem><FormLabel>ID Professionnel (Optionnel)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                      )} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="entryDate" render={({ field }) => <DateField label="Date d'entrée" field={field} />} />
                       <FormField control={form.control} name="exitDate" render={({ field }) => <DateField label="Date de sortie" field={field} />} />
                   </div>
               </div>
           </div>
-          <div className="space-y-6">
-              <div className="space-y-4">
-                  <h3 className="text-lg font-bold uppercase tracking-tighter">État Civil & Contact</h3>
+
+          <div className="space-y-8">
+              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+                  <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
                           <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
-                          <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                          <FormItem><FormLabel>N° CIN / ID</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                       )} />
                   </div>
-                   <FormField control={form.control} name="email" render={({ field }) => (
-                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                   <FormField control={form.control} name="phone" render={({ field }) => (
-                      <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem><FormLabel>Adresse</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
-                  )} />
-              </div>
-              <Separator />
-              <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold uppercase tracking-tighter flex items-center gap-2"><FileText className="h-5 w-5" />Documents</h3>
-                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })}><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <FormField control={form.control} name="email" render={({ field }) => (
+                        <FormItem><FormLabel>Email professionnel</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="phone" render={({ field }) => (
+                        <FormItem><FormLabel>Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
                   </div>
-                  {fields.map((field, index) => (
-                      <DocumentPickerItem key={field.id} index={index} remove={remove} form={form} />
-                  ))}
+                  <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Adresse de résidence</FormLabel><FormControl><Textarea {...field} className="min-h-[80px]" /></FormControl></FormItem>
+                  )} />
               </div>
-              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase h-14 shadow-lg active:scale-95 transition-transform">
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter l'entraîneur"}
+
+              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+                  <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6" />Documents Numérisés</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px]"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
+                  </div>
+                  <div className="space-y-4">
+                    {fields.map((field, index) => (
+                        <DocumentPickerItem key={field.id} index={index} remove={remove} form={form} />
+                    ))}
+                    {fields.length === 0 && <p className="text-center py-8 text-muted-foreground italic text-xs">Aucun document ajouté.</p>}
+                  </div>
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase h-16 shadow-2xl active:scale-[0.98] transition-all text-lg tracking-[0.2em]">
+              {loading ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : isEditMode ? "Enregistrer" : "Ajouter l'entraîneur"}
               </Button>
           </div>
         </form>
@@ -223,21 +238,27 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-4 border rounded-lg bg-slate-50 space-y-3 relative group">
-            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+        <div className="p-5 border-2 rounded-2xl bg-white space-y-4 relative group shadow-sm">
+            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                    <FormItem><FormLabel>Nom</FormLabel><FormControl><Input placeholder="Ex: Licence" {...field} /></FormControl></FormItem>
+                    <FormItem><FormLabel>Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Expiration" field={field} />} />
             </div>
             <div className="space-y-2">
-                <FormLabel>Fichier (Galerie/PDF)</FormLabel>
+                <FormLabel>Fichier (Scan / Photo)</FormLabel>
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" className={cn("flex-1 h-10 font-bold", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir fichier</>}
+                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed")} onClick={() => fileRef.current?.click()} disabled={loading}>
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir de la galerie</>}
                     </Button>
-                    {url && <Button type="button" variant="secondary" size="icon" asChild><a href={url} target="_blank" rel="noopener noreferrer"><LinkIcon className="h-4 w-4" /></a></Button>}
+                    {url && (
+                        <Button type="button" variant="secondary" size="icon" className="h-12 w-12" asChild>
+                            <a href={url} target="_blank" rel="noopener noreferrer" title="Voir le document">
+                                <LinkIcon className="h-5 w-5" />
+                            </a>
+                        </Button>
+                    )}
                 </div>
                 <input type="file" ref={fileRef} className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0]; if (!file) return; setLoading(true);
