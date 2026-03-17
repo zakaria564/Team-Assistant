@@ -55,12 +55,25 @@ const formSchema = z.object({
   professionalId: z.string().optional(),
 });
 
+const formatDateInput = (value: string) => {
+  const numbers = value.replace(/\D/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+};
+
 const DateField = ({ label, field }: { label: string, field: any }) => (
     <FormItem className="flex flex-col">
         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background border-slate-200 font-medium" />
+                <Input 
+                    placeholder="JJ/MM/AAAA" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(formatDateInput(e.target.value))}
+                    className="flex-1 bg-background border-slate-200 font-medium" 
+                />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
@@ -180,7 +193,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                         <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir une spécialité..." /></SelectTrigger></FormControl><SelectContent>{coachSpecialties.map(spec => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="professionalId" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly placeholder="Attribué automatiquement" className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">ID Professionnel</FormLabel><FormControl><Input {...field} readOnly disabled className="bg-background border-slate-200 cursor-not-allowed opacity-70 font-mono text-xs" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
