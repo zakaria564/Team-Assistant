@@ -15,14 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default function PaymentReceiptPage({ params }: PageProps) {
-  const unwrappedParams = React.use(params);
-  const paymentId = unwrappedParams.id;
-  
+export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: paymentId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

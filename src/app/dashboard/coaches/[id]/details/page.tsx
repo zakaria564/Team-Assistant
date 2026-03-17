@@ -36,14 +36,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default function CoachDetailsPdfPage({ params }: PageProps) {
-  const unwrappedParams = React.use(params);
-  const coachId = unwrappedParams.id;
-  
+export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: coachId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -172,8 +166,8 @@ export default function CoachDetailsPdfPage({ params }: PageProps) {
                                 <div>
                                     <SectionTitle title="Parcours" icon={Shield} />
                                     <DetailItem icon={Shield} label="Catégorie Assignée" value={coach.category} />
-                                    <DetailItem icon={LogIn} label="Date d'entrée" value={coach.entryDate ? format(new Date(coach.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                                    <DetailItem icon={LogOut} label="Fin de mission" value={coach.exitDate ? format(new Date(coach.exitDate), 'dd/MM/yyyy', { locale: fr }) : "En poste"} />
+                                    <DetailItem icon={LogIn} label="Date d'entrée" value={coach.entryDate} />
+                                    <DetailItem icon={LogOut} label="Fin de mission" value={coach.exitDate || "En poste"} />
                                 </div>
                             </div>
                         </main>

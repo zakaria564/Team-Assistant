@@ -36,14 +36,8 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default function PlayerDetailsPdfPage({ params }: PageProps) {
-  const unwrappedParams = React.use(params);
-  const playerId = unwrappedParams.id;
-  
+export default function PlayerDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = React.use(params);
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();
@@ -170,7 +164,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             <div className="space-y-2">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
-                                    <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
+                                    <DetailItem icon={Cake} label="Naissance" value={player.birthDate} />
                                     <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
                                     <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
                                     <DetailItem icon={Fingerprint} label="N° CIN / ID" value={player.cin} />
@@ -183,14 +177,13 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName || "Non assigné"} />
-                                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                                    <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Actif"} />
+                                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
+                                    <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate || "Actif"} />
                                 </div>
                                 {player.tutorName && (
                                     <div className="pt-2">
                                         <SectionTitle title="Responsable Légal" icon={VenetianMask} />
                                         <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
-                                        <DetailItem icon={Fingerprint} label="N° CIN Tuteur" value={player.tutorCin} />
                                         <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
                                         <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
                                     </div>
