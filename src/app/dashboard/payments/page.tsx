@@ -219,10 +219,6 @@ export default function PaymentsPage() {
     return { malePayments: male, femalePayments: female };
   }, [groupedAndFilteredPayments]);
 
-  const pendingCount = useMemo(() => {
-      return groupedAndFilteredPayments.filter(p => p.hasPending || p.payments.length === 0).length;
-  }, [groupedAndFilteredPayments]);
-
   const confirmDeletePayment = async () => {
     if(!paymentToDelete) return;
     try {
