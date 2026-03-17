@@ -293,7 +293,7 @@ export default function PaymentsPage() {
                             </div>
                           <div className="flex flex-col text-left min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
                                     {playerGroup.playerName}
                                   </p>
                                   {playerGroup.hasPending && (
@@ -302,7 +302,7 @@ export default function PaymentsPage() {
                                       </Badge>
                                   )}
                               </div>
-                              <p className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight mt-1">
+                              <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mt-1">
                                 {playerGroup.payments.length} {playerGroup.payments.length > 1 ? 'Dossiers' : 'Dossier'}
                               </p>
                           </div>

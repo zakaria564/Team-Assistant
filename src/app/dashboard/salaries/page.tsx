@@ -213,11 +213,11 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
                     {group.coachName}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight">
+                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">
                       {group.salaries.length} {group.salaries.length > 1 ? 'Fiches' : 'Fiche'}
                     </p>
                     {group.hasPending && (
