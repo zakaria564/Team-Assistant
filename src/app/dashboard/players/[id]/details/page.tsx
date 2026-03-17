@@ -16,13 +16,13 @@ import { AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string, children?: React.ReactNode }) => (
-  <div className="flex items-start gap-3 mb-4 text-left">
+  <div className="flex items-start gap-3 mb-3 text-left">
     <div className="mt-0.5 bg-slate-100 p-1.5 rounded flex items-center justify-center shrink-0 border border-slate-200">
         <Icon className="h-3 w-3 text-slate-700" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[8px] font-black uppercase tracking-wider text-slate-400 leading-none mb-1.5">{label}</p>
-      <div className="text-[11px] font-bold text-slate-900 break-words leading-tight">
+      <p className="text-[8px] font-black uppercase tracking-wider text-slate-400 leading-none mb-1">{label}</p>
+      <div className="text-[10px] font-bold text-slate-900 break-words leading-tight">
         {value || children || "Non spécifié"}
       </div>
     </div>
@@ -30,8 +30,8 @@ const DetailItem = ({ icon: Icon, label, value, children }: { icon: React.Elemen
 );
 
 const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.ElementType }) => (
-    <div className="mb-4 flex items-center gap-2 border-b-2 border-primary/10 pb-1.5">
-        {Icon && <Icon className="h-3.5 w-3.5 text-primary" />}
+    <div className="mb-3 flex items-center gap-2 border-b-2 border-primary/10 pb-1">
+        {Icon && <Icon className="h-3 w-3 text-primary" />}
         <h2 className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-900">{title}</h2>
     </div>
 );
@@ -146,7 +146,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                 )}
                             </div>
                             <div className="space-y-0.5">
-                                <h1 className="text-base font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
+                                <h1 className="text-sm font-black uppercase tracking-tighter text-white leading-none">{clubName}</h1>
                                 <div className="text-slate-400 text-[8px] font-semibold leading-tight max-w-[180px]">
                                     <p className="break-words">{clubAddress || "Siège Social"}</p>
                                 </div>
@@ -195,7 +195,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                         </section>
 
                         <main className="grid grid-cols-2 gap-8 mb-4">
-                            <div className="space-y-4">
+                            <div className="space-y-1">
                                 <div>
                                     <SectionTitle title="État Civil & Contact" icon={User} />
                                     <DetailItem icon={Cake} label="Naissance" value={player.birthDate ? format(new Date(player.birthDate), 'dd MMMM yyyy', { locale: fr }) : undefined} />
@@ -207,7 +207,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <DetailItem icon={MapPin} label="Adresse" value={player.address} />
                                 </div>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-1">
                                 <div>
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
@@ -225,14 +225,14 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                             </div>
                         </main>
 
-                        <div className="mt-auto pt-12 flex flex-col items-center">
-                            <div className="text-center space-y-8 w-full flex flex-col items-center">
+                        <div className="pt-12 flex flex-col items-center">
+                            <div className="text-center space-y-6 w-full flex flex-col items-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
                                 <div className="w-40 border-b-2 border-slate-300"></div>
                             </div>
                         </div>
 
-                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-12 shrink-0">
+                        <footer className="pt-3 border-t border-slate-100 flex flex-row justify-between items-end gap-4 text-left mt-auto shrink-0">
                             <div className="space-y-0.5 pb-1">
                                 <div className="flex items-center gap-1 text-slate-300">
                                     <ShieldCheck className="h-3 w-3" />
