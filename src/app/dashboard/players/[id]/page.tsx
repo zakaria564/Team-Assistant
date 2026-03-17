@@ -6,12 +6,13 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, FileText, ExternalLink } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Star, Shirt, ClipboardList, Phone, Mail, Fingerprint, Cake, Flag, Home, User, VenetianMask, FileText, ExternalLink, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: string, value?: string, href?: string }) => (
   <div className="flex items-start gap-3">
@@ -69,8 +70,8 @@ export default function PlayerDetailPage({ params }: PageProps) {
   if (loading || loadingUser) return <div className="flex justify-center items-center h-full py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   if (!player) return null;
 
-  const birthDate = player.birthDate ? format(new Date(player.birthDate), "dd MMMM yyyy", { locale: fr }) : undefined;
-  const entryDate = player.entryDate ? format(new Date(player.entryDate), "dd/MM/yyyy", { locale: fr }) : undefined;
+  const birthDate = player.birthDate || undefined;
+  const entryDate = player.entryDate || undefined;
   const playerInitial = player.name?.charAt(0)?.toUpperCase() || "P";
 
   return (
@@ -195,15 +196,32 @@ export default function PlayerDetailPage({ params }: PageProps) {
                                     <div>
                                         <p className="text-sm font-bold text-slate-800">{doc.name}</p>
                                         {doc.validityDate && (
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Expire le : {format(new Date(doc.validityDate), 'dd/MM/yyyy')}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Expire le : {doc.validityDate}</p>
                                         )}
                                     </div>
                                 </div>
-                                <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="h-4 w-4 mr-2" /> Ouvrir
-                                    </a>
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Eye className="h-4 w-4 mr-2" /> Aperçu
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-3xl">
+                                            <DialogHeader>
+                                                <DialogTitle>{doc.name}</DialogTitle>
+                                            </DialogHeader>
+                                            <div className="mt-4 flex justify-center bg-slate-50 rounded-xl overflow-hidden border">
+                                                <img src={doc.url} alt={doc.name} className="max-w-full h-auto max-h-[75vh] object-contain" />
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                    <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href={doc.url} download={doc.name}>
+                                            <ExternalLink className="h-4 w-4 mr-2" /> Télécharger
+                                        </a>
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>

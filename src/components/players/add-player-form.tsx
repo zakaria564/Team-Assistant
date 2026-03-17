@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Fingerprint, Upload, Mail, Phone, Calendar as CalendarIcon, FileText, Trash2, Link as LinkIcon, ShieldCheck, User, MapPin } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Fingerprint, Upload, Mail, Phone, Calendar as CalendarIcon, FileText, Trash2, ShieldCheck, User, MapPin, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
@@ -16,10 +16,11 @@ import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 const playerPositions = [
@@ -68,19 +69,19 @@ interface Coach { id: string; name: string; }
 
 const DateField = ({ label, field }: { label: string, field: any }) => (
     <FormItem className="flex flex-col">
-        <FormLabel>{label}</FormLabel>
+        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">{label}</FormLabel>
         <div className="flex gap-2">
             <FormControl>
-                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background" />
+                <Input placeholder="JJ/MM/AAAA" {...field} value={field.value || ""} className="flex-1 bg-background font-medium" />
             </FormControl>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background"><CalendarIcon className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" className="shrink-0 h-10 w-10 shadow-sm bg-background border-slate-200"><CalendarIcon className="h-4 w-4 text-primary" /></Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
                         mode="single"
-                        selected={field.value ? new Date(field.value.split('/').reverse().join('-')) : undefined}
+                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined}
                         onSelect={(date) => date && field.onChange(format(date, "dd/MM/yyyy"))}
                         initialFocus
                     />
@@ -184,8 +185,8 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="grid grid-cols-2 gap-3">
-                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background" size="sm"><Camera className="mr-2 h-4 w-4"/>Prendre</Button>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background" size="sm"><Upload className="mr-2 h-4 w-4"/>Galerie</Button>
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Camera className="mr-2 h-4 w-4 text-primary"/>Prendre</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Upload className="mr-2 h-4 w-4 text-primary"/>Galerie</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                       {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
                   </div>
@@ -195,18 +196,18 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Parcours Sportif</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="position" render={({ field }) => (
-                        <FormItem><FormLabel>Poste Principal</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Choisir un poste..." /></SelectTrigger></FormControl><SelectContent>{playerPositions.map(pos => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Poste Principal</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir un poste..." /></SelectTrigger></FormControl><SelectContent>{playerPositions.map(pos => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="number" render={({ field }) => (
-                        <FormItem><FormLabel>N° de Maillot</FormLabel><FormControl><Input type="number" {...field} className="bg-background" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° de Maillot</FormLabel><FormControl><Input type="number" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="coachId" render={({ field }) => (
-                        <FormItem><FormLabel>Entraîneur Référent</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Choisir un coach..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">Aucun</SelectItem>{coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur Référent</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue placeholder="Choisir un coach..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">Aucun</SelectItem>{coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -214,7 +215,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                       <FormField control={form.control} name="exitDate" render={({ field }) => <DateField label="Date de sortie" field={field} />} />
                   </div>
                   <FormField control={form.control} name="status" render={({ field }) => (
-                    <FormItem><FormLabel>Statut actuel</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
+                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut actuel</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></FormItem>
                   )} />
               </div>
           </div>
@@ -223,32 +224,32 @@ export function AddPlayerForm({ player }: { player?: any }) {
               <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Nom Complet du Joueur</FormLabel><FormControl><Input {...field} placeholder="Prénom et NOM" className="bg-background" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom Complet du Joueur</FormLabel><FormControl><Input {...field} placeholder="Prénom et NOM" className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="birthDate" render={({ field }) => <DateField label="Date de naissance" field={field} />} />
                       <FormField control={form.control} name="gender" render={({ field }) => (
-                        <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Genre</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="nationality" render={({ field }) => (
-                          <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
+                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger className="bg-background border-slate-200"><SelectValue /></SelectTrigger></FormControl><SelectContent>{["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select></FormItem>
                       )} />
                       <FormField control={form.control} name="cin" render={({ field }) => (
-                          <FormItem><FormLabel>N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl></FormItem>
+                          <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN / ID</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="phone" render={({ field }) => (
-                        <FormItem><FormLabel>Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} className="bg-background" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone mobile</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>Email personnel</FormLabel><FormControl><Input type="email" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email personnel</FormLabel><FormControl><Input type="email" {...field} className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
                   <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem><FormLabel>Adresse de résidence</FormLabel><FormControl><Textarea {...field} className="min-h-[80px] bg-background" /></FormControl></FormItem>
+                    <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Adresse de résidence</FormLabel><FormControl><Textarea {...field} className="min-h-[80px] bg-background border-slate-200" /></FormControl></FormItem>
                   )} />
               </div>
 
@@ -256,26 +257,26 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />Responsable Légal (Tuteur)</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="tutorName" render={({ field }) => (
-                        <FormItem><FormLabel>Nom du Tuteur</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nom du Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorCin" render={({ field }) => (
-                        <FormItem><FormLabel>N° CIN Tuteur</FormLabel><FormControl><Input {...field} className="bg-background" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° CIN Tuteur</FormLabel><FormControl><Input {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="tutorPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Téléphone Tuteur</FormLabel><FormControl><Input type="tel" {...field} className="bg-background" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Téléphone Tuteur</FormLabel><FormControl><Input type="tel" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email du tuteur</FormLabel><FormControl><Input type="email" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">Email du tuteur</FormLabel><FormControl><Input type="email" {...field} className="bg-background border-slate-200" /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
               </div>
 
               <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6" />Documents Numérisés</h3>
-                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px] bg-background"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
+                      <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6 text-primary" />Documents Numérisés</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px] bg-background border-slate-200"><PlusCircle className="h-4 w-4 mr-2 text-primary" />Ajouter</Button>
                   </div>
                   <div className="space-y-4">
                     {fields.map((field, index) => (
@@ -285,7 +286,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase h-16 shadow-2xl active:scale-[0.98] transition-all text-lg tracking-[0.2em]">
+              <Button type="submit" disabled={loading} className="w-full !mt-12 font-black uppercase h-16 shadow-2xl active:scale-[0.98] transition-all text-lg tracking-[0.2em] bg-primary hover:bg-primary/90 text-white rounded-xl">
               {loading ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : isEditMode ? "Enregistrer les modifications" : "Confirmer l'ajout du joueur"}
               </Button>
           </div>
@@ -301,29 +302,39 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="p-5 border-2 rounded-2xl bg-background space-y-4 relative group shadow-sm">
-            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-background shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+        <div className="p-5 border-2 rounded-2xl bg-background space-y-4 relative group shadow-sm border-slate-100">
+            <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md border text-destructive opacity-0 group-hover:opacity-100 transition-all z-10" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                    <FormItem><FormLabel>Désignation</FormLabel><FormControl><Input placeholder="Ex: Licence, CIN..." {...field} className="bg-background" /></FormControl></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-slate-500">Désignation</FormLabel><FormControl><Input placeholder="Ex: Licence, CIN..." {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
                 )} />
                 <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Expiration" field={field} />} />
             </div>
             <div className="space-y-2">
-                <FormLabel>Fichier (Scan / Photo)</FormLabel>
+                <FormLabel className="font-bold text-[10px] uppercase text-slate-500">Fichier (Scan / Photo)</FormLabel>
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir fichier</>}
+                    <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed bg-background border-slate-200")} onClick={() => fileRef.current?.click()} disabled={loading}>
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4 text-primary" />Choisir fichier</>}
                     </Button>
                     {url && (
-                        <Button type="button" variant="secondary" size="icon" className="h-12 w-12" asChild>
-                            <a href={url} target="_blank" rel="noopener noreferrer" title="Voir le document">
-                                <LinkIcon className="h-5 w-5" />
-                            </a>
-                        </Button>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button type="button" variant="secondary" size="icon" className="h-12 w-12 bg-slate-100 hover:bg-slate-200" title="Voir le document">
+                                    <Eye className="h-5 w-5 text-slate-700" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-3xl">
+                                <DialogHeader>
+                                    <DialogTitle>Aperçu du document</DialogTitle>
+                                </DialogHeader>
+                                <div className="mt-4 flex justify-center bg-slate-50 rounded-xl overflow-hidden border">
+                                    <img src={url} alt="Document" className="max-w-full h-auto max-h-[70vh] object-contain" />
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     )}
                 </div>
-                <input type="file" ref={fileRef} className="hidden" onChange={(e) => {
+                <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={(e) => {
                     const file = e.target.files?.[0]; if (!file) return; setLoading(true);
                     const reader = new FileReader(); reader.onload = (ev) => {
                         form.setValue(`documents.${index}.url`, ev.target?.result as string);
