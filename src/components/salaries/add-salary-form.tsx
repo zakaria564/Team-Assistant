@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, AlertCircle, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, AlertCircle, Calendar as CalendarIcon, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
+import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where, limit, orderBy } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { format, parse } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,29 +37,28 @@ interface SalaryData {
 const paymentStatuses = ["Payé", "Partiel", "En attente", "En retard"];
 const paymentMethods = ["Espèces", "Virement", "Chèque"];
 
-const formatDateInput = (value: string) => {
-  const numbers = value.replace(/\D/g, "");
-  if (numbers.length <= 2) return numbers;
-  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
-  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
-};
-
-export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
+export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }) {
     const [user] = useAuthState(auth);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [coaches, setCoaches] = useState<Coach[]>([]);
     const [loadingCoaches, setLoadingCoaches] = useState(true);
-    const router = useRouter();
-    const isEditMode = !!salary;
+    const [activeDossier, setActiveDossier] = useState<SalaryData | null>(null);
+    const [isCheckingDossier, setIsCheckingDossier] = useState(false);
     
+    const router = useRouter();
+    const isEditMode = !!initialSalary;
+    
+    const effectiveSalary = initialSalary || activeDossier;
+    const isUpdating = !!effectiveSalary;
+
     const amountAlreadyPaid = useMemo(() => 
-      isEditMode ? (salary?.transactions || []).reduce((acc, t) => acc + (parseFloat(t.amount?.toString() || "0")), 0) : 0
-    , [salary, isEditMode]);
+      isUpdating ? (effectiveSalary?.transactions || []).reduce((acc, t) => acc + (parseFloat(t.amount?.toString() || "0")), 0) : 0
+    , [effectiveSalary, isUpdating]);
 
     const formSchema = z.object({
         coachId: z.string().min(1, "L'entraîneur est requis."),
-        totalAmount: z.coerce.number().min(0.01, "Le montant total doit être positif."),
+        totalAmount: z.preprocess((val) => (val === "" ? undefined : val), z.coerce.number().min(0.01, "Le montant total doit être positif.")),
         description: z.string().min(3, "La description est requise."),
         newTransactionAmount: z.coerce.string().optional().or(z.literal('')),
         newTransactionMethod: z.string().optional(),
@@ -80,10 +79,10 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: isEditMode ? {
-            coachId: salary?.coachId,
-            totalAmount: salary?.totalAmount,
-            description: salary?.description,
-            status: salary?.status,
+            coachId: initialSalary?.coachId,
+            totalAmount: initialSalary?.totalAmount,
+            description: initialSalary?.description,
+            status: initialSalary?.status,
             newTransactionAmount: "",
             newTransactionMethod: "Espèces",
         } : {
@@ -98,6 +97,64 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
 
     const watchTotal = form.watch("totalAmount");
     const watchNewAmount = form.watch("newTransactionAmount");
+    const selectedCoachId = form.watch("coachId");
+
+    // Logic to detect existing open salary dossier when selecting a coach
+    useEffect(() => {
+        if (!selectedCoachId || isEditMode || !user) return;
+
+        const checkForOpenDossier = async () => {
+            setIsCheckingDossier(true);
+            try {
+                const q = query(
+                    collection(db, "salaries"), 
+                    where("userId", "==", user.uid), 
+                    where("coachId", "==", selectedCoachId),
+                    where("status", "!=", "Payé"),
+                    orderBy("status"),
+                    limit(1)
+                );
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const docData = snap.docs[0].data();
+                    const salaryData = { id: snap.docs[0].id, ...docData } as SalaryData;
+                    setActiveDossier(salaryData);
+                    
+                    form.reset({
+                        coachId: selectedCoachId,
+                        description: salaryData.description,
+                        totalAmount: salaryData.totalAmount,
+                        status: salaryData.status,
+                        newTransactionAmount: "",
+                        newTransactionMethod: "Espèces"
+                    });
+                    
+                    toast({ 
+                        title: "Fiche existante détectée", 
+                        description: `Reprise de la fiche : ${salaryData.description}` 
+                    });
+                } else {
+                    if (activeDossier) {
+                        setActiveDossier(null);
+                        form.reset({
+                            coachId: selectedCoachId,
+                            description: `Salaire ${format(new Date(), "MMMM yyyy", { locale: fr })}`,
+                            totalAmount: "" as any,
+                            status: "En attente",
+                            newTransactionAmount: "",
+                            newTransactionMethod: "Espèces"
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error checking for open salary dossier:", e);
+            } finally {
+                setIsCheckingDossier(false);
+            }
+        };
+
+        checkForOpenDossier();
+    }, [selectedCoachId, isEditMode, user, form, toast]);
 
     useEffect(() => {
         const total = parseFloat(watchTotal?.toString() || "0");
@@ -160,8 +217,8 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                 method: values.newTransactionMethod || "Espèces",
             } : null;
 
-            if (isEditMode && salary) {
-                const ref = doc(db, "salaries", salary.id);
+            if (isUpdating && effectiveSalary) {
+                const ref = doc(db, "salaries", effectiveSalary.id);
                 const update: any = { totalAmount: values.totalAmount, status: values.status, description: values.description };
                 if(trans) update.transactions = arrayUnion(trans);
                 await updateDoc(ref, update);
@@ -197,6 +254,7 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                                 {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Tous les coachs sont réglés</SelectItem>}
                             </SelectContent>
                         </Select>
+                        {isCheckingDossier && <p className="text-[10px] text-primary animate-pulse font-bold mt-1">Vérification du dossier...</p>}
                         <FormMessage />
                     </FormItem>
                 )} />
@@ -210,23 +268,29 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                 <FormField control={form.control} name="totalAmount" render={({ field }) => (
                     <FormItem>
                         <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Salaire Total Fixé (MAD)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} value={field.value ?? ""} className="font-bold text-lg bg-background border-slate-200" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />
 
-                {isEditMode && (
-                    <div className="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 flex justify-between items-center">
-                        <span className="text-sm font-semibold text-slate-500 uppercase tracking-widest">Déjà versé à ce jour</span>
-                        <span className="text-lg font-black text-slate-900">{amountAlreadyPaid.toFixed(2)} MAD</span>
+                {isUpdating && (
+                    <div className="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 flex justify-between items-center shadow-sm">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Montant déjà réglé</span>
+                            <span className="text-base font-black text-primary italic">DÉJÀ VERSÉ</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl font-black text-slate-900">{amountAlreadyPaid.toFixed(2)} MAD</span>
+                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        </div>
                     </div>
                 )}
 
                 {remainingToDisplay > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> Nouveau Versement</h4>
-                            <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200">SOLDE RESTANT : {remainingToDisplay.toFixed(2)} MAD</Badge>
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isUpdating ? "Versement Complémentaire" : "Nouveau Versement"}</h4>
+                            <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200 uppercase tracking-tighter">RESTE : {remainingToDisplay.toFixed(2)} MAD</Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
@@ -248,7 +312,7 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
 
                 <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé par défaut)</FormLabel>
+                        <FormLabel className="font-black text-[10px] uppercase text-slate-500">Statut du dossier (Calculé)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled>
                             <FormControl>
                                 <SelectTrigger className="bg-background border-slate-200 font-black tracking-widest text-xs h-10 border-2">
@@ -260,8 +324,8 @@ export function AddSalaryForm({ salary }: { salary?: SalaryData }) {
                     </FormItem>
                 )} />
 
-                <Button type="submit" disabled={loading} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
-                    {loading ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : "Valider le Versement"}
+                <Button type="submit" disabled={loading || loadingCoaches || isCheckingDossier} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
+                    {loading ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : isUpdating ? "Enregistrer le complément" : "Valider le Versement"}
                 </Button>
             </form>
         </Form>

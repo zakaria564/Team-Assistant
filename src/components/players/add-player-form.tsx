@@ -151,11 +151,11 @@ export function AddPlayerForm({ player }: { player?: any }) {
   const defaultValues = useMemo(() => {
     if (!player) return {
         name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
-        number: "", birthDate: "", entryDate: format(new Date(), "dd/MM/yyyy"), exitDate: "", address: "", nationality: "Marocaine",
+        number: "" as any, birthDate: "", entryDate: format(new Date(), "dd/MM/yyyy"), exitDate: "", address: "", nationality: "Marocaine",
         cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
     };
-    return { ...player, documents: player.documents || [] };
+    return { ...player, documents: player.documents || [], number: player.number || "" as any };
   }, [player]);
 
   const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues });
@@ -285,7 +285,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="number" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} value={field.value || ""} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-bold text-xs uppercase text-muted-foreground">N° Maillot</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} className="bg-background border-slate-200" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="coachId" render={({ field }) => (
                         <FormItem>
