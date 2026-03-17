@@ -14,7 +14,6 @@ import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "../ui/separator";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -157,7 +156,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   </div>
               </div>
 
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+              <div className="space-y-6">
                   <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Infos Club</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
@@ -183,7 +182,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
           </div>
 
           <div className="space-y-8">
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+              <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -209,7 +208,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   )} />
               </div>
 
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+              <div className="space-y-6">
                   <div className="flex items-center justify-between">
                       <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6" />Documents Numérisés</h3>
                       <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px]"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
@@ -250,7 +249,7 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
                 <FormLabel>Fichier (Scan / Photo)</FormLabel>
                 <div className="flex gap-2">
                     <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir de la galerie</>}
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir fichier</>}
                     </Button>
                     {url && (
                         <Button type="button" variant="secondary" size="icon" className="h-12 w-12" asChild>

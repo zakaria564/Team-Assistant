@@ -14,7 +14,6 @@ import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
-import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
@@ -166,7 +165,6 @@ export function AddPlayerForm({ player }: { player?: any }) {
     <CardContent className="pt-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* COLONNE GAUCHE : PHOTO + CLUB */}
           <div className="space-y-8">
               <div className="space-y-4">
                   <div className="aspect-square bg-slate-50 rounded-2xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner group">
@@ -183,8 +181,8 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
               </div>
 
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
-                  <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><ShieldCheck className="h-6 w-6" />Parcours Sportif</h3>
+              <div className="space-y-6">
+                  <h3 className="text-lg font-black flex items-center gap-3 uppercase tracking-tighter text-primary"><Fingerprint className="h-6 w-6" />Parcours Sportif</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="category" render={({ field }) => (
                         <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger></FormControl><SelectContent>{["Seniors", "U19", "U17", "U15", "U13", "U11", "U9"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></FormItem>
@@ -202,7 +200,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                       )} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <FormField control={form.control} name="entryDate" render={({ field }) => <DateField label="Date d'entrée au club" field={field} />} />
+                      <FormField control={form.control} name="entryDate" render={({ field }) => <DateField label="Date d'entrée" field={field} />} />
                       <FormField control={form.control} name="exitDate" render={({ field }) => <DateField label="Date de sortie" field={field} />} />
                   </div>
                   <FormField control={form.control} name="status" render={({ field }) => (
@@ -211,9 +209,8 @@ export function AddPlayerForm({ player }: { player?: any }) {
               </div>
           </div>
 
-          {/* COLONNE DROITE : ÉTAT CIVIL + DOCUMENTS */}
           <div className="space-y-8">
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+              <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem><FormLabel>Nom Complet du Joueur</FormLabel><FormControl><Input {...field} placeholder="Prénom et NOM" /></FormControl><FormMessage /></FormItem>
@@ -245,7 +242,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   )} />
               </div>
 
-              <div className="space-y-6 bg-primary/5 p-6 rounded-2xl border-2 border-primary/10">
+              <div className="space-y-6">
                   <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-primary"><User className="h-6 w-6" />Responsable Légal (Tuteur)</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField control={form.control} name="tutorName" render={({ field }) => (
@@ -265,7 +262,7 @@ export function AddPlayerForm({ player }: { player?: any }) {
                   </div>
               </div>
 
-              <div className="space-y-6 bg-slate-50/50 p-6 rounded-2xl border">
+              <div className="space-y-6">
                   <div className="flex items-center justify-between">
                       <h3 className="text-lg font-black uppercase tracking-tighter flex items-center gap-3 text-slate-700"><FileText className="h-6 w-6" />Documents Numérisés</h3>
                       <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", validityDate: "" })} className="h-9 font-black uppercase tracking-widest text-[9px]"><PlusCircle className="h-4 w-4 mr-2" />Ajouter</Button>
@@ -306,7 +303,7 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
                 <FormLabel>Fichier (Scan / Photo)</FormLabel>
                 <div className="flex gap-2">
                     <Button type="button" variant="outline" className={cn("flex-1 h-12 font-black uppercase tracking-widest text-[10px]", url ? "border-green-500 text-green-600 bg-green-50" : "border-dashed")} onClick={() => fileRef.current?.click()} disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir de la galerie</>}
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : url ? <><ShieldCheck className="mr-2 h-4 w-4" />Document Chargé</> : <><Upload className="mr-2 h-4 w-4" />Choisir fichier</>}
                     </Button>
                     {url && (
                         <Button type="button" variant="secondary" size="icon" className="h-12 w-12" asChild>
