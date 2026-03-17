@@ -230,9 +230,7 @@ export default function PaymentReceiptPage({ params }: PageProps) {
                         <div className="text-[6px] opacity-50 font-black uppercase tracking-widest text-left">
                             <p>© {new Date().getFullYear()} {clubInfo?.clubName || "Club Sportif"} - Team Assistant Pro</p>
                         </div>
-                        <div className="text-primary font-black uppercase tracking-[0.2em] text-[6px] italic text-right border-l-2 border-primary/30 pl-4 leading-none border-b-2 border-primary w-fit pb-0.5 ml-auto">
-                            Authenticité Garantie
-                        </div>
+                        <div className="text-[7px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
                     </footer>
                 </div>
             </div>

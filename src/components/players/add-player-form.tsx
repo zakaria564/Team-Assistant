@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint, Upload } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, PlusCircle, Trash2, Fingerprint, Upload, Mail, Phone, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
@@ -80,11 +80,6 @@ const nationalities = [
     "Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Nigériane", "Portugaise", "Espagnole", "Brésilienne", "Autre"
 ];
 
-const documentTypes = [
-    "Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Justificatif de domicile",
-    "Photo d'identité", "Autorisation parentale", "Autre"
-];
-
 const generateProfessionalId = () => {
     const yearMonth = format(new Date(), "yyyyMM");
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -106,7 +101,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   const defaultValues = useMemo(() => {
     if (!player) return {
         name: "", photoUrl: "", gender: "Masculin" as const, category: "", status: "Actif" as const,
-        number: "", birthDate: "", entryDate: "", exitDate: "", address: "", nationality: "Marocaine",
+        number: "", birthDate: "", entryDate: format(new Date(), "yyyy-MM-dd"), exitDate: "", address: "", nationality: "Marocaine",
         cin: "", phone: "", email: "", position: "", tutorName: "", tutorCin: "", tutorPhone: "",
         tutorEmail: "", coachId: "", documents: [], professionalId: "",
     };
@@ -152,7 +147,6 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
   }, [player, defaultValues, form]);
 
   const photoDataUrl = form.watch('photoUrl');
-  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   useEffect(() => {
     const fetchCoaches = async () => {
@@ -292,7 +286,9 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                       {photoDataUrl && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="w-full h-10 col-span-2 text-xs" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
                   </div>
               </div>
+              
               <Separator />
+              
               <div className="space-y-4">
                   <h3 className="text-lg font-bold flex items-center gap-2 uppercase tracking-tighter"><Fingerprint className="h-5 w-5 text-primary" />Informations Club</h3>
                   {isEditMode && (
@@ -319,13 +315,22 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                           <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                       )} />
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="entryDate" render={({ field }) => (
+                          <FormItem><FormLabel>Date d'entrée au club</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="exitDate" render={({ field }) => (
+                          <FormItem><FormLabel>Date de fin / sortie</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                  </div>
               </div>
           </div>
+
           <div className="space-y-6">
               <div className="space-y-4">
                    <h3 className="text-lg font-bold uppercase tracking-tighter">État Civil & Contact</h3>
                   <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Nom complet du joueur</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
                   )} />
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="birthDate" render={({ field }) => (
@@ -340,30 +345,44 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
                         <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value || ''}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                       )} />
                        <FormField control={form.control} name="cin" render={({ field }) => (
-                        <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>N° CIN du joueur</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="phone" render={({ field }) => (
+                        <FormItem><FormLabel>Téléphone du joueur</FormLabel><FormControl><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-9" placeholder="06..." {...field} value={field.value ?? ""} /></div></FormControl><FormMessage /></FormItem>
+                      )} />
+                       <FormField control={form.control} name="email" render={({ field }) => (
+                        <FormItem><FormLabel>Email du joueur</FormLabel><FormControl><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="email" className="pl-9" placeholder="exemple@mail.com" {...field} value={field.value ?? ""} /></div></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
                    <FormField control={form.control} name="address" render={({ field }) => (
                     <FormItem><FormLabel>Adresse de résidence</FormLabel><FormControl><Textarea {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
+              
               <Separator />
+              
               <div className="space-y-4">
                   <h3 className="text-lg font-bold uppercase tracking-tighter">Responsable Légal (Tuteur)</h3>
                    <FormField control={form.control} name="tutorName" render={({ field }) => (
-                    <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Nom complet du tuteur</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="tutorEmail" render={({ field }) => (
+                    <FormItem><FormLabel>Email du tuteur</FormLabel><FormControl><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="email" className="pl-9" placeholder="tuteur@mail.com" {...field} value={field.value ?? ""} /></div></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Téléphone tuteur</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Téléphone tuteur</FormLabel><FormControl><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-9" placeholder="06..." {...field} value={field.value ?? ""} /></div></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="tutorCin" render={({ field }) => (
                         <FormItem><FormLabel>CIN du tuteur</FormLabel><FormControl><Input {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full !mt-8 font-black uppercase tracking-widest h-12 shadow-lg">
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer les modifications" : "Ajouter le joueur"}
+              
+              <Button type="submit" disabled={loading} className="w-full !mt-8 font-black uppercase tracking-widest h-14 shadow-lg active:scale-95 transition-transform">
+                {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : isEditMode ? "Enregistrer les modifications" : "Enregistrer et passer au paiement"}
               </Button>
           </div>
         </form>

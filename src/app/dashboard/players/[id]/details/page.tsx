@@ -124,7 +124,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
   return (
     <div className="flex flex-col items-center w-full">
        <div className="w-full max-w-2xl space-y-4 text-center">
-        <div className="flex justify-between items-center gap-4 mb-2 px-2">
+        <div className="flex justify-between items-center gap-4 mb-2 px-2 print:hidden">
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
           <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
             {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
@@ -213,9 +213,7 @@ export default function PlayerDetailsPdfPage({ params }: PageProps) {
                                     <SectionTitle title="Parcours Sportif" icon={Shield} />
                                     <DetailItem icon={ClipboardList} label="Coach" value={player.coachName ? toTitleCase(player.coachName) : "Non assigné"} />
                                     <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate ? format(new Date(player.entryDate), 'dd/MM/yyyy', { locale: fr }) : undefined} />
-                                    {player.exitDate && (
-                                        <DetailItem icon={LogOut} label="Fin de mission" value={format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr })} />
-                                    )}
+                                    <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate ? format(new Date(player.exitDate), 'dd/MM/yyyy', { locale: fr }) : "Actif"} />
                                 </div>
                                 {player.tutorName && (
                                     <div className="pt-2">
