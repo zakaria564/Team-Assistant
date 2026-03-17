@@ -194,7 +194,7 @@ export function AddPlayerForm({ player }: AddPlayerFormProps) {
     try {
       const compressed = await compressImage(file);
       form.setValue('photoUrl', compressed);
-      toast({ title: "Photo chargée", description: "L'image a été compressée avec succès." });
+      toast({ title: "Photo chargée", description: "L'image a été optimisée." });
     } catch (err) {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger l'image." });
     } finally {

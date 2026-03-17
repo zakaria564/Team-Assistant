@@ -188,7 +188,7 @@ export default function SalaryReceiptPage({ params }: PageProps) {
                             </div>
 
                             <div className="flex justify-end pt-2">
-                                <div className="w-full max-w-[180px] space-y-1 bg-slate-900 p-2.5 rounded-xl shadow-xl text-left border-b-4 border-primary">
+                                <div className="w-full max-w-[180px] space-y-1.5 bg-slate-900 p-2.5 rounded-xl shadow-xl text-left border-b-4 border-primary">
                                     <div className="flex justify-between text-slate-400 font-bold text-[6px] uppercase tracking-widest">
                                         <span>Salaire Brut Total</span>
                                         <span>{salary.totalAmount.toFixed(2)} MAD</span>
