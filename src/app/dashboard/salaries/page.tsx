@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -106,6 +107,17 @@ export default function SalariesPage() {
                 const transactions = data.transactions || [];
                 const amountPaid = transactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
                 const totalAmount = data.totalAmount || 0;
+                const amountRemaining = totalAmount - amountPaid;
+
+                // Logic correction: Determine status based on math
+                let calculatedStatus = data.status;
+                if (amountRemaining > 0.01 && amountPaid > 0) {
+                    calculatedStatus = 'Partiel';
+                } else if (amountRemaining <= 0.01 && totalAmount > 0) {
+                    calculatedStatus = 'Payé';
+                } else if (amountPaid === 0 && totalAmount > 0) {
+                    calculatedStatus = 'En attente';
+                }
 
                 return {
                     id: doc.id,
@@ -113,7 +125,8 @@ export default function SalariesPage() {
                     coachName: coach.name,
                     coachPhotoUrl: coach.photoUrl,
                     amountPaid,
-                    amountRemaining: totalAmount - amountPaid,
+                    amountRemaining,
+                    status: calculatedStatus
                 } as Salary;
             }).filter(s => s !== null) as Salary[];
 
@@ -204,7 +217,7 @@ export default function SalariesPage() {
                   <p className="font-bold text-base md:text-base truncate text-slate-900">{group.coachName}</p>
                   <p className="text-xs text-muted-foreground font-semibold">{group.salaries.length} fiche(s) enregistrée(s)</p>
                 </div>
-                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">En attente</Badge>}
+                {group.hasPending && <Badge variant="destructive" className="ml-2 text-[10px] px-2 h-5 font-black uppercase">Dû</Badge>}
               </div>
               {openCollapsibles[group.coachId] ? <ChevronDown className="h-6 w-6 shrink-0 text-slate-400" /> : <ChevronRight className="h-6 w-6 shrink-0 text-slate-400" />}
             </CollapsibleTrigger>
