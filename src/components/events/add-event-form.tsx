@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -9,12 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon, Trophy, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { collection, addDoc, doc, updateDoc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -50,8 +50,20 @@ export function AddEventForm({ event }: { event?: any }) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: { type: undefined, category: "", status: "Prévu", date: "", time: "", location: "", teamHome: "", teamAway: "" }
+        defaultValues: { 
+            type: "Entraînement", 
+            category: "", 
+            status: "Prévu", 
+            date: "", 
+            time: "", 
+            location: "", 
+            teamHome: "", 
+            teamAway: "" 
+        }
     });
+
+    const watchType = form.watch("type");
+    const isMatch = watchType.includes("Match") || watchType.includes("Tournoi");
 
     useEffect(() => {
         const fetchInitial = async () => {
@@ -69,10 +81,14 @@ export function AddEventForm({ event }: { event?: any }) {
     useEffect(() => {
         if(isEditMode && event) {
             form.reset({
-                type: event.type, category: event.category, status: event.status || "Prévu",
+                type: event.type, 
+                category: event.category, 
+                status: event.status || "Prévu",
                 date: event.date ? format(new Date(event.date), "yyyy-MM-dd") : "",
                 time: event.date ? format(new Date(event.date), "HH:mm") : "",
-                location: event.location || "", teamHome: event.teamHome || "", teamAway: event.teamAway || "",
+                location: event.location || "", 
+                teamHome: event.teamHome || "", 
+                teamAway: event.teamAway || "",
             });
         }
     }, [event, isEditMode, form]);
@@ -82,25 +98,44 @@ export function AddEventForm({ event }: { event?: any }) {
         setLoading(true);
         try {
             const [h, m] = values.time.split(':').map(Number);
-            const combinedDate = new Date(values.date); combinedDate.setHours(h, m, 0, 0);
-            const data: any = { userId: user.uid, type: values.type, date: combinedDate, category: values.category, status: values.status, location: values.location || null };
-            if (values.type.includes("Match") || values.type.includes("Tournoi")) { data.teamHome = values.teamHome || null; data.teamAway = values.teamAway || null; }
+            const combinedDate = new Date(values.date); 
+            combinedDate.setHours(h, m, 0, 0);
+            
+            const data: any = { 
+                userId: user.uid, 
+                type: values.type, 
+                date: combinedDate, 
+                category: values.category, 
+                status: values.status, 
+                location: values.location || null 
+            };
+
+            if (isMatch) { 
+                data.teamHome = values.teamHome || null; 
+                data.teamAway = values.teamAway || null; 
+            }
+
             if(isEditMode) await updateDoc(doc(db, "events", event.id), data);
             else await addDoc(collection(db, "events"), data);
-            toast({ title: "Enregistré !" }); router.push("/dashboard/events"); router.refresh();
-        } catch (error) { toast({ variant: "destructive", title: "Erreur" }); } finally { setLoading(false); }
+            
+            toast({ title: "Événement enregistré avec succès !" }); 
+            router.push("/dashboard/events"); 
+            router.refresh();
+        } catch (error) { 
+            toast({ variant: "destructive", title: "Erreur lors de l'enregistrement" }); 
+        } finally { setLoading(false); }
     }
     
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <FormField control={form.control} name="type" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Type</FormLabel>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Nature de l'événement</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-11">
                                         <SelectValue />
                                     </SelectTrigger>
                                 </FormControl>
@@ -112,10 +147,10 @@ export function AddEventForm({ event }: { event?: any }) {
                     )} />
                     <FormField control={form.control} name="status" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Statut</FormLabel>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Statut actuel</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                    <SelectTrigger className="bg-background border-slate-200">
+                                    <SelectTrigger className="bg-background border-slate-200 h-11">
                                         <SelectValue />
                                     </SelectTrigger>
                                 </FormControl>
@@ -126,38 +161,117 @@ export function AddEventForm({ event }: { event?: any }) {
                         </FormItem>
                     )} />
                 </div>
-                <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+
+                {isMatch && (
+                    <div className="p-6 border-2 border-primary/10 rounded-2xl bg-primary/5 space-y-6 shadow-inner">
+                        <h3 className="font-black text-primary uppercase text-[10px] tracking-widest flex items-center gap-2">
+                            <Trophy className="h-4 w-4" /> Détails de la rencontre
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <FormField control={form.control} name="teamHome" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-bold text-[10px] uppercase text-slate-500">Équipe Domicile</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                                        <FormControl>
+                                            <SelectTrigger className="bg-background border-slate-200 h-11 font-bold">
+                                                <SelectValue placeholder="Choisir..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value={clubName}>{clubName} (Mon Club)</SelectItem>
+                                            {opponents.map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="teamAway" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-bold text-[10px] uppercase text-slate-500">Équipe Extérieur</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                                        <FormControl>
+                                            <SelectTrigger className="bg-background border-slate-200 h-11 font-bold">
+                                                <SelectValue placeholder="Choisir..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value={clubName}>{clubName} (Mon Club)</SelectItem>
+                                            {opponents.map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )} />
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="category" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Catégorie concernée</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="bg-background border-slate-200 h-11">
+                                        <SelectValue placeholder="Sélectionner un groupe..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="location" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Lieu / Stade</FormLabel>
                             <FormControl>
-                                <SelectTrigger className="bg-background border-slate-200">
-                                    <SelectValue />
-                                </SelectTrigger>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input {...field} placeholder="Ex: Stade Municipal" className="pl-10 bg-background border-slate-200 h-11" />
+                                </div>
                             </FormControl>
-                            <SelectContent>
-                                {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </FormItem>
-                )} />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        </FormItem>
+                    )} />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <FormField control={form.control} name="date" render={({ field }) => (
                         <FormItem className="flex flex-col">
-                            <FormLabel>Date</FormLabel>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Date</FormLabel>
                             <div className="flex gap-2">
-                                <FormControl><Input type="date" {...field} className="flex-1 bg-background border-slate-200" /></FormControl>
-                                <Popover><PopoverTrigger asChild><Button variant="outline" size="icon" className="bg-background border-slate-200"><CalendarIcon className="h-4 w-4" /></Button></PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="end"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(d) => d && field.onChange(format(d, "yyyy-MM-dd"))} initialFocus /></PopoverContent>
+                                <FormControl>
+                                    <Input type="date" {...field} className="flex-1 bg-background border-slate-200 h-11" />
+                                </FormControl>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-11 w-11 bg-background border-slate-200">
+                                            <CalendarIcon className="h-4 w-4 text-primary" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="end">
+                                        <Calendar 
+                                            mode="single" 
+                                            selected={field.value ? new Date(field.value) : undefined} 
+                                            onSelect={(d) => d && field.onChange(format(d, "yyyy-MM-dd"))} 
+                                            initialFocus 
+                                        />
+                                    </PopoverContent>
                                 </Popover>
                             </div>
                         </FormItem>
                     )} />
                     <FormField control={form.control} name="time" render={({ field }) => (
-                        <FormItem><FormLabel>Heure</FormLabel><FormControl><Input type="time" {...field} className="bg-background border-slate-200" /></FormControl></FormItem>
+                        <FormItem>
+                            <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Heure du coup d'envoi</FormLabel>
+                            <FormControl>
+                                <Input type="time" {...field} className="bg-background border-slate-200 h-11" />
+                            </FormControl>
+                        </FormItem>
                     )} />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full">{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}</Button>
+
+                <Button type="submit" disabled={loading} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-xl !mt-10">
+                    {loading ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : isEditMode ? "Enregistrer les modifications" : "Créer l'événement"}
+                </Button>
             </form>
         </Form>
     );
