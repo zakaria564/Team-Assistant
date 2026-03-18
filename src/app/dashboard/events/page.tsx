@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText, CheckCircle2 } from "lucide-react";
+import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText, CheckCircle2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { format, isSameDay, isToday, compareAsc, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -192,7 +192,11 @@ export default function EventsPage() {
                                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                       <DropdownMenuItem asChild><Link href={`/dashboard/events/${event.id}`}><FileText className="mr-2 h-4 w-4" /> Détails</Link></DropdownMenuItem>
                                       {!isFinished && <DropdownMenuItem asChild><Link href={`/dashboard/events/${event.id}/edit`}><Pencil className="mr-2 h-4 w-4" /> Modifier</Link></DropdownMenuItem>}
-                                      {isMatch && !isFinished && isPast(event.date) && <DropdownMenuItem onSelect={() => setEventForScore(event)} className="text-primary font-bold"><Pencil className="mr-2 h-4 w-4" /> Saisir le score</DropdownMenuItem>}
+                                      {isMatch && !isFinished && (
+                                          <DropdownMenuItem onSelect={() => setEventForScore(event)} className="text-primary font-black uppercase text-[10px] tracking-widest bg-primary/5">
+                                              <Trophy className="mr-2 h-4 w-4" /> Saisir le score
+                                          </DropdownMenuItem>
+                                      )}
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem className="text-destructive" onSelect={() => setEventToDelete(event)}><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
                                   </DropdownMenuContent>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -88,7 +89,6 @@ export default function EventDetailPage(props: PageProps) {
 
   const isMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
-  const isMatchPast = isPast(event.date);
 
   const timelineEvents = [
       ...(event.scorers || []).map((s: any) => ({ ...s, type: 'goal' })),
@@ -128,9 +128,9 @@ export default function EventDetailPage(props: PageProps) {
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" /></Button>
           <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Feuille de Match</h1>
         </div>
-        {!isFinished && isMatch && isMatchPast && (
-            <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2 text-[10px] sm:text-sm px-3 h-9 sm:h-10">
-                <Pencil className="h-3 w-3 sm:h-4 sm:w-4" /> Saisir le score
+        {!isFinished && isMatch && (
+            <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2 text-[10px] sm:text-sm px-3 h-9 sm:h-10 bg-primary hover:bg-primary/90">
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" /> Saisir le score final
             </Button>
         )}
       </div>
@@ -150,7 +150,7 @@ export default function EventDetailPage(props: PageProps) {
                 {isMatch ? (
                     <div className="flex flex-col items-center gap-4 sm:gap-8 py-2 sm:py-4">
                         <div className="flex items-center justify-center gap-4 sm:gap-10 w-full">
-                            <div className="flex flex-col items-center flex-1 space-y-2 sm:space-y-3">
+                            <div className="flex flex-col items-center flex-1 space-y-2 sm:sort-y-3">
                                 <TeamLogo name={event.teamHome} />
                                 <span className="text-sm sm:text-xl font-black uppercase text-center leading-tight tracking-tighter line-clamp-2">{event.teamHome}</span>
                             </div>
@@ -202,14 +202,14 @@ export default function EventDetailPage(props: PageProps) {
             </CardContent>
         </Card>
 
-        {!isFinished && isMatch && isMatchPast && (
+        {!isFinished && isMatch && (
             <Button 
                 variant="default" 
                 size="lg" 
                 onClick={() => setIsScoreDialogOpen(true)}
                 className="w-full h-12 sm:h-16 bg-primary text-white font-black text-lg sm:text-xl uppercase tracking-widest shadow-lg hover:scale-[1.01] transition-transform"
             >
-                <Pencil className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" /> Saisir le résultat
+                <Trophy className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" /> Saisir le score final
             </Button>
         )}
 
