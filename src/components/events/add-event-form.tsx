@@ -63,6 +63,8 @@ export function AddEventForm({ event }: { event?: any }) {
     });
 
     const watchType = form.watch("type");
+    const watchHome = form.watch("teamHome");
+    const watchAway = form.watch("teamAway");
     const isMatch = watchType.includes("Match") || watchType.includes("Tournoi");
 
     useEffect(() => {
@@ -84,8 +86,8 @@ export function AddEventForm({ event }: { event?: any }) {
                 type: event.type, 
                 category: event.category, 
                 status: event.status || "Prévu",
-                date: event.date ? format(new Date(event.date), "yyyy-MM-dd") : "",
-                time: event.date ? format(new Date(event.date), "HH:mm") : "",
+                date: event.date ? format(new Date(event.date.seconds * 1000), "yyyy-MM-dd") : "",
+                time: event.date ? format(new Date(event.date.seconds * 1000), "HH:mm") : "",
                 location: event.location || "", 
                 teamHome: event.teamHome || "", 
                 teamAway: event.teamAway || "",
@@ -178,8 +180,8 @@ export function AddEventForm({ event }: { event?: any }) {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={clubName}>{clubName} (Mon Club)</SelectItem>
-                                            {opponents.map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
+                                            {watchAway !== clubName && <SelectItem value={clubName}>{clubName}</SelectItem>}
+                                            {opponents.filter(opp => opp !== watchAway).map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </FormItem>
@@ -194,8 +196,8 @@ export function AddEventForm({ event }: { event?: any }) {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={clubName}>{clubName} (Mon Club)</SelectItem>
-                                            {opponents.map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
+                                            {watchHome !== clubName && <SelectItem value={clubName}>{clubName}</SelectItem>}
+                                            {opponents.filter(opp => opp !== watchHome).map(opp => <SelectItem key={opp} value={opp}>{opp}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </FormItem>
