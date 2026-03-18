@@ -35,8 +35,15 @@ const SectionTitle = ({ title, icon: Icon }: { title: string, icon?: React.Eleme
     </div>
 );
 
-export default function CoachDetailsPdfPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: coachId } = React.use(params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function CoachDetailsPdfPage(props: PageProps) {
+  const params = React.use(props.params);
+  const coachId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

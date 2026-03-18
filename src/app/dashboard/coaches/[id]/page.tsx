@@ -31,10 +31,12 @@ const DetailItem = ({ icon: Icon, label, value, href }: { icon: any, label: stri
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function CoachDetailPage({ params }: PageProps) {
-  const { id: coachId } = React.use(params);
+export default function CoachDetailPage(props: PageProps) {
+  const params = React.use(props.params);
+  const coachId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);

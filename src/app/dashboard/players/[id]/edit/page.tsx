@@ -16,10 +16,12 @@ const toTitleCase = (str: string) => {
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default function EditPlayerPage({ params }: PageProps) {
-  const { id: playerId } = React.use(params);
+export default function EditPlayerPage(props: PageProps) {
+  const params = React.use(props.params);
+  const playerId = params.id;
   
   const router = useRouter();
   const [player, setPlayer] = useState<any>(null);

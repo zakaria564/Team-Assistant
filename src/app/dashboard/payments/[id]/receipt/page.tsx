@@ -15,8 +15,15 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-export default function PaymentReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paymentId } = React.use(params);
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default function PaymentReceiptPage(props: PageProps) {
+  const params = React.use(props.params);
+  const paymentId = params.id;
+  
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
   const { toast } = useToast();

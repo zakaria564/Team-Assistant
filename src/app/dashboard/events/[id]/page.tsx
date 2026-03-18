@@ -16,10 +16,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function EventDetailPage(props: PageProps) {
-  const { id: eventId } = React.use(props.params);
+  const params = React.use(props.params);
+  const eventId = params.id;
   
   const router = useRouter();
   const [user] = useAuthState(auth);

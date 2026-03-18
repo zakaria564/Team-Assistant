@@ -16,10 +16,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default function PaymentDetailPage(props: PageProps) {
-  const { id: paymentId } = React.use(props.params);
+  const params = React.use(props.params);
+  const paymentId = params.id;
   
   const router = useRouter();
   const [user, loadingUser] = useAuthState(auth);
