@@ -41,6 +41,18 @@ const coachSpecialties = [
   "Recruteur"
 ];
 
+const coachDocumentTypes = [
+  "Carte d'Identité (CIN)",
+  "Diplôme d'Entraîneur",
+  "Certificat Médical",
+  "Photo d'identité",
+  "Attestation d'assurance",
+  "Passeport",
+  "Contrat de travail",
+  "Casier Judiciaire",
+  "Autre"
+];
+
 const nationalities = [
   "Marocaine", "Afghane", "Albanaise", "Algérienne", "Allemande", "Américaine", "Andorrane", "Angolaise", 
   "Antiguaise-et-Barbudienne", "Argentine", "Arménienne", "Australienne", "Autrichienne", "Azerbaïdjanaise", 
@@ -72,7 +84,7 @@ const nationalities = [
 ];
 
 const documentSchema = z.object({
-  name: z.string().min(1, "Nom requis"),
+  name: z.string().min(1, "Désignation requise"),
   url: z.string().min(1, "Fichier requis"),
   validityDate: z.string().optional(),
 });
@@ -190,7 +202,6 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
     
-    // Stop existing tracks if any
     if (videoRef.current?.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -235,7 +246,6 @@ export function AddCoachForm({ coach }: { coach?: any }) {
         c.height = videoRef.current.videoHeight;
         
         if (facingMode === 'user') {
-            // Mirror compensation for front camera capture
             ctx.translate(c.width, 0);
             ctx.scale(-1, 1);
         }
@@ -448,7 +458,19 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
             <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white shadow-md border text-destructive z-10" onClick={() => remove(index)}><Trash2 className="h-3.5 w-3.5" /></Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-slate-500">Désignation</FormLabel><FormControl><Input placeholder="Ex: Diplôme, CIN..." {...field} className="h-9 bg-background border-slate-200" /></FormControl></FormItem>
+                    <FormItem>
+                        <FormLabel className="font-bold text-[10px] uppercase text-slate-500">Désignation</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                            <FormControl>
+                                <SelectTrigger className="h-9 bg-background border-slate-200 text-[10px] font-bold">
+                                    <SelectValue placeholder="Choisir..." />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {coachDocumentTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </FormItem>
                 )} />
                 <FormField control={form.control} name={`documents.${index}.validityDate`} render={({ field }) => <DateField label="Expiration" field={field} />} />
             </div>
@@ -480,7 +502,6 @@ function DocumentPickerItem({ index, remove, form }: { index: number, remove: an
                     const reader = new FileReader(); reader.onload = async (ev) => {
                         const compressed = await compressImage(ev.target?.result as string);
                         form.setValue(`documents.${index}.url`, compressed);
-                        if (!form.getValues(`documents.${index}.name`)) form.setValue(`documents.${index}.name`, file.name.split('.')[0]);
                         setLoading(false);
                     }; reader.readAsDataURL(file);
                 }} />
