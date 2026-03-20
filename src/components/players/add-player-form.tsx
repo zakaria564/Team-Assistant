@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerStatuses = ["Actif", "Inactif", "Blessé", "Suspendu"] as const;
 
@@ -46,6 +47,36 @@ const playerPositions = [
     "Attaquant", 
     "Attaquant de pointe", 
     "Avant-centre"
+];
+
+const nationalities = [
+  "Marocaine", "Afghane", "Albanaise", "Algérienne", "Allemande", "Américaine", "Andorrane", "Angolaise", 
+  "Antiguaise-et-Barbudienne", "Argentine", "Arménienne", "Australienne", "Autrichienne", "Azerbaïdjanaise", 
+  "Bahamienne", "Bahreïnienne", "Bangladeshenne", "Barbadienne", "Belge", "Belizienne", "Béninoise", 
+  "Bhoutanaise", "Biélorusse", "Birmane", "Bissau-Guinéenne", "Bolivienne", "Bosniaque", "Botswanaise", 
+  "Brésilienne", "Britannique", "Brunéienne", "Bulgare", "Burkinabé", "Burundaise", "Cambodgienne", 
+  "Camerounaise", "Canadienne", "Cap-Verdienne", "Centrafricaine", "Chilienne", "Chinoise", "Chypriote", 
+  "Colombienne", "Comorienne", "Congolaise", "Costaricaine", "Croate", "Cubaine", "Danoise", "Djiboutienne", 
+  "Dominicaine", "Dominiquaise", "Égyptienne", "Émiratie", "Équatorienne", "Érythréenne", "Espagnole", 
+  "Estonienne", "Éthiopienne", "Fidjienne", "Finlandaise", "Française", "Gabonaise", "Gambienne", 
+  "Géorgienne", "Ghanéenne", "Grecque", "Grenadienne", "Guatémaltèque", "Guinéenne", "Guinéenne équatoriale", 
+  "Guyanaise", "Haïtienne", "Hellénique", "Hondurienne", "Hongroise", "Indienne", "Indonésienne", "Irakienne", 
+  "Iranienne", "Irlandaise", "Islandaise", "Israélienne", "Italienne", "Ivoirienne", "Jamaïcaine", "Japonaise", 
+  "Jordanienne", "Kazakhstanaise", "Kényane", "Kirghize", "Kiribatienne", "Koweïtienne", "Laotienne", 
+  "Lésothienne", "Lettonne", "Libanaise", "Libérienne", "Libyenne", "Liechtensteinoise", "Lituanienne", 
+  "Luxembourgeoise", "Macédonienne", "Malgache", "Malaisienne", "Malawienne", "Maldivienne", "Malienne", 
+  "Maltaise", "Marshallaise", "Mauricienne", "Mauritanienne", "Mexicaine", "Micronésienne", "Moldave", 
+  "Monégasque", "Mongole", "Monténégrine", "Mozambicaine", "Namibienne", "Nauruane", "Néerlandaise", 
+  "Népalaise", "Nicaraguayenne", "Nigériane", "Nigérienne", "Nord-Coréenne", "Norvégienne", "Néo-Zélandaise", 
+  "Omanaise", "Ougandaise", "Ouzbèke", "Pakistanaise", "Palaosienne", "Palestinienne", "Panaméenne", 
+  "Papouane-Néo-Guinéenne", "Paraguayenne", "Péruvienne", "Philippine", "Polonaise", "Portugaise", 
+  "Qatarienne", "Roumaine", "Russe", "Rwandaise", "Saint-Christophienne", "Saint-Lucienne", "Saint-Marinaise", 
+  "Saint-Vincentaise", "Salomonaise", "Salvadorienne", "Samoane", "Santoméenne", "Saoudienne", "Sénégalaise", 
+  "Serbe", "Seychelloise", "Sierra-Léonaise", "Singapourienne", "Slovaque", "Slovène", "Somalienne", 
+  "Soudanaise", "Sri-Lankaise", "Sud-Africaine", "Sud-Coréenne", "Sud-Soudanaise", "Suédoise", "Suisse", 
+  "Surinamaise", "Swazie", "Syrienne", "Tadjike", "Tanzanienne", "Tchadienne", "Tchèque", "Thaïlandaise", 
+  "Togolaise", "Tonguienne", "Trinidadienne", "Tunisienne", "Turkmène", "Turque", "Tuvaluane", "Ukrainienne", 
+  "Uruguayenne", "Vanuataise", "Vaticane", "Vénézuélienne", "Vietnamienne", "Yéménite", "Zambienne", "Zimbabwéenne", "Autre"
 ];
 
 const documentSchema = z.object({
@@ -437,7 +468,9 @@ export function AddPlayerForm({ player }: { player?: any }) {
                                       </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                      {["Marocaine", "Autre"].map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}
+                                      <ScrollArea className="h-80">
+                                          {nationalities.map(nat => <SelectItem key={nat} value={nat}>{nat}</SelectItem>)}
+                                      </ScrollArea>
                                   </SelectContent>
                               </Select>
                           </FormItem>
