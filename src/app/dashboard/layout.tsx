@@ -30,7 +30,7 @@ export default function DashboardAppLayout({
     if (!user) {
       setLoadingClubInfo(false);
       setClubName("Team Assistant");
-      setDisplayTitle("CLUB USDS");
+      setDisplayTitle("Team Assistant");
       return;
     }
 
@@ -40,18 +40,17 @@ export default function DashboardAppLayout({
       if (docSnap.exists()) {
         const data = docSnap.data();
         setClubName(data.clubName || "Team Assistant");
-        setDisplayTitle(data.displayTitle || "CLUB USDS");
-        setClubLogoUrl(data.logoUrl || null);
+        setDisplayTitle(data.displayTitle || "Team Assistant");
       } else {
         setClubName("Team Assistant");
-        setDisplayTitle("CLUB USDS");
+        setDisplayTitle("Team Assistant");
         setClubLogoUrl(null);
       }
       setLoadingClubInfo(false);
     }, (error) => {
       console.error("Error fetching club info: ", error);
       setClubName("Team Assistant");
-      setDisplayTitle("CLUB USDS");
+      setDisplayTitle("Team Assistant");
       setClubLogoUrl(null);
       setLoadingClubInfo(false);
     });
