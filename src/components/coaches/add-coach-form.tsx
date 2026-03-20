@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -69,7 +70,7 @@ const formatDateInput = (value: string) => {
   return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
 };
 
-const compressImage = (dataUrl: string, maxSize: number = 400): Promise<string> => {
+const compressImage = (dataUrl: string, maxSize: number = 600): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = dataUrl;
@@ -82,7 +83,7 @@ const compressImage = (dataUrl: string, maxSize: number = 400): Promise<string> 
       canvas.width = width; canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7));
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
     };
   });
 };
@@ -157,7 +158,13 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const getCameraPermission = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
     try {
-        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        const s = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: "user",
+                width: { ideal: 1280 },
+                height: { ideal: 1280 }
+            } 
+        });
         if (videoRef.current) videoRef.current.srcObject = s;
         setHasCameraPermission(true);
     } catch (e) { setHasCameraPermission(false); }
@@ -171,8 +178,11 @@ export function AddCoachForm({ coach }: { coach?: any }) {
       if (ctx) {
         c.width = videoRef.current.videoWidth; 
         c.height = videoRef.current.videoHeight;
+        // Mirror compensation for capture
+        ctx.translate(c.width, 0);
+        ctx.scale(-1, 1);
         ctx.drawImage(videoRef.current, 0, 0);
-        const compressed = await compressImage(c.toDataURL('image/jpeg', 0.8));
+        const compressed = await compressImage(c.toDataURL('image/jpeg', 0.9));
         form.setValue('photoUrl', compressed);
       }
     }
@@ -198,17 +208,29 @@ export function AddCoachForm({ coach }: { coach?: any }) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-8">
               <div className="space-y-4">
-                  <div className="aspect-square bg-slate-50 rounded-2xl border-2 border-slate-200 flex items-center justify-center relative overflow-hidden shadow-inner group">
-                       {!form.watch('photoUrl') && hasCameraPermission ? <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                  <div className="aspect-square bg-slate-900 rounded-2xl border-4 border-slate-800 flex items-center justify-center relative overflow-hidden shadow-2xl group">
+                       {!form.watch('photoUrl') && hasCameraPermission ? (
+                           <>
+                                <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" autoPlay muted playsInline />
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="w-[65%] aspect-[3/4] border-2 border-white/20 rounded-[100px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[67%] aspect-[3/4] border border-primary/40 rounded-[100px] animate-pulse"></div>
+                                </div>
+                                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md flex items-center gap-2 border border-white/10">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                                    <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">Flux HD Actif</span>
+                                </div>
+                           </>
+                       )
                       : form.watch('photoUrl') ? <img src={form.watch('photoUrl')} className="w-full h-full object-contain p-2" />
                       : <div className="flex flex-col items-center gap-2 text-muted-foreground"><Camera className="h-12 w-12 opacity-20" /><p className="text-xs font-bold uppercase">Caméra inactive</p></div>}
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="grid grid-cols-2 gap-3">
-                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Camera className="mr-2 h-4 w-4 text-primary"/>Prendre</Button>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Upload className="mr-2 h-4 w-4 text-primary"/>Galerie</Button>
+                      <Button type="button" variant="outline" onClick={takePicture} disabled={!hasCameraPermission || !!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Camera className="mr-2 h-4 w-4 text-primary"/>Capturer</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!!form.watch('photoUrl')} className="h-12 font-black uppercase tracking-widest text-[10px] bg-background border-slate-200" size="sm"><Upload className="mr-2 h-4 w-4 text-primary"/>Importer</Button>
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Changer la photo</Button>}
+                      {form.watch('photoUrl') && <Button type="button" variant="secondary" onClick={() => form.setValue('photoUrl', '')} className="h-12 col-span-2 font-black uppercase tracking-widest text-[10px]" size="sm"><RefreshCcw className="mr-2 h-4 w-4" />Nouvelle Capture</Button>}
                   </div>
               </div>
 
