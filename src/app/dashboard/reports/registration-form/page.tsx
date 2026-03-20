@@ -75,13 +75,13 @@ export default function RegistrationFormPage() {
                 </Button>
             </div>
             
-            <div className="w-full overflow-x-auto pb-8 scrollbar-thin bg-muted/20 rounded-xl p-2">
-                <div className="min-w-[595px] flex justify-center">
-                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col" id="printable-form" style={{ width: '595px', height: '842px' }}>
+            <div className="w-full overflow-hidden pb-8 bg-muted/20 rounded-xl p-2 flex justify-center">
+                <div className="w-full overflow-x-auto sm:overflow-visible flex justify-center scrollbar-thin">
+                    <div className="mx-auto bg-white text-black border shadow-2xl flex flex-col shrink-0" id="printable-form" style={{ width: '595px', height: '842px' }}>
                         <header className="text-center space-y-2 p-4 border-b-4 border-slate-900 bg-slate-900 text-white shrink-0">
                             {loadingClub || loadingUser ? <div className="flex flex-col items-center gap-2"><Skeleton className="h-8 w-8 rounded-full bg-gray-200" /><Skeleton className="h-4 w-3/4 mx-auto bg-gray-200" /></div> : (
                                 <div className="flex flex-col items-center gap-1.5">
-                                    <Avatar className="h-8 w-8 border border-primary/20 bg-white shadow-sm p-1">
+                                    <Avatar className="h-14 w-[100px] border border-primary/20 bg-white shadow-sm p-1">
                                         <AvatarImage src={clubLogoUrl || undefined} alt="Logo" className="object-contain" />
                                         <AvatarFallback className="bg-primary text-white text-base font-black">{clubInitial}</AvatarFallback>
                                     </Avatar>
