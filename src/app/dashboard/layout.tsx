@@ -20,8 +20,8 @@ export default function DashboardAppLayout({
 }) {
   const [user, loadingUser] = useAuthState(auth);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [clubName, setClubName] = useState("");
-  const [displayTitle, setDisplayTitle] = useState("");
+  const [clubName, setClubName] = useState("Team Assistant");
+  const [displayTitle, setDisplayTitle] = useState("Team Assistant");
   const [clubLogoUrl, setClubLogoUrl] = useState<string | null>(null);
   const [loadingClubInfo, setLoadingClubInfo] = useState(true);
 
@@ -31,6 +31,7 @@ export default function DashboardAppLayout({
       setLoadingClubInfo(false);
       setClubName("Team Assistant");
       setDisplayTitle("Team Assistant");
+      setClubLogoUrl(null);
       return;
     }
 
@@ -41,6 +42,7 @@ export default function DashboardAppLayout({
         const data = docSnap.data();
         setClubName(data.clubName || "Team Assistant");
         setDisplayTitle(data.displayTitle || "Team Assistant");
+        setClubLogoUrl(data.logoUrl || null);
       } else {
         setClubName("Team Assistant");
         setDisplayTitle("Team Assistant");
