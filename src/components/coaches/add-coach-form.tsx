@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, PlusCircle, ShieldCheck, User, Mail, Phone, MapPin, Eye } from "lucide-react";
+import { Loader2, Camera, RefreshCcw, Fingerprint, Upload, Calendar as CalendarIcon, FileText, Trash2, PlusCircle, ShieldCheck, User, Mail, Phone, MapPin, Eye, RotateCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
@@ -126,6 +126,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const { toast } = useToast();
   const router = useRouter();
   const isEditMode = !!coach;
@@ -155,22 +156,45 @@ export function AddCoachForm({ coach }: { coach?: any }) {
     reader.readAsDataURL(file);
   };
 
-  const getCameraPermission = useCallback(async () => {
+  const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
+    
+    // Stop existing tracks if any
+    if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+    }
+
     try {
         const s = await navigator.mediaDevices.getUserMedia({ 
             video: { 
-                facingMode: "user",
+                facingMode: facingMode,
                 width: { ideal: 1280 },
                 height: { ideal: 1280 }
             } 
         });
         if (videoRef.current) videoRef.current.srcObject = s;
         setHasCameraPermission(true);
-    } catch (e) { setHasCameraPermission(false); }
-  }, []);
+    } catch (e) { 
+        setHasCameraPermission(false); 
+    }
+  }, [facingMode]);
 
-  useEffect(() => { if(!form.watch('photoUrl')) getCameraPermission(); }, [form.watch('photoUrl'), getCameraPermission]);
+  useEffect(() => { 
+    if(!form.watch('photoUrl')) {
+        startCamera();
+    }
+    return () => {
+        if (videoRef.current?.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+        }
+    };
+  }, [form.watch('photoUrl'), startCamera]);
+
+  const toggleCamera = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+  };
 
   const takePicture = async () => {
     if (videoRef.current && canvasRef.current) {
@@ -178,9 +202,13 @@ export function AddCoachForm({ coach }: { coach?: any }) {
       if (ctx) {
         c.width = videoRef.current.videoWidth; 
         c.height = videoRef.current.videoHeight;
-        // Mirror compensation for capture
-        ctx.translate(c.width, 0);
-        ctx.scale(-1, 1);
+        
+        if (facingMode === 'user') {
+            // Mirror compensation for front camera capture
+            ctx.translate(c.width, 0);
+            ctx.scale(-1, 1);
+        }
+        
         ctx.drawImage(videoRef.current, 0, 0);
         const compressed = await compressImage(c.toDataURL('image/jpeg', 0.9));
         form.setValue('photoUrl', compressed);
@@ -211,7 +239,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   <div className="aspect-square bg-slate-900 rounded-2xl border-4 border-slate-800 flex items-center justify-center relative overflow-hidden shadow-2xl group">
                        {!form.watch('photoUrl') && hasCameraPermission ? (
                            <>
-                                <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" autoPlay muted playsInline />
+                                <video ref={videoRef} className={cn("w-full h-full object-cover", facingMode === 'user' && "scale-x-[-1]")} autoPlay muted playsInline />
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div className="w-[65%] aspect-[3/4] border-2 border-white/20 rounded-[100px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[67%] aspect-[3/4] border border-primary/40 rounded-[100px] animate-pulse"></div>
@@ -220,6 +248,15 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                                     <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">Flux HD Actif</span>
                                 </div>
+                                <Button 
+                                    type="button" 
+                                    variant="secondary" 
+                                    size="icon" 
+                                    onClick={toggleCamera}
+                                    className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                                >
+                                    <RotateCw className="h-5 w-5" />
+                                </Button>
                            </>
                        )
                       : form.watch('photoUrl') ? <img src={form.watch('photoUrl')} className="w-full h-full object-contain p-2" />
