@@ -8,13 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { PlusCircle, Clock, MapPin, Users, Loader2, ArrowLeft, Pencil, MoreHorizontal, Trash2, FileText, CheckCircle2, Trophy } from "lucide-react";
 import Link from "next/link";
-import { format, isSameDay, isToday, compareAsc, isPast } from "date-fns";
+import { format, isSameDay, isToday, compareAsc, isPast, addHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { collection, query, onSnapshot, doc, deleteDoc, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { 
   DropdownMenu, 
@@ -165,8 +164,14 @@ export default function EventsPage() {
                     selectedEvents.map(event => {
                         const isMatch = event.type.includes('Match') || event.type.includes('Tournoi');
                         const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
-                        // Show score action only after the event has started
-                        const canEnterScore = isMatch && !isFinished && isPast(event.date);
+                        
+                        // Logic for duration based on competition type
+                        const isKnockout = event.type.includes("Coupe") || event.type.includes("Tournoi");
+                        const matchDuration = isKnockout ? 3 : 2; // 3h for cups/tournaments, 2h for others
+                        const finishExpectedTime = addHours(event.date, matchDuration);
+                        
+                        // Show score action only after the match is expected to be finished
+                        const canEnterScore = isMatch && !isFinished && isPast(finishExpectedTime);
 
                         return (
                           <Card key={event.id} className="bg-muted/30 group overflow-hidden border-l-4 border-l-primary">

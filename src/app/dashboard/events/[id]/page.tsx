@@ -8,7 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2 } from "lucide-react";
-import { format, isPast } from "date-fns";
+import { format, isPast, addHours } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -89,8 +89,14 @@ export default function EventDetailPage(props: PageProps) {
 
   const isMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
-  // Can only enter score if match has started
-  const canEnterScore = isMatch && !isFinished && isPast(event.date);
+  
+  // Logic for duration based on competition type
+  const isKnockout = event.type.includes("Coupe") || event.type.includes("Tournoi");
+  const matchDuration = isKnockout ? 3 : 2; // 3h for cups/tournaments, 2h for others
+  const finishExpectedTime = addHours(event.date, matchDuration);
+  
+  // Can only enter score if match is expected to be finished
+  const canEnterScore = isMatch && !isFinished && isPast(finishExpectedTime);
 
   const timelineEvents = [
       ...(event.scorers || []).map((s: any) => ({ ...s, type: 'goal' })),
