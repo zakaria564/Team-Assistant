@@ -7,7 +7,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db, auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2, Pencil } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Trophy, Users, CheckCircle2 } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,8 @@ export default function EventDetailPage(props: PageProps) {
 
   const isMatch = event.type.includes("Match") || event.type.includes("Tournoi");
   const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
+  // Can only enter score if match has started
+  const canEnterScore = isMatch && !isFinished && isPast(event.date);
 
   const timelineEvents = [
       ...(event.scorers || []).map((s: any) => ({ ...s, type: 'goal' })),
@@ -128,9 +130,9 @@ export default function EventDetailPage(props: PageProps) {
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" /></Button>
           <h1 className="text-xl sm:text-3xl font-bold tracking-tight">Feuille de Match</h1>
         </div>
-        {!isFinished && isMatch && (
+        {canEnterScore && (
             <Button onClick={() => setIsScoreDialogOpen(true)} className="font-black uppercase gap-2 text-[10px] sm:text-sm px-3 h-9 sm:h-10 bg-primary hover:bg-primary/90">
-                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" /> Saisir le score final
+                <Trophy className="h-3 w-3 sm:h-4 w-4" /> Saisir le score final
             </Button>
         )}
       </div>
@@ -202,7 +204,7 @@ export default function EventDetailPage(props: PageProps) {
             </CardContent>
         </Card>
 
-        {!isFinished && isMatch && (
+        {canEnterScore && (
             <Button 
                 variant="default" 
                 size="lg" 
@@ -222,7 +224,7 @@ export default function EventDetailPage(props: PageProps) {
                             <div key={idx} className="flex items-center gap-3 sm:gap-6 group">
                                 <div className="w-8 sm:w-12 text-right font-black text-primary text-base sm:text-xl italic tracking-tighter">{item.minute ? `${item.minute}'` : "--'"}</div>
                                 <div className="relative flex flex-col items-center">
-                                    <div className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 border-white shadow-sm ${item.type === 'goal' ? 'bg-primary' : 'bg-accent'}`} />
+                                    <div className={`h-3 w-3 sm:h-4 w-4 rounded-full border-2 border-white shadow-sm ${item.type === 'goal' ? 'bg-primary' : 'bg-accent'}`} />
                                     {idx !== timelineEvents.length - 1 && <div className="w-0.5 h-10 sm:h-12 bg-slate-100" />}
                                 </div>
                                 <div className={`flex-1 flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${item.type === 'goal' ? 'bg-primary/5 border-primary/10' : 'bg-accent/5 border-accent/10'}`}>

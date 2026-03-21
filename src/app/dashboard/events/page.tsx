@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel,
+  DropdownMenuLabel, 
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
@@ -165,6 +165,8 @@ export default function EventsPage() {
                     selectedEvents.map(event => {
                         const isMatch = event.type.includes('Match') || event.type.includes('Tournoi');
                         const isFinished = event.status === 'Terminé' || event.scoreHome !== undefined;
+                        // Show score action only after the event has started
+                        const canEnterScore = isMatch && !isFinished && isPast(event.date);
 
                         return (
                           <Card key={event.id} className="bg-muted/30 group overflow-hidden border-l-4 border-l-primary">
@@ -192,7 +194,7 @@ export default function EventsPage() {
                                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                       <DropdownMenuItem asChild><Link href={`/dashboard/events/${event.id}`}><FileText className="mr-2 h-4 w-4" /> Détails</Link></DropdownMenuItem>
                                       {!isFinished && <DropdownMenuItem asChild><Link href={`/dashboard/events/${event.id}/edit`}><Pencil className="mr-2 h-4 w-4" /> Modifier</Link></DropdownMenuItem>}
-                                      {isMatch && !isFinished && (
+                                      {canEnterScore && (
                                           <DropdownMenuItem onSelect={() => setEventForScore(event)} className="text-primary font-black uppercase text-[10px] tracking-widest bg-primary/5">
                                               <Trophy className="mr-2 h-4 w-4" /> Saisir le score
                                           </DropdownMenuItem>
