@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, Suspense, useMemo } from "react";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -156,7 +156,9 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     }
     
     const remainingBeforeEntry = Math.max(0, (parseFloat(watchTotal?.toString() || "0")) - amountAlreadyPaid);
-    const projectedRemaining = Math.max(0, remainingBeforeEntry - (parseFloat(watchNewAmount || "0")));
+    const entryValue = parseFloat(watchNewAmount || "0");
+    const projectedRemaining = Math.max(0, remainingBeforeEntry - entryValue);
+    const isExceeding = entryValue > (remainingBeforeEntry + 0.01);
 
     return (
         <Form {...form}>
@@ -209,10 +211,13 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                 {remainingBeforeEntry > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isEditMode ? "Versement Complémentaire" : "Premier Versement"}</h4>
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2">
+                                {isExceeding ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <AlertCircle className="h-4 w-4" />} 
+                                {isEditMode ? "Versement Complémentaire" : "Premier Versement"}
+                            </h4>
                             <Badge variant="outline" className={cn(
-                                "bg-white font-black text-sm px-3 py-1 shadow-sm uppercase tracking-tighter",
-                                projectedRemaining > 0.01 ? "text-red-600 border-red-200" : "text-green-600 border-green-200"
+                                "bg-white font-black text-sm px-3 py-1 shadow-sm uppercase tracking-tighter transition-colors",
+                                isExceeding ? "text-red-600 border-red-600 animate-pulse bg-red-50" : projectedRemaining > 0.01 ? "text-red-600 border-red-200" : "text-green-600 border-green-200"
                             )}>
                                 RESTE : {projectedRemaining.toFixed(2)} MAD
                             </Badge>
@@ -221,7 +226,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à verser (MAD)</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingBeforeEntry.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingBeforeEntry.toFixed(2)}`} className={cn("font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background", isExceeding && "border-red-600 focus:ring-red-600")} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -249,7 +254,7 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                     </FormItem>
                 )} />
 
-                <Button type="submit" disabled={loading || loadingPlayers} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
+                <Button type="submit" disabled={loading || loadingPlayers || isExceeding} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isEditMode ? "Enregistrer le versement" : "Confirmer le paiement"}
                 </Button>
             </form>

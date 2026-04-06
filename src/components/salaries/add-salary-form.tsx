@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query, addDoc, doc, updateDoc, arrayUnion, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -154,7 +154,9 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
     }
 
     const remainingBeforeEntry = Math.max(0, (parseFloat(watchTotal?.toString() || "0")) - amountAlreadyPaid);
-    const projectedRemaining = Math.max(0, remainingBeforeEntry - (parseFloat(watchNewAmount || "0")));
+    const entryValue = parseFloat(watchNewAmount || "0");
+    const projectedRemaining = Math.max(0, remainingBeforeEntry - entryValue);
+    const isExceeding = entryValue > (remainingBeforeEntry + 0.01);
 
     return (
         <Form {...form}>
@@ -207,10 +209,13 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                 {remainingBeforeEntry > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isEditMode ? "Complément" : "Premier Versement"}</h4>
+                            <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2">
+                                {isExceeding ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <AlertCircle className="h-4 w-4" />} 
+                                {isEditMode ? "Complément" : "Premier Versement"}
+                            </h4>
                             <Badge variant="outline" className={cn(
-                                "bg-white font-black text-sm px-3 py-1 shadow-sm uppercase tracking-tighter",
-                                projectedRemaining > 0.01 ? "text-red-600 border-red-200" : "text-green-600 border-green-200"
+                                "bg-white font-black text-sm px-3 py-1 shadow-sm uppercase tracking-tighter transition-colors",
+                                isExceeding ? "text-red-600 border-red-600 animate-pulse bg-red-50" : projectedRemaining > 0.01 ? "text-red-600 border-red-200" : "text-green-600 border-green-200"
                             )}>
                                 RESTE : {projectedRemaining.toFixed(2)} MAD
                             </Badge>
@@ -219,7 +224,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant (MAD)</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingBeforeEntry.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingBeforeEntry.toFixed(2)}`} className={cn("font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background", isExceeding && "border-red-600 focus:ring-red-600")} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -247,7 +252,7 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                     </FormItem>
                 )} />
 
-                <Button type="submit" disabled={loading || loadingCoaches} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
+                <Button type="submit" disabled={loading || loadingCoaches || isExceeding} className="w-full h-14 font-black uppercase tracking-[0.2em] text-lg shadow-2xl transition-transform active:scale-95">
                     {loading ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : isEditMode ? "Enregistrer le versement" : "Valider la Fiche"}
                 </Button>
             </form>
