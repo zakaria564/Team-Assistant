@@ -273,6 +273,13 @@ export default function SalariesPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-52">
                                     <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black">Actions</DropdownMenuLabel>
+                                    {salary.status !== 'Payé' && (
+                                        <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
+                                            <DropdownMenuItem className="cursor-pointer text-primary font-bold">
+                                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter versement
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    )}
                                     <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
                                         <DropdownMenuItem className="cursor-pointer">
                                             <Download className="mr-2 h-4 w-4" /> Exporter reçu PDF

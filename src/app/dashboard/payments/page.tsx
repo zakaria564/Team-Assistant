@@ -274,6 +274,13 @@ export default function PaymentsPage() {
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end" className="w-52">
                                                   <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Actions</DropdownMenuLabel>
+                                                  {payment.status !== 'Payé' && (
+                                                      <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
+                                                          <DropdownMenuItem className="cursor-pointer text-primary font-bold">
+                                                              <PlusCircle className="mr-2 h-4 w-4" /> Enregistrer versement
+                                                          </DropdownMenuItem>
+                                                      </Link>
+                                                  )}
                                                   <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>
                                                       <DropdownMenuItem className="cursor-pointer">
                                                           <Download className="mr-2 h-4 w-4" /> Exporter reçu
