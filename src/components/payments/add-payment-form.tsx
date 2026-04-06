@@ -105,17 +105,36 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchAllPlayers = async () => {
+        const fetchInitialData = async () => {
             if (!user) return;
             setLoadingPlayers(true);
             try {
+                // Determine current month to filter out existing folders
+                const currentMonthName = format(new Date(), "MMMM", { locale: fr }).toLowerCase();
+
+                // Fetch all players
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
-                setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
+
+                if (isEditMode) {
+                    setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
+                } else {
+                    // Fetch all payments to see who already has a folder for this month
+                    const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
+                    const existingPlayerIdsForMonth = new Set(
+                        paymentsSnap.docs
+                            .filter(doc => (doc.data().description || "").toLowerCase().includes(currentMonthName))
+                            .map(doc => doc.data().playerId)
+                    );
+
+                    // Only show players who DON'T have a folder for this month
+                    const availablePlayers = allPlayers.filter(p => !existingPlayerIdsForMonth.has(p.id));
+                    setPlayers(availablePlayers.sort((a,b) => a.name.localeCompare(b.name)));
+                }
             } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
         };
-        fetchAllPlayers();
-    }, [user]);
+        fetchInitialData();
+    }, [user, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
@@ -152,12 +171,12 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                                 <SelectTrigger className="bg-background border-slate-200 h-11">
-                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur dans la liste..."} />
+                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur..."} />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur trouvé</SelectItem>}
+                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Tous les dossiers du mois sont déjà créés</SelectItem>}
                             </SelectContent>
                         </Select>
                         <FormMessage />

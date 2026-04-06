@@ -103,17 +103,36 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchAllCoaches = async () => {
+        const fetchInitialData = async () => {
             if (!user) return;
             setLoadingCoaches(true);
             try {
+                // Determine current month name
+                const currentMonthName = format(new Date(), "MMMM", { locale: fr }).toLowerCase();
+
+                // Fetch all coaches
                 const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
                 const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
-                setCoaches(allCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+
+                if (isEditMode) {
+                    setCoaches(allCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+                } else {
+                    // Fetch existing salaries to filter
+                    const salariesSnap = await getDocs(query(collection(db, "salaries"), where("userId", "==", user.uid)));
+                    const existingCoachIdsForMonth = new Set(
+                        salariesSnap.docs
+                            .filter(doc => (doc.data().description || "").toLowerCase().includes(currentMonthName))
+                            .map(doc => doc.data().coachId)
+                    );
+
+                    // Only show coaches who DON'T have a folder for this month
+                    const availableCoaches = allCoaches.filter(c => !existingCoachIdsForMonth.has(c.id));
+                    setCoaches(availableCoaches.sort((a,b) => a.name.localeCompare(b.name)));
+                }
             } catch (error) { console.error(error); } finally { setLoadingCoaches(false); }
         };
-        fetchAllCoaches();
-    }, [user]);
+        fetchInitialData();
+    }, [user, isEditMode]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!user) return;
@@ -150,12 +169,12 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
                         <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || loadingCoaches}>
                             <FormControl>
                                 <SelectTrigger className="bg-background border-slate-200 h-11">
-                                    <SelectValue placeholder={loadingCoaches ? "Chargement..." : "Choisir un coach dans la liste..."} />
+                                    <SelectValue placeholder={loadingCoaches ? "Chargement..." : "Choisir un coach..."} />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Aucun coach trouvé</SelectItem>}
+                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Toutes les fiches du mois sont déjà créées</SelectItem>}
                             </SelectContent>
                         </Select>
                         <FormMessage />
