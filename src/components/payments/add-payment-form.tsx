@@ -105,21 +105,16 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchEligiblePlayers = async () => {
+        const fetchAllPlayers = async () => {
             if (!user) return;
             setLoadingPlayers(true);
             try {
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
-                
-                const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
-                const playersWithAnyDossier = new Set(paymentsSnap.docs.map(d => d.data().playerId));
-
-                const filtered = allPlayers.filter(p => !playersWithAnyDossier.has(p.id));
-                setPlayers(filtered.sort((a,b) => a.name.localeCompare(b.name)));
+                setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
             } catch(e) { console.error(e); } finally { setLoadingPlayers(false); }
         };
-        fetchEligiblePlayers();
+        fetchAllPlayers();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -153,25 +148,24 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                  <FormField control={form.control} name="playerId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Joueur (Nouveaux Dossiers Uniquement)</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Sélectionner le joueur</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={loadingPlayers || isEditMode}>
                             <FormControl>
                                 <SelectTrigger className="bg-background border-slate-200 h-11">
-                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Sélectionner un joueur..."} />
+                                    <SelectValue placeholder={loadingPlayers ? "Chargement..." : "Choisir un joueur dans la liste..."} />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {players.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur disponible (Dossiers déjà créés)</SelectItem>}
+                                {players.length === 0 && !loadingPlayers && <SelectItem value="none" disabled>Aucun joueur trouvé</SelectItem>}
                             </SelectContent>
                         </Select>
-                        <p className="text-[10px] text-muted-foreground italic mt-1">Note: Les joueurs ayant déjà un dossier sont à compléter directement dans la liste de suivi.</p>
                         <FormMessage />
                     </FormItem>
                 )} />
                 <FormField control={form.control} name="description" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Description</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Description (Mois/Année)</FormLabel>
                         <FormControl><Input {...field} value={field.value ?? ""} className="bg-background border-slate-200" /></FormControl>
                         <FormMessage />
                     </FormItem>

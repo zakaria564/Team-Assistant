@@ -103,21 +103,16 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
     }, [watchTotal, watchNewAmount, amountAlreadyPaid, form]);
 
     useEffect(() => {
-        const fetchEligibleCoaches = async () => {
+        const fetchAllCoaches = async () => {
             if (!user) return;
             setLoadingCoaches(true);
             try {
                 const coachesSnap = await getDocs(query(collection(db, "coaches"), where("userId", "==", user.uid)));
                 const allCoaches = coachesSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Coach));
-                
-                const salariesSnap = await getDocs(query(collection(db, "salaries"), where("userId", "==", user.uid)));
-                const coachesWithAnyDossier = new Set(salariesSnap.docs.map(d => d.data().coachId));
-
-                const filtered = allCoaches.filter(c => !coachesWithAnyDossier.has(c.id));
-                setCoaches(filtered.sort((a,b) => a.name.localeCompare(b.name)));
+                setCoaches(allCoaches.sort((a,b) => a.name.localeCompare(b.name)));
             } catch (error) { console.error(error); } finally { setLoadingCoaches(false); }
         };
-        fetchEligibleCoaches();
+        fetchAllCoaches();
     }, [user]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -151,16 +146,16 @@ export function AddSalaryForm({ salary: initialSalary }: { salary?: SalaryData }
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
                 <FormField control={form.control} name="coachId" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Entraîneur (Nouveaux Dossiers Uniquement)</FormLabel>
+                        <FormLabel className="font-bold text-xs uppercase text-muted-foreground">Sélectionner l'entraîneur</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode || loadingCoaches}>
                             <FormControl>
                                 <SelectTrigger className="bg-background border-slate-200 h-11">
-                                    <SelectValue placeholder={loadingCoaches ? "Chargement..." : "Sélectionner un coach..."} />
+                                    <SelectValue placeholder={loadingCoaches ? "Chargement..." : "Choisir un coach dans la liste..."} />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {coaches.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Aucun coach disponible (Dossiers déjà créés)</SelectItem>}
+                                {coaches.length === 0 && !loadingCoaches && <SelectItem value="none" disabled>Aucun coach trouvé</SelectItem>}
                             </SelectContent>
                         </Select>
                         <FormMessage />
