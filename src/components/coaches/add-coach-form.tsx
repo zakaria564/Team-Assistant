@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -203,23 +202,49 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
     
+    // Fermeture propre du flux précédent avant d'en ouvrir un nouveau (crucial sur mobile)
     if (videoRef.current?.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
     }
 
     try {
-        const s = await navigator.mediaDevices.getUserMedia({ 
+        // Contraintes plus souples pour améliorer la compatibilité avec les appareils comme le Redmi 12C
+        const constraints = { 
             video: { 
                 facingMode: facingMode,
-                width: { ideal: 1280 },
-                height: { ideal: 1280 }
-            } 
-        });
-        if (videoRef.current) videoRef.current.srcObject = s;
+                width: { ideal: 1280, min: 640 },
+                height: { ideal: 720, min: 480 }
+            },
+            audio: false 
+        };
+        
+        const s = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        if (videoRef.current) {
+            videoRef.current.srcObject = s;
+            // Forcer la lecture pour certains navigateurs mobiles
+            try {
+                await videoRef.current.play();
+            } catch (playError) {
+                console.error("Erreur de lecture vidéo:", playError);
+            }
+        }
         setHasCameraPermission(true);
     } catch (e) { 
-        setHasCameraPermission(false); 
+        console.error("Erreur d'accès caméra:", e);
+        // Tentative de secours avec des contraintes minimales si l'HD échoue
+        try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = fallbackStream;
+                await videoRef.current.play();
+            }
+            setHasCameraPermission(true);
+        } catch (fallbackError) {
+            setHasCameraPermission(false); 
+        }
     }
   }, [facingMode]);
 
@@ -281,7 +306,14 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                   <div className="aspect-square bg-slate-900 rounded-2xl border-4 border-slate-800 flex items-center justify-center relative overflow-hidden shadow-2xl group">
                        {!form.watch('photoUrl') && hasCameraPermission ? (
                            <>
-                                <video ref={videoRef} className={cn("w-full h-full object-cover", facingMode === 'user' && "scale-x-[-1]")} autoPlay muted playsInline />
+                                <video 
+                                    ref={videoRef} 
+                                    className={cn("w-full h-full object-cover", facingMode === 'user' && "scale-x-[-1]")} 
+                                    autoPlay 
+                                    muted 
+                                    playsInline 
+                                    onLoadedMetadata={(e) => e.currentTarget.play()}
+                                />
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div className="w-[65%] aspect-[3/4] border-2 border-white/20 rounded-[100px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[67%] aspect-[3/4] border border-primary/40 rounded-[100px] animate-pulse"></div>
