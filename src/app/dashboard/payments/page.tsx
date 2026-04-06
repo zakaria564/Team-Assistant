@@ -254,13 +254,6 @@ export default function PaymentsPage() {
                                       </TableCell>
                                       <TableCell className="text-right pr-4">
                                           <div className="flex items-center justify-end gap-1">
-                                              {payment.status !== 'Payé' && (
-                                                  <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 border border-primary/20 text-primary" title="Encaisser versement">
-                                                      <Link href={`/dashboard/payments/${payment.id}/edit`}>
-                                                          <PlusCircle className="h-4 w-4" />
-                                                      </Link>
-                                                  </Button>
-                                              )}
                                               <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border">
                                                   <Link href={`/dashboard/payments/${payment.id}`}>
                                                       <FileText className="h-4 w-4 text-primary" />

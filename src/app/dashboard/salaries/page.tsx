@@ -253,13 +253,6 @@ export default function SalariesPage() {
                         </TableCell>
                         <TableCell className="text-right pr-4">
                             <div className="flex items-center justify-end gap-1">
-                                {salary.status !== 'Payé' && (
-                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 border border-primary/20 text-primary" title="Ajouter versement">
-                                        <Link href={`/dashboard/salaries/${salary.id}/edit`}>
-                                            <PlusCircle className="h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                )}
                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border border-slate-100 dark:border-slate-800">
                                     <Link href={`/dashboard/salaries/${salary.id}`}>
                                         <FileText className="h-4 w-4 text-primary" />
