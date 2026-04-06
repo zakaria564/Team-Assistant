@@ -253,6 +253,13 @@ export default function SalariesPage() {
                         </TableCell>
                         <TableCell className="text-right pr-4">
                             <div className="flex items-center justify-end gap-1">
+                                {salary.status !== 'Payé' && (
+                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 border border-primary/20 text-primary" title="Ajouter versement">
+                                        <Link href={`/dashboard/salaries/${salary.id}/edit`}>
+                                            <PlusCircle className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border border-slate-100 dark:border-slate-800">
                                     <Link href={`/dashboard/salaries/${salary.id}`}>
                                         <FileText className="h-4 w-4 text-primary" />
@@ -266,13 +273,6 @@ export default function SalariesPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-52">
                                     <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-black">Actions</DropdownMenuLabel>
-                                    {salary.status !== 'Payé' && (
-                                        <Link href={`/dashboard/salaries/${salary.id}/edit`} passHref>
-                                            <DropdownMenuItem className="cursor-pointer font-black text-primary bg-primary/5">
-                                                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter versement
-                                            </DropdownMenuItem>
-                                        </Link>
-                                    )}
                                     <Link href={`/dashboard/salaries/${salary.id}/receipt`} passHref>
                                         <DropdownMenuItem className="cursor-pointer">
                                             <Download className="mr-2 h-4 w-4" /> Exporter reçu PDF

@@ -254,6 +254,13 @@ export default function PaymentsPage() {
                                       </TableCell>
                                       <TableCell className="text-right pr-4">
                                           <div className="flex items-center justify-end gap-1">
+                                              {payment.status !== 'Payé' && (
+                                                  <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-primary/10 border border-primary/20 text-primary" title="Encaisser versement">
+                                                      <Link href={`/dashboard/payments/${payment.id}/edit`}>
+                                                          <PlusCircle className="h-4 w-4" />
+                                                      </Link>
+                                                  </Button>
+                                              )}
                                               <Button variant="ghost" size="icon" asChild className="h-8 w-8 hover:bg-slate-100 border">
                                                   <Link href={`/dashboard/payments/${payment.id}`}>
                                                       <FileText className="h-4 w-4 text-primary" />
@@ -267,13 +274,6 @@ export default function PaymentsPage() {
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end" className="w-52">
                                                   <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Actions</DropdownMenuLabel>
-                                                  {payment.status !== 'Payé' && (
-                                                      <Link href={`/dashboard/payments/${payment.id}/edit`} passHref>
-                                                          <DropdownMenuItem className="cursor-pointer font-black text-primary bg-primary/5">
-                                                              <PlusCircle className="mr-2 h-4 w-4" /> Enregistrer versement
-                                                          </DropdownMenuItem>
-                                                      </Link>
-                                                  )}
                                                   <Link href={`/dashboard/payments/${payment.id}/receipt`} passHref>
                                                       <DropdownMenuItem className="cursor-pointer">
                                                           <Download className="mr-2 h-4 w-4" /> Exporter reçu
