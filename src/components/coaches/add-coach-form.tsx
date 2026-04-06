@@ -170,6 +170,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const isEditMode = !!coach;
