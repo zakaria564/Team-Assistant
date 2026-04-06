@@ -66,6 +66,7 @@ interface PlayerPayments {
     playerGender: 'Masculin' | 'Féminin';
     payments: Payment[];
     hasPending: boolean;
+    missingCurrentMonth: boolean;
 }
 
 const getBadgeClass = (status?: Payment['status']) => {
@@ -136,6 +137,7 @@ export default function PaymentsPage() {
 
   const groupedAndFilteredPayments: PlayerPayments[] = useMemo(() => {
     const grouped: Record<string, PlayerPayments> = {};
+    const currentMonthName = format(new Date(), "MMMM", { locale: fr });
 
     players.forEach(player => {
         grouped[player.id] = {
@@ -144,19 +146,23 @@ export default function PaymentsPage() {
             playerPhotoUrl: player.photoUrl,
             playerGender: player.gender || 'Masculin',
             payments: [],
-            hasPending: true
+            hasPending: false,
+            missingCurrentMonth: true
         };
     });
 
     payments.forEach(payment => {
         if (grouped[payment.playerId]) {
             grouped[payment.playerId].payments.push(payment);
+            if (payment.description.toLowerCase().includes(currentMonthName.toLowerCase())) {
+                grouped[payment.playerId].missingCurrentMonth = payment.status !== 'Payé';
+            }
         }
     });
 
     return Object.values(grouped).map(group => ({
         ...group,
-        hasPending: group.payments.length === 0 || group.payments.some(p => p.status !== 'Payé')
+        hasPending: group.missingCurrentMonth || group.payments.some(p => p.status !== 'Payé')
     }))
     .filter(group => {
         const matchesSearch = group.playerName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -189,6 +195,8 @@ export default function PaymentsPage() {
   const renderPaymentGroups = (groups: PlayerPayments[]) => {
      if (groups.length === 0) return <div className="text-center text-muted-foreground py-16 border-2 border-dashed rounded-xl bg-muted/20 italic">Aucun résultat trouvé.</div>;
 
+    const currentMonthLabel = format(new Date(), "MMMM", { locale: fr });
+
     return (
        <div className="space-y-2">
           {groups.map((playerGroup) => (
@@ -205,16 +213,16 @@ export default function PaymentsPage() {
                                 <AvatarFallback className="font-bold">{playerGroup.playerName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                           <div className="flex flex-col text-left">
-                              <p className="text-sm font-bold text-muted-foreground tracking-wider mb-1">
+                              <p className="text-sm text-slate-500 font-medium tracking-wide mb-1">
                                 {toTitleCase(playerGroup.playerName)}
                               </p>
                               <div className="flex items-center gap-2">
-                                <p className="text-xs font-bold text-slate-900 leading-tight">
+                                <p className="text-xs font-black text-slate-900 leading-tight">
                                     {playerGroup.payments.length} Dossier(s)
                                 </p>
                                 {playerGroup.hasPending && (
                                     <Badge className="bg-red-600 text-white border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 flex items-center gap-1 animate-pulse">
-                                        <BellRing className="h-2 w-2" /> Notification
+                                        <BellRing className="h-2 w-2" /> Alerte {currentMonthLabel}
                                     </Badge>
                                 )}
                               </div>

@@ -34,6 +34,8 @@ import { cn } from "@/lib/utils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Coach {
     id: string;
@@ -59,6 +61,7 @@ interface CoachSalaries {
     coachPhotoUrl?: string;
     salaries: Salary[];
     hasPending: boolean;
+    missingCurrentMonth: boolean;
 }
 
 const getBadgeClass = (status?: Salary['status']) => {
@@ -125,6 +128,7 @@ export default function SalariesPage() {
 
   const groupedSalaries = useMemo(() => {
     const grouped: Record<string, CoachSalaries> = {};
+    const currentMonthName = format(new Date(), "MMMM", { locale: fr });
     
     coaches.forEach(coach => {
         grouped[coach.id] = {
@@ -132,19 +136,23 @@ export default function SalariesPage() {
             coachName: coach.name,
             coachPhotoUrl: coach.photoUrl,
             salaries: [],
-            hasPending: true
+            hasPending: false,
+            missingCurrentMonth: true
         };
     });
 
     salaries.forEach(salary => {
         if (grouped[salary.coachId]) {
             grouped[salary.coachId].salaries.push(salary);
+            if (salary.description.toLowerCase().includes(currentMonthName.toLowerCase())) {
+                grouped[salary.coachId].missingCurrentMonth = salary.status !== 'Payé';
+            }
         }
     });
 
     return Object.values(grouped).map(group => ({
         ...group,
-        hasPending: group.salaries.length === 0 || group.salaries.some(s => s.status !== 'Payé')
+        hasPending: group.missingCurrentMonth || group.salaries.some(s => s.status !== 'Payé')
     }))
     .filter(group => group.coachName.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => a.coachName.localeCompare(b.coachName));
@@ -160,6 +168,8 @@ export default function SalariesPage() {
   };
 
   if (loading || loadingUser) return <div className="flex justify-center items-center py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+
+  const currentMonthLabel = format(new Date(), "MMMM", { locale: fr });
 
   return (
     <div className="space-y-6">
@@ -202,16 +212,16 @@ export default function SalariesPage() {
                   <AvatarFallback className="font-black text-lg">{group.coachName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <p className="text-sm font-bold text-muted-foreground tracking-wider mb-1">
+                  <p className="text-sm text-slate-500 font-medium tracking-wide mb-1">
                     {toTitleCase(group.coachName)}
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight">
+                    <p className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight">
                       {group.salaries.length} Fiche(s)
                     </p>
                     {group.hasPending && (
                         <Badge className="bg-red-600 text-white border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4 flex items-center gap-1 animate-pulse">
-                            <BellRing className="h-2 w-2" /> Notification
+                            <BellRing className="h-2 w-2" /> Alerte {currentMonthLabel}
                         </Badge>
                     )}
                   </div>

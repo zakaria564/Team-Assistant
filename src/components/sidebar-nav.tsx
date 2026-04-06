@@ -8,6 +8,8 @@ import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
@@ -18,18 +20,26 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
   useEffect(() => {
     if (!user) return;
 
-    // Listen to players and payments to count pending
+    const currentMonthName = format(new Date(), "MMMM", { locale: fr });
+
+    // Listen to players and payments to count pending or missing for current month
     const unsubscribePlayers = onSnapshot(query(collection(db, "players"), where("userId", "==", user.uid)), (playersSnap) => {
         const playerIds = playersSnap.docs.map(d => d.id);
         
         const unsubscribePayments = onSnapshot(query(collection(db, "payments"), where("userId", "==", user.uid)), (paymentsSnap) => {
             const payments = paymentsSnap.docs.map(d => d.data());
-            const playersWithDossier = new Set(payments.map(p => p.playerId));
-            const playersWithPending = new Set(payments.filter(p => p.status !== 'Payé').map(p => p.playerId));
+            
+            // Check who has a payment for current month that is FULLY PAID
+            const playersWithPaidCurrentMonth = new Set(
+                payments.filter(p => 
+                    p.description.toLowerCase().includes(currentMonthName.toLowerCase()) && 
+                    p.status === 'Payé'
+                ).map(p => p.playerId)
+            );
             
             let count = 0;
             playerIds.forEach(id => {
-                if (!playersWithDossier.has(id) || playersWithPending.has(id)) {
+                if (!playersWithPaidCurrentMonth.has(id)) {
                     count++;
                 }
             });
@@ -38,18 +48,24 @@ export function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }) {
         return () => unsubscribePayments();
     });
 
-    // Listen to coaches and salaries to count pending
+    // Listen to coaches and salaries to count pending or missing for current month
     const unsubscribeCoaches = onSnapshot(query(collection(db, "coaches"), where("userId", "==", user.uid)), (coachesSnap) => {
         const coachIds = coachesSnap.docs.map(d => d.id);
         
         const unsubscribeSalaries = onSnapshot(query(collection(db, "salaries"), where("userId", "==", user.uid)), (salariesSnap) => {
             const salaries = salariesSnap.docs.map(d => d.data());
-            const coachesWithDossier = new Set(salaries.map(s => s.coachId));
-            const coachesWithPending = new Set(salaries.filter(s => s.status !== 'Payé').map(s => s.coachId));
+            
+            // Check who has a salary record for current month that is FULLY PAID
+            const coachesWithPaidCurrentMonth = new Set(
+                salaries.filter(s => 
+                    s.description.toLowerCase().includes(currentMonthName.toLowerCase()) && 
+                    s.status === 'Payé'
+                ).map(s => s.coachId)
+            );
             
             let count = 0;
             coachIds.forEach(id => {
-                if (!coachesWithDossier.has(id) || coachesWithPending.has(id)) {
+                if (!coachesWithPaidCurrentMonth.has(id)) {
                     count++;
                 }
             });
