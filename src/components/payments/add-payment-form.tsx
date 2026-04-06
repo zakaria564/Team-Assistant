@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Badge } from "../ui/badge";
+import { cn } from "@/lib/utils";
 import React from "react";
 
 interface Player {
@@ -109,25 +110,19 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
             if (!user) return;
             setLoadingPlayers(true);
             try {
-                // Determine current month to filter out existing folders
                 const currentMonthName = format(new Date(), "MMMM", { locale: fr }).toLowerCase();
-
-                // Fetch all players
                 const playersSnap = await getDocs(query(collection(db, "players"), where("userId", "==", user.uid)));
                 const allPlayers = playersSnap.docs.map(d => ({ id: d.id, name: d.data().name } as Player));
 
                 if (isEditMode) {
                     setPlayers(allPlayers.sort((a,b) => a.name.localeCompare(b.name)));
                 } else {
-                    // Fetch all payments to see who already has a folder for this month
                     const paymentsSnap = await getDocs(query(collection(db, "payments"), where("userId", "==", user.uid)));
                     const existingPlayerIdsForMonth = new Set(
                         paymentsSnap.docs
                             .filter(doc => (doc.data().description || "").toLowerCase().includes(currentMonthName))
                             .map(doc => doc.data().playerId)
                     );
-
-                    // Only show players who DON'T have a folder for this month
                     const availablePlayers = allPlayers.filter(p => !existingPlayerIdsForMonth.has(p.id));
                     setPlayers(availablePlayers.sort((a,b) => a.name.localeCompare(b.name)));
                 }
@@ -160,7 +155,8 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
         } catch (e) { toast({ variant: "destructive", title: "Erreur" }); } finally { setLoading(false); }
     }
     
-    const remainingToDisplay = Math.max(0, (parseFloat(watchTotal?.toString() || "0")) - amountAlreadyPaid);
+    const remainingBeforeEntry = Math.max(0, (parseFloat(watchTotal?.toString() || "0")) - amountAlreadyPaid);
+    const projectedRemaining = Math.max(0, remainingBeforeEntry - (parseFloat(watchNewAmount || "0")));
 
     return (
         <Form {...form}>
@@ -210,17 +206,22 @@ function FormContent({ payment: initialPayment }: { payment?: PaymentData }) {
                     </div>
                 )}
                
-                {remainingToDisplay > 0.01 && (
+                {remainingBeforeEntry > 0.01 && (
                     <div className="p-6 border-2 border-primary/20 rounded-2xl space-y-5 bg-primary/5 shadow-inner">
                         <div className="flex justify-between items-center">
                             <h4 className="font-black text-primary uppercase text-xs tracking-widest flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {isEditMode ? "Versement Complémentaire" : "Premier Versement"}</h4>
-                            <Badge variant="outline" className="bg-white font-black text-sm px-3 py-1 shadow-sm text-red-600 border-red-200 uppercase tracking-tighter">RESTE : {remainingToDisplay.toFixed(2)} MAD</Badge>
+                            <Badge variant="outline" className={cn(
+                                "bg-white font-black text-sm px-3 py-1 shadow-sm uppercase tracking-tighter",
+                                projectedRemaining > 0.01 ? "text-red-600 border-red-200" : "text-green-600 border-green-200"
+                            )}>
+                                RESTE : {projectedRemaining.toFixed(2)} MAD
+                            </Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <FormField control={form.control} name="newTransactionAmount" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-black text-[10px] uppercase text-slate-500">Montant à verser (MAD)</FormLabel>
-                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingToDisplay.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
+                                    <FormControl><Input type="number" step="0.01" {...field} value={field.value || ""} placeholder={`Max ${remainingBeforeEntry.toFixed(2)}`} className="font-black text-xl h-12 border-primary/30 focus:border-primary shadow-sm bg-background" /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
