@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -113,9 +112,8 @@ export default function PlayerDetailsPdfPage(props: PageProps) {
        <div className="w-full max-w-2xl space-y-4 text-center">
         <div className="flex justify-between items-center gap-4 mb-2 px-2">
           <Button variant="outline" size="sm" onClick={() => router.back()} className="h-9 font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-          <Button size="sm" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white">
-            {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-            Exporter PDF (HD)
+          <Button size="icon" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 w-9 bg-primary hover:bg-primary/90 text-white shadow-lg" title="Exporter en PDF">
+            {loadingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileDown className="h-5 w-5" />}
           </Button>
         </div>
 

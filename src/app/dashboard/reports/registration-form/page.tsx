@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -71,8 +70,8 @@ export default function RegistrationFormPage() {
                         <TabsTrigger value="checklist" className="text-[10px] font-black uppercase">Docs</TabsTrigger>
                     </TabsList>
                 </Tabs>
-                <Button onClick={handleDownloadPdf} disabled={loadingPdf} size="sm" className="w-full sm:w-auto h-9 font-black uppercase bg-primary hover:bg-primary/90 text-white">
-                    {loadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Download className="mr-2 h-4 w-4" /> Exporter (HD)</>}
+                <Button size="icon" onClick={handleDownloadPdf} disabled={loadingPdf} className="h-9 w-9 bg-primary hover:bg-primary/90 text-white shadow-lg" title="Exporter en PDF">
+                    {loadingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
                 </Button>
             </div>
             
