@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -118,104 +119,102 @@ export default function PlayerDetailsPdfPage(props: PageProps) {
           </Button>
         </div>
 
-        <div className="w-full overflow-hidden pb-8 bg-muted/20 rounded-xl p-2 flex justify-center">
-            <div className="w-full overflow-x-auto sm:overflow-visible flex justify-center scrollbar-thin">
-                <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col shrink-0" style={{ width: '595px', height: '842px' }}>
-                    <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
-                        <div className="flex flex-row items-center gap-3 text-left">
-                            <div className="h-14 w-[100px] border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
-                                {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">{clubInitial}</div>}
-                            </div>
-                            <div className="space-y-0.5">
-                                <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{clubName}</h1>
-                                <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]"><p className="break-words">{clubAddress || "Siège Social"}</p></div>
-                            </div>
+        <div className="w-full overflow-x-auto pb-8 bg-muted/20 rounded-xl p-2 flex justify-start sm:justify-center scrollbar-thin">
+            <div id="printable-details" className="bg-white text-slate-900 border shadow-2xl flex flex-col shrink-0" style={{ width: '595px', height: '842px', minWidth: '595px' }}>
+                <header className="p-4 bg-slate-900 text-white flex flex-row justify-between items-center gap-4 border-b-4 border-primary shrink-0">
+                    <div className="flex flex-row items-center gap-3 text-left">
+                        <div className="h-14 w-[100px] border border-slate-700 shadow-xl rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                            {clubLogoUrl ? <img src={clubLogoUrl} alt="Logo" className="h-full w-full object-contain p-1" /> : <div className="h-full w-full bg-primary text-white flex items-center justify-center text-lg font-black">{clubInitial}</div>}
                         </div>
-                        <div className="text-right space-y-0.5">
-                            <h2 className="text-lg font-black uppercase italic tracking-tighter text-white leading-none">FICHE</h2>
-                            <div className="pt-0.5">
-                                <p className="text-primary font-black text-[6px] uppercase tracking-[0.2em]">OFFICIELLE JOUEUR</p>
-                                <p className="text-slate-500 text-[7px] font-bold">Le {format(new Date(), 'dd/MM/yyyy')}</p>
-                            </div>
-                        </div>
-                    </header>
-                    
-                    <div className="px-6 py-4 flex-grow flex flex-col">
-                        <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
-                            <div className="flex flex-col items-center gap-1.5 shrink-0">
-                                <div className="h-16 w-16 border-2 border-white shadow-lg rounded-xl overflow-hidden bg-white flex items-center justify-center relative">
-                                    {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" /> : <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
-                                </div>
-                                <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
-                                    <Fingerprint className="h-2 w-2 text-primary" />{displayId}
-                                </div>
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                                <h1 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-none mb-2 break-words">{player.name}</h1>
-                                <div className="grid grid-cols-3 gap-2">
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <Badge className="bg-slate-900 text-white text-[7px] px-1 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{player.category}</Badge>
-                                    </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 bg-slate-50 px-1 py-0.5 rounded-sm w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
-                                    </div>
-                                    <div className="flex flex-col items-center justify-center text-center p-1 bg-primary rounded-lg shadow-md">
-                                        <span className="text-white font-black text-xs italic">#{player.number || "--"}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <main className="grid grid-cols-2 gap-6 mb-4">
-                            <div className="space-y-2">
-                                <div>
-                                    <SectionTitle title="État Civil & Contact" icon={User} />
-                                    <DetailItem icon={Cake} label="Naissance" value={player.birthDate} />
-                                    <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
-                                    <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
-                                    <DetailItem icon={Fingerprint} label="N° CIN / ID" value={player.cin} />
-                                    <DetailItem icon={Mail} label="Email" value={player.email} />
-                                    <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
-                                    <DetailItem icon={MapPin} label="Adresse" value={player.address} />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div>
-                                    <SectionTitle title="Parcours Sportif" icon={Shield} />
-                                    <DetailItem icon={ClipboardList} label="Coach" value={player.coachName || "Non assigné"} />
-                                    <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
-                                    <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate || "Actif"} />
-                                </div>
-                                {player.tutorName && (
-                                    <div className="pt-2">
-                                        <SectionTitle title="Responsable Légal" icon={VenetianMask} />
-                                        <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
-                                        <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
-                                        <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
-                                    </div>
-                                )}
-                            </div>
-                        </main>
-
-                        <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
-                            <div className="text-center space-y-4 w-full flex flex-col items-center">
-                                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
-                                <div className="w-32 border-b-2 border-slate-300"></div>
-                            </div>
+                        <div className="space-y-0.5">
+                            <h1 className="text-xs font-black uppercase tracking-tight text-white leading-none">{clubName}</h1>
+                            <div className="text-slate-400 text-[7px] font-semibold leading-tight max-w-[150px]"><p className="break-words">{clubAddress || "Siège Social"}</p></div>
                         </div>
                     </div>
-
-                    <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-end gap-4 text-left shrink-0 border-t border-primary mt-0">
-                        <div className="space-y-0.5">
-                            <div className="flex items-center gap-1 text-primary">
-                                <ShieldCheck className="h-2.5 w-2.5" />
-                                <span className="text-[6px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
-                            </div>
-                            <p className="text-[5px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                    <div className="text-right space-y-0.5">
+                        <h2 className="text-lg font-black uppercase italic tracking-tighter text-white leading-none">FICHE</h2>
+                        <div className="pt-0.5">
+                            <p className="text-primary font-black text-[6px] uppercase tracking-[0.2em]">OFFICIELLE JOUEUR</p>
+                            <p className="text-slate-500 text-[7px] font-bold">Le {format(new Date(), 'dd/MM/yyyy')}</p>
                         </div>
-                        <div className="text-[7px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
-                    </footer>
+                    </div>
+                </header>
+                
+                <div className="px-6 py-4 flex-grow flex flex-col">
+                    <section className="flex flex-row items-center gap-6 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="flex flex-col items-center gap-1.5 shrink-0">
+                            <div className="h-16 w-16 border-2 border-white shadow-lg rounded-xl overflow-hidden bg-white flex items-center justify-center relative">
+                                {player.photoUrl ? <img src={player.photoUrl} alt={player.name} className="h-full w-full object-contain bg-white" /> : <AvatarFallback className="text-2xl font-black bg-slate-200 text-slate-400">{playerInitial}</AvatarFallback>}
+                            </div>
+                            <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded-full font-mono text-[6px] font-black tracking-widest flex items-center gap-1 shadow-md">
+                                <Fingerprint className="h-2 w-2 text-primary" />{displayId}
+                            </div>
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                            <h1 className="text-base font-black text-slate-900 uppercase tracking-tighter leading-none mb-2 break-words">{player.name}</h1>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                    <Badge className="bg-slate-900 text-white text-[7px] px-1 py-0.5 font-black uppercase tracking-widest rounded-sm w-full justify-center border-none">{player.category}</Badge>
+                                </div>
+                                <div className="flex flex-col items-center justify-center text-center p-1 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                    <span className="text-slate-800 font-black text-[7px] uppercase flex items-center justify-center gap-1 bg-slate-50 px-1 py-0.5 rounded-sm w-full"><Star className="h-2 w-2 text-primary fill-primary" /> {player.position || "Joueur"}</span>
+                                </div>
+                                <div className="flex flex-col items-center justify-center text-center p-1 bg-primary rounded-lg shadow-md">
+                                    <span className="text-white font-black text-xs italic">#{player.number || "--"}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <main className="grid grid-cols-2 gap-6 mb-4">
+                        <div className="space-y-2">
+                            <div>
+                                <SectionTitle title="État Civil & Contact" icon={User} />
+                                <DetailItem icon={Cake} label="Naissance" value={player.birthDate} />
+                                <DetailItem icon={VenetianMask} label="Genre" value={player.gender} />
+                                <DetailItem icon={Flag} label="Nationalité" value={player.nationality} />
+                                <DetailItem icon={Fingerprint} label="N° CIN / ID" value={player.cin} />
+                                <DetailItem icon={Mail} label="Email" value={player.email} />
+                                <DetailItem icon={Phone} label="Téléphone" value={player.phone} />
+                                <DetailItem icon={MapPin} label="Adresse" value={player.address} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <div>
+                                <SectionTitle title="Parcours Sportif" icon={Shield} />
+                                <DetailItem icon={ClipboardList} label="Coach" value={player.coachName || "Non assigné"} />
+                                <DetailItem icon={LogIn} label="Date d'entrée" value={player.entryDate} />
+                                <DetailItem icon={LogOut} label="Fin de mission" value={player.exitDate || "Actif"} />
+                            </div>
+                            {player.tutorName && (
+                                <div className="pt-2">
+                                    <SectionTitle title="Responsable Légal" icon={VenetianMask} />
+                                    <DetailItem icon={User} label="Nom du tuteur" value={player.tutorName} />
+                                    <DetailItem icon={Mail} label="Email du tuteur" value={player.tutorEmail} />
+                                    <DetailItem icon={Phone} label="Contact d'urgence" value={player.tutorPhone} />
+                                </div>
+                            )}
+                        </div>
+                    </main>
+
+                    <div className="pt-12 pb-4 flex flex-col items-center mt-auto">
+                        <div className="text-center space-y-4 w-full flex flex-col items-center">
+                            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Cachet du Club & Signature</p>
+                            <div className="w-32 border-b-2 border-slate-300"></div>
+                        </div>
+                    </div>
                 </div>
+
+                <footer className="p-4 bg-slate-900 text-white flex flex-row justify-between items-end gap-4 text-left shrink-0 border-t border-primary mt-0">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-1 text-primary">
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            <span className="text-[6px] font-black uppercase tracking-widest italic">Certification Digitale Officielle</span>
+                        </div>
+                        <p className="text-[5px] font-bold text-slate-400 uppercase tracking-tighter">© {new Date().getFullYear()} {clubName} - Système Team Assistant Pro</p>
+                    </div>
+                    <div className="text-[7px] font-black uppercase tracking-[0.1em] text-primary italic border-b border-primary mb-1 w-fit ml-auto pb-0.5">Document Officiel</div>
+                </footer>
             </div>
         </div>
       </div>
