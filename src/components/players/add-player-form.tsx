@@ -72,7 +72,7 @@ const nationalities = [
   "Dominicaine", "Dominiquaise", "Égyptienne", "Émiratie", "Équatorienne", "Érythréenne", "Espagnole", 
   "Estonienne", "Éthiopienne", "Fidjienne", "Finlandaise", "Française", "Gabonaise", "Gambienne", 
   "Géorgienne", "Ghanéenne", "Grecque", "Grenadienne", "Guatémaltèque", "Guinéenne", "Guinéenne équatoriale", 
-  "Guyanaise", "Haïtienne", "Hellénique", "Hondurienne", "Hongroise", "Indienne", "Indonésienne", "Irakienne", 
+  "Guyanaise", "Haïtienne", "Hellénique", "Hondurienne", "Hongroise", "Indienne", "Ind Indonesia", "Irakienne", 
   "Iranienne", "Irlandaise", "Islandaise", "Israélienne", "Italienne", "Ivoirienne", "Jamaïcaine", "Japonaise", 
   "Jordanienne", "Kazakhstanaise", "Kényane", "Kirghize", "Kiribatienne", "Koweïtienne", "Laotienne", 
   "Lésothienne", "Lettonne", "Libanaise", "Libérienne", "Libyenne", "Liechtensteinoise", "Lituanienne", 
@@ -243,10 +243,10 @@ export function AddPlayerForm({ player }: { player?: any }) {
     }
 
     try {
-        // Contraintes plus souples pour améliorer la compatibilité avec les appareils comme le Redmi 12C
+        // Contraintes souples pour compatibilité maximale
         const constraints = { 
             video: { 
-                facingMode: facingMode,
+                facingMode: { ideal: facingMode },
                 width: { ideal: 1280, min: 640 },
                 height: { ideal: 720, min: 480 }
             },
@@ -267,9 +267,11 @@ export function AddPlayerForm({ player }: { player?: any }) {
         setHasCameraPermission(true);
     } catch (e) { 
         console.error("Erreur d'accès caméra:", e);
-        // Tentative de secours avec des contraintes minimales si l'HD échoue
+        // Tentative de secours avec des contraintes minimales
         try {
-            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: facingMode } 
+            });
             if (videoRef.current) {
                 videoRef.current.srcObject = fallbackStream;
                 await videoRef.current.play();
@@ -293,7 +295,9 @@ export function AddPlayerForm({ player }: { player?: any }) {
     };
   }, [form.watch('photoUrl'), startCamera]);
 
-  const toggleCamera = () => {
+  const toggleCamera = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
 
@@ -357,16 +361,17 @@ export function AddPlayerForm({ player }: { player?: any }) {
                                 </div>
                                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md flex items-center gap-2 border border-white/10">
                                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">Flux HD Actif</span>
+                                    <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">{facingMode === 'user' ? 'Selfie' : 'Objectif Principal'}</span>
                                 </div>
                                 <Button 
                                     type="button" 
                                     variant="secondary" 
                                     size="icon" 
                                     onClick={toggleCamera}
-                                    className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                                    className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-white shadow-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all z-20"
+                                    title="Changer de caméra"
                                 >
-                                    <RotateCw className="h-5 w-5" />
+                                    <RotateCw className="h-6 w-6" />
                                 </Button>
                            </>
                        )

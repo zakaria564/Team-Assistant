@@ -202,7 +202,7 @@ export function AddCoachForm({ coach }: { coach?: any }) {
   const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
     
-    // Fermeture propre du flux précédent avant d'en ouvrir un nouveau (crucial sur mobile)
+    // Fermeture propre du flux précédent avant d'en ouvrir un nouveau
     if (videoRef.current?.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -210,10 +210,9 @@ export function AddCoachForm({ coach }: { coach?: any }) {
     }
 
     try {
-        // Contraintes plus souples pour améliorer la compatibilité avec les appareils comme le Redmi 12C
         const constraints = { 
             video: { 
-                facingMode: facingMode,
+                facingMode: { ideal: facingMode },
                 width: { ideal: 1280, min: 640 },
                 height: { ideal: 720, min: 480 }
             },
@@ -224,7 +223,6 @@ export function AddCoachForm({ coach }: { coach?: any }) {
         
         if (videoRef.current) {
             videoRef.current.srcObject = s;
-            // Forcer la lecture pour certains navigateurs mobiles
             try {
                 await videoRef.current.play();
             } catch (playError) {
@@ -234,9 +232,10 @@ export function AddCoachForm({ coach }: { coach?: any }) {
         setHasCameraPermission(true);
     } catch (e) { 
         console.error("Erreur d'accès caméra:", e);
-        // Tentative de secours avec des contraintes minimales si l'HD échoue
         try {
-            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: facingMode } 
+            });
             if (videoRef.current) {
                 videoRef.current.srcObject = fallbackStream;
                 await videoRef.current.play();
@@ -260,7 +259,9 @@ export function AddCoachForm({ coach }: { coach?: any }) {
     };
   }, [form.watch('photoUrl'), startCamera]);
 
-  const toggleCamera = () => {
+  const toggleCamera = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
 
@@ -320,16 +321,17 @@ export function AddCoachForm({ coach }: { coach?: any }) {
                                 </div>
                                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md flex items-center gap-2 border border-white/10">
                                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">Flux HD Actif</span>
+                                    <span className="text-[7px] font-black text-white uppercase tracking-widest leading-none">{facingMode === 'user' ? 'Selfie' : 'Objectif Principal'}</span>
                                 </div>
                                 <Button 
                                     type="button" 
                                     variant="secondary" 
                                     size="icon" 
                                     onClick={toggleCamera}
-                                    className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                                    className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-white shadow-xl border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all z-20"
+                                    title="Changer de caméra"
                                 >
-                                    <RotateCw className="h-5 w-5" />
+                                    <RotateCw className="h-6 w-6" />
                                 </Button>
                            </>
                        )
